@@ -1,0 +1,61 @@
+
+A quick-and-simple guide to installing musl:
+
+
+STEP 1: Configuration
+
+Edit config.mak to override installation prefix, compiler options,
+etc. as needed. The defaults should be okay for trying out musl with
+static linking only. The only arch supported at present is i386. If
+you're on an x86_64 machine, you can add -m32 to the compiler options
+to build a working 32bit musl. In this case you will also need to add
+-m32 in two locations in the generated tools/musl-gcc script if you
+intend to use it.
+
+DO NOT set the prefix to /, /usr, or even /usr/local unless you really
+know what you're doing! You'll probably break your system such that
+you'll no longer be able to compile and link programs against glibc!
+This kind of setup should only be used if you're building a system
+where musl is the default/primary/only libc.
+
+The default prefix is /usr/local/musl for a reason, but some people
+may prefer /opt/musl or $HOME/musl.
+
+
+STEP 2: Compiling
+
+Run "make". (GNU make is required.)
+
+
+STEP 3: Installation
+
+With appropriate privileges, run "make install".
+
+
+STEP 4: Using the gcc wrapper.
+
+musl comes with a script "musl-gcc" (installed in /usr/local/bin by
+default) that can be used to compile and link C programs against musl.
+It requires a version of gcc with the -wrapper option (gcc 4.x should
+work). For example:
+
+cat > hello.c <<EOF
+#include <stdio.h>
+int main()
+{
+	printf("hello, world!\n");
+	return 0;
+}
+EOF
+musl-gcc hello.c
+./a.out
+
+For compiling programs that use autoconf, you'll need to configure
+them with a command like this:
+
+CC=musl-gcc ./configure
+
+Be aware that (at present) libraries linked against glibc are unlikely
+to be usable, and the musl-gcc wrapper inhibits search of the system
+library paths in any case. You'll need to compile any prerequisite
+libraries (like ncurses, glib, etc.) yourself.

@@ -1,0 +1,44 @@
+
+musl libc - a new standard library to power a new generation of
+Linux-based devices. musl is lightweight, fast, simple, free, and
+strives to be correct in the sense of standards-conformance and
+safety.
+
+musl is an alternative to glibc, eglibc, uClibc, dietlibc, and klibc.
+For reasons why one might prefer musl, please see the FAQ and libc
+comparison chart on the project website,
+
+    http://www.etalabs.net/musl/
+
+For installation instructions, see the INSTALL file.
+
+Please refer to the COPYRIGHT file for details on the copyright status
+of code included in musl, and the COPYING file for the license (LGPL)
+under which the library as a whole is distributed.
+
+
+
+Greetings libc hackers!
+
+This package is an _alpha_ release of musl, intended for the curious
+and the adventurous. While it can be used to build a complete small
+Linux system (musl is self-hosted on the system I use to develop it),
+at this point doing so requires a lot of manual effort. Nonetheless, I
+hope low-level Linux enthusiasts will try out building some compact
+static binaries with musl using the provided gcc wrapper (which allows
+you to link programs with musl on a "standard" glibc Linux system),
+find whatever embarassing bugs I've let slip through, and provide
+feedback on issues encountered building various software against musl.
+
+Please visit #musl on Freenode IRC or contact me via email at dalias
+AT etalabs DOT net for bug reports, support requests, or to get
+involved in development. As this has been a one-person project so far,
+mailing lists will be setup in due time on an as-needed basis.
+
+Thank you for trying out musl.
+
+Cheers,
+
+Rich Felker / dalias
+
+
