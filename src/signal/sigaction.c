@@ -20,7 +20,7 @@ int __libc_sigaction(int sig, const struct sigaction *sa, struct sigaction *old)
 	long pksa=0, pkold=0;
 	if (sa) {
 		ksa.handler = sa->sa_handler;
-		ksa.flags = sa->sa_flags;
+		ksa.flags = sa->sa_flags | SA_RESTORER;
 		ksa.restorer = restorer;
 		ksa.mask = sa->sa_mask;
 		pksa = (long)&ksa;
