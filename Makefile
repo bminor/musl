@@ -20,7 +20,7 @@ OBJS = $(SRCS:.c=.o)
 LOBJS = $(OBJS:.o=.lo)
 GENH = include/bits/alltypes.h
 
-CFLAGS  = -Os -nostdinc -ffreestanding -pipe
+CFLAGS  = -Os -nostdinc -ffreestanding -std=c99 -D_XOPEN_SOURCE=700 -pipe
 LDFLAGS = -nostdlib -shared -Wl,-Bsymbolic
 INC     = -I./include -I./src/internal
 PIC     = -fPIC
