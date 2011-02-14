@@ -3,5 +3,5 @@
 
 gid_t getgid(void)
 {
-	return syscall0(__NR_getgid32);
+	return syscall0(__NR_getgid);
 }

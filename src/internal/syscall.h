@@ -439,6 +439,46 @@ static inline long syscall6(long n, long a1, long a2, long a3, long a4, long a5,
 #define __NR_preadv		333
 #define __NR_pwritev		334
 
+/* fixup legacy 16-bit junk */
+#undef __NR_lchown
+#undef __NR_getuid
+#undef __NR_getgid
+#undef __NR_geteuid
+#undef __NR_getegid
+#undef __NR_setreuid
+#undef __NR_setregid
+#undef __NR_getgroups
+#undef __NR_setgroups
+#undef __NR_fchown
+#undef __NR_setresuid
+#undef __NR_getresuid
+#undef __NR_setresgid
+#undef __NR_getresgid
+#undef __NR_chown
+#undef __NR_setuid
+#undef __NR_setgid
+#undef __NR_setfsuid
+#undef __NR_setfsgid
+#define __NR_lchown __NR_lchown32
+#define __NR_getuid __NR_getuid32
+#define __NR_getgid __NR_getgid32
+#define __NR_geteuid __NR_geteuid32
+#define __NR_getegid __NR_getegid32
+#define __NR_setreuid __NR_setreuid32
+#define __NR_setregid __NR_setregid32
+#define __NR_getgroups __NR_getgroups32
+#define __NR_setgroups __NR_setgroups32
+#define __NR_fchown __NR_fchown32
+#define __NR_setresuid __NR_setresuid32
+#define __NR_getresuid __NR_getresuid32
+#define __NR_setresgid __NR_setresgid32
+#define __NR_getresgid __NR_getresgid32
+#define __NR_chown __NR_chown32
+#define __NR_setuid __NR_setuid32
+#define __NR_setgid __NR_setgid32
+#define __NR_setfsuid __NR_setfsuid32
+#define __NR_setfsgid __NR_setfsgid32
+
 
 #undef O_LARGEFILE
 #define O_LARGEFILE 0100000
@@ -456,14 +496,5 @@ static inline long syscall6(long n, long a1, long a2, long a3, long a4, long a5,
 #define __syscall_sigaction(sig,new,old)      syscall4(__NR_rt_sigaction, (sig), (long)(new), (long)(old), SYSCALL_SIGSET_SIZE)
 #define __syscall_ioctl(fd,ioc,arg)           syscall3(__NR_ioctl, (fd), (ioc), (long)(arg))
 #define __syscall_exit(code)                  syscall1(__NR_exit, code)
-
-#define __NEED_off_t
-#include <bits/alltypes.h>
-
-static inline off_t __syscall_lseek(int fd, off_t offset, int whence)
-{
-	off_t result;
-	return syscall5(__NR__llseek, fd, offset>>32, offset, (long)&result, whence) ? -1 : result;
-}
 
 #endif
