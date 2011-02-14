@@ -1,5 +1,4 @@
 #include <sys/mount.h>
-#define SYSCALL_STANDALONE
 #include "syscall.h"
 
 int umount2(const char *special, int flags)
