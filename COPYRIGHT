@@ -29,3 +29,9 @@ by copyright. Some source modules may fall in this category as well.
 If you believe that a file is so trivial that it should be in the
 Public Domain, please contact me and, if I agree, I will explicitly
 release it from copyright.
+
+The following files are trivial, in my opinion not copyrightable in
+the first place, and hereby explicitly released to the Public Domain:
+
+All public headers: include/*
+Startup files: crt/*
