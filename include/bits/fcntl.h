@@ -15,6 +15,7 @@
 #define O_CLOEXEC  02000000
 
 #ifdef _GNU_SOURCE
+#define O_NDELAY O_NONBLOCK
 #define O_ASYNC      020000
 #define O_DIRECT     040000
 #define O_NOATIME  01000000
