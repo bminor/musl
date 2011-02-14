@@ -15,7 +15,7 @@ size_t mbrtowc(wchar_t *wc, const char *src, size_t n, mbstate_t *st)
 {
 	static unsigned internal_state;
 	unsigned c;
-	const unsigned char *s = src;
+	const unsigned char *s = (const void *)src;
 	const unsigned N = n;
 
 	if (!st) st = (void *)&internal_state;
@@ -29,8 +29,8 @@ size_t mbrtowc(wchar_t *wc, const char *src, size_t n, mbstate_t *st)
 
 	if (!n) return -2;
 	if (!c) {
-		if ((unsigned)*s < 0x80) return !!(*wc = *s);
-		if ((unsigned)*s-SA > SB-SA) goto ilseq;
+		if (*s < 0x80) return !!(*wc = *s);
+		if (*s-SA > SB-SA) goto ilseq;
 		c = bittab[*s++-SA]; n--;
 	}
 
@@ -44,7 +44,7 @@ loop:
 			return N-n;
 		}
 		if (n) {
-			if ((unsigned)*s-0x80 >= 0x40) goto ilseq;
+			if (*s-0x80u >= 0x40) goto ilseq;
 			goto loop;
 		}
 	}

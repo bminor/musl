@@ -53,9 +53,9 @@ extern const uint32_t bittab[];
 #define FAILSTATE R(0x80,0x80)
 
 #ifdef I_FAILED_TO_RTFM_RFC3629
-#define SA 0xc2
-#define SB 0xfe
+#define SA 0xc2u
+#define SB 0xfeu
 #else
-#define SA 0xc2
-#define SB 0xf5
+#define SA 0xc2u
+#define SB 0xf5u
 #endif
