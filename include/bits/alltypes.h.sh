@@ -96,7 +96,7 @@ TYPEDEF int timer_t;
 TYPEDEF int clockid_t;
 TYPEDEF unsigned long clock_t;
 
-TYPEDEF struct { unsigned long __bits[1024/sizeof(long)]; } sigset_t;
+TYPEDEF struct { unsigned long __bits[128/sizeof(long)]; } sigset_t;
 TYPEDEF struct __siginfo siginfo_t;
 
 TYPEDEF unsigned int socklen_t;

@@ -10,7 +10,7 @@ extern "C" {
 
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
-typedef unsigned long sigjmp_buf[(1024+sizeof(jmp_buf))/sizeof(long)];
+typedef unsigned long sigjmp_buf[(128+sizeof(jmp_buf))/sizeof(long)];
 #ifdef _GNU_SOURCE
 #define jmp_buf sigjmp_buf
 #endif
