@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #define __NEED_nl_item
+#define __NEED_locale_t
 
 #include <bits/alltypes.h>
 
@@ -77,6 +78,7 @@ extern "C" {
 #define NOSTR 0x50003
 
 char *nl_langinfo(nl_item);
+char *nl_langinfo_l(nl_item, locale_t);
 
 #ifdef __cplusplus
 }

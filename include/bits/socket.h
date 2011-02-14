@@ -1,5 +1,3 @@
-struct iovec;
-
 struct msghdr
 {
 	void *msg_name;

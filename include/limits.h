@@ -49,6 +49,8 @@
 #define NL_SETMAX 255
 #define NL_TEXTMAX 2048
 
+#endif
+
 /* POSIX/SUS requirements follow. These numbers come directly
  * from SUS and have nothing to do with the host system. */
 
@@ -56,6 +58,7 @@
 #define _POSIX_AIO_MAX          1
 #define _POSIX_ARG_MAX          4096
 #define _POSIX_CHILD_MAX        25
+#define _POSIX_CLOCKRES_MIN     20000000
 #define _POSIX_DELAYTIMER_MAX   32
 #define _POSIX_HOST_NAME_MAX    255
 #define _POSIX_LINK_MAX         8
@@ -102,7 +105,5 @@
 #define _XOPEN_IOV_MAX          16
 #define _XOPEN_NAME_MAX         255
 #define _XOPEN_PATH_MAX         1024
-
-#endif
 
 #endif

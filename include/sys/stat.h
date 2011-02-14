@@ -14,10 +14,15 @@ extern "C" {
 #define __NEED_time_t
 #define __NEED_blksize_t
 #define __NEED_blkcnt_t
+#define __NEED_struct_timespec
 
 #include <bits/alltypes.h>
 
 #include <bits/stat.h>
+
+#define st_atime st_atim.tv_sec
+#define st_mtime st_mtim.tv_sec
+#define st_ctime st_ctim.tv_sec
 
 #define S_IFMT  0170000
 

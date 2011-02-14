@@ -16,12 +16,6 @@ int   isxdigit(int);
 int   tolower(int);
 int   toupper(int);
 
-int   isascii(int);
-int   toascii(int);
-
-#define _tolower(a) ((a)|0x20)
-#define _toupper(a) ((a)&0x5f)
-
 #define isalpha(a) ((unsigned)(((a)|32)-'a') < 26)
 #define isdigit(a) ((unsigned)((a)-'0') < 10)
 #define islower(a) ((unsigned)((a)-'a') < 26)
@@ -29,7 +23,10 @@ int   toascii(int);
 #define isprint(a) ((unsigned)((a)-0x20) < 0x5f)
 #define isgraph(a) ((unsigned)((a)-0x21) < 0x5e)
 
-#if 1
+
+
+#if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
+ || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
 
 #define __NEED_locale_t
 #include <bits/alltypes.h>
@@ -48,6 +45,12 @@ int   isupper_l(int, locale_t);
 int   isxdigit_l(int, locale_t);
 int   tolower_l(int, locale_t);
 int   toupper_l(int, locale_t);
+
+int   isascii(int);
+int   toascii(int);
+#define _tolower(a) ((a)|0x20)
+#define _toupper(a) ((a)&0x5f)
+
 #endif
 
 #endif

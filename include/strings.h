@@ -5,13 +5,6 @@
 extern "C" {
 #endif
 
-#undef NULL
-#ifdef __cplusplus
-#define NULL 0
-#else
-#define NULL ((void*)0)
-#endif
-
 
 #define __NEED_size_t
 #include <bits/alltypes.h>

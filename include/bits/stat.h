@@ -15,11 +15,8 @@ struct stat
 	off_t st_size;
 	blksize_t st_blksize;
 	blkcnt_t st_blocks;
-	time_t st_atime;
-	unsigned long __st_atime_nsec;
-	time_t st_mtime;
-	unsigned long __st_mtime_nsec;
-	time_t st_ctime;
-	unsigned long __st_ctime_nsec;
+	struct timespec st_atim;
+	struct timespec st_mtim;
+	struct timespec st_ctim;
 	ino_t st_ino;
 };
