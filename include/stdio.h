@@ -8,8 +8,12 @@ extern "C" {
 #define __NEED_FILE
 #define __NEED_va_list
 #define __NEED_size_t
+
+#if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
+ || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
 #define __NEED_ssize_t
 #define __NEED_off_t
+#endif
 
 #include <bits/alltypes.h>
 
@@ -50,26 +54,19 @@ extern FILE *const stderr;
 #define stderr (stderr)
 
 FILE *fopen(const char *, const char *);
-FILE *fdopen(int, const char *);
 FILE *freopen(const char *, const char *, FILE *);
 int fclose(FILE *);
-
-FILE *popen(const char *, const char *);
-int pclose(FILE *);
 
 int remove(const char *);
 int rename(const char *, const char *);
 
-int fileno(FILE *);
 int feof(FILE *);
 int ferror(FILE *);
 int fflush(FILE *);
 void clearerr(FILE *);
 
 int fseek(FILE *, long, int);
-int fseeko(FILE *, off_t, int);
 long ftell(FILE *);
-off_t ftello(FILE *);
 void rewind(FILE *);
 
 int fgetpos(FILE *, fpos_t *);
@@ -103,9 +100,6 @@ int vfprintf(FILE *, const char *, va_list);
 int vsprintf(char *, const char *, va_list);
 int vsnprintf(char *, size_t, const char *, va_list);
 
-int dprintf(int, const char *, ...);
-int vdprintf(int, const char *, va_list);
-
 int scanf(const char *, ...);
 int fscanf(FILE *, const char *, ...);
 int sscanf(const char *, const char *, ...);
@@ -115,6 +109,22 @@ int vsscanf(const char *, const char *, va_list);
 
 void perror(const char *);
 
+int setvbuf(FILE *, char *, int, size_t);
+void setbuf(FILE *, char *);
+
+char *tmpnam(char *);
+FILE *tmpfile(void);
+
+#if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
+ || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+FILE *fdopen(int, const char *);
+FILE *popen(const char *, const char *);
+int pclose(FILE *);
+int fileno(FILE *);
+int fseeko(FILE *, off_t, int);
+off_t ftello(FILE *);
+int dprintf(int, const char *, ...);
+int vdprintf(int, const char *, va_list);
 void flockfile(FILE *);
 int ftrylockfile(FILE *);
 void funlockfile(FILE *);
@@ -122,20 +132,21 @@ int getc_unlocked(FILE *);
 int getchar_unlocked(void);
 int putc_unlocked(int, FILE *);
 int putchar_unlocked(int);
-
-int setvbuf(FILE *, char *, int, size_t);
-void setbuf(FILE *, char *);
-
-char *tmpnam(char *);
-char *tempnam(const char *, const char *);
-FILE *tmpfile(void);
-
-char *ctermid(char *);
-
 ssize_t getdelim(char **, size_t *, int, FILE *);
 ssize_t getline(char **, size_t *, FILE *);
-
 int renameat(int, const char *, int, const char *);
+char *ctermid(char *);
+#endif
+
+
+#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+char *tempnam(const char *, const char *);
+#endif
+
+#if defined(_GNU_SOURCE)
+#undef off64_t
+#define off64_t off_t
+#endif
 
 #ifdef __cplusplus
 }

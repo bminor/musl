@@ -13,9 +13,13 @@
 #define UCHAR_MAX 255
 #define CHAR_MIN (-128)
 #define CHAR_MAX 127
-#define SSIZE_MAX LONG_MAX
 
 #define MB_LEN_MAX 4
+
+#if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
+ || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+
+#define SSIZE_MAX LONG_MAX
 #define TZNAME_MAX 6
 #define TTY_NAME_MAX 20
 #define HOST_NAME_MAX 255
@@ -98,5 +102,7 @@
 #define _XOPEN_IOV_MAX          16
 #define _XOPEN_NAME_MAX         255
 #define _XOPEN_PATH_MAX         1024
+
+#endif
 
 #endif
