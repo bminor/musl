@@ -23,7 +23,8 @@
 /* Implementation choices... */
 
 #define PTHREAD_KEYS_MAX  1024
-#define PTHREAD_STACK_MIN (2*PAGE_SIZE)
+#define PTHREAD_STACK_MIN PAGE_SIZE
+#define PTHREAD_DESTRUCTOR_ITERATIONS 4
 
 /* Arbitrary numbers... */
 

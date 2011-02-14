@@ -1,6 +1,38 @@
 #include "pthread_impl.h"
 
-#define pthread_self __pthread_self
+void __pthread_unwind_next(struct __ptcb *cb)
+{
+	int i, j, not_finished;
+	pthread_t self;
+
+	if (cb->__next) longjmp((void *)cb->__next->__jb, 1);
+
+	self = pthread_self();
+	if (self->cancel) self->result = PTHREAD_CANCELLED;
+
+	if (!a_fetch_add(&libc.threads_minus_1, -1))
+		exit(0);
+
+	LOCK(&self->exitlock);
+
+	not_finished = self->tsd_used;
+	for (j=0; not_finished && j<PTHREAD_DESTRUCTOR_ITERATIONS; j++) {
+		not_finished = 0;
+		for (i=0; i<PTHREAD_KEYS_MAX; i++) {
+			if (self->tsd[i] && libc.tsd_keys[i]) {
+				void *tmp = self->tsd[i];
+				self->tsd[i] = 0;
+				libc.tsd_keys[i](tmp);
+				not_finished = 1;
+			}
+		}
+	}
+
+	if (self->detached && self->map_base)
+		__unmapself(self->map_base, self->map_size);
+
+	__syscall_exit(0);
+}
 
 static void docancel(struct pthread *self)
 {
@@ -10,11 +42,19 @@ static void docancel(struct pthread *self)
 
 static void cancel_handler(int sig, siginfo_t *si, void *ctx)
 {
-	struct pthread *self = pthread_self();
+	struct pthread *self = __pthread_self();
 	self->cancel = 1;
 	if (self->canceldisable || (!self->cancelasync && !self->cancelpoint))
 		return;
 	docancel(self);
+}
+
+static void cancelpt(int x)
+{
+	struct pthread *self = __pthread_self();
+	if (self->canceldisable) return;
+	self->cancelpoint = x;
+	if (self->cancel) docancel(self);
 }
 
 /* "rsyscall" is a mechanism by which a thread can synchronously force all
@@ -50,7 +90,7 @@ static int rsyscall(int nr, long a, long b, long c, long d, long e, long f)
 {
 	int i, ret;
 	sigset_t set = { 0 };
-	struct pthread *self = pthread_self();
+	struct pthread *self = __pthread_self();
 	sigaddset(&set, SIGSYSCALL);
 
 	LOCK(&rs.lock);
@@ -90,14 +130,6 @@ static int rsyscall(int nr, long a, long b, long c, long d, long e, long f)
 	return ret;
 }
 
-static void cancelpt(int x)
-{
-	struct pthread *self = pthread_self();
-	if (self->canceldisable) return;
-	self->cancelpoint = x;
-	if (self->cancel) docancel(self);
-}
-
 static void init_threads()
 {
 	struct sigaction sa = { .sa_flags = SA_SIGINFO | SA_RESTART };
@@ -119,8 +151,6 @@ static int start(void *p)
 	pthread_exit(self->start(self->start_arg));
 	return 0;
 }
-
-#undef pthread_self
 
 #define CLONE_MAGIC 0x7d0f00
 int __clone(int (*)(void *), void *, int, void *, pid_t *, void *, pid_t *);
@@ -186,4 +216,11 @@ int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(vo
 	}
 	*res = new;
 	return 0;
+}
+
+void pthread_exit(void *result)
+{
+	struct pthread *self = pthread_self();
+	self->result = result;
+	docancel(self);
 }
