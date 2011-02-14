@@ -4,10 +4,7 @@
 #include "syscall.h"
 #include "pthread_impl.h"
 
-static void restorer()
-{
-	syscall0(__NR_rt_sigreturn);
-}
+void __restore(), __restore_rt();
 
 int __libc_sigaction(int sig, const struct sigaction *sa, struct sigaction *old)
 {
@@ -21,7 +18,7 @@ int __libc_sigaction(int sig, const struct sigaction *sa, struct sigaction *old)
 	if (sa) {
 		ksa.handler = sa->sa_handler;
 		ksa.flags = sa->sa_flags | SA_RESTORER;
-		ksa.restorer = restorer;
+		ksa.restorer = (sa->sa_flags & SA_SIGINFO) ? __restore_rt : __restore;
 		ksa.mask = sa->sa_mask;
 		pksa = (long)&ksa;
 	}
