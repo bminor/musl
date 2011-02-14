@@ -292,7 +292,7 @@ static int fuzzycmp(const char *a, const char *b)
 	return *a != *b;
 }
 
-static int find_charmap(const char *name)
+static size_t find_charmap(const char *name)
 {
 	const unsigned char *s;
 	for (s=charmaps; *s; ) {
@@ -308,7 +308,7 @@ static int find_charmap(const char *name)
 
 iconv_t iconv_open(const char *to, const char *from)
 {
-	int f, t;
+	size_t f, t;
 
 	if ((t = find_charmap(to)) < 0 || (f = find_charmap(from)) < 0) {
 		errno = EINVAL;
