@@ -1,5 +1,4 @@
 #include <sys/swap.h>
-#define SYSCALL_STANDALONE
 #include "syscall.h"
 
 int swapoff(const char *path)

@@ -7,17 +7,7 @@
 
 #define SYSCALL_SIGSET_SIZE 8
 
-#if defined(SYSCALL_STANDALONE)
-#include <errno.h>
-static inline long __syscall_ret(unsigned long r)
-{
-	if (r >= (unsigned long)-1 - 4096) {
-		errno = -(long)r;
-		return -1;
-	}
-	return (long)r;
-}
-#elif defined(SYSCALL_NORETURN)
+#if defined(SYSCALL_NORETURN)
 static inline long __syscall_ret(unsigned long r)
 {
 	for(;;);

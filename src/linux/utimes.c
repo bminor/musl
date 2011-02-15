@@ -1,5 +1,4 @@
 #include <sys/time.h>
-#define SYSCALL_STANDALONE
 #include "syscall.h"
 
 int utimes(const char *path, const struct timeval times[2])

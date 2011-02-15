@@ -1,4 +1,3 @@
-#define SYSCALL_STANDALONE
 #include "syscall.h"
 
 struct sysinfo;

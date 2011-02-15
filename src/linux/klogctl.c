@@ -1,4 +1,3 @@
-#define SYSCALL_STANDALONE
 #include "syscall.h"
 
 int klogctl (int type, char *buf, int len)

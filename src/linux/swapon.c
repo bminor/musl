@@ -1,5 +1,4 @@
 #include <sys/swap.h>
-#define SYSCALL_STANDALONE
 #include "syscall.h"
 
 int swapon(const char *path, int flags)

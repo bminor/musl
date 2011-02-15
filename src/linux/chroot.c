@@ -1,5 +1,4 @@
 #include <unistd.h>
-#define SYSCALL_STANDALONE
 #include "syscall.h"
 
 int chroot(const char *path)
