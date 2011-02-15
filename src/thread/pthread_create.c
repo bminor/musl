@@ -212,7 +212,7 @@ int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(vo
 	if (ret < 0) {
 		a_dec(&libc.threads_minus_1);
 		munmap(map, size);
-		return -ret;
+		return EAGAIN;
 	}
 	*res = new;
 	return 0;
