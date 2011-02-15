@@ -51,6 +51,12 @@ clean:
 	rm -f $(ALL_LIBS) lib/*
 	rm -f $(ALL_TOOLS)
 	rm -f $(GENH) 
+	rm -f include/bits
+
+include/bits:
+	ln -sf ../arch/$(ARCH)/bits $@
+
+include/bits/alltypes.h.sh: include/bits
 
 include/bits/alltypes.h: include/bits/alltypes.h.sh
 	sh $< > $@
