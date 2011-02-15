@@ -5,12 +5,9 @@ A quick-and-simple guide to installing musl:
 STEP 1: Configuration
 
 Edit config.mak to override installation prefix, compiler options,
-etc. as needed. The defaults should be okay for trying out musl with
-static linking only. The only arch supported at present is i386. If
-you're on an x86_64 machine, you can add -m32 to the compiler options
-to build a working 32bit musl. In this case you will also need to add
--m32 in two locations in the generated tools/musl-gcc script if you
-intend to use it.
+target architecture, etc. as needed. Currently supported archs are
+i386 and x86_64. Otherwise, the defaults should be okay for trying out
+musl with static linking only.
 
 DO NOT set the prefix to /, /usr, or even /usr/local unless you really
 know what you're doing! You'll probably break your system such that

@@ -19,6 +19,9 @@ The implementation of DES for crypt (src/misc/crypt.c) is Copyright ©
 1994 David Burren. It is licensed under a BSD license compatible with
 the GNU LGPL.
 
+The x86_64 port was written by Nicholas J. Kain. See individual files
+for their copyright status.
+
 All files which have no copyright comments are original works
 Copyright © 2005-2011 Rich Felker, the main author of this library.
 The decision to exclude such comments is intentional, as it should be
