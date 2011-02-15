@@ -9,7 +9,7 @@ int fputws(const wchar_t *ws, FILE *f)
 
 	f->mode |= f->mode+1;
 
-	while (ws && (l = wcsrtombs(buf, (void*)&ws, sizeof buf, 0))+1 > 1)
+	while (ws && (l = wcsrtombs((void *)buf, (void*)&ws, sizeof buf, 0))+1 > 1)
 		if (__fwritex(buf, l, f) < l) {
 			FUNLOCK(f);
 			return -1;

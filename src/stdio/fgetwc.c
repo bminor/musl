@@ -12,7 +12,7 @@ wint_t __fgetwc_unlocked(FILE *f)
 
 	/* Convert character from buffer if possible */
 	if (f->rpos < f->rend) {
-		l = mbrtowc(&wc, f->rpos, f->rend - f->rpos, &st);
+		l = mbrtowc(&wc, (void *)f->rpos, f->rend - f->rpos, &st);
 		if (l+2 >= 2) {
 			f->rpos += l + !l; /* l==0 means 1 byte, null */
 			return wc;
@@ -30,7 +30,7 @@ wint_t __fgetwc_unlocked(FILE *f)
 			if (!mbsinit(&st)) errno = EILSEQ;
 			return WEOF;
 		}
-		l = mbrtowc(&wc, &b, 1, &st);
+		l = mbrtowc(&wc, (void *)&b, 1, &st);
 		if (l == -1) return WEOF;
 	}
 
