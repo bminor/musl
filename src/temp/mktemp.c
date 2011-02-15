@@ -6,7 +6,7 @@
 #include <errno.h>
 #include "libc.h"
 
-char *mktemp(char *template)
+char *__mktemp(char *template)
 {
 	static int lock;
 	static int index;
@@ -27,3 +27,5 @@ char *mktemp(char *template)
 	UNLOCK(&lock);
 	return NULL;	
 }
+
+weak_alias(__mktemp, mktemp);

@@ -1,4 +1,3 @@
-#define _GNU_SOURCE
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,10 +8,12 @@
 #include <sys/stat.h>
 #include "libc.h"
 
+char *__mktemp(char *);
+
 char *mkdtemp(char *template)
 {
 	for (;;) {
-		if (!mktemp(template)) return 0;
+		if (!__mktemp(template)) return 0;
 		if (!mkdir(template, 0700)) return template;
 		if (errno != EEXIST) return 0;
 		/* this is safe because mktemp verified
