@@ -1,0 +1,25 @@
+0.5.0 - initial release
+
+0.5.9 - signal ABI bugfix, various cleanup and fixes:
+
+sigset_t was wrongly defined as 1024 bytes instead of 1024 bits,
+breaking the intended ABI compatibility with the LSB/glibc sigaction
+structure. users should upgrade immediately and rebuild any libraries
+or object files that might be using the incorrect definitions.
+
+improved security against DoS with tcb shadow passwords by checking
+that the file opened was really an ordinary file.
+
+fixed a bug in the implementation of atomic ops that could have
+allowed the compiler to incorrectly reorder them (in practice, gcc
+with the default settings on i386 was not reordering them).
+
+greatly improved conformance to the C and POSIX standards regarding
+what the standard header files make visible. _POSIX_C_SOURCE is now
+needed to get POSIX functions in standard C headers, and _XOPEN_SOURCE
+or _GNU_SOURCE are required to get XSI interfaces or GNU extensions,
+respectively.
+
+many internal improvements have been made to the syscall-related code
+in preparation for porting to x86_64 and other archs.
+
