@@ -68,10 +68,10 @@ TYPEDEF long long          intmax_t;
 TYPEDEF unsigned long long uintmax_t;
 
 TYPEDEF long time_t;
-TYPEDEF unsigned int useconds_t;
+TYPEDEF long useconds_t;
 TYPEDEF long suseconds_t;
-STRUCT timeval { time_t tv_sec; long tv_usec; };
-STRUCT timespec { time_t tv_sec; long tv_nsec; };
+STRUCT timeval { time_t tv_sec; int tv_usec; };
+STRUCT timespec { time_t tv_sec; unsigned long tv_nsec; };
 
 TYPEDEF int pid_t;
 TYPEDEF int id_t;
@@ -96,7 +96,7 @@ TYPEDEF long timer_t;
 TYPEDEF int clockid_t;
 TYPEDEF long clock_t;
 
-TYPEDEF struct { unsigned long __bits[1024/sizeof(long)]; } sigset_t;
+TYPEDEF struct { unsigned long __bits[128/sizeof(long)]; } sigset_t;
 TYPEDEF struct __siginfo siginfo_t;
 
 TYPEDEF unsigned int socklen_t;

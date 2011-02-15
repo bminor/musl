@@ -1,3 +1,6 @@
+#if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
+ || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+
 struct __siginfo
 {
 	int si_signo;
@@ -65,12 +68,17 @@ struct __siginfo
 #define SIG_UNBLOCK   1
 #define SIG_SETMASK   2
 
+#define SIG_HOLD ((void (*)(int)) 2)
+
+#endif
+
+#ifdef _GNU_SOURCE
+#define NSIG      64
+#endif
+
 #define SIG_ERR  ((void (*)(int))-1)
 #define SIG_DFL  ((void (*)(int)) 0)
 #define SIG_IGN  ((void (*)(int)) 1)
-#define SIG_HOLD ((void (*)(int)) 2)
-
-#define NSIG      64
 
 #define SIGHUP    1
 #define SIGINT    2
