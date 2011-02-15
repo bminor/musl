@@ -1,6 +1,7 @@
 #include <signal.h>
 #include <stddef.h>
 #include "syscall.h"
+#include "libc.h"
 
 int __sigaction(int, const struct sigaction *, struct sigaction *);
 
@@ -11,3 +12,5 @@ void (*signal(int sig, void (*func)(int)))(int)
 		return SIG_ERR;
 	return sa.sa_handler;
 }
+
+weak_alias(signal, bsd_signal);
