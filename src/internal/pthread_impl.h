@@ -38,19 +38,13 @@ struct pthread {
 	pthread_attr_t attr;
 };
 
-static inline struct pthread *__pthread_self()
-{
-	struct pthread *self;
-	__asm__ ("movl %%gs:0,%0" : "=r" (self) );
-	return self;
-}
+#include "pthread_arch.h"
 
 #define SIGCANCEL 32
 #define SIGSYSCALL 33
 #define SIGTIMER  32 /* ?? */
 
-int __set_thread_area(unsigned long *);
-int __set_pthread_self(void *);
+int __set_thread_area(void *);
 int __libc_sigaction(int, const struct sigaction *, struct sigaction *);
 int __libc_sigprocmask(int, const sigset_t *, sigset_t *);
 void __lock(volatile int *);
