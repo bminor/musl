@@ -393,9 +393,11 @@ static inline long syscall6(long n, long a1, long a2, long a3, long a4,
 #undef __NR_fstatat
 #undef __NR_pread
 #undef __NR_pwrite
+#undef __NR_getdents
 #define __NR_fstatat __NR_newfstatat
 #define __NR_pread __NR_pread64
 #define __NR_pwrite __NR_pwrite64
+#define __NR_getdents __NR_getdents64
 
 #undef O_LARGEFILE
 #define O_LARGEFILE 0100000
