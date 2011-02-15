@@ -500,8 +500,13 @@ static inline long syscall6(long n, long a1, long a2, long a3, long a4, long a5,
 #define __NR_fstatat __NR_fstatat64
 #define __NR_pread __NR_pread64
 #define __NR_pwrite __NR_pwrite64
+
 #undef __NR_getrlimit
 #define __NR_getrlimit __NR_ugetrlimit
+
+#undef __NR_select
+#define __NR_select __NR__newselect
+
 
 #define __SC_socket      1
 #define __SC_bind        2
