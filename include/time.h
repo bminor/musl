@@ -13,6 +13,7 @@ extern "C" {
 #endif
 
 
+#define __NEED_size_t
 #define __NEED_time_t
 #define __NEED_clock_t
 
@@ -21,7 +22,6 @@ extern "C" {
 #define __NEED_struct_timespec
 #define __NEED_clockid_t
 #define __NEED_timer_t
-#define __NEED_size_t
 #define __NEED_pid_t
 #endif
 
