@@ -4,7 +4,7 @@
 
 int stat(const char *path, struct stat *buf)
 {
-	return syscall2(__NR_stat64, (long)path, (long)buf);
+	return syscall2(__NR_stat, (long)path, (long)buf);
 }
 
 LFS64(stat);

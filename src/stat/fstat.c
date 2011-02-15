@@ -4,7 +4,7 @@
 
 int fstat(int fd, struct stat *buf)
 {
-	return syscall2(__NR_fstat64, fd, (long)buf);
+	return syscall2(__NR_fstat, fd, (long)buf);
 }
 
 LFS64(fstat);

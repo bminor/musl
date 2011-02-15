@@ -480,6 +480,29 @@ static inline long syscall6(long n, long a1, long a2, long a3, long a4, long a5,
 #define __NR_setfsgid __NR_setfsgid32
 
 
+/* fixup legacy 32-bit-vs-lfs64 junk */
+#undef __NR_getdents
+#undef __NR_ftruncate
+#undef __NR_truncate
+#undef __NR_stat
+#undef __NR_fstat
+#undef __NR_lstat
+#undef __NR_statfs
+#undef __NR_fstatfs
+#define __NR_getdents __NR_getdents64
+#define __NR_ftruncate __NR_ftruncate64
+#define __NR_truncate __NR_truncate64
+#define __NR_stat __NR_stat64
+#define __NR_fstat __NR_fstat64
+#define __NR_lstat __NR_lstat64
+#define __NR_statfs __NR_statfs64
+#define __NR_fstatfs __NR_fstatfs64
+#define __NR_fstatat __NR_fstatat64
+#define __NR_pread __NR_pread64
+#define __NR_pwrite __NR_pwrite64
+
+
+
 #undef O_LARGEFILE
 #define O_LARGEFILE 0100000
 

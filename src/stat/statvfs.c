@@ -4,7 +4,7 @@
 
 int statvfs(const char *path, struct statvfs *buf)
 {
-	return syscall2(__NR_statfs64, (long)path, (long)buf);
+	return syscall2(__NR_statfs, (long)path, (long)buf);
 }
 
 weak_alias(statvfs, statfs);
