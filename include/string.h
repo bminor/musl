@@ -34,8 +34,6 @@ int strncmp (const char *, const char *, size_t);
 int strcoll (const char *, const char *);
 size_t strxfrm (char *, const char *, size_t);
 
-char *strdup (const char *);
-
 char *strchr (const char *, int);
 char *strrchr (const char *, int);
 
@@ -43,21 +41,28 @@ size_t strcspn (const char *, const char *);
 size_t strspn (const char *, const char *);
 char *strpbrk (const char *, const char *);
 char *strstr (const char *, const char *);
-
 char *strtok (char *, const char *);
-char *strtok_r (char *, const char *, char **);
 
 size_t strlen (const char *);
 
 char *strerror (int);
+
+
+#if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
+ || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+char *strtok_r (char *, const char *, char **);
 int strerror_r (int, char *, size_t);
-
-size_t strlcat (char *, const char *, size_t);
-size_t strlcpy (char *, const char *, size_t);
-
 char *stpcpy(char *, const char *);
 char *stpncpy(char *, const char *, size_t);
 size_t strnlen (const char *, size_t);
+char *strdup (const char *);
+char *strndup (const char *, size_t);
+#endif
+
+#ifdef _BSD_SOURCE
+size_t strlcat (char *, const char *, size_t);
+size_t strlcpy (char *, const char *, size_t);
+#endif
 
 #ifdef _GNU_SOURCE
 int strcasecmp (const char *, const char *);
