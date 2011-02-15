@@ -5,6 +5,9 @@
 #define IPC_RMID 0
 #define IPC_SET  1
 #define IPC_STAT 2
+#ifdef _GNU_SOURCE
+#define IPC_INFO 3
+#endif
 
 #define IPC_PRIVATE ((key_t) 0)
 

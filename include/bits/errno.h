@@ -123,3 +123,10 @@
 #define ENOMEDIUM       123
 #define EMEDIUMTYPE     124
 #define ECANCELED       125
+#define ENOKEY          126
+#define EKEYEXPIRED     127
+#define EKEYREVOKED     128
+#define EKEYREJECTED    129
+#define EOWNERDEAD      130
+#define ENOTRECOVERABLE 131
+#define ERFKILL         132

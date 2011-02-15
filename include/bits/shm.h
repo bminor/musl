@@ -2,6 +2,12 @@
 
 #define SHM_RDONLY 010000
 #define SHM_RND    020000
+#define SHM_REMAP  040000
+#define SHM_EXEC   0100000
+
+/* linux extensions */
+#define SHM_LOCK        11
+#define SHM_UNLOCK      12
 
 struct shmid_ds
 {

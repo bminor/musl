@@ -38,37 +38,12 @@ struct linger
 #define SOCK_RAW       3
 #define SOCK_RDM       4
 #define SOCK_SEQPACKET 5
+#define SOCK_DCCP      6
 #define SOCK_PACKET    10
 
-#define AF_UNSPEC       0
-#define AF_LOCAL        1
-#define AF_UNIX         AF_LOCAL
-#define AF_FILE         AF_LOCAL
-#define AF_INET         2
-#define AF_AX25         3
-#define AF_IPX          4
-#define AF_APPLETALK    5
-#define AF_NETROM       6
-#define AF_BRIDGE       7
-#define AF_ATMPVC       8
-#define AF_X25          9
-#define AF_INET6        10
-#define AF_ROSE         11
-#define AF_DECnet       12
-#define AF_NETBEUI      13
-#define AF_SECURITY     14
-#define AF_KEY          15
-#define AF_NETLINK      16
-#define AF_ROUTE        AF_NETLINK
-#define AF_PACKET       17
-#define AF_ASH          18
-#define AF_ECONET       19
-#define AF_ATMSVC       20
-#define AF_SNA          22
-#define AF_IRDA         23
-#define AF_PPPOX        24
-#define AF_WANPIPE      25
-#define AF_BLUETOOTH    31
+/* linux extensions */
+#define SOCK_CLOEXEC   02000000
+#define SOCK_NONBLOCK  04000
 
 #define PF_UNSPEC       0
 #define PF_LOCAL        1
@@ -99,6 +74,52 @@ struct linger
 #define PF_PPPOX        24
 #define PF_WANPIPE      25
 #define PF_BLUETOOTH    31
+#define PF_IUCV         32
+#define PF_RXRPC        33
+#define PF_ISDN         34
+#define PF_PHONET       35
+#define PF_IEEE802154   36
+#define PF_CAIF         37
+#define PF_ALG          38
+#define PF_MAX          39
+
+#define AF_UNSPEC       PF_UNSPEC
+#define AF_LOCAL        PF_LOCAL
+#define AF_UNIX         AF_LOCAL
+#define AF_FILE         AF_LOCAL
+#define AF_INET         PF_INET
+#define AF_AX25         PF_AX25
+#define AF_IPX          PF_IPX
+#define AF_APPLETALK    PF_APPLETALK
+#define AF_NETROM       PF_NETROM
+#define AF_BRIDGE       PF_BRIDGE
+#define AF_ATMPVC       PF_ATMPVC
+#define AF_X25          PF_X25
+#define AF_INET6        PF_INET6
+#define AF_ROSE         PF_ROSE
+#define AF_DECnet       PF_DECnet
+#define AF_NETBEUI      PF_NETBEUI
+#define AF_SECURITY     PF_SECURITY
+#define AF_KEY          PF_KEY
+#define AF_NETLINK      PF_NETLINK
+#define AF_ROUTE        AF_NETLINK
+#define AF_PACKET       PF_PACKET
+#define AF_ASH          PF_ASH
+#define AF_ECONET       PF_ECONET
+#define AF_ATMSVC       PF_ATMSVC
+#define AF_SNA          PF_SNA
+#define AF_IRDA         PF_IRDA
+#define AF_PPPOX        PF_PPPOX
+#define AF_WANPIPE      PF_WANPIPE
+#define AF_BLUETOOTH    PF_BLUETOOTH
+#define AF_IUCV         PF_IUCV
+#define AF_RXRPC        PF_RXRPC
+#define AF_ISDN         PF_ISDN
+#define AF_PHONET       PF_PHONET
+#define AF_IEEE802154   PF_IEEE802154
+#define AF_CAIF         PF_CAIF
+#define AF_ALG          PF_ALG
+#define AF_MAX          PF_MAX
 
 #define SO_DEBUG        1
 #define SO_REUSEADDR    2
@@ -166,6 +187,8 @@ struct linger
 #define MSG_ERRQUEUE  0x2000
 #define MSG_NOSIGNAL  0x4000
 #define MSG_MORE      0x8000
+#define MSG_WAITFORONE 0x10000
+#define MSG_CMSG_CLOEXEC 0x40000000
 
 /* Internal use only!! to make CMSG_NXTHDR definition readable by mortals */
 #define __CMSG_LEN(cmsg) (((cmsg)->cmsg_len + sizeof(long) - 1) & ~(long)(sizeof(long) - 1))
