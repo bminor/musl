@@ -35,6 +35,7 @@ wint_t    towupper(wint_t);
 wctrans_t wctrans(const char *);
 wctype_t  wctype(const char *);
 
+#undef iswdigit
 #define iswdigit(a) ((unsigned)((a)-L'0') < 10)
 
 #ifdef __cplusplus

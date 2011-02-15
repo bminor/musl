@@ -1,4 +1,5 @@
 #include <wchar.h>
+#include <wctype.h>
 #include <inttypes.h>
 #include <errno.h>
 

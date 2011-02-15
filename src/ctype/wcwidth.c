@@ -1,5 +1,6 @@
 #include <inttypes.h>
 #include <wchar.h>
+#include <wctype.h>
 
 #define R(a,b,w) { (b), (w)/2, (b)-(a) }
 

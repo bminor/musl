@@ -10,12 +10,19 @@ extern "C" {
 #define __NEED_size_t
 #define __NEED_wchar_t
 #define __NEED_wint_t
+
+#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
 #define __NEED_wctype_t
+#endif
 
 #include <bits/alltypes.h>
 
 #undef NULL
+#ifdef __cplusplus
+#define NULL 0
+#else
 #define NULL ((void*)0)
+#endif
 
 #undef WCHAR_MIN
 #undef WCHAR_MAX
@@ -74,9 +81,6 @@ size_t mbrlen (const char *, size_t, mbstate_t *);
 size_t mbsrtowcs (wchar_t *, const char **, size_t, mbstate_t *);
 size_t wcsrtombs (char *, const wchar_t **, size_t, mbstate_t *);
 
-int wcwidth (wchar_t);
-int wcswidth (const wchar_t *, size_t);
-
 float wcstof (const wchar_t *, wchar_t **);
 double wcstod (const wchar_t *, wchar_t **);
 long double wcstold (const wchar_t *, wchar_t **);
@@ -126,6 +130,9 @@ size_t wcsftime (wchar_t *, size_t, const wchar_t *, const struct tm *);
 
 #undef iswdigit
 
+#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+int wcwidth (wchar_t);
+int wcswidth (const wchar_t *, size_t);
 int       iswalnum(wint_t);
 int       iswalpha(wint_t);
 int       iswblank(wint_t);
@@ -142,8 +149,9 @@ int       iswctype(wint_t, wctype_t);
 wint_t    towlower(wint_t);
 wint_t    towupper(wint_t);
 wctype_t  wctype(const char *);
-
+#undef iswdigit
 #define iswdigit(a) ((unsigned)(a)-'0' < 10)
+#endif
 
 #ifdef __cplusplus
 }

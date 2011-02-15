@@ -4,7 +4,7 @@
 
 intmax_t strtoimax(const char *s1, char **p, int base)
 {
-	const unsigned char *s = s1;
+	const unsigned char *s = (const void *)s1;
 	int sign = 0;
 	uintmax_t x;
 
@@ -15,7 +15,7 @@ intmax_t strtoimax(const char *s1, char **p, int base)
 	if (*s == '-') sign = *s++;
 	else if (*s == '+') s++;
 
-	x = strtoumax(s, p, base);
+	x = strtoumax((const void *)s, p, base);
 	if (x > INTMAX_MAX) {
 		if (!sign || -x != INTMAX_MIN)
 			errno = ERANGE;
