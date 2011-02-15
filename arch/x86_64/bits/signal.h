@@ -14,7 +14,7 @@ struct __siginfo
 			uid_t si_uid;
 		} __kill;
 		struct {
-			timer_t si_timerid;
+			void *si_timerid;
 			int si_overrun;
 			char __pad[sizeof(uid_t) - sizeof(int)];
 			union sigval si_sigval;

@@ -92,7 +92,7 @@ TYPEDEF long long blkcnt_t;
 TYPEDEF unsigned long long fsblkcnt_t;
 TYPEDEF unsigned long long fsfilcnt_t;
 
-TYPEDEF long timer_t;
+TYPEDEF void * timer_t;
 TYPEDEF int clockid_t;
 TYPEDEF long clock_t;
 

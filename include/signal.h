@@ -14,7 +14,6 @@ extern "C" {
 #define __NEED_struct_timespec
 #define __NEED_pthread_t
 #define __NEED_time_t
-#define __NEED_timer_t
 #define __NEED_clock_t
 #define __NEED_sigset_t
 #define __NEED_siginfo_t
