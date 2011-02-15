@@ -46,7 +46,7 @@ int __dns_doqueries(unsigned char *dest, const char *name, int *rr, int rrcnt)
 	/* Construct query template - RR and ID will be filled later */
 	if (strlen(name)-1 >= 254U) return -1;
 	q[2] = q[5] = 1;
-	strcpy(q+13, name);
+	strcpy((char *)q+13, name);
 	for (i=13; q[i]; i=j+1) {
 		for (j=i; q[j] && q[j] != '.'; j++);
 		if (j-i-1u > 62u) return -1;
