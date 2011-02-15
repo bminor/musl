@@ -69,6 +69,9 @@ int wctomb (char *, wchar_t);
 size_t mbstowcs (wchar_t *, const char *, size_t);
 size_t wcstombs (char *, const wchar_t *, size_t);
 
+#define EXIT_FAILURE 1
+#define EXIT_SUCCESS 0
+
 #define MB_CUR_MAX 4
 
 #define RAND_MAX (0x7fffffff)
@@ -80,9 +83,6 @@ size_t wcstombs (char *, const wchar_t *, size_t);
 #ifndef WEXITSTATUS
 #include <bits/wexitstatus.h>
 #endif
-
-#define EXIT_FAILURE 1
-#define EXIT_SUCCESS 0
 
 int posix_memalign (void **, size_t, size_t);
 int setenv (const char *, const char *, int);
