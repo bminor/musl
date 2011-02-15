@@ -427,12 +427,4 @@ static inline long syscall6(long n, long a1, long a2, long a3, long a4,
 #define __syscall_ioctl(fd,ioc,arg)           syscall3(__NR_ioctl, (fd), (ioc), (long)(arg))
 #define __syscall_exit(code)                  syscall1(__NR_exit, code)
 
-#define __NEED_off_t
-#include <bits/alltypes.h>
-
-static inline off_t __syscall_lseek(int fd, off_t offset, int whence)
-{
-	return syscall3(__NR_lseek, fd, offset, whence);
-}
-
 #endif
