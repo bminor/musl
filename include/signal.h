@@ -46,8 +46,6 @@ union sigval
 	void *sival_ptr;
 };
 
-#include <bits/signal.h>
-
 int __libc_current_sigrtmin(void);
 int __libc_current_sigrtmax(void);
 
@@ -91,6 +89,8 @@ void (*sigset(int, void (*)(int)))(int);
 typedef int (*sighandler_t)(int);
 void (*bsd_signal(int, void (*)(int)))(int);
 #endif
+
+#include <bits/signal.h>
 
 typedef int sig_atomic_t;
 
