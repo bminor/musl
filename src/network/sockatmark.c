@@ -1,6 +1,5 @@
 #include <sys/socket.h>
 #include <sys/ioctl.h>
-#include "socketcall.h"
 
 int sockatmark(int s)
 {
