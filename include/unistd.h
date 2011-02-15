@@ -40,19 +40,12 @@ int dup(int);
 int dup2(int, int);
 off_t lseek(int, off_t, int);
 int fsync(int);
-void sync(void);
 int fdatasync(int);
 
 ssize_t read(int, void *, size_t);
 ssize_t write(int, const void *, size_t);
 ssize_t pread(int, void *, size_t, off_t);
 ssize_t pwrite(int, const void *, size_t, off_t);
-
-#define F_ULOCK 0
-#define F_LOCK  1
-#define F_TLOCK 2
-#define F_TEST  3
-int lockf(int, int, off_t);
 
 int chown(const char *, uid_t, gid_t);
 int fchown(int, uid_t, gid_t);
@@ -81,17 +74,12 @@ int faccessat(int, const char *, int, int);
 int chdir(const char *);
 int fchdir(int);
 char *getcwd(char *, size_t);
-int chroot(const char *); /* dropped */
 
 unsigned alarm(unsigned);
-useconds_t ualarm(useconds_t, useconds_t);
 unsigned sleep(unsigned);
-int usleep(useconds_t);
 int pause(void);
-int nice(int);
 
 pid_t fork(void);
-pid_t vfork(void);
 int execve(const char *, char *const [], char *const []);
 int execv(const char *, char *const []);
 int execle(const char *, ...);
@@ -105,7 +93,6 @@ pid_t getppid(void);
 pid_t getpgrp(void);
 pid_t getpgid(pid_t);
 int setpgid(pid_t, pid_t);
-int setpgrp(void);
 pid_t setsid(void);
 pid_t getsid(pid_t);
 char *ttyname(int);
@@ -128,27 +115,44 @@ int setegid(gid_t);
 
 char *getlogin(void);
 int getlogin_r(char *, size_t);
-long gethostid(void);
 int gethostname(char *, size_t);
-int sethostname(const char *, size_t);
-int getpagesize(void);
 char *ctermid(char *);
-
-int vhangup(void); /* dropped */
 
 int getopt(int, char * const [], const char *);
 extern char *optarg;
 extern int optind, opterr, optopt;
 
-char *crypt(const char *, const char *);
-void encrypt(char *, int);
-
-void swab(const void *, void *, ssize_t);
-
 long pathconf(const char *, int);
 long fpathconf(int, int);
 long sysconf(int);
 size_t confstr(int, char *, size_t);
+
+#define F_ULOCK 0
+#define F_LOCK  1
+#define F_TLOCK 2
+#define F_TEST  3
+
+#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+int lockf(int, int, off_t);
+int setpgrp(void);
+char *crypt(const char *, const char *);
+void encrypt(char *, int);
+void swab(const void *, void *, ssize_t);
+long gethostid(void);
+int nice(int);
+void sync(void);
+#endif
+
+#ifdef _GNU_SOURCE
+pid_t vfork(void);
+int vhangup(void);
+int chroot(const char *);
+int getpagesize(void);
+int sethostname(const char *, size_t);
+int usleep(useconds_t);
+useconds_t ualarm(useconds_t, useconds_t);
+int setgroups(int, const gid_t []);
+#endif
 
 #define _XOPEN_VERSION          700
 #define _XOPEN_UNIX             1
