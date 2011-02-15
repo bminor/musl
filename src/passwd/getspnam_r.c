@@ -1,5 +1,6 @@
 #include <fcntl.h>
 #include <unistd.h>
+#include <sys/stat.h>
 #include "pwf.h"
 
 /* This implementation support Openwall-style TCB passwords in place of
@@ -34,8 +35,9 @@ int getspnam_r(const char *name, struct spwd *sp, char *buf, size_t size, struct
 
 	fd = open(path, O_RDONLY|O_NOFOLLOW|O_NONBLOCK);
 	if (fd >= 0) {
-		f = fdopen(fd, "rb");
-		if (!f) {
+		struct stat st = { 0 };
+		errno = EINVAL;
+		if (fstat(fd, &st) || !S_ISREG(st.st_mode) || !(f = fdopen(fd, "rb"))) {
 			close(fd);
 			return errno;
 		}
