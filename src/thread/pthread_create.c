@@ -152,8 +152,7 @@ static int start(void *p)
 	return 0;
 }
 
-#define CLONE_MAGIC 0x7d0f00
-int __clone(int (*)(void *), void *, int, void *, pid_t *, void *, pid_t *);
+int __uniclone(void *, int (*)(), void *);
 
 #define ROUND(x) (((x)+PAGE_SIZE-1)&-PAGE_SIZE)
 
@@ -203,8 +202,7 @@ int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(vo
 	while (rs.lock) __wait(&rs.lock, 0, 1, 1);
 
 	a_inc(&libc.threads_minus_1);
-	ret = __clone(start, stack, CLONE_MAGIC, new,
-		&new->tid, &new->tlsdesc, &new->tid);
+	ret = __uniclone(stack, start, new);
 
 	a_dec(&rs.blocks);
 	if (rs.lock) __wake(&rs.blocks, 1, 1);

@@ -20,9 +20,10 @@
 #define pthread __pthread
 
 struct pthread {
-	struct pthread *self, *join;
-	int errno_val;
+	struct pthread *self;
+	unsigned long tlsdesc[4];
 	pid_t tid, pid;
+	int tsd_used, errno_val, *errno_ptr;
 	volatile int canceldisable, cancelasync, cancelpoint, cancel;
 	unsigned char *map_base;
 	size_t map_size;
@@ -32,12 +33,9 @@ struct pthread {
 	jmp_buf exit_jmp_buf;
 	int detached;
 	int exitlock;
-	unsigned long tlsdesc[4];
 	struct __ptcb *cancelbuf;
 	void **tsd;
-	int tsd_used;
 	pthread_attr_t attr;
-	int *errno_ptr;
 };
 
 static inline struct pthread *__pthread_self()
