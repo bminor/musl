@@ -23,3 +23,11 @@ respectively.
 many internal improvements have been made to the syscall-related code
 in preparation for porting to x86_64 and other archs.
 
+upcoming 0.6.0 - x86_64 port, header bugfixes
+
+new x86_64 (amd64) architecture port, contributed by Nicholas J. Kain,
+along with PORTING guide. source tree layout and build system have
+been improved to accommodate further ports.
+
+various bugs that were introduced while making the headers respect C
+and POSIX namespace standards have been fixed.
