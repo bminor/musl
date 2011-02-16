@@ -20,11 +20,11 @@
 
 #define INT_MIN  (-1-0x7fffffff)
 #define INT_MAX  0x7fffffff
-#define UINT_MAX 0xffffffff
+#define UINT_MAX 0xffffffffU
 
 #define LONG_MIN  (-1-0x7fffffffffffffffL)
 #define LONG_MAX  0x7fffffffffffffffL
-#define ULONG_MAX 0xffffffffffffffffL
+#define ULONG_MAX 0xffffffffffffffffUL
 
 #define LLONG_MIN  (-1-0x7fffffffffffffffLL)
 #define LLONG_MAX  0x7fffffffffffffffLL
