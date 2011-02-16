@@ -38,7 +38,11 @@ extern "C" {
 #define _IOLBF 1
 #define _IONBF 2
 
-#include <bits/stdio.h>
+#define BUFSIZ 1024
+#define FILENAME_MAX 4095
+#define FOPEN_MAX 1000
+#define TMP_MAX 10000
+#define L_tmpnam 20
 
 typedef union {
 	char __opaque[16];
@@ -136,14 +140,18 @@ ssize_t getdelim(char **, size_t *, int, FILE *);
 ssize_t getline(char **, size_t *, FILE *);
 int renameat(int, const char *, int, const char *);
 char *ctermid(char *);
+#define L_ctermid 20
 #endif
 
 
 #if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+#define P_tmpdir "/tmp"
 char *tempnam(const char *, const char *);
 #endif
 
 #if defined(_GNU_SOURCE)
+#define L_cuserid 20
+char *cuserid(char *);
 #undef off64_t
 #define off64_t off_t
 #endif
