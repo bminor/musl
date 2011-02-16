@@ -1,3 +1,5 @@
+#if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
+ || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
 #define PIPE_BUF 4096
 #define PAGESIZE 4096
 #define PAGE_SIZE PAGESIZE
@@ -10,9 +12,9 @@
 #define ARG_MAX 131072
 #define IOV_MAX 1024
 #define SYMLOOP_MAX 40
-
 #define WORD_BIT 64
 #define LONG_BIT 64
+#endif
 
 #define SHRT_MIN  (-1-0x7fff)
 #define SHRT_MAX  0x7fff
