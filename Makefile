@@ -74,22 +74,20 @@ include/bits/alltypes.h: include/bits/alltypes.h.sh
 %.lo: %.c $(GENH)
 	$(CC) $(CFLAGS) $(INC) $(PIC) -c -o $@ $<
 
-lib:
-	mkdir -p lib
-
-lib/libc.so: $(LOBJS) lib
+lib/libc.so: $(LOBJS)
 	$(CC) $(LDFLAGS) -o $@ $(LOBJS) -lgcc
 	$(OBJCOPY) --weaken $@
 
-lib/libc.a: $(OBJS) lib
+lib/libc.a: $(OBJS)
 	rm -f $@
 	$(AR) rc $@ $(OBJS)
 	$(RANLIB) $@
 
-$(EMPTY_LIBS): lib
+$(EMPTY_LIBS):
+	rm -f $@
 	$(AR) rc $@
 
-lib/%.o: crt/%.o lib
+lib/%.o: crt/%.o
 	cp $< $@
 
 tools/musl-gcc: tools/gen-musl-gcc.sh config.mak
