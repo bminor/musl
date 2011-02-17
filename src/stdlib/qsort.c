@@ -28,7 +28,7 @@ static void sift(char *base, size_t root, size_t nel, size_t width, int (*cmp)(c
 		max = 2*root;
 		if (max < nel && cmp(base+max*width, base+(max+1)*width) < 0)
 			max++;
-		if (cmp(base+root*width, base+max*width) < 0) {
+		if (max && cmp(base+root*width, base+max*width) < 0) {
 			swap(base+root*width, base+max*width, width);
 			root = max;
 		} else break;
