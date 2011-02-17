@@ -12,7 +12,8 @@ extern "C" {
 
 #include <bits/alltypes.h>
 
-struct sched_param;
+#include <sched.h>
+#include <time.h>
 
 typedef int pthread_once_t, pthread_key_t, pthread_spinlock_t;
 typedef int pthread_mutexattr_t, pthread_condattr_t, pthread_barrierattr_t;
@@ -121,6 +122,7 @@ int pthread_mutex_init(pthread_mutex_t *, const pthread_mutexattr_t *);
 int pthread_mutex_lock(pthread_mutex_t *);
 int pthread_mutex_unlock(pthread_mutex_t *);
 int pthread_mutex_trylock(pthread_mutex_t *);
+int pthread_mutex_timedlock(pthread_mutex_t *, const struct timespec *);
 int pthread_mutex_destroy(pthread_mutex_t *);
 
 int pthread_cond_init(pthread_cond_t *, const pthread_condattr_t *);
