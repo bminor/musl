@@ -54,6 +54,7 @@ clean:
 	rm -f include/bits
 
 include/bits:
+	@test "$(ARCH)" || { echo "Please set ARCH in config.mak before running make." ; exit 1 ; }
 	ln -sf ../arch/$(ARCH)/bits $@
 
 include/bits/alltypes.h.sh: include/bits
@@ -73,19 +74,22 @@ include/bits/alltypes.h: include/bits/alltypes.h.sh
 %.lo: %.c $(GENH)
 	$(CC) $(CFLAGS) $(INC) $(PIC) -c -o $@ $<
 
-lib/libc.so: $(LOBJS)
+lib:
+	mkdir -p lib
+
+lib/libc.so: $(LOBJS) lib
 	$(CC) $(LDFLAGS) -o $@ $(LOBJS) -lgcc
 	$(OBJCOPY) --weaken $@
 
-lib/libc.a: $(OBJS)
+lib/libc.a: $(OBJS) lib
 	rm -f $@
 	$(AR) rc $@ $(OBJS)
 	$(RANLIB) $@
 
-$(EMPTY_LIBS):
+$(EMPTY_LIBS): lib
 	$(AR) rc $@
 
-lib/%.o: crt/%.o
+lib/%.o: crt/%.o lib
 	cp $< $@
 
 tools/musl-gcc: tools/gen-musl-gcc.sh config.mak
