@@ -2,7 +2,7 @@
 # musl config.mak template (original in dist/config.mak)
 #
 
-# Target CPU architecture. Supported values: i386
+# Target CPU architecture. Supported values: i386, x86_64
 ARCH = i386
 
 # Installation prefix. DO NOT use /, /usr, or /usr/local !
