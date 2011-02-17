@@ -18,9 +18,9 @@ typedef struct {
 	unsigned long __oldmask, __cr2;
 } mcontext_t;
 
-typedef struct __ucontext {
+typedef struct ucontext {
 	unsigned long uc_flags;
-	struct __ucontext *uc_link;
+	struct ucontext *uc_link;
 	stack_t uc_stack;
 	mcontext_t uc_mcontext;
 	sigset_t uc_sigmask;
