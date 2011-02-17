@@ -173,8 +173,8 @@ int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(vo
 	if (!init && ++init) init_threads();
 
 	if (!attr) attr = &default_attr;
-	guard = ROUND(attr->__guardsize + DEFAULT_GUARD_SIZE);
-	size = guard + ROUND(attr->__stacksize + DEFAULT_STACK_SIZE);
+	guard = ROUND(attr->_a_guardsize + DEFAULT_GUARD_SIZE);
+	size = guard + ROUND(attr->_a_stacksize + DEFAULT_STACK_SIZE);
 	size += __pthread_tsd_size;
 	map = mmap(0, size, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_ANON, -1, 0);
 	if (!map) return EAGAIN;
@@ -190,7 +190,7 @@ int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(vo
 	new->start_arg = arg;
 	new->self = new;
 	new->tsd = (void *)tsd;
-	new->detached = attr->__detach;
+	new->detached = attr->_a_detach;
 	new->attr = *attr;
 	memcpy(new->tlsdesc, self->tlsdesc, sizeof new->tlsdesc);
 	new->tlsdesc[1] = (uintptr_t)new;

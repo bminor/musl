@@ -38,6 +38,25 @@ struct pthread {
 	pthread_attr_t attr;
 };
 
+#define __SU (sizeof(size_t)/sizeof(int))
+
+#define _a_stacksize __u.__s[0]
+#define _a_guardsize __u.__s[1]
+#define _a_detach __u.__i[2*__SU+0]
+#define _m_type __u.__i[0]
+#define _m_lock __u.__i[1]
+#define _m_waiters __u.__i[2]
+#define _m_owner __u.__i[3]
+#define _c_block __u.__i[0]
+#define _rw_wrlock __u.__i[0]
+#define _rw_readers __u.__i[1]
+#define _rw_waiters __u.__i[2]
+#define _rw_owner __u.__i[3]
+#define _b_count __u.__i[0]
+#define _b_limit __u.__i[1]
+#define _b_left __u.__i[2]
+#define _b_waiters __u.__i[3]
+
 #include "pthread_arch.h"
 
 #define SIGCANCEL 32

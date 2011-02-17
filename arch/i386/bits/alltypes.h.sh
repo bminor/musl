@@ -78,7 +78,22 @@ TYPEDEF int id_t;
 TYPEDEF int uid_t;
 TYPEDEF int gid_t;
 TYPEDEF int key_t;
+
 TYPEDEF struct __pthread * pthread_t;
+TYPEDEF int pthread_once_t;
+TYPEDEF int pthread_key_t;
+TYPEDEF int pthread_spinlock_t;
+
+TYPEDEF struct { union { int __i[9]; size_t __s[2]; } __u; } pthread_attr_t;
+TYPEDEF unsigned pthread_mutexattr_t;
+TYPEDEF unsigned pthread_condattr_t;
+TYPEDEF unsigned pthread_barrierattr_t;
+TYPEDEF struct { unsigned __attr[2]; } pthread_rwlockattr_t;
+
+TYPEDEF struct { union { int __i[6]; void *__p[1]; } __u; } pthread_mutex_t;
+TYPEDEF struct { union { int __i[12]; void *__p[1]; } __u; } pthread_cond_t;
+TYPEDEF struct { union { int __i[8]; void *__p[1]; } __u; } pthread_rwlock_t;
+TYPEDEF struct { union { int __i[5]; void *__p[1]; } __u; } pthread_barrier_t;
 
 TYPEDEF long long off_t;
 

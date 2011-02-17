@@ -2,11 +2,11 @@
 
 int pthread_rwlock_tryrdlock(pthread_rwlock_t *rw)
 {
-	a_inc(&rw->__readers);
-	if (rw->__wrlock) {
-		a_dec(&rw->__readers);
-		if (rw->__waiters && !rw->__readers)
-			__wake(&rw->__readers, 1, 0);
+	a_inc(&rw->_rw_readers);
+	if (rw->_rw_wrlock) {
+		a_dec(&rw->_rw_readers);
+		if (rw->_rw_waiters && !rw->_rw_readers)
+			__wake(&rw->_rw_readers, 1, 0);
 		return EAGAIN;
 	}
 	return 0;

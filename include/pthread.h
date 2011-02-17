@@ -8,57 +8,24 @@ extern "C" {
 #define __NEED_struct_timespec
 #define __NEED_sigset_t
 #define __NEED_pthread_t
+#define __NEED_pthread_attr_t
+#define __NEED_pthread_mutexattr_t
+#define __NEED_pthread_condattr_t
+#define __NEED_pthread_rwlockattr_t
+#define __NEED_pthread_barrierattr_t
+#define __NEED_pthread_mutex_t
+#define __NEED_pthread_cond_t
+#define __NEED_pthread_rwlock_t
+#define __NEED_pthread_barrier_t
+#define __NEED_pthread_spinlock_t
+#define __NEED_pthread_key_t
+#define __NEED_pthread_once_t
 #define __NEED_size_t
 
 #include <bits/alltypes.h>
 
 #include <sched.h>
 #include <time.h>
-
-typedef int pthread_once_t, pthread_key_t, pthread_spinlock_t;
-typedef int pthread_mutexattr_t, pthread_condattr_t, pthread_barrierattr_t;
-
-typedef struct {
-	size_t __guardsize;
-	size_t __stacksize;
-	unsigned __detach : 1;
-	unsigned __pad : 31;
-	int __attr[6];
-} pthread_attr_t;
-
-typedef struct {
-	int __attr[2];
-} pthread_rwlockattr_t;
-
-typedef struct {
-	int __type;
-	int __lock;
-	pthread_t __owner;
-	int __pad2;
-	int __waiters;
-	int __pad;
-} pthread_mutex_t;
-
-typedef struct {
-	int __block;
-	int __pad[11];
-} pthread_cond_t;
-
-typedef struct {
-	int __wrlock;
-	int __readers;
-	int __waiters;
-	int __owner;
-	int __pad[4];
-} pthread_rwlock_t;
-
-typedef struct {
-	int __count;
-	int __limit;
-	int __left;
-	int __waiters;
-	int __barrier[1];
-} pthread_barrier_t;
 
 #define PTHREAD_CREATE_JOINABLE 0
 #define PTHREAD_CREATE_DETACHED 1
