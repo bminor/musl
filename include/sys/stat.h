@@ -86,6 +86,9 @@ int mkdirat(int, const char *, mode_t);
 int mknodat(int, const char *, mode_t, dev_t);
 int mkfifoat(int, const char *, mode_t);
 
+#ifdef _BSD_SOURCE
+int lchmod(const char *, mode_t);
+#endif
 
 #ifdef __cplusplus
 }
