@@ -4,28 +4,30 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
+#include <time.h>
+#include <stdint.h>
 #include "libc.h"
 
 char *__mktemp(char *template)
 {
-	static int lock;
-	static int index;
-	int l = strlen(template);
+	struct timespec ts;
+	size_t l = strlen(template);
+	int retries = 10000;
+	unsigned long r;
 
 	if (l < 6 || strcmp(template+l-6, "XXXXXX")) {
 		errno = EINVAL;
-		return NULL;
+		return 0;
 	}
-	LOCK(&lock);
-	for (; index < 1000000; index++) {
-		snprintf(template+l-6, 6, "%06d", index);
-		if (access(template, F_OK) != 0) {
-			UNLOCK(&lock);
-			return template;
-		}
+	clock_gettime(CLOCK_REALTIME, &ts);
+	r = ts.tv_nsec + (uintptr_t)&ts / 16 + (uintptr_t)template;
+	while (retries--) {
+		snprintf(template+l-6, 7, "%06lX", r & 0xffffff);
+		if (access(template, F_OK) < 0) return template;
+		r = r * 1103515245 + 12345;
 	}
-	UNLOCK(&lock);
-	return NULL;	
+	errno = EEXIST;
+	return 0;
 }
 
 weak_alias(__mktemp, mktemp);
