@@ -10,9 +10,6 @@ void __pthread_unwind_next(struct __ptcb *cb)
 	self = pthread_self();
 	if (self->cancel) self->result = PTHREAD_CANCELLED;
 
-	if (!a_fetch_add(&libc.threads_minus_1, -1))
-		exit(0);
-
 	LOCK(&self->exitlock);
 
 	not_finished = self->tsd_used;
@@ -27,6 +24,9 @@ void __pthread_unwind_next(struct __ptcb *cb)
 			}
 		}
 	}
+
+	if (!a_fetch_add(&libc.threads_minus_1, -1))
+		exit(0);
 
 	if (self->detached && self->map_base)
 		__unmapself(self->map_base, self->map_size);
