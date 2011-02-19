@@ -13,7 +13,7 @@ int mkstemp(char *template)
 {
 	int fd, retries = 100;
 	while (retries--) {
-		if (!__mktemp(template)) return 0;
+		if (!__mktemp(template)) return -1;
 		if ((fd = open(template, O_RDWR | O_CREAT | O_EXCL, 0600))>=0)
 			return fd;
 		if (errno != EEXIST) return -1;
