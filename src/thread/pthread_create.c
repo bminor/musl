@@ -25,7 +25,7 @@ void __pthread_unwind_next(struct __ptcb *cb)
 		}
 	}
 
-	syscall4(__NR_sigprocmask, SIG_BLOCK, (long)(uint64_t[1]){-1}, 0, 8);
+	syscall4(__NR_rt_sigprocmask, SIG_BLOCK, (long)(uint64_t[1]){-1},0,8);
 
 	if (!a_fetch_add(&libc.threads_minus_1, -1))
 		exit(0);
