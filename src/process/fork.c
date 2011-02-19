@@ -1,9 +1,12 @@
 #include <unistd.h>
 #include "syscall.h"
-
-/* FIXME: add support for atfork stupidity */
+#include "libc.h"
 
 pid_t fork(void)
 {
-	return syscall0(__NR_fork);
+	pid_t ret;
+	if (libc.fork_handler) libc.fork_handler(-1);
+	ret = syscall0(__NR_fork);
+	if (libc.fork_handler) libc.fork_handler(!ret);
+	return ret;
 }

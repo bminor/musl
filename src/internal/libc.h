@@ -15,6 +15,7 @@ extern struct libc {
 	volatile int threads_minus_1;
 	int (*rsyscall)(int, long, long, long, long, long, long);
 	void (**tsd_keys)(void *);
+	void (*fork_handler)(int);
 } libc;
 
 

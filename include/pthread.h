@@ -162,6 +162,8 @@ int pthread_barrierattr_getpshared(const pthread_barrierattr_t *, int *);
 int pthread_barrierattr_init(pthread_barrierattr_t *);
 int pthread_barrierattr_setpshared(pthread_barrierattr_t *, int);
 
+int pthread_atfork(void (*)(void), void (*)(void), void (*)(void));
+
 #include <bits/pthread.h>
 
 int __setjmp(void *);
