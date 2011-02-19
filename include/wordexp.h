@@ -19,7 +19,7 @@ extern "C" {
 typedef struct
 {
 	size_t we_wordc;
-	char **wc_wordv;
+	char **we_wordv;
 	size_t we_offs;
 } wordexp_t;
 
