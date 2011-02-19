@@ -1,6 +1,7 @@
 #include <signal.h>
 #include "syscall.h"
 #include "libc.h"
+#include "pthread_impl.h"
 
 int __libc_sigprocmask(int how, const sigset_t *set, sigset_t *old)
 {
@@ -10,11 +11,12 @@ int __libc_sigprocmask(int how, const sigset_t *set, sigset_t *old)
 int __sigprocmask(int how, const sigset_t *set, sigset_t *old)
 {
 	sigset_t tmp;
-	/* Quickly mask out bits 32 and 33 (thread control signals) */
-	if (0 && how != SIG_UNBLOCK && (set->__bits[4/sizeof *set->__bits] & 3UL<<(32&8*sizeof *set->__bits-1))) {
+	/* Disallow blocking thread control signals */
+	if (how != SIG_UNBLOCK) {
 		tmp = *set;
 		set = &tmp;
-		tmp.__bits[4/sizeof *set->__bits] &= ~(3UL<<(32&8*sizeof *set->__bits-1));
+		sigdelset(&tmp, SIGCANCEL);
+		sigdelset(&tmp, SIGSYSCALL);
 	}
 	return __libc_sigprocmask(how, set, old);
 }
