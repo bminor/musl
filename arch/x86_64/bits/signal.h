@@ -1,6 +1,38 @@
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
 
+struct __fpstate {
+	unsigned long __x[4];
+	unsigned char __y[384];
+	unsigned long __z[12];
+};
+
+typedef struct {
+	unsigned long __gregs[23];
+	void *__fpregs;
+	unsigned long __reserved1[8];
+} mcontext_t;
+
+typedef struct __ucontext {
+	unsigned long uc_flags;
+	struct __ucontext *uc_link;
+	stack_t uc_stack;
+	mcontext_t uc_mcontext;
+	sigset_t uc_sigmask;
+	struct __fpstate __fpregs_mem;
+} ucontext_t;
+
+#ifdef _GNU_SOURCE
+struct sigcontext {
+	unsigned long r8, r9, r10, r11, r12, r13, r14, r15;
+	unsigned long rdi, rsi, rbp, rbx, rdx, rax, rcx, rsp, rip, eflags;
+	unsigned short cs, gs, fs, __pad0;
+	unsigned long err, trapno, oldmask, cr2;
+	struct __fpstate *fpstate;
+	unsigned long __reserved1[8];
+};
+#endif
+
 struct __siginfo
 {
 	int si_signo;

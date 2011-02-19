@@ -6,26 +6,9 @@ extern "C" {
 
 #include <signal.h>
 
-struct __fpstate {
-	unsigned long __x[7];
-	unsigned char __y[80];
-	unsigned long __z;
-};
-
-typedef struct {
-	unsigned long __gregs[19];
-	void *__fpregs;
-	unsigned long __oldmask, __cr2;
-} mcontext_t;
-
-typedef struct ucontext {
-	unsigned long uc_flags;
-	struct ucontext *uc_link;
-	stack_t uc_stack;
-	mcontext_t uc_mcontext;
-	sigset_t uc_sigmask;
-	struct __fpstate __fpregs_mem;
-} ucontext_t;
+#ifdef _GNU_SOURCE
+#define ucontext __ucontext
+#endif
 
 int  getcontext(ucontext_t *);
 void makecontext(ucontext_t *, void (*)(void), int, ...);
