@@ -5,5 +5,6 @@
 #define WCOREDUMP(s) ((s) & 0x80)
 #define WIFEXITED(s) (!WTERMSIG(s))
 #define WIFSTOPPED(s) (((s) & 0xff) == 0x7f)
-#define WIFSIGNALED(s) (!WIFSTOPPED(s) && !WIFEXITED(s))
+#define WIFSIGNALED(s) (((signed char) (((s) & 0x7f) + 1) >> 1) > 0)
+#define WIFCONTINUED(s) ((s) == 0xffff)
 #endif
