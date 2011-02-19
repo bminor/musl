@@ -16,8 +16,12 @@ typedef int idtype_t;
 pid_t wait (int *);
 int waitid (idtype_t, id_t, siginfo_t *, int);
 pid_t waitpid (pid_t, int *, int );
-//pid_t wait3 (int *, int, struct rusage *);
-//pid_t wait4 (pid_t, int *, int, struct rusage *);
+
+#ifdef _GNU_SOURCE
+#include <sys/resource.h>
+pid_t wait3 (int *, int, struct rusage *);
+pid_t wait4 (pid_t, int *, int, struct rusage *);
+#endif
 
 #include <bits/wait.h>
 #include <bits/wexitstatus.h>
