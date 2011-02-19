@@ -26,8 +26,9 @@ char *__mktemp(char *template)
 		if (access(template, F_OK) < 0) return template;
 		r = r * 1103515245 + 12345;
 	}
+	*template = 0;
 	errno = EEXIST;
-	return 0;
+	return template;
 }
 
 weak_alias(__mktemp, mktemp);
