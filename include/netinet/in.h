@@ -134,7 +134,6 @@ uint16_t ntohs(uint16_t);
 
 #include <bits/in.h>
 
-#if 1 /* FIXME: namespace violation */
 #define	IN_CLASSA(a)		((((in_addr_t)(a)) & 0x80000000) == 0)
 #define	IN_CLASSA_NET		0xff000000
 #define	IN_CLASSA_NSHIFT	24
@@ -153,6 +152,5 @@ uint16_t ntohs(uint16_t);
 #define	IN_MULTICAST(a)		IN_CLASSD(a)
 #define	IN_EXPERIMENTAL(a)	((((in_addr_t)(a)) & 0xe0000000) == 0xe0000000)
 #define	IN_BADCLASS(a)		((((in_addr_t)(a)) & 0xf0000000) == 0xf0000000)
-#endif
 
 #endif
