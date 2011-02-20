@@ -8,6 +8,10 @@ extern "C" {
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
 
+#ifdef _GNU_SOURCE
+#define __siginfo siginfo
+#endif
+
 #define __NEED_size_t
 #define __NEED_pid_t
 #define __NEED_uid_t
@@ -88,7 +92,6 @@ void (*sigset(int, void (*)(int)))(int);
 #ifdef _GNU_SOURCE
 typedef int (*sighandler_t)(int);
 void (*bsd_signal(int, void (*)(int)))(int);
-#define __siginfo siginfo
 #endif
 
 #include <bits/signal.h>
