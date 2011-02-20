@@ -15,16 +15,16 @@ void *__simple_malloc(size_t n)
 	static int lock;
 	size_t align=1;
 
-	if (n < SIZE_MAX - ALIGN)
-		while (align<n && align<ALIGN)
-			align += align;
+	if (n > SIZE_MAX/2) goto toobig;
+
+	while (align<n && align<ALIGN)
+		align += align;
 	n = n + align - 1 & -align;
 
 	LOCK(&lock);
 	if (!cur) cur = brk = __brk(0)+16;
-	if (n > SIZE_MAX - brk) goto fail;
-
 	base = cur + align-1 & -align;
+	if (n > SIZE_MAX - PAGE_SIZE - base) goto fail;
 	if (base+n > brk) {
 		new = base+n + PAGE_SIZE-1 & -PAGE_SIZE;
 		if (__brk(new) != new) goto fail;
@@ -37,6 +37,7 @@ void *__simple_malloc(size_t n)
 
 fail:
 	UNLOCK(&lock);
+toobig:
 	errno = ENOMEM;
 	return 0;
 }
