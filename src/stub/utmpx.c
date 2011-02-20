@@ -1,5 +1,6 @@
 #include <utmpx.h>
 #include <stddef.h>
+#include "libc.h"
 
 void endutxent(void)
 {
@@ -28,3 +29,10 @@ struct utmpx *pututxline(const struct utmpx *ut)
 {
 	return NULL;
 }
+
+weak_alias(endutxent, endutent);
+weak_alias(setutxent, setutent);
+weak_alias(getutxent, getutent);
+weak_alias(getutxid, getutid);
+weak_alias(getutxline, getutline);
+weak_alias(pututxline, pututline);
