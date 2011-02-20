@@ -154,6 +154,8 @@ char *tempnam(const char *, const char *);
 char *cuserid(char *);
 #undef off64_t
 #define off64_t off_t
+int asprintf(char **, const char *, ...);
+int vasprintf(char **, const char *, va_list);
 #endif
 
 #ifdef __cplusplus
