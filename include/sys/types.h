@@ -60,6 +60,7 @@ extern "C" {
 
 #ifdef _GNU_SOURCE
 typedef unsigned long caddr_t;
+#include <sys/sysmacros.h>
 #endif
 
 #ifdef __cplusplus
