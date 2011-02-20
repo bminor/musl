@@ -5,10 +5,10 @@
 #define MAXHOSTNAMELEN 64
 
 #undef MAXNAMLEN
-#define MAXNAMLEN NAME_MAX
+#define MAXNAMLEN 255
 
 #undef MAXPATHLEN
-#define MAXPATHLEN PATH_MAX
+#define MAXPATHLEN 4096
 
 #include <sys/resource.h>
 #include <endian.h>
