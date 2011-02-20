@@ -526,13 +526,13 @@ static int printf_core(FILE *f, const char *fmt, va_list *ap, union arg *nl_arg,
 		switch(t) {
 		case 'n':
 			switch(ps) {
-			case BARE: *(int *)arg.p = l; break;
-			case LPRE: *(long *)arg.p = l; break;
-			case LLPRE: *(long long *)arg.p = l; break;
-			case HPRE: *(unsigned short *)arg.p = l; break;
-			case HHPRE: *(unsigned char *)arg.p = l; break;
-			case ZTPRE: *(size_t *)arg.p = l; break;
-			case JPRE: *(uintmax_t *)arg.p = l; break;
+			case BARE: *(int *)arg.p = cnt; break;
+			case LPRE: *(long *)arg.p = cnt; break;
+			case LLPRE: *(long long *)arg.p = cnt; break;
+			case HPRE: *(unsigned short *)arg.p = cnt; break;
+			case HHPRE: *(unsigned char *)arg.p = cnt; break;
+			case ZTPRE: *(size_t *)arg.p = cnt; break;
+			case JPRE: *(uintmax_t *)arg.p = cnt; break;
 			}
 			continue;
 		case 'p':
