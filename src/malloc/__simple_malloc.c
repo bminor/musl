@@ -15,7 +15,7 @@ void *__simple_malloc(size_t n)
 	static int lock;
 	size_t align=1;
 
-	if (!n) return 0;
+	if (!n) n++;
 	if (n > SIZE_MAX/2) goto toobig;
 
 	while (align<n && align<ALIGN)

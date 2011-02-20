@@ -216,9 +216,14 @@ static int init_malloc()
 static int adjust_size(size_t *n)
 {
 	/* Result of pointer difference must fit in ptrdiff_t. */
-	if (*n > PTRDIFF_MAX - SIZE_ALIGN - PAGE_SIZE) {
-		errno = ENOMEM;
-		return -1;
+	if (*n-1 > PTRDIFF_MAX - SIZE_ALIGN - PAGE_SIZE) {
+		if (*n) {
+			errno = ENOMEM;
+			return -1;
+		} else {
+			*n = SIZE_ALIGN;
+			return 0;
+		}
 	}
 	*n = (*n + OVERHEAD + SIZE_ALIGN - 1) & SIZE_MASK;
 	return 0;
@@ -325,7 +330,7 @@ void *malloc(size_t n)
 	struct chunk *c;
 	int i, j;
 
-	if (!n || adjust_size(&n) < 0) return 0;
+	if (adjust_size(&n) < 0) return 0;
 
 	if (n > MMAP_THRESHOLD) {
 		size_t len = n + PAGE_SIZE - 1 & -PAGE_SIZE;
@@ -377,7 +382,6 @@ void *realloc(void *p, size_t n)
 	void *new;
 
 	if (!p) return malloc(n);
-	else if (!n) return free(p), (void *)0;
 
 	if (adjust_size(&n) < 0) return 0;
 
