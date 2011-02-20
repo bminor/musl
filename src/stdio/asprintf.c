@@ -1,7 +1,6 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdarg.h>
-
-int vasprintf(char **, const char *, va_list);
 
 int asprintf(char **s, const char *fmt, ...)
 {
