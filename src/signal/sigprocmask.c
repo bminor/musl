@@ -12,7 +12,7 @@ int __sigprocmask(int how, const sigset_t *set, sigset_t *old)
 {
 	sigset_t tmp;
 	/* Disallow blocking thread control signals */
-	if (how != SIG_UNBLOCK) {
+	if (set && how != SIG_UNBLOCK) {
 		tmp = *set;
 		set = &tmp;
 		sigdelset(&tmp, SIGCANCEL);
