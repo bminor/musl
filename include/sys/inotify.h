@@ -8,7 +8,7 @@ extern "C" {
 #include <stdint.h>
 
 struct inotify_event {
-	int we;
+	int wd;
 	uint32_t mask, cookie, len;
 	char name[];
 };
