@@ -4,8 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define libc __libc
-extern struct libc {
+struct __libc {
 	void (*lock)(volatile int *);
 	void (*cancelpt)(int);
 	int (*atexit)(void (*)(void));
@@ -16,7 +15,15 @@ extern struct libc {
 	int (*rsyscall)(int, long, long, long, long, long, long);
 	void (**tsd_keys)(void *);
 	void (*fork_handler)(int);
-} libc;
+};
+
+#ifdef __PIC__
+extern struct __libc *__libc_loc(void) __attribute__((const));
+#define libc (*__libc_loc())
+#else
+extern struct __libc __libc;
+#define libc __libc
+#endif
 
 
 /* Designed to avoid any overhead in non-threaded processes */
