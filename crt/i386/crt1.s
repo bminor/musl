@@ -8,8 +8,8 @@ _start:
 	pushl %esp
 	pushl %esp
 	pushl %edx
-	pushl $0
-	pushl $0
+	pushl %ebp
+	pushl %ebp
 	pushl %eax
 	pushl %ecx
 	pushl $main
