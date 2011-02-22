@@ -12,6 +12,8 @@ _start:
 	pushl %ebp
 	pushl %eax
 	pushl %ecx
-	pushl $main
+	call 1f
+1:	addl $[main-.],(%esp)
+	//pushl $main
 	call __libc_start_main
-.L0:	jmp .L0
+1:	jmp 1b
