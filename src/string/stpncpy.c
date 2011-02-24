@@ -14,7 +14,7 @@ char *__stpncpy(char *d, const char *s, size_t n)
 	size_t *wd;
 	const size_t *ws;
 
-	if (((uintptr_t)s & ALIGN) != ((uintptr_t)d & ALIGN)) {
+	if (((uintptr_t)s & ALIGN) == ((uintptr_t)d & ALIGN)) {
 		for (; ((uintptr_t)s & ALIGN) && n && (*d=*s); n--, s++, d++);
 		if (!n || !*s) goto tail;
 		wd=(void *)d; ws=(const void *)s;
