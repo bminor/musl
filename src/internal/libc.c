@@ -1,6 +1,6 @@
 #include "libc.h"
 
-#ifdef __PIC__
+#ifdef USE_LIBC_ACCESSOR
 struct __libc *__libc_loc()
 {
 	static struct __libc __libc;

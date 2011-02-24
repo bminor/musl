@@ -17,12 +17,20 @@ struct __libc {
 	void (*fork_handler)(int);
 };
 
-#ifdef __PIC__
-extern struct __libc *__libc_loc(void) __attribute__((const));
-#define libc (*__libc_loc())
-#else
+
+#if 100*__GNUC__+__GNUC_MINOR__ >= 303 || defined(__PCC__) || defined(__TINYC__)
+extern struct __libc __libc __attribute__((visibility("hidden")));
+#define libc __libc
+
+#elif !defined(__PIC__)
 extern struct __libc __libc;
 #define libc __libc
+
+#else
+#define USE_LIBC_ACCESSOR
+extern struct __libc *__libc_loc(void) __attribute__((const));
+#define libc (*__libc_loc())
+
 #endif
 
 

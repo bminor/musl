@@ -21,16 +21,16 @@ LOBJS = $(OBJS:.o=.lo)
 GENH = include/bits/alltypes.h
 
 CFLAGS  = -Os -nostdinc -ffreestanding -std=c99 -D_XOPEN_SOURCE=700 -pipe
-LDFLAGS = -nostdlib -shared -Wl,-Bsymbolic
+LDFLAGS = -nostdlib -shared -fPIC -Wl,-e,_start -Wl,-Bsymbolic-functions
 INC     = -I./include -I./src/internal -I./arch/$(ARCH)
-PIC     = -fPIC
+PIC     = -fPIC -O3
 AR      = $(CROSS_COMPILE)ar
 RANLIB  = $(CROSS_COMPILE)ranlib
 OBJCOPY = $(CROSS_COMPILE)objcopy
 
 ALL_INCLUDES = $(sort $(wildcard include/*.h include/*/*.h) $(GENH))
 
-EMPTY_LIB_NAMES = m rt pthread crypt util xnet resolv
+EMPTY_LIB_NAMES = m rt pthread crypt util xnet resolv dl
 EMPTY_LIBS = $(EMPTY_LIB_NAMES:%=lib/lib%.a)
 CRT_LIBS = lib/crt1.o lib/crti.o lib/crtn.o
 LIBC_LIBS = lib/libc.a
