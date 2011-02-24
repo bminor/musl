@@ -17,7 +17,6 @@ extern "C" {
 
 void *memcpy (void *, const void *, size_t);
 void *memmove (void *, const void *, size_t);
-void *memccpy (void *, const void *, int, size_t);
 void *memset (void *, int, size_t);
 int memcmp (const void *, const void *, size_t);
 void *memchr (const void *, int, size_t);
@@ -57,6 +56,10 @@ char *stpncpy(char *, const char *, size_t);
 size_t strnlen (const char *, size_t);
 char *strdup (const char *);
 char *strndup (const char *, size_t);
+#endif
+
+#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+void *memccpy (void *, const void *, int, size_t);
 #endif
 
 #ifdef _BSD_SOURCE
