@@ -17,10 +17,7 @@ extern "C" {
 
 int gettimeofday (struct timeval *, void *);
 
-/* extensions */
-int settimeofday (const struct timeval *, void *);
-int adjtime (const struct timeval *, struct timeval *);
-
+#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
 
 #define ITIMER_REAL    0
 #define ITIMER_VIRTUAL 1
@@ -36,7 +33,11 @@ int getitimer (int, struct itimerval *);
 int setitimer (int, const struct itimerval *, struct itimerval *);
 int utimes (const char *, const struct timeval [2]);
 
+#endif
+
 #ifdef _GNU_SOURCE
+int settimeofday (const struct timeval *, void *);
+int adjtime (const struct timeval *, struct timeval *);
 struct timezone {
 	int tz_minuteswest;
 	int tz_dsttime;
