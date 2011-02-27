@@ -42,12 +42,6 @@ size_t mbsrtowcs(wchar_t *ws, const char **src, size_t wn, mbstate_t *st)
 resume0:
 			if (OOB(c,*s)) goto ilseq2; s++;
 			c <<= 6; if (!(c&(1U<<31))) break;
-#ifdef I_FAILED_TO_RTFM_RFC3629
-			if (*s++-0x80u >= 0x40) goto ilseq2;
-			c <<= 6; if (!(c&(1U<<31))) break;
-			if (*s++-0x80u >= 0x40) goto ilseq2;
-			c <<= 6; if (!(c&(1U<<31))) break;
-#endif
 			if (*s++-0x80u >= 0x40) goto ilseq2;
 			c <<= 6; if (!(c&(1U<<31))) break;
 			if (*s++-0x80u >= 0x40) goto ilseq2;
@@ -88,16 +82,6 @@ resume:
 			if (OOB(c,*s)) goto ilseq;
 			c = (c<<6) | *s++-0x80;
 			if (!(c&(1U<<31))) break;
-
-#ifdef I_FAILED_TO_RTFM_RFC3629
-			if (*s-0x80u >= 0x40) goto ilseq;
-			c = (c<<6) | *s++-0x80;
-			if (!(c&(1U<<31))) break;
-
-			if (*s-0x80u >= 0x40) goto ilseq;
-			c = (c<<6) | *s++-0x80;
-			if (!(c&(1U<<31))) break;
-#endif
 
 			if (*s-0x80u >= 0x40) goto ilseq;
 			c = (c<<6) | *s++-0x80;
