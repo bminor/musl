@@ -56,6 +56,7 @@ char *stpncpy(char *, const char *, size_t);
 size_t strnlen (const char *, size_t);
 char *strdup (const char *);
 char *strndup (const char *, size_t);
+char *strsignal(int);
 #endif
 
 #if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
