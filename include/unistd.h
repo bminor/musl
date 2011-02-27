@@ -86,6 +86,7 @@ int execle(const char *, ...);
 int execl(const char *, ...);
 int execvp(const char *, char *const []);
 int execlp(const char *, ...);
+int fexecve(int, char *const [], char *const []);
 void _exit(int);
 
 pid_t getpid(void);
