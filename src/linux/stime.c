@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <sys/time.h>
 
 int stime(time_t *t)
