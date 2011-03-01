@@ -11,6 +11,7 @@ libc_end="$libc_lib/crtn.o"
 
 gcc_inc=$libc_inc
 libgcc="`gcc \"$@\" -print-file-name=libgcc.a`"
+libgcc=${libgcc%libgcc.a}
 
 gcc -wrapper sh,-c,'
 x= ; y= ; z= ; s= ; for i ; do
@@ -26,5 +27,5 @@ done
 exec "$0" "$@"
 ' -std=gnu99 -nostdinc -nostdlib \
   -isystem "$libc_inc" -isystem "$gcc_inc" \
-  -Wl,-xxxxxx "$@" -L"$libc_lib" -lc "$libgcc" -Lxxxxxx -Wl,-nostdlib
+  -Wl,-xxxxxx "$@" -L"$libc_lib" -lc -L"$libgcc" -lgcc -Lxxxxxx -Wl,-nostdlib
 EOF
