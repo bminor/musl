@@ -4,10 +4,16 @@
 extern "C" {
 #endif
 
+#define __NEED_time_t
+#define __NEED_struct_timespec
+#include <bits/alltypes.h>
+
+#include <fcntl.h>
+
 #define SEM_FAILED ((sem_t *)0)
 
 typedef struct {
-	long __val[4];
+	int __val[4*sizeof(long)/sizeof(int)];
 } sem_t;
 
 int    sem_close(sem_t *);

@@ -29,6 +29,7 @@
 #define PTHREAD_KEYS_MAX  1024
 #define PTHREAD_STACK_MIN PAGE_SIZE
 #define PTHREAD_DESTRUCTOR_ITERATIONS 4
+#define SEM_VALUE_MAX 0x7fffffff
 
 /* Arbitrary numbers... */
 
