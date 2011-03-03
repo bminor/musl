@@ -12,6 +12,7 @@ int pthread_key_create(pthread_key_t *k, void (*dtor)(void *))
 	int i = (uintptr_t)&k / 16 % PTHREAD_KEYS_MAX;
 	int j = i;
 
+	pthread_self();
 	libc.tsd_keys = keys;
 	if (!dtor) dtor = nodtor;
 	/* Cheap trick - &k cannot match any destructor pointer */

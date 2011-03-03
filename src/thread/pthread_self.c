@@ -2,6 +2,10 @@
 
 static struct pthread main_thread;
 
+/* pthread_key_create.c overrides this */
+static const size_t dummy = 0;
+weak_alias(dummy, __pthread_tsd_size);
+
 #undef errno
 static int *errno_location()
 {
@@ -10,6 +14,13 @@ static int *errno_location()
 
 static int init_main_thread()
 {
+	void *tsd = 0;
+	if (__pthread_tsd_size) {
+		tsd = mmap(0, __pthread_tsd_size, PROT_READ|PROT_WRITE,
+			MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+		if (tsd == MAP_FAILED) return -1;
+	}
+	main_thread.tsd = tsd;
 	main_thread.self = &main_thread;
 	if (__set_thread_area(&main_thread) < 0)
 		return -1;
