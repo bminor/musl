@@ -25,8 +25,10 @@ int munlock (const void *, size_t);
 int mlockall (int);
 int munlockall (void);
 
-/* linux extension */
+#ifdef _GNU_SOURCE
 void *mremap (void *, size_t, size_t, int, ...);
+int madvise (void *, size_t, int);
+#endif
 
 int shm_open (const char *, int, mode_t);
 int shm_unlink (const char *);
