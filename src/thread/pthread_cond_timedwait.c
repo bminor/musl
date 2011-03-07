@@ -15,7 +15,7 @@ int pthread_cond_timedwait(pthread_cond_t *c, pthread_mutex_t *m, const struct t
 	if ((r=pthread_mutex_unlock(m))) return r;
 
 	CANCELPT(1);
-	e = __timedwait(&c->_c_block, 1, CLOCK_REALTIME, ts, 0);
+	e = __timedwait(&c->_c_block, 1, c->_c_clock, ts, 0);
 	CANCELPT(0);
 
 	pthread_cleanup_pop(0);
