@@ -157,6 +157,18 @@ int pthread_mutexattr_setpshared(pthread_mutexattr_t *, int);
 int pthread_mutexattr_setrobust(pthread_mutexattr_t *, int);
 int pthread_mutexattr_settype(pthread_mutexattr_t *, int);
 
+int pthread_condattr_init(pthread_condattr_t *);
+int pthread_condattr_destroy(pthread_condattr_t *);
+int pthread_condattr_setclock(pthread_condattr_t *, clockid_t);
+int pthread_condattr_setpshared(pthread_condattr_t *, int);
+int pthread_condattr_getclock(const pthread_condattr_t *, clockid_t *);
+int pthread_condattr_getpshared(const pthread_condattr_t *, int *);
+
+int pthread_rwlockattr_init(pthread_rwlockattr_t *);
+int pthread_rwlockattr_destroy(pthread_rwlockattr_t *);
+int pthread_rwlockattr_setpshared(pthread_rwlockattr_t *, int);
+int pthread_rwlockattr_getpshared(const pthread_rwlockattr_t *, int *);
+
 int pthread_barrierattr_destroy(pthread_barrierattr_t *);
 int pthread_barrierattr_getpshared(const pthread_barrierattr_t *, int *);
 int pthread_barrierattr_init(pthread_barrierattr_t *);
