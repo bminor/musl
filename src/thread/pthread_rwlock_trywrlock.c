@@ -3,10 +3,10 @@
 int pthread_rwlock_trywrlock(pthread_rwlock_t *rw)
 {
 	if (a_xchg(&rw->_rw_wrlock, 1))
-		return EAGAIN;
+		return EBUSY;
 	if (rw->_rw_readers) {
 		a_store(&rw->_rw_wrlock, 0);
-		return EAGAIN;
+		return EBUSY;
 	}
 	rw->_rw_owner = pthread_self()->tid;
 	return 0;
