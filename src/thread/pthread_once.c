@@ -20,7 +20,13 @@ int pthread_once(pthread_once_t *control, void (*init)(void))
 
 	for (;;) switch (a_swap(control, 1)) {
 	case 0:
-		break;
+		pthread_cleanup_push(undo, control);
+		init();
+		pthread_cleanup_pop(0);
+
+		a_store(control, 2);
+		if (waiters) __wake(control, -1, 0);
+		return 0;
 	case 1:
 		__wait(control, &waiters, 1, 0);
 		continue;
@@ -28,11 +34,4 @@ int pthread_once(pthread_once_t *control, void (*init)(void))
 		a_store(control, 2);
 		return 0;
 	}
-
-	pthread_cleanup_push(undo, control);
-	init();
-	pthread_cleanup_pop(0);
-
-	if (waiters) __wake(control, -1, 0);
-	return 0;
 }
