@@ -46,10 +46,10 @@ int scandir(const char *, struct dirent ***, int (*)(const struct dirent *), int
 #define DT_WHT 14
 #define IFTODT(x) ((x)>>12 & 017)
 #define DTTOIF(x) ((x)<<12)
-#endf
+#endif
 
 #ifdef __cplusplus
-extern }
+}
 #endif
 
 #endif
