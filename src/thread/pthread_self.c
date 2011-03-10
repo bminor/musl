@@ -24,10 +24,10 @@ static int init_main_thread()
 	main_thread.self = &main_thread;
 	if (__set_thread_area(&main_thread) < 0)
 		return -1;
-	syscall1(__NR_set_tid_address, (long)&main_thread.tid);
 	main_thread.errno_ptr = __errno_location();
 	libc.errno_location = errno_location;
-	main_thread.tid = main_thread.pid = getpid();
+	main_thread.tid = main_thread.pid = 
+		syscall1(__NR_set_tid_address, (long)&main_thread.tid);
 	return 0;
 }
 
