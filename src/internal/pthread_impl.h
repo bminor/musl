@@ -36,6 +36,7 @@ struct pthread {
 	struct __ptcb *cancelbuf;
 	void **tsd;
 	pthread_attr_t attr;
+	volatile int dead;
 };
 
 #define __SU (sizeof(size_t)/sizeof(int))

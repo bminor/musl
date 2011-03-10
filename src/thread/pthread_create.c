@@ -25,13 +25,16 @@ void __pthread_unwind_next(struct __ptcb *cb)
 		}
 	}
 
-	syscall4(__NR_rt_sigprocmask, SIG_BLOCK, (long)(uint64_t[1]){-1},0,8);
+	/* Mark this thread dead before decrementing count */
+	self->dead = 1;
 
 	if (!a_fetch_add(&libc.threads_minus_1, -1))
 		exit(0);
 
-	if (self->detached && self->map_base)
+	if (self->detached && self->map_base) {
+		syscall4(__NR_rt_sigprocmask, SIG_BLOCK, (long)(uint64_t[1]){-1},0,8);
 		__unmapself(self->map_base, self->map_size);
+	}
 
 	__syscall_exit(0);
 }
@@ -76,9 +79,17 @@ static struct {
 
 static void rsyscall_handler(int sig, siginfo_t *si, void *ctx)
 {
-	if (si->si_code > 0 || si->si_pid != __pthread_self()->pid) return;
+	struct pthread *self = __pthread_self();
 
-	if (rs.cnt == libc.threads_minus_1) return;
+	if (si->si_code > 0 || si->si_pid != self->pid ||
+		rs.cnt == libc.threads_minus_1) return;
+
+	/* Threads which have already decremented themselves from the
+	 * thread count must not increment rs.cnt or otherwise act. */
+	if (self->dead) {
+		__wait(&rs.hold, 0, 1, 1);
+		return;
+	}
 
 	if (syscall6(rs.nr, rs.arg[0], rs.arg[1], rs.arg[2],
 		rs.arg[3], rs.arg[4], rs.arg[5]) < 0 && !rs.err) rs.err=errno;
