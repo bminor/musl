@@ -45,6 +45,7 @@ static void docancel(struct pthread *self)
 static void cancel_handler(int sig, siginfo_t *si, void *ctx)
 {
 	struct pthread *self = __pthread_self();
+	if (si->si_code > 0 || si->si_pid != self->pid) return;
 	self->cancel = 1;
 	if (self->canceldisable || (!self->cancelasync && !self->cancelpoint))
 		return;
@@ -75,6 +76,8 @@ static struct {
 
 static void rsyscall_handler(int sig, siginfo_t *si, void *ctx)
 {
+	if (si->si_code > 0 || si->si_pid != __pthread_self()->pid) return;
+
 	if (rs.cnt == libc.threads_minus_1) return;
 
 	if (syscall6(rs.nr, rs.arg[0], rs.arg[1], rs.arg[2],
