@@ -1,4 +1,3 @@
-#define SYSCALL_RETURN_ERRNO
 #include <time.h>
 #include "syscall.h"
 
