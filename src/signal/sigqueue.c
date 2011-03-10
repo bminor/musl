@@ -5,10 +5,12 @@
 
 int sigqueue(pid_t pid, int sig, const union sigval value)
 {
-	siginfo_t si = {
-		.si_signo = sig,
-		.si_code = -1,
-		.si_value = value,
-	};
+	siginfo_t si;
+	memset(&si, 0, sizeof si);
+	si.si_signo = sig;
+	si.si_code = SI_QUEUE;
+	si.si_value = value;
+	si.si_pid = getpid();
+	si.si_uid = getuid();
 	return syscall3(__NR_rt_sigqueueinfo, pid, sig, (long)&si);
 }
