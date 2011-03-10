@@ -131,6 +131,8 @@ struct __siginfo
 #define POLL_HUP 6
 #define SS_ONSTACK    1
 #define SS_DISABLE    2
+#define MINSIGSTKSZ 2048
+#define SIGSTKSZ 8192
 #endif
 
 #define SA_NOCLDSTOP  1
