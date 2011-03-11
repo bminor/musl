@@ -60,7 +60,8 @@ added syscall wrappers for the linux inotify interface.
 
 malloc(0) now returns a non-null pointer.
 
-fixed printf %n specifier (again).
+fixed printf %n specifier (again), pthread_once (it was always
+hanging), and non-default-type mutex behavior.
 
 added ucontext/sigcontext support in headers to facilitate building
 libgcc with dwarf2 unwind support, and possibly other low-level tools.
