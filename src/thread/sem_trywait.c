@@ -5,7 +5,8 @@ int sem_trywait(sem_t *sem)
 {
 	int val = a_fetch_add(sem->__val, -1);
 	if (val > 0) return 0;
-	a_inc(sem->__val);
+	if (!a_fetch_add(sem->__val, 1))
+		__wake(sem->__val, 1, 0);
 	errno = EAGAIN;
 	return -1;
 }
