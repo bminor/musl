@@ -45,7 +45,7 @@ working and caused memory corruption.
 
 
 
-UPCOMING RELEASE - major posix conformance improvements
+0.7.0 - major improvements to posix conformance and completeness
 
 implemented posix shared memory and semaphore interfaces.
 
@@ -58,12 +58,14 @@ denial of service due to intentional name collisions.
 
 added syscall wrappers for the linux inotify interface.
 
-malloc(0) now returns a non-null pointer
+malloc(0) now returns a non-null pointer.
 
 fixed printf %n specifier (again).
 
 added ucontext/sigcontext support in headers to facilitate building
 libgcc with dwarf2 unwind support, and possibly other low-level tools.
+
+improved musl-gcc compiler wrapper.
 
 implemented many small missing functions here and there, minor header
 fixes, etc.
