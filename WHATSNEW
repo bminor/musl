@@ -1,5 +1,7 @@
 0.5.0 - initial release
 
+
+
 0.5.9 - signal ABI bugfix, various cleanup and fixes:
 
 sigset_t was wrongly defined as 1024 bytes instead of 1024 bits,
@@ -23,6 +25,8 @@ respectively.
 many internal improvements have been made to the syscall-related code
 in preparation for porting to x86_64 and other archs.
 
+
+
 0.6.0 - x86_64 port, various important bugs fixed
 
 new x86_64 (amd64) architecture port, contributed by Nicholas J. Kain,
@@ -38,6 +42,8 @@ internal compiler error) in some versions of gcc.
 
 fixed a major bug in the printf %n specifier that prevented it from
 working and caused memory corruption.
+
+
 
 UPCOMING RELEASE - major posix conformance improvements
 
