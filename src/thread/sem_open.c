@@ -100,7 +100,7 @@ sem_t *sem_open(const char *name, int flags, ...)
 					close(tfd);
 					unlink(tmp);
 				}
-				if (fstat(fd, &st) < 0) {
+				if (fd >= 0 && fstat(fd, &st) < 0) {
 					close(fd);
 					fd = -1;
 				}
@@ -117,6 +117,10 @@ sem_t *sem_open(const char *name, int flags, ...)
 				}
 				break;
 			}
+		}
+		if (!(flags & O_CREAT)) {
+			pthread_spin_unlock(&lock);
+			return SEM_FAILED;
 		}
 		if (!linkat(AT_FDCWD, tmp, dir, name, 0)) {
 			fd = tfd;
