@@ -40,8 +40,8 @@ long sysconf(int name)
 		[_SC_VERSION] = VER,
 		[_SC_PAGE_SIZE] = PAGE_SIZE,
 		[_SC_RTSIG_MAX] = 63, /* ?? */
-		[_SC_SEM_NSEMS_MAX] = _POSIX_SEM_NSEMS_MAX,
-		[_SC_SEM_VALUE_MAX] = _POSIX_SEM_VALUE_MAX,
+		[_SC_SEM_NSEMS_MAX] = SEM_NSEMS_MAX,
+		[_SC_SEM_VALUE_MAX] = OFLOW,
 		[_SC_SIGQUEUE_MAX] = -1,
 		[_SC_TIMER_MAX] = -1,
 		[_SC_BC_BASE_MAX] = _POSIX2_BC_BASE_MAX,
@@ -215,8 +215,8 @@ long sysconf(int name)
 	} else if (values[name] == VER) {
 		return _POSIX_VERSION;
 	} else if (values[name] == OFLOW) {
-		return ARG_MAX;
-	} else {
-		return values[name];
+		if (name == _SC_ARG_MAX) return ARG_MAX;
+		if (name == _SC_SEM_VALUE_MAX) return SEM_VALUE_MAX;
 	}
+	return values[name];
 }
