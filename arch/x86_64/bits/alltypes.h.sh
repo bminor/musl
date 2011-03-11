@@ -84,16 +84,16 @@ TYPEDEF int pthread_once_t;
 TYPEDEF int pthread_key_t;
 TYPEDEF int pthread_spinlock_t;
 
-TYPEDEF struct { union { int __i[14]; size_t __s[2]; } __u; } pthread_attr_t;
+TYPEDEF struct { union { int __i[14]; size_t __s[7]; } __u; } pthread_attr_t;
 TYPEDEF unsigned pthread_mutexattr_t;
 TYPEDEF unsigned pthread_condattr_t;
 TYPEDEF unsigned pthread_barrierattr_t;
 TYPEDEF struct { unsigned __attr[2]; } pthread_rwlockattr_t;
 
-TYPEDEF struct { union { int __i[10]; void *__p[1]; } __u; } pthread_mutex_t;
-TYPEDEF struct { union { int __i[12]; void *__p[1]; } __u; } pthread_cond_t;
-TYPEDEF struct { union { int __i[14]; void *__p[1]; } __u; } pthread_rwlock_t;
-TYPEDEF struct { union { int __i[8]; void *__p[1]; } __u; } pthread_barrier_t;
+TYPEDEF struct { union { int __i[10]; void *__p[5]; } __u; } pthread_mutex_t;
+TYPEDEF struct { union { int __i[12]; void *__p[6]; } __u; } pthread_cond_t;
+TYPEDEF struct { union { int __i[14]; void *__p[7]; } __u; } pthread_rwlock_t;
+TYPEDEF struct { union { int __i[8]; void *__p[4]; } __u; } pthread_barrier_t;
 
 TYPEDEF long off_t;
 
