@@ -15,6 +15,9 @@ struct __libc {
 	int (*rsyscall)(int, long, long, long, long, long, long);
 	void (**tsd_keys)(void *);
 	void (*fork_handler)(int);
+	FILE *ofl_head;
+	int ofl_lock;
+	void (*lockfile)(FILE *);
 };
 
 
@@ -36,6 +39,7 @@ extern struct __libc *__libc_loc(void) __attribute__((const));
 
 /* Designed to avoid any overhead in non-threaded processes */
 void __lock(volatile int *);
+void __lockfile(FILE *);
 #define LOCK(x) (libc.threads_minus_1 ? (__lock(x),1) : ((void)(x),1))
 #define UNLOCK(x) (*(x)=0)
 #define CANCELPT(x) (libc.cancelpt ? libc.cancelpt((x)),0 : (void)(x),0)

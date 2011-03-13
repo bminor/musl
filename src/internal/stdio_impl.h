@@ -23,8 +23,8 @@
 
 #define UNGET 4
 
-#define FLOCK(f) LOCK(&f->lock)
-#define FUNLOCK(f) UNLOCK(&f->lock)
+#define FLOCK(f) ((libc.lockfile && (f)->owner>=0) ? (libc.lockfile((f)),0) : 0)
+#define FUNLOCK(f) ((f)->lockcount && (--(f)->lockcount || ((f)->owner=(f)->lock=0)))
 
 #define F_PERM 1
 #define F_NORD 4
@@ -50,7 +50,7 @@ struct __FILE_s {
 	signed char lbf;
 	int lock;
 	int lockcount;
-	void *owner;
+	void *dummy5;
 	off_t off;
 	int (*flush)(FILE *);
 	void **wide_data; /* must be NULL */
@@ -59,6 +59,7 @@ struct __FILE_s {
 	off_t (*seek)(FILE *, off_t, int);
 	int mode;
 	int (*close)(FILE *);
+	int owner;
 };
 
 size_t __stdio_read(FILE *, unsigned char *, size_t);
@@ -80,15 +81,9 @@ int __putc_unlocked(int, FILE *);
 
 FILE *__fdopen(int, const char *);
 
-extern struct ofl
-{
-	FILE *head;
-	int lock;
-} __ofl;
-
-#define OFLLOCK() LOCK(&__ofl.lock)
-#define OFLUNLOCK() UNLOCK(&__ofl.lock)
-#define ofl_head (__ofl.head)
+#define OFLLOCK() LOCK(&libc.ofl_lock)
+#define OFLUNLOCK() UNLOCK(&libc.ofl_lock)
+#define ofl_head (libc.ofl_head)
 
 #define feof(f) ((f)->flags & F_EOF)
 #define ferror(f) ((f)->flags & F_ERR)

@@ -150,6 +150,7 @@ static void init_threads()
 {
 	struct sigaction sa = { .sa_flags = SA_SIGINFO | SA_RESTART };
 	libc.lock = __lock;
+	libc.lockfile = __lockfile;
 	libc.cancelpt = cancelpt;
 	libc.rsyscall = rsyscall;
 	sa.sa_sigaction = cancel_handler;

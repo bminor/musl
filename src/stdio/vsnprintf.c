@@ -17,6 +17,7 @@ int vsnprintf(char *s, size_t n, const char *fmt, va_list ap)
 	f.write = sn_write;
 	f.buf_size = 1;
 	f.buf = buf;
+	f.owner = -1;
 	if (n > INT_MAX) {
 		errno = EOVERFLOW;
 		return -1;
