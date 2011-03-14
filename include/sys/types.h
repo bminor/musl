@@ -4,7 +4,6 @@
 extern "C" {
 #endif
 
-#define __NEED_loff_t
 #define __NEED_ino_t
 #define __NEED_dev_t
 #define __NEED_uid_t
