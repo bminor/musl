@@ -3,7 +3,7 @@
 
 int ftrylockfile(FILE *f)
 {
-	libc.lockfile = __lockfile;
+	if (!libc.lockfile) libc.lockfile = __lockfile;
 	if (f->owner && f->owner == pthread_self()->tid) {
 		if (f->lockcount == INT_MAX)
 			return -1;
