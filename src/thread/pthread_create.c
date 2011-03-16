@@ -195,7 +195,7 @@ int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(vo
 	size += __pthread_tsd_size;
 	map = mmap(0, size, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_ANON, -1, 0);
 	if (!map) return EAGAIN;
-	mprotect(map, guard, PROT_NONE);
+	if (guard) mprotect(map, guard, PROT_NONE);
 
 	tsd = map + size - __pthread_tsd_size;
 	new = (void *)(tsd - sizeof *new - PAGE_SIZE%sizeof *new);
