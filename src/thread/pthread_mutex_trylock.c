@@ -11,7 +11,7 @@ int pthread_mutex_trylock(pthread_mutex_t *m)
 
 	if (m->_m_owner == tid) {
 		if (m->_m_type != PTHREAD_MUTEX_RECURSIVE)
-			return EDEADLK;
+			return EBUSY;
 		if ((unsigned)m->_m_count >= INT_MAX) return EAGAIN;
 		m->_m_count++;
 		return 0;
