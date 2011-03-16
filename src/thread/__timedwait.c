@@ -6,6 +6,7 @@
 #include <stdio.h>
 int __timedwait(volatile int *addr, int val, clockid_t clk, const struct timespec *at, int priv)
 {
+	int r;
 	struct timespec to;
 	if (at) {
 		clock_gettime(clk, &to);
@@ -17,5 +18,7 @@ int __timedwait(volatile int *addr, int val, clockid_t clk, const struct timespe
 		if (to.tv_sec < 0) return ETIMEDOUT;
 	}
 	if (priv) priv = 128; priv=0;
-	return syscall4(__NR_futex, (long)addr, FUTEX_WAIT | priv, val, at ? (long)&to : 0);
+	r = syscall4(__NR_futex, (long)addr, FUTEX_WAIT | priv, val, at ? (long)&to : 0);
+	if (r == ETIMEDOUT) return r;
+	return 0;
 }
