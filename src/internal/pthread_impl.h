@@ -47,7 +47,6 @@ struct pthread {
 #define _m_type __u.__i[0]
 #define _m_lock __u.__i[1]
 #define _m_waiters __u.__i[2]
-#define _m_owner __u.__i[3]
 #define _m_count __u.__i[4]
 #define _c_block __u.__i[0]
 #define _c_clock __u.__i[1]
