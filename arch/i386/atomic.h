@@ -49,6 +49,13 @@ static inline long a_cas_l(volatile void *p, long t, long s)
 	return t;
 }
 
+static inline int a_cas(volatile int *p, int t, int s)
+{
+	__asm__( "lock ; cmpxchg %3, %1"
+		: "=a"(t), "=m"(*p) : "a"(t), "r"(s) : "memory" );
+	return t;
+}
+
 static inline void *a_swap_p(void *volatile *x, void *v)
 {
 	__asm__( "xchg %0, %1" : "=r"(v), "=m"(*(void **)x) : "0"(v) : "memory" );

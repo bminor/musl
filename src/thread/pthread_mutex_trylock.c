@@ -5,7 +5,7 @@ int pthread_mutex_trylock(pthread_mutex_t *m)
 	int tid;
 
 	if (m->_m_type == PTHREAD_MUTEX_NORMAL)
-		return -a_xchg(&m->_m_lock, 1) & EBUSY;
+		return (m->_m_lock || a_swap(&m->_m_lock, 1)) ? EBUSY : 0;
 
 	tid = pthread_self()->tid;
 
