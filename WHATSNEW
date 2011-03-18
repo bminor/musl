@@ -70,3 +70,12 @@ improved musl-gcc compiler wrapper.
 
 implemented many small missing functions here and there, minor header
 fixes, etc.
+
+
+
+0.7.1 - improvements to completeness, bug fixes
+
+implemented flockfile, wprintf, and robust mutex functions.
+
+fixed stack corruption bug in times(), minor header bugs, and some
+error return value bugs in thread interfaces.
