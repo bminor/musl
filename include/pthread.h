@@ -92,6 +92,7 @@ int pthread_mutex_unlock(pthread_mutex_t *);
 int pthread_mutex_trylock(pthread_mutex_t *);
 int pthread_mutex_timedlock(pthread_mutex_t *, const struct timespec *);
 int pthread_mutex_destroy(pthread_mutex_t *);
+int pthread_mutex_consistent(pthread_mutex_t *);
 
 int pthread_cond_init(pthread_cond_t *, const pthread_condattr_t *);
 int pthread_cond_destroy(pthread_cond_t *);

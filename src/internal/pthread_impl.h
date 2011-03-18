@@ -37,6 +37,11 @@ struct pthread {
 	void **tsd;
 	pthread_attr_t attr;
 	volatile int dead;
+	struct {
+		void **head;
+		long off;
+		void *pending;
+	} robust_list;
 };
 
 #define __SU (sizeof(size_t)/sizeof(int))
