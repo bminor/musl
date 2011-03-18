@@ -98,11 +98,11 @@ int fwide (FILE *, int);
 
 int wprintf (const wchar_t *, ...);
 int fwprintf (FILE *, const wchar_t *, ...);
-int swprintf (wchar_t *, const wchar_t *, ...);
+int swprintf (wchar_t *, size_t, const wchar_t *, ...);
 
 int vwprintf (const wchar_t *, va_list);
 int vfwprintf (FILE *, const wchar_t *, va_list);
-int vswprintf (wchar_t *, const wchar_t *, va_list);
+int vswprintf (wchar_t *, size_t, const wchar_t *, va_list);
 
 int wscanf (const wchar_t *, ...);
 int fwscanf (FILE *, const wchar_t *, ...);

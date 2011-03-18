@@ -50,7 +50,7 @@ struct __FILE_s {
 	signed char lbf;
 	int lock;
 	int lockcount;
-	void *dummy5;
+	void *cookie;
 	off_t off;
 	int (*flush)(FILE *);
 	void **wide_data; /* must be NULL */
