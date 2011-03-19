@@ -1,7 +1,6 @@
 .global __syscall
 .type __syscall,%function
 __syscall:
-di,si,dx,cx,r8,r9
 	movq %rdi,%rax
 	movq %rsi,%rdi
 	movq %rdx,%rsi
