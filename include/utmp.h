@@ -22,6 +22,8 @@ struct utmp *getutline(const struct utmp *);
 struct utmp *pututline(const struct utmp *);
 void         setutent(void);
 
+void updwtmp(const char *, const struct utmp *);
+
 #define _PATH_UTMP "/dev/null"
 #define _PATH_WTMP "/dev/null"
 

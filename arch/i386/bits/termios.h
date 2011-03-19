@@ -138,6 +138,7 @@ struct termios
 #define IEXTEN 0100000
 
 /* Extensions? */
+#define CBAUDEX 0010000
 #define ECHOCTL 0001000
 #define ECHOPRT 0002000
 #define ECHOKE 0004000

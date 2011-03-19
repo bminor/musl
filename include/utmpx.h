@@ -11,11 +11,13 @@ extern "C" {
 
 #include <bits/alltypes.h>
 
+#define UT_LINESIZE 32
+
 struct utmpx
 {
 	short ut_type;
 	pid_t ut_pid;
-	char ut_line[32];
+	char ut_line[UT_LINESIZE];
 	char ut_id[4];
 	char ut_user[32];
 	char ut_host[256];
@@ -36,7 +38,10 @@ struct utmpx *getutxline(const struct utmpx *);
 struct utmpx *pututxline(const struct utmpx *);
 void          setutxent(void);
 
+void updwtmpx(const char *, const struct utmpx *);
+
 #define EMPTY           0
+#define RUN_LVL         1
 #define BOOT_TIME       2
 #define NEW_TIME        3
 #define OLD_TIME        4

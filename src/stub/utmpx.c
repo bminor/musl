@@ -30,9 +30,14 @@ struct utmpx *pututxline(const struct utmpx *ut)
 	return NULL;
 }
 
+void updwtmpx(const char *f, const struct utmpx *u)
+{
+}
+
 weak_alias(endutxent, endutent);
 weak_alias(setutxent, setutent);
 weak_alias(getutxent, getutent);
 weak_alias(getutxid, getutid);
 weak_alias(getutxline, getutline);
 weak_alias(pututxline, pututline);
+weak_alias(updwtmpx, updwtmp);
