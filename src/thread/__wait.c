@@ -1,4 +1,3 @@
-#define SYSCALL_RETURN_ERRNO
 #include "pthread_impl.h"
 
 void __wait(volatile int *addr, volatile int *waiters, int val, int priv)
@@ -11,6 +10,6 @@ void __wait(volatile int *addr, volatile int *waiters, int val, int priv)
 	}
 	if (waiters) a_inc(waiters);
 	while (*addr==val)
-		syscall4(__NR_futex, (long)addr, FUTEX_WAIT|priv, val, 0);
+		__syscall(__NR_futex, (long)addr, FUTEX_WAIT|priv, val, 0);
 	if (waiters) a_dec(waiters);
 }

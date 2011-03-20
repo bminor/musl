@@ -14,12 +14,15 @@
 #define O_NOFOLLOW  0400000
 #define O_CLOEXEC  02000000
 
-#ifdef _GNU_SOURCE
-#define O_NDELAY O_NONBLOCK
+/* Extensions, but in the reserved namespace, so OK */
 #define O_ASYNC      020000
 #define O_DIRECT     040000
+#define O_LARGEFILE 0100000
 #define O_NOATIME  01000000
+#define O_NDELAY O_NONBLOCK
 #define F_DUPFD_CLOEXEC 1030
+
+#ifdef _GNU_SOURCE
 #define FAPPENT O_APPEND
 #define FFSYNC O_FSYNC
 #define FASYNC O_ASYNC

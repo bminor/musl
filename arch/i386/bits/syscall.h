@@ -1,3 +1,130 @@
+#define __SYSCALL_LL(x) \
+((union { long long ll; long l[2]; }){ .ll = x }).l[0], \
+((union { long long ll; long l[2]; }){ .ll = x }).l[1]
+
+static inline long __syscall0(long n)
+{
+	unsigned long ret;
+	__asm__ __volatile__ ("int $128" : "=a"(ret) : "a"(n) : "memory");
+	return __syscall_ret(ret);
+}
+
+#ifndef __PIC__
+
+static inline long __syscall1(long n, long a1)
+{
+	unsigned long ret;
+	__asm__ __volatile__ ("int $128" : "=a"(ret) : "a"(n), "b"(a1) : "memory");
+	return ret;
+}
+
+static inline long __syscall2(long n, long a1, long a2)
+{
+	unsigned long ret;
+	__asm__ __volatile__ ("int $128" : "=a"(ret) : "a"(n), "b"(a1), "c"(a2) : "memory");
+	return ret;
+}
+
+static inline long __syscall3(long n, long a1, long a2, long a3)
+{
+	unsigned long ret;
+	__asm__ __volatile__ ("int $128" : "=a"(ret) : "a"(n), "b"(a1), "c"(a2), "d"(a3) : "memory");
+	return ret;
+}
+
+static inline long __syscall4(long n, long a1, long a2, long a3, long a4)
+{
+	unsigned long ret;
+	__asm__ __volatile__ ("int $128" : "=a"(ret) : "a"(n), "b"(a1), "c"(a2), "d"(a3), "S"(a4) : "memory");
+	return ret;
+}
+
+static inline long __syscall5(long n, long a1, long a2, long a3, long a4, long a5)
+{
+	unsigned long ret;
+	__asm__ __volatile__ ("int $128" : "=a"(ret) : "a"(n), "b"(a1), "c"(a2), "d"(a3), "S"(a4), "D"(a5) : "memory");
+	return ret;
+}
+
+static inline long __syscall6(long n, long a1, long a2, long a3, long a4, long a5, long a6)
+{
+	unsigned long ret;
+	__asm__ __volatile__ ("pushl %7 ; pushl %%ebp ; mov 4(%%esp),%%ebp ; int $128 ; popl %%ebp ; popl %%ecx"
+		: "=a"(ret) : "a"(n), "b"(a1), "c"(a2), "d"(a3), "S"(a4), "D"(a5), "g"(a6) : "memory");
+	return ret;
+}
+
+#else
+
+static inline long __syscall1(long n, long a1)
+{
+	unsigned long ret;
+	__asm__ __volatile__ ("xchg %2,%%ebx ; int $128 ; xchg %2,%%ebx"
+		: "=a"(ret) : "a"(n), "r"(a1) : "memory");
+	return ret;
+}
+
+static inline long __syscall2(long n, long a1, long a2)
+{
+	unsigned long ret;
+	__asm__ __volatile__ ("xchg %2,%%ebx ; int $128 ; xchg %2,%%ebx"
+		: "=a"(ret) : "a"(n), "r"(a1), "c"(a2) : "memory");
+	return ret;
+}
+
+static inline long __syscall3(long n, long a1, long a2, long a3)
+{
+	unsigned long ret;
+	__asm__ __volatile__ ("xchg %2,%%ebx ; int $128 ; xchg %2,%%ebx"
+		: "=a"(ret) : "a"(n), "r"(a1), "c"(a2), "d"(a3) : "memory");
+	return ret;
+}
+
+static inline long __syscall4(long n, long a1, long a2, long a3, long a4)
+{
+	unsigned long ret;
+	__asm__ __volatile__ ("xchg %2,%%ebx ; int $128 ; xchg %2,%%ebx"
+		: "=a"(ret) : "a"(n), "r"(a1), "c"(a2), "d"(a3), "S"(a4) : "memory");
+	return ret;
+}
+
+static inline long __syscall5(long n, long a1, long a2, long a3, long a4, long a5)
+{
+	unsigned long ret;
+	__asm__ __volatile__ ("pushl %2 ; pushl %%ebx ; mov 4(%%esp),%%ebx ; int $128 ; popl %%ebx ; popl %%ecx"
+		: "=a"(ret) : "a"(n), "g"(a1), "c"(a2), "d"(a3), "S"(a4), "D"(a5) : "memory");
+	return ret;
+}
+
+static inline long __syscall6(long n, long a1, long a2, long a3, long a4, long a5, long a6)
+{
+	return (__syscall)(n, a1, a2, a3, a4, a5, a6);
+}
+
+#endif
+
+
+#define __SC_socket      1
+#define __SC_bind        2
+#define __SC_connect     3
+#define __SC_listen      4
+#define __SC_accept      5
+#define __SC_getsockname 6
+#define __SC_getpeername 7
+#define __SC_socketpair  8
+#define __SC_send        9
+#define __SC_recv        10
+#define __SC_sendto      11
+#define __SC_recvfrom    12
+#define __SC_shutdown    13
+#define __SC_setsockopt  14
+#define __SC_getsockopt  15
+#define __SC_sendmsg     16
+#define __SC_recvmsg     17
+
+#define __socketcall(nm, a, b, c, d, e, f) syscall(SYS_socketcall, __SC_##nm, \
+    ((long [6]){ (long)a, (long)b, (long)c, (long)d, (long)e, (long)f }))
+
 #define __NR_restart_syscall      0
 #define __NR_exit		  1
 #define __NR_fork		  2
@@ -376,6 +503,7 @@
 
 
 /* fixup legacy 32-bit-vs-lfs64 junk */
+#undef __NR_fcntl
 #undef __NR_getdents
 #undef __NR_ftruncate
 #undef __NR_truncate
@@ -384,6 +512,7 @@
 #undef __NR_lstat
 #undef __NR_statfs
 #undef __NR_fstatfs
+#define __NR_fcntl __NR_fcntl64
 #define __NR_getdents __NR_getdents64
 #define __NR_ftruncate __NR_ftruncate64
 #define __NR_truncate __NR_truncate64
@@ -783,6 +912,7 @@
 
 
 /* fixup legacy 32-bit-vs-lfs64 junk */
+#undef SYS_fcntl
 #undef SYS_getdents
 #undef SYS_ftruncate
 #undef SYS_truncate
@@ -791,6 +921,7 @@
 #undef SYS_lstat
 #undef SYS_statfs
 #undef SYS_fstatfs
+#define SYS_fcntl SYS_fcntl64
 #define SYS_getdents SYS_getdents64
 #define SYS_ftruncate SYS_ftruncate64
 #define SYS_truncate SYS_truncate64

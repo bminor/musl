@@ -4,7 +4,7 @@
 
 int truncate(const char *path, off_t length)
 {
-	return syscall3(__NR_truncate, (long)path, SYSCALL_LL(length));
+	return syscall(__NR_truncate, path, __SYSCALL_LL(length));
 }
 
 LFS64(truncate);

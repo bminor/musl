@@ -32,7 +32,7 @@ void __pthread_unwind_next(struct __ptcb *cb)
 		exit(0);
 
 	if (self->detached && self->map_base) {
-		syscall4(__NR_rt_sigprocmask, SIG_BLOCK, (long)(uint64_t[1]){-1},0,8);
+		syscall(__NR_rt_sigprocmask, SIG_BLOCK, (long)(uint64_t[1]){-1},0,8);
 		__unmapself(self->map_base, self->map_size);
 	}
 
@@ -91,7 +91,7 @@ static void rsyscall_handler(int sig, siginfo_t *si, void *ctx)
 		return;
 	}
 
-	if (__syscall(rs.nr, rs.arg[0], rs.arg[1], rs.arg[2],
+	if (syscall(rs.nr, rs.arg[0], rs.arg[1], rs.arg[2],
 		rs.arg[3], rs.arg[4], rs.arg[5]) < 0 && !rs.err) rs.err=errno;
 
 	a_inc(&rs.cnt);
@@ -140,7 +140,7 @@ static int rsyscall(int nr, long a, long b, long c, long d, long e, long f)
 	while((i=rs.cnt)) __wait(&rs.cnt, 0, i, 1);
 
 	if (rs.err) errno = rs.err, ret = -1;
-	else ret = __syscall(nr, a, b, c, d, e, f);
+	else ret = syscall(nr, a, b, c, d, e, f);
 
 	UNLOCK(&rs.lock);
 	return ret;

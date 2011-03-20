@@ -1,4 +1,3 @@
-#define SYSCALL_RETURN_ERRNO
 #include "pthread_impl.h"
 
 void __lock(volatile int *l)
@@ -8,5 +7,5 @@ void __lock(volatile int *l)
 	 * assignment to optimize non-pathological code with no contention. */
 	while (a_xchg(l, 1))
 		if (spins) spins--, a_spin();
-		else syscall0(__NR_sched_yield);
+		else __syscall(__NR_sched_yield);
 }
