@@ -14,7 +14,7 @@ int fcntl(int fd, int cmd, ...)
 	va_end(ap);
 	if (cmd == F_SETFL) arg |= O_LARGEFILE;
 	if (cmd == F_SETLKW) CANCELPT_BEGIN;
-	r = __syscall_fcntl(fd, cmd, arg);
+	r = syscall(SYS_fcntl, fd, cmd, arg);
 	if (cmd == F_SETLKW) CANCELPT_END;
 	return r;
 }

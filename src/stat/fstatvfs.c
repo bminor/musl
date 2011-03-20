@@ -4,7 +4,7 @@
 
 int fstatvfs(int fd, struct statvfs *buf)
 {
-	return syscall2(__NR_fstatfs, fd, (long)buf);
+	return syscall(SYS_fstatfs, fd, buf);
 }
 
 weak_alias(fstatvfs, fstatfs);

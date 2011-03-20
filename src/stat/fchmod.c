@@ -3,5 +3,5 @@
 
 int fchmod(int fd, mode_t mode)
 {
-	return syscall2(__NR_fchmod, fd, mode);
+	return syscall(SYS_fchmod, fd, mode);
 }

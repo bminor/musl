@@ -3,5 +3,5 @@
 
 int epoll_create1(int flags)
 {
-	return syscall1(__NR_epoll_create1, flags);
+	return syscall(SYS_epoll_create1, flags);
 }

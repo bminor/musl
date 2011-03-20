@@ -3,5 +3,5 @@
 
 int clock_getres(clockid_t clk, struct timespec *ts)
 {
-	return syscall2(__NR_clock_getres, clk, (long)ts);
+	return syscall(SYS_clock_getres, clk, ts);
 }

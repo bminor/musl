@@ -9,7 +9,7 @@ int pselect(int n, fd_set *rfds, fd_set *wfds, fd_set *efds, const struct timesp
 	struct timespec ts_tmp;
 	if (ts) ts_tmp = *ts;
 	CANCELPT_BEGIN;
-	r = syscall6(__NR_pselect6, n, (long)rfds, (long)wfds, (long)efds, ts ? (long)&ts_tmp : 0, (long)data);
+	r = syscall(SYS_pselect6, n, rfds, wfds, efds, ts ? &ts_tmp : 0, data);
 	CANCELPT_END;
 	return r;
 }

@@ -4,7 +4,7 @@
 
 int close(int fd)
 {
-	int ret = __syscall_close(fd);
+	int ret = syscall(SYS_close, fd);
 	CANCELPT_BEGIN;
 	CANCELPT_END;
 	return ret;

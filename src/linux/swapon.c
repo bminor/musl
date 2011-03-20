@@ -3,5 +3,5 @@
 
 int swapon(const char *path, int flags)
 {
-	return syscall2(__NR_swapon, (long)path, flags);
+	return syscall(SYS_swapon, path, flags);
 }

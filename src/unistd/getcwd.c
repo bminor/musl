@@ -4,5 +4,5 @@
 
 char *getcwd(char *buf, size_t size)
 {
-	return syscall2(__NR_getcwd, (long)buf, size) < 0 ? NULL : buf;
+	return syscall(SYS_getcwd, buf, size) < 0 ? NULL : buf;
 }

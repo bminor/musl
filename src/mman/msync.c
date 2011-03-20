@@ -4,5 +4,5 @@
 
 int msync(void *start, size_t len, int flags)
 {
-	return syscall3(__NR_msync, (long)start, len, flags);
+	return syscall(SYS_msync, start, len, flags);
 }

@@ -3,5 +3,5 @@
 
 int setpriority(int which, id_t who, int prio)
 {
-	return syscall3(__NR_getpriority, which, who, prio);
+	return syscall(SYS_getpriority, which, who, prio);
 }

@@ -3,5 +3,5 @@
 
 int chdir(const char *path)
 {
-	return syscall1(__NR_chdir, (long)path);
+	return syscall(SYS_chdir, path);
 }

@@ -13,7 +13,7 @@ int open(const char *filename, int flags, ...)
 	mode = va_arg(ap, mode_t);
 	va_end(ap);
 	CANCELPT_BEGIN;
-	r = __syscall_open(filename, flags, mode);
+	r = syscall(SYS_open, filename, flags|O_LARGEFILE, mode);
 	CANCELPT_END;
 	return r;
 }

@@ -3,5 +3,5 @@
 
 int dup(int fd)
 {
-	return syscall1(__NR_dup, fd);
+	return syscall(SYS_dup, fd);
 }

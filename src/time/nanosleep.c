@@ -7,7 +7,7 @@ int nanosleep(const struct timespec *req, struct timespec *rem)
 {
 	int ret;
 	CANCELPT_BEGIN;
-	ret = syscall2(__NR_nanosleep, (long)req, (long)rem);
+	ret = syscall(SYS_nanosleep, req, rem);
 	CANCELPT_END;
 	return ret;
 }

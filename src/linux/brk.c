@@ -2,5 +2,5 @@
 
 int brk(void *end)
 {
-	return -(syscall1(__NR_brk, (long)end) == -1);
+	return -(syscall(SYS_brk, end) == -1);
 }

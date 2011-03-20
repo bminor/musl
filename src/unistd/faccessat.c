@@ -3,5 +3,5 @@
 
 int faccessat(int fd, const char *filename, int amode, int flag)
 {
-	return syscall4(__NR_faccessat, fd, (long)filename, amode, flag);
+	return syscall(SYS_faccessat, fd, filename, amode, flag);
 }

@@ -14,5 +14,5 @@ int sigaltstack(const stack_t *ss, stack_t *old)
 			return -1;
 		}
 	}
-	return syscall2(__NR_sigaltstack, (long)ss, (long)old);
+	return syscall(SYS_sigaltstack, ss, old);
 }

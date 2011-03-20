@@ -10,9 +10,9 @@ int raise(int sig)
 	sigset_t set;
 	sigfillset(&set);
 	__sigprocmask(SIG_BLOCK, &set, &set);
-	tid = syscall0(__NR_gettid);
-	pid = syscall0(__NR_getpid);
-	ret = syscall3(__NR_tgkill, pid, tid, sig);
+	tid = syscall(SYS_gettid);
+	pid = syscall(SYS_getpid);
+	ret = syscall(SYS_tgkill, pid, tid, sig);
 	__sigprocmask(SIG_SETMASK, &set, 0);
 	return ret;
 }

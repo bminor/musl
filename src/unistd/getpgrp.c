@@ -3,5 +3,5 @@
 
 pid_t getpgrp(void)
 {
-	return syscall0(__NR_getpgrp);
+	return syscall(SYS_getpgrp);
 }

@@ -21,13 +21,13 @@ FILE *fopen(const char *filename, const char *mode)
 	if (*mode == 'w') flags |= O_TRUNC;
 	if (*mode == 'a') flags |= O_APPEND;
 
-	fd = __syscall_open(filename, flags, 0666);
+	fd = syscall(SYS_open, filename, flags|O_LARGEFILE, 0666);
 	if (fd < 0) return 0;
 
 	f = __fdopen(fd, mode);
 	if (f) return f;
 
-	__syscall_close(fd);
+	syscall(SYS_close, fd);
 	return 0;
 }
 

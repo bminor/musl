@@ -6,7 +6,7 @@
 
 int __libc_sigprocmask(int how, const sigset_t *set, sigset_t *old)
 {
-	return syscall4(__NR_rt_sigprocmask, how, (long)set, (long)old, 8);
+	return syscall(SYS_rt_sigprocmask, how, set, old, 8);
 }
 
 int __sigprocmask(int how, const sigset_t *set, sigset_t *old)

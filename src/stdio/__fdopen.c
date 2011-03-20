@@ -20,8 +20,8 @@ FILE *__fdopen(int fd, const char *mode)
 
 	/* Set append mode on fd if opened for append */
 	if (*mode == 'a') {
-		int flags = __syscall_fcntl(fd, F_GETFL, 0);
-		__syscall_fcntl(fd, F_SETFL, flags | O_APPEND);
+		int flags = syscall(SYS_fcntl, fd, F_GETFL, 0);
+		syscall(SYS_fcntl, fd, F_SETFL, flags | O_APPEND);
 	}
 
 	f->fd = fd;
@@ -30,7 +30,7 @@ FILE *__fdopen(int fd, const char *mode)
 
 	/* Activate line buffered mode for terminals */
 	f->lbf = EOF;
-	if (!(f->flags & F_NOWR) && !__syscall_ioctl(fd, TCGETS, &tio))
+	if (!(f->flags & F_NOWR) && !syscall(SYS_ioctl, fd, TCGETS, &tio))
 		f->lbf = '\n';
 
 	/* Initialize op ptrs. No problem if some are unneeded. */

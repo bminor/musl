@@ -3,5 +3,5 @@
 
 int readlinkat(int fd, const char *path, char *buf, size_t bufsize)
 {
-	return syscall4(__NR_readlinkat, fd, (long)path, (long)buf, bufsize);
+	return syscall(SYS_readlinkat, fd, path, buf, bufsize);
 }

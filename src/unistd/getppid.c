@@ -3,5 +3,5 @@
 
 pid_t getppid(void)
 {
-	return syscall0(__NR_getppid);
+	return syscall(SYS_getppid);
 }

@@ -3,5 +3,5 @@
 
 int swapoff(const char *path)
 {
-	return syscall1(__NR_swapoff, (long)path);
+	return syscall(SYS_swapoff, path);
 }

@@ -5,7 +5,7 @@
 int nice(int inc)
 {
 #ifdef __NR_nice
-	return syscall1(__NR_nice, inc);
+	return syscall(SYS_nice, inc);
 #else
 	return setpriority(PRIO_PROCESS, 0, getpriority(PRIO_PROCESS, 0)+inc);
 #endif

@@ -4,5 +4,5 @@ struct sysinfo;
 
 int sysinfo(struct sysinfo *info)
 {
-	return syscall1(__NR_sysinfo, (long)info);
+	return syscall(SYS_sysinfo, info);
 }

@@ -3,6 +3,6 @@
 
 int fsync(int fd)
 {
-	//return syscall1(__NR_fsync, fd);
+	//return syscall(SYS_fsync, fd);
 	return 0;
 }

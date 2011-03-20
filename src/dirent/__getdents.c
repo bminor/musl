@@ -4,7 +4,7 @@
 
 int __getdents(int fd, struct dirent *buf, size_t len)
 {
-	return syscall3(__NR_getdents, fd, (long)buf, len);
+	return syscall(SYS_getdents, fd, buf, len);
 }
 
 weak_alias(__getdents, getdents);

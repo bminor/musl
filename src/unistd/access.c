@@ -3,5 +3,5 @@
 
 int access(const char *filename, int amode)
 {
-	return syscall2(__NR_access, (long)filename, amode);
+	return syscall(SYS_access, filename, amode);
 }

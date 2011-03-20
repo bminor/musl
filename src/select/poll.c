@@ -6,7 +6,7 @@ int poll(struct pollfd *fds, nfds_t n, int timeout)
 {
 	int r;
 	CANCELPT_BEGIN;
-	r = syscall3(__NR_poll, (long)fds, n, timeout);
+	r = syscall(SYS_poll, fds, n, timeout);
 	CANCELPT_END;
 	return r;
 }

@@ -3,5 +3,5 @@
 
 int inotify_rm_watch(int fd, uint32_t wd)
 {
-	return syscall2(__NR_inotify_rm_watch, fd, wd);
+	return syscall(SYS_inotify_rm_watch, fd, wd);
 }

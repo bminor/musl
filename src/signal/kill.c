@@ -3,5 +3,5 @@
 
 int kill(pid_t pid, int sig)
 {
-	return syscall2(__NR_kill, pid, sig);
+	return syscall(SYS_kill, pid, sig);
 }

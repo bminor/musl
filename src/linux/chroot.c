@@ -3,5 +3,5 @@
 
 int chroot(const char *path)
 {
-	return syscall1(__NR_chroot, (long)path);
+	return syscall(SYS_chroot, path);
 }

@@ -2,5 +2,5 @@
 
 int __stdio_close(FILE *f)
 {
-	return __syscall_close(f->fd);
+	return syscall(SYS_close, f->fd);
 }

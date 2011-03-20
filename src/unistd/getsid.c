@@ -3,5 +3,5 @@
 
 pid_t getsid(pid_t pid)
 {
-	return syscall1(__NR_getsid, pid);
+	return syscall(SYS_getsid, pid);
 }

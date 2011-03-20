@@ -3,5 +3,5 @@
 
 int chmod(const char *path, mode_t mode)
 {
-	return syscall2(__NR_chmod, (long)path, mode);
+	return syscall(SYS_chmod, path, mode);
 }

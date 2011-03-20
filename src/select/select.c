@@ -6,7 +6,7 @@ int select(int n, fd_set *rfds, fd_set *wfds, fd_set *efds, struct timeval *tv)
 {
 	int r;
 	CANCELPT_BEGIN;
-	r = syscall5(__NR_select, n, (long)rfds, (long)wfds, (long)efds, (long)tv);
+	r = syscall(SYS_select, n, rfds, wfds, efds, tv);
 	CANCELPT_END;
 	return r;
 }

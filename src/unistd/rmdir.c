@@ -3,5 +3,5 @@
 
 int rmdir(const char *path)
 {
-	return syscall1(__NR_rmdir, (long)path);
+	return syscall(SYS_rmdir, path);
 }

@@ -36,7 +36,7 @@ void __pthread_unwind_next(struct __ptcb *cb)
 		__unmapself(self->map_base, self->map_size);
 	}
 
-	__syscall_exit(0);
+	syscall(SYS_exit, 0);
 }
 
 static void docancel(struct pthread *self)

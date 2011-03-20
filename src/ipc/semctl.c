@@ -11,8 +11,8 @@ int semctl(int id, int num, int cmd, ...)
 	arg = va_arg(ap, long);
 	va_end(ap);
 #ifdef __NR_semctl
-	return syscall4(__NR_semctl, id, num, cmd, arg);
+	return syscall(SYS_semctl, id, num, cmd, arg);
 #else
-	return syscall5(__NR_ipc, IPCOP_semctl, id, num, cmd | 0x100, (long)&arg);
+	return syscall(SYS_ipc, IPCOP_semctl, id, num, cmd | 0x100, &arg);
 #endif
 }

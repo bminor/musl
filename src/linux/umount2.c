@@ -3,5 +3,5 @@
 
 int umount2(const char *special, int flags)
 {
-	return syscall2(__NR_umount2, (long)special, flags);
+	return syscall(SYS_umount2, special, flags);
 }

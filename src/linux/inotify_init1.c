@@ -3,5 +3,5 @@
 
 int inotify_init1(int flags)
 {
-	return syscall1(__NR_inotify_init1, flags);
+	return syscall(SYS_inotify_init1, flags);
 }

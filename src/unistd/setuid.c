@@ -5,5 +5,5 @@
 int setuid(uid_t uid)
 {
 	if (libc.rsyscall) return libc.rsyscall(__NR_setuid, uid, 0, 0, 0, 0, 0);
-	return syscall1(__NR_setuid, uid);
+	return syscall(SYS_setuid, uid);
 }

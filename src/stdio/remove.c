@@ -3,5 +3,5 @@
 
 int remove(const char *path)
 {
-	return __syscall_unlink(path);
+	return syscall(SYS_unlink, path);
 }

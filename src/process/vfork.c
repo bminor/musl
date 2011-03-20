@@ -4,5 +4,5 @@
 pid_t vfork(void)
 {
 	/* vfork syscall cannot be made from C code */
-	return syscall0(__NR_fork);
+	return syscall(SYS_fork);
 }

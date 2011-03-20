@@ -3,5 +3,5 @@
 
 mode_t umask(mode_t mode)
 {
-	return syscall1(__NR_umask, mode);
+	return syscall(SYS_umask, mode);
 }

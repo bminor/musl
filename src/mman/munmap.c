@@ -5,7 +5,7 @@
 
 int __munmap(void *start, size_t len)
 {
-	return syscall2(__NR_munmap, (long)start, len);
+	return syscall(SYS_munmap, start, len);
 }
 
 weak_alias(__munmap, munmap);

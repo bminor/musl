@@ -3,5 +3,5 @@
 
 int getgroups(int count, gid_t list[])
 {
-	return syscall2(__NR_getgroups, count, (long)list);
+	return syscall(SYS_getgroups, count, list);
 }

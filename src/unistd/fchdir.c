@@ -3,5 +3,5 @@
 
 int fchdir(int fd)
 {
-	return syscall1(__NR_fchdir, fd);
+	return syscall(SYS_fchdir, fd);
 }

@@ -13,7 +13,7 @@ int openat(int fd, const char *filename, int flags, ...)
 	mode = va_arg(ap, mode_t);
 	va_end(ap);
 	CANCELPT_BEGIN;
-	r = syscall4(__NR_openat, fd, (long)filename, flags|O_LARGEFILE, mode);
+	r = syscall(SYS_openat, fd, filename, flags|O_LARGEFILE, mode);
 	CANCELPT_END;
 	return r;
 }

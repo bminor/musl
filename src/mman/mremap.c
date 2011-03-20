@@ -13,7 +13,7 @@ void *__mremap(void *old_addr, size_t old_len, size_t new_len, int flags, ...)
 	new_addr = va_arg(ap, void *);
 	va_end(ap);
 
-	return (void *)syscall5(__NR_mremap, (long)old_addr, old_len, new_len, flags, (long)new_addr);
+	return (void *)syscall(SYS_mremap, old_addr, old_len, new_len, flags, new_addr);
 }
 
 weak_alias(__mremap, mremap);

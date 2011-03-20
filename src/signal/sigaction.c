@@ -23,7 +23,7 @@ int __libc_sigaction(int sig, const struct sigaction *sa, struct sigaction *old)
 		pksa = (long)&ksa;
 	}
 	if (old) pkold = (long)&kold;
-	if (syscall4(__NR_rt_sigaction, sig, pksa, pkold, 8))
+	if (syscall(SYS_rt_sigaction, sig, pksa, pkold, 8))
 		return -1;
 	if (old) {
 		old->sa_handler = kold.handler;

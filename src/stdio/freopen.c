@@ -17,13 +17,13 @@ FILE *freopen(const char *filename, const char *mode, FILE *f)
 	if (!filename) {
 		f2 = fopen("/dev/null", mode);
 		if (!f2) goto fail;
-		fl = __syscall_fcntl(f2->fd, F_GETFL, 0);
-		if (fl < 0 || __syscall_fcntl(f->fd, F_SETFL, fl) < 0)
+		fl = syscall(SYS_fcntl, f2->fd, F_GETFL, 0);
+		if (fl < 0 || syscall(SYS_fcntl, f->fd, F_SETFL, fl) < 0)
 			goto fail2;
 	} else {
 		f2 = fopen(filename, mode);
 		if (!f2) goto fail;
-		if (__syscall_dup2(f2->fd, f->fd) < 0)
+		if (syscall(SYS_dup2, f2->fd, f->fd) < 0)
 			goto fail2;
 	}
 

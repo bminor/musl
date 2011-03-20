@@ -3,5 +3,5 @@
 
 int settimeofday(const struct timeval *tv, void *tz)
 {
-	return syscall2(__NR_settimeofday, (long)tv, 0);
+	return syscall(SYS_settimeofday, tv, 0);
 }

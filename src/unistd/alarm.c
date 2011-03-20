@@ -3,5 +3,5 @@
 
 unsigned alarm(unsigned seconds)
 {
-	return syscall1(__NR_alarm, seconds);
+	return syscall(SYS_alarm, seconds);
 }

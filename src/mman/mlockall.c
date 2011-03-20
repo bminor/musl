@@ -3,5 +3,5 @@
 
 int mlockall(int flags)
 {
-	return syscall1(__NR_mlockall, flags);
+	return syscall(SYS_mlockall, flags);
 }

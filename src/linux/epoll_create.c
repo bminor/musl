@@ -3,5 +3,5 @@
 
 int epoll_create(int size)
 {
-	return syscall1(__NR_epoll_create, size);
+	return syscall(SYS_epoll_create, size);
 }

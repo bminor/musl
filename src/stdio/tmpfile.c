@@ -11,7 +11,7 @@ FILE *tmpfile(void)
 	for (;;) {
 		s = tmpnam(buf);
 		if (!s) return NULL;
-		fd = __syscall_open(s, O_RDWR | O_CREAT | O_EXCL, 0600);
+		fd = syscall(SYS_open, s, O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE, 0600);
 		if (fd >= 0) {
 			f = __fdopen(fd, "w+");
 			remove(s);
