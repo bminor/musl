@@ -42,6 +42,12 @@ void __pthread_unwind_next(struct __ptcb *cb)
 static void docancel(struct pthread *self)
 {
 	struct __ptcb cb = { .__next = self->cancelbuf };
+	sigset_t set;
+	self->canceldisable = 1;
+	self->cancelasync = 0;
+	sigemptyset(&set);
+	sigaddset(&set, SIGCANCEL);
+	__libc_sigprocmask(SIG_UNBLOCK, &set, 0);
 	__pthread_unwind_next(&cb);
 }
 
@@ -50,17 +56,17 @@ static void cancel_handler(int sig, siginfo_t *si, void *ctx)
 	struct pthread *self = __pthread_self();
 	if (si->si_code > 0 || si->si_pid != self->pid) return;
 	self->cancel = 1;
-	if (self->canceldisable || (!self->cancelasync && !self->cancelpoint))
-		return;
-	docancel(self);
+	if (self->canceldisable) return;
+	if (self->cancelasync || (self->cancelpoint==1 && PC_AT_SYS(ctx)))
+		docancel(self);
 }
 
 static void cancelpt(int x)
 {
 	struct pthread *self = __pthread_self();
 	if (self->canceldisable) return;
-	self->cancelpoint = x;
-	if (self->cancel) docancel(self);
+	if ((self->cancelpoint+=x)==1 && x>=0 && self->cancel)
+		docancel(self);
 }
 
 /* "rsyscall" is a mechanism by which a thread can synchronously force all

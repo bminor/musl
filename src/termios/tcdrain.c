@@ -7,6 +7,7 @@ int tcdrain(int fd)
 	int ret;
 	CANCELPT_BEGIN;
 	ret = ioctl(fd, TCSBRK, 1);
+	CANCELPT_TRY;
 	CANCELPT_END;
 	return ret;
 }

@@ -10,6 +10,7 @@ int pselect(int n, fd_set *rfds, fd_set *wfds, fd_set *efds, const struct timesp
 	if (ts) ts_tmp = *ts;
 	CANCELPT_BEGIN;
 	r = syscall(SYS_pselect6, n, rfds, wfds, efds, ts ? &ts_tmp : 0, data);
+	CANCELPT_TRY;
 	CANCELPT_END;
 	return r;
 }

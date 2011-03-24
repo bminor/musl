@@ -44,7 +44,8 @@ void __lockfile(FILE *);
 #define UNLOCK(x) (*(x)=0)
 #define CANCELPT(x) (libc.cancelpt ? libc.cancelpt((x)),0 : (void)(x),0)
 #define CANCELPT_BEGIN CANCELPT(1)
-#define CANCELPT_END CANCELPT(0)
+#define CANCELPT_TRY CANCELPT(0)
+#define CANCELPT_END CANCELPT(-1)
 
 extern char **__environ;
 #define environ __environ
