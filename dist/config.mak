@@ -19,7 +19,6 @@ exec_prefix = /usr/local
 
 # Uncomment for warnings (as errors). Might need tuning to your gcc version.
 #CFLAGS += -Werror -Wall -Wpointer-arith -Wcast-align -Wno-parentheses -Wno-char-subscripts -Wno-uninitialized -Wno-sequence-point -Wno-missing-braces -Wno-unused-value
-#CFLAGS += -Wno-pointer-sign
 
 # Uncomment if you want to build a shared library (experimental).
 #LIBC_LIBS += lib/libc.so
