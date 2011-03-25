@@ -3,16 +3,16 @@
 
 int ftrylockfile(FILE *f)
 {
+	int tid = pthread_self()->tid;
 	if (!libc.lockfile) libc.lockfile = __lockfile;
-	if (f->owner && f->owner == pthread_self()->tid) {
+	if (f->lock == tid) {
 		if (f->lockcount == INT_MAX)
 			return -1;
 		f->lockcount++;
 		return 0;
 	}
-	if (a_swap(&f->lock, 1))
+	if (f->lock || a_cas(&f->lock, 0, tid))
 		return -1;
-	f->owner = pthread_self()->tid;
 	f->lockcount = 1;
 	return 0;
 }

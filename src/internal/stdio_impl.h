@@ -23,8 +23,8 @@
 
 #define UNGET 4
 
-#define FLOCK(f) ((libc.lockfile && (f)->owner>=0) ? (libc.lockfile((f)),0) : 0)
-#define FUNLOCK(f) ((f)->lockcount && (--(f)->lockcount || ((f)->owner=(f)->lock=0)))
+#define FLOCK(f) ((libc.lockfile && (f)->lock>=0) ? (libc.lockfile((f)),0) : 0)
+#define FUNLOCK(f) ((f)->lockcount && (--(f)->lockcount || ((f)->lock=0)))
 
 #define F_PERM 1
 #define F_NORD 4
@@ -59,7 +59,6 @@ struct __FILE_s {
 	off_t (*seek)(FILE *, off_t, int);
 	int mode;
 	int (*close)(FILE *);
-	int owner;
 };
 
 size_t __stdio_read(FILE *, unsigned char *, size_t);

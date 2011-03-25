@@ -32,7 +32,7 @@ int vswprintf(wchar_t *s, size_t n, const wchar_t *fmt, va_list ap)
 	f.write = sw_write;
 	f.buf_size = sizeof buf;
 	f.buf = buf;
-	f.owner = -1;
+	f.lock = -1;
 	f.cookie = &c;
 	if (!n) {
 		return -1;

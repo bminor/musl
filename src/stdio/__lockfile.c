@@ -3,17 +3,18 @@
 
 void __lockfile(FILE *f)
 {
-	int spins;
-	if (f->owner < 0) return;
-	if (f->owner && f->owner == __pthread_self()->tid) {
+	int spins=100000;
+	int tid;
+
+	if (f->lock < 0) return;
+	tid = __pthread_self()->tid;
+	if (f->lock == tid) {
 		while (f->lockcount == INT_MAX);
 		f->lockcount++;
 		return;
 	}
-	spins = 100000;
-	while (a_swap(&f->lock, 1))
+	while (f->lock || a_cas(&f->lock, 0, tid))
 		if (spins) spins--, a_spin();
 		else syscall(SYS_sched_yield);
-	f->owner = __pthread_self()->tid;
 	f->lockcount = 1;
 }
