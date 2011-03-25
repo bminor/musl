@@ -13,7 +13,7 @@ static int is_valid(const char *host)
 {
 	const unsigned char *s;
 	if (strlen(host)-1 > 254 || mbstowcs(0, host, 0) > 255) return 0;
-	for (s=host; *s>=0x80 || *s=='.' || *s=='-' || isalnum(*s); s++);
+	for (s=(void *)host; *s>=0x80 || *s=='.' || *s=='-' || isalnum(*s); s++);
 	return !*s;
 }
 

@@ -23,8 +23,8 @@ int vsnprintf(char *s, size_t n, const char *fmt, va_list ap)
 		return -1;
 	} else if (n > 0) {
 		if (n > (char *)0+SIZE_MAX-s) n = (char *)0+SIZE_MAX-s;
-		f.wpos = s;
-		f.wbase = f.wend = s+n-1;
+		f.wpos = (void *)s;
+		f.wbase = f.wend = (void *)(s+n-1);
 		f.wstop = f.wend - 1;
 	}
 	r = vfprintf(&f, fmt, ap);

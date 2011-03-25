@@ -149,7 +149,7 @@ static void pop_arg(union arg *arg, int type, va_list *ap)
 
 static void out(FILE *f, const char *s, size_t l)
 {
-	__fwritex(s, l, f);
+	__fwritex((void *)s, l, f);
 }
 
 static void pad(FILE *f, char c, int w, int l, int fl)

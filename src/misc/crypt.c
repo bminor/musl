@@ -2488,7 +2488,7 @@ des_crypt(struct des_ctx *ctx, char output[DES_OUT_BUFSIZE],
 			key++;
 		q++;
 	}
-	des_setkey(ctx, (char *)keybuf);
+	des_setkey(ctx, (void *)keybuf);
 
 	/*
 	 * setting - 2 bytes of salt
@@ -2566,7 +2566,7 @@ char *__crypt_r(const char *clear, const char *salt, struct crypt_data *data)
 #endif
 
 	des_init(&des_ctx);
-	return des_crypt(&des_ctx, (char *)data, clear, salt);
+	return des_crypt(&des_ctx, (char *)data, (void *)clear, (void *)salt);
 }
 
 weak_alias(__crypt_r, crypt_r);

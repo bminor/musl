@@ -8,7 +8,7 @@ wint_t ungetwc(wint_t c, FILE *f)
 	if (c == WEOF) return c;
 
 	/* Try conversion early so we can fail without locking if invalid */
-	if (!isascii(c) && (l = wctomb(mbc, c)) < 0)
+	if (!isascii(c) && (l = wctomb((void *)mbc, c)) < 0)
 		return WEOF;
 
 	FLOCK(f);

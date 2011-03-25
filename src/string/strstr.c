@@ -109,7 +109,7 @@ static char *twoway_strstr(const unsigned char *h, const unsigned char *n)
 		if (z-h < l) {
 			/* Fast estimate for MIN(l,63) */
 			size_t grow = l | 63;
-			const char *z2 = memchr(z, 0, grow);
+			const unsigned char *z2 = memchr(z, 0, grow);
 			if (z2) {
 				z = z2;
 				if (z-h < l) return 0;
@@ -156,11 +156,11 @@ char *strstr(const char *h, const char *n)
 	h = strchr(h, *n);
 	if (!h || !n[1]) return (char *)h;
 	if (!h[1]) return 0;
-	if (!n[2]) return twobyte_strstr(h, n);
+	if (!n[2]) return twobyte_strstr((void *)h, (void *)n);
 	if (!h[2]) return 0;
-	if (!n[3]) return threebyte_strstr(h, n);
+	if (!n[3]) return threebyte_strstr((void *)h, (void *)n);
 	if (!h[3]) return 0;
-	if (!n[4]) return fourbyte_strstr(h, n);
+	if (!n[4]) return fourbyte_strstr((void *)h, (void *)n);
 
-	return twoway_strstr(h, n);
+	return twoway_strstr((void *)h, (void *)n);
 }

@@ -283,7 +283,7 @@ static const unsigned char charmaps[] =
 
 
 
-static int fuzzycmp(const char *a, const char *b)
+static int fuzzycmp(const unsigned char *a, const unsigned char *b)
 {
 	for (; *a && *b; a++, b++) {
 		while (*a && (*a|32U)-'a'>26 && *a-'0'>10U) a++;
@@ -292,15 +292,15 @@ static int fuzzycmp(const char *a, const char *b)
 	return *a != *b;
 }
 
-static size_t find_charmap(const char *name)
+static size_t find_charmap(const void *name)
 {
 	const unsigned char *s;
 	for (s=charmaps; *s; ) {
 		if (!fuzzycmp(name, s)) {
-			for (; *s; s+=strlen(s)+1);
+			for (; *s; s+=strlen((void *)s)+1);
 			return s+1-charmaps;
 		}
-		s += strlen(s)+1;
+		s += strlen((void *)s)+1;
 		if (!*s) s += ((128-s[2])*s[1]+7)/8 + 3;
 	}
 	return -1;
@@ -440,7 +440,7 @@ size_t iconv(iconv_t cd0, char **in, size_t *inb, char **out, size_t *outb)
 		case UTF_32LE:
 			l = 4;
 			if (*inb < 4) goto starved;
-			c = get_32(*in, type);
+			c = get_32((void *)*in, type);
 			}
 			if (c-0xd800u < 0x800u || c >= 0x110000u) goto ilseq;
 			break;
@@ -450,13 +450,13 @@ size_t iconv(iconv_t cd0, char **in, size_t *inb, char **out, size_t *outb)
 		case UTF_16LE:
 			l = 2;
 			if (*inb < 2) goto starved;
-			c = get_16(*in, type);
+			c = get_16((void *)*in, type);
 			if ((unsigned)(c-0xdc00) < 0x400) goto ilseq;
 			if ((unsigned)(c-0xd800) < 0x400) {
 				if (type-UCS2BE < 2U) goto ilseq;
 				l = 4;
 				if (*inb < 4) goto starved;
-				d = get_16(*in + 2, from);
+				d = get_16((void *)(*in + 2), from);
 				if ((unsigned)(c-0xdc00) >= 0x400) goto ilseq;
 				c = ((c-0xd800)<<10) | (d-0xdc00);
 			}
@@ -531,22 +531,22 @@ size_t iconv(iconv_t cd0, char **in, size_t *inb, char **out, size_t *outb)
 		case UTF_16LE:
 			if (c < 0x10000) {
 				if (*outb < 2) goto toobig;
-				put_16(*out, c, totype);
+				put_16((void *)*out, c, totype);
 				*out += 2;
 				*outb -= 2;
 				break;
 			}
 			if (type-UCS2BE < 2U) goto ilseq;
 			if (*outb < 4) goto toobig;
-			put_16(*out, (c>>10)|0xd800, totype);
-			put_16(*out + 2, (c&0x3ff)|0xdc00, totype);
+			put_16((void *)*out, (c>>10)|0xd800, totype);
+			put_16((void *)(*out + 2), (c&0x3ff)|0xdc00, totype);
 			*out += 4;
 			*outb -= 4;
 			break;
 		case UTF_32BE:
 		case UTF_32LE:
 			if (*outb < 4) goto toobig;
-			put_32(*out, c, totype);
+			put_32((void *)*out, c, totype);
 			*out += 4;
 			*outb -= 4;
 			break;

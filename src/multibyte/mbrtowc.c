@@ -22,7 +22,7 @@ size_t mbrtowc(wchar_t *wc, const char *src, size_t n, mbstate_t *st)
 	c = *(unsigned *)st;
 	
 	if (!s) {
-		s = "";
+		s = (void *)"";
 		wc = (void *)&wc;
 		n = 1;
 	} else if (!wc) wc = (void *)&wc;

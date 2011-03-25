@@ -11,12 +11,12 @@ wint_t __fputwc_unlocked(wchar_t c, FILE *f)
 		if (c != f->lbf && f->wpos + 1 < f->wend) *f->wpos++ = c;
 		else c = __overflow(f, c);
 	} else if (f->wpos + MB_LEN_MAX < f->wend) {
-		l = wctomb(f->wpos, c);
+		l = wctomb((void *)f->wpos, c);
 		if (l < 0) c = WEOF;
 		else f->wpos += l;
 	} else {
 		l = wctomb(mbc, c);
-		if (l < 0 || __fwritex(mbc, l, f) < l) c = WEOF;
+		if (l < 0 || __fwritex((void *)mbc, l, f) < l) c = WEOF;
 	}
 	return c;
 }

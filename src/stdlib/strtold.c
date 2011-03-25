@@ -4,7 +4,7 @@
 
 long double strtold(const char *s1, char **p)
 {
-	const unsigned char *s = s1;
+	const unsigned char *s = (void *)s1;
 	long double x = 0;
 	long double frac;
 	int sign = 0;
@@ -53,7 +53,7 @@ long double strtold(const char *s1, char **p)
 			}
 		}
 		if ((*s|32) == 'p') {
-			e = strtol(s+1, (void *)&s, 10);
+			e = strtol((void *)(s+1), (void *)&s, 10);
 			for (; e>0; e--) x *= 2.0;
 			for (; e<0; e++) x *= 0.5;
 		}
@@ -82,7 +82,7 @@ long double strtold(const char *s1, char **p)
 		}
 	}
 	if ((*s|32)=='e') {
-		e = strtol(++s, (void *)&s, 10);
+		e = strtol((void *)++s, (void *)&s, 10);
 		for (; e>0; e--) x *= 10.0;
 		for (; e<0; e++) x /= 10.0;
 	}
