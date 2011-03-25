@@ -2,5 +2,9 @@
 
 int puts(const char *s)
 {
-	return -(fputs(s, stdout) < 0 || putchar('\n') < 0);
+	int r;
+	FLOCK(stdout);
+	r = -(fputs(s, stdout) < 0 || putchar('\n') < 0);
+	FUNLOCK(stdout);
+	return r;
 }
