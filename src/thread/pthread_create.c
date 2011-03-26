@@ -1,5 +1,10 @@
 #include "pthread_impl.h"
 
+#ifdef __pthread_unwind_next
+#undef __pthread_unwind_next
+#define __pthread_unwind_next __pthread_unwind_next_3
+#endif
+
 void __pthread_unwind_next(struct __ptcb *cb)
 {
 	int i, j, not_finished;

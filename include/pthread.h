@@ -181,9 +181,11 @@ int pthread_atfork(void (*)(void), void (*)(void), void (*)(void));
 #include <bits/pthread.h>
 
 int __setjmp(void *);
+#ifndef __pthread_register_cancel
 void __pthread_register_cancel(struct __ptcb *);
 void __pthread_unregister_cancel(struct __ptcb *);
 void __pthread_unwind_next(struct __ptcb *);
+#endif
 
 #define pthread_cleanup_push(f, x) \
 do { struct __ptcb __cb; void (*__f)(void *) = (f); void *__x = (x); \
