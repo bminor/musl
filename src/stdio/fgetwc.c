@@ -23,9 +23,9 @@ wint_t __fgetwc_unlocked(FILE *f)
 		}
 	} else l = -2;
 
-	/* Convert character byte-by-byte from __uflow */
+	/* Convert character byte-by-byte */
 	while (l == -2) {
-		b = c = __uflow(f);
+		b = c = getc_unlocked(f);
 		if (c < 0) {
 			if (!mbsinit(&st)) errno = EILSEQ;
 			return WEOF;

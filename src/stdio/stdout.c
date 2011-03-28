@@ -7,7 +7,7 @@ static FILE f = {
 	.fd = 1,
 	.flags = F_PERM | F_NORD,
 	.lbf = '\n',
-	.write = __stdio_write,
+	.write = __stdout_write,
 	.seek = __stdio_seek,
 	.close = __stdio_close,
 };

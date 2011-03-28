@@ -8,6 +8,7 @@ ssize_t getdelim(char **s, size_t *n, int delim, FILE *f)
 	unsigned char *z;
 	size_t k;
 	size_t i=0;
+	int c;
 
 	if (!n || !s) {
 		errno = EINVAL;
@@ -18,16 +19,16 @@ ssize_t getdelim(char **s, size_t *n, int delim, FILE *f)
 
 	FLOCK(f);
 
-	while (!feof(f)) {
+	for (;;) {
 		z = memchr(f->rpos, delim, f->rend - f->rpos);
 		k = z ? z - f->rpos + 1 : f->rend - f->rpos;
 		if (i+k >= *n) {
-			if (k >= SIZE_MAX-i) goto oom;
-			*n = i+k+1;
-			if (*n < SIZE_MAX/2) *n *= 2;
+			if (k >= SIZE_MAX/2-i) goto oom;
+			*n = i+k+2;
+			if (*n < SIZE_MAX/4) *n *= 2;
 			tmp = realloc(*s, *n);
 			if (!tmp) {
-				*n = i+k+1;
+				*n = i+k+2;
 				tmp = realloc(*s, *n);
 				if (!tmp) goto oom;
 			}
@@ -37,23 +38,22 @@ ssize_t getdelim(char **s, size_t *n, int delim, FILE *f)
 		f->rpos += k;
 		i += k;
 		if (z) break;
-		__underflow(f);
+		if ((c = getc_unlocked(f)) == EOF) {
+			if (!i || !feof(f)) {
+				FUNLOCK(f);
+				return -1;
+			}
+			break;
+		}
+		if (((*s)[i++] = c) == delim) break;
 	}
 	(*s)[i] = 0;
-	if (feof(f) || ferror(f)) {
-		FUNLOCK(f);
-		return -1;
-	}
 
 	FUNLOCK(f);
 
-	if (i > SSIZE_MAX) {
-		errno = EOVERFLOW;
-		return -1;
-	}
-
 	return i;
 oom:
+	FUNLOCK(f);
 	errno = ENOMEM;
 	return -1;
 }

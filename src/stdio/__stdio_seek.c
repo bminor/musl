@@ -2,6 +2,7 @@
 
 static off_t retneg1(FILE *f, off_t off, int whence)
 {
+	errno = ESPIPE;
 	return -1;
 }
 
@@ -15,7 +16,6 @@ off_t __stdio_seek(FILE *f, off_t off, int whence)
 	ret = syscall(SYS_lseek, f->fd, off, whence);
 #endif
 	/* Detect unseekable files and optimize future failures out */
-	if (ret < 0 && off == 0 && whence == SEEK_CUR)
-		f->seek = retneg1;
+	if (ret < 0 && errno == ESPIPE) f->seek = retneg1;
 	return ret;
 }

@@ -2,6 +2,5 @@
 
 int putchar_unlocked(int c)
 {
-	return stdout->wpos < stdout->wstop ?
-		(*stdout->wpos++ = c) : __overflow(stdout, c);
+	return putc_unlocked(c, stdout);
 }

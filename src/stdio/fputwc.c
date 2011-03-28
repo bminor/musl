@@ -8,8 +8,7 @@ wint_t __fputwc_unlocked(wchar_t c, FILE *f)
 	f->mode |= f->mode+1;
 
 	if (isascii(c)) {
-		if (c != f->lbf && f->wpos + 1 < f->wend) *f->wpos++ = c;
-		else c = __overflow(f, c);
+		c = putc_unlocked(c, f);
 	} else if (f->wpos + MB_LEN_MAX < f->wend) {
 		l = wctomb((void *)f->wpos, c);
 		if (l < 0) c = WEOF;

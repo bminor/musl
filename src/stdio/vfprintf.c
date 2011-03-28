@@ -434,7 +434,7 @@ static int printf_core(FILE *f, const char *fmt, va_list *ap, union arg *nl_arg,
 		/* Update output count, end loop when fmt is exhausted */
 		if (cnt >= 0) {
 			if (l > INT_MAX - cnt) {
-				if (!ferror(f)) errno = EOVERFLOW;
+				errno = EOVERFLOW;
 				cnt = -1;
 			} else cnt += l;
 		}

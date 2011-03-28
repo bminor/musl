@@ -10,6 +10,8 @@ static size_t sw_write(FILE *f, const unsigned char *s, size_t l)
 	size_t l0 = l;
 	int i = 0;
 	struct cookie *c = f->cookie;
+	if (s!=f->wbase && sw_write(f, f->wbase, f->wpos-f->wbase)==-1)
+		return -1;
 	while (c->l && l && (i=mbtowc(c->ws, (void *)s, l))>=0) {
 		s+=i;
 		l-=i;
@@ -41,6 +43,6 @@ int vswprintf(wchar_t *s, size_t n, const wchar_t *fmt, va_list ap)
 		return -1;
 	}
 	r = vfwprintf(&f, fmt, ap);
-	__oflow(&f);
+	sw_write(&f, 0, 0);
 	return r>=n ? -1 : r;
 }

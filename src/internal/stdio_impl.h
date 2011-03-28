@@ -18,10 +18,11 @@
 #include <sys/wait.h>
 #include <math.h>
 #include <float.h>
+#include <sys/uio.h>
 #include "syscall.h"
 #include "libc.h"
 
-#define UNGET 4
+#define UNGET 8
 
 #define FLOCK(f) ((libc.lockfile && (f)->lock>=0) ? (libc.lockfile((f)),0) : 0)
 #define FUNLOCK(f) ((f)->lockcount && (--(f)->lockcount || ((f)->lock=0)))
@@ -31,14 +32,18 @@
 #define F_NOWR 8
 #define F_EOF 16
 #define F_ERR 32
+#define F_SVB 64
 
 struct __FILE_s {
 	unsigned flags;
-	unsigned char *rpos, *rstop;
-	unsigned char *rend, *wend;
-	unsigned char *wpos, *wstop;
+	unsigned char *rpos, *rend;
+	int (*close)(FILE *);
+	unsigned char *wend, *wpos;
+	unsigned char *mustbezero_1;
 	unsigned char *wbase;
-	unsigned char *dummy01[3];
+	size_t (*read)(FILE *, unsigned char *, size_t);
+	size_t (*write)(FILE *, const unsigned char *, size_t);
+	off_t (*seek)(FILE *, off_t, int);
 	unsigned char *buf;
 	size_t buf_size;
 	FILE *prev, *next;
@@ -46,25 +51,24 @@ struct __FILE_s {
 	int pipe_pid;
 	long dummy2;
 	short dummy3;
-	char dummy4;
+	signed char mode;
 	signed char lbf;
 	int lock;
 	int lockcount;
 	void *cookie;
 	off_t off;
 	int (*flush)(FILE *);
-	void **wide_data; /* must be NULL */
-	size_t (*read)(FILE *, unsigned char *, size_t);
-	size_t (*write)(FILE *, const unsigned char *, size_t);
-	off_t (*seek)(FILE *, off_t, int);
-	int mode;
-	int (*close)(FILE *);
+	void *mustbezero_2;
 };
 
 size_t __stdio_read(FILE *, unsigned char *, size_t);
 size_t __stdio_write(FILE *, const unsigned char *, size_t);
+size_t __stdout_write(FILE *, const unsigned char *, size_t);
 off_t __stdio_seek(FILE *, off_t, int);
 int __stdio_close(FILE *);
+
+int __toread(FILE *);
+int __towrite(FILE *);
 
 int __overflow(FILE *, int);
 int __oflow(FILE *);
@@ -86,6 +90,12 @@ FILE *__fdopen(int, const char *);
 
 #define feof(f) ((f)->flags & F_EOF)
 #define ferror(f) ((f)->flags & F_ERR)
+
+#define getc_unlocked(f) \
+	( ((f)->rpos < (f)->rend) ? *(f)->rpos++ : __uflow((f)) )
+
+#define putc_unlocked(c, f) ( ((c)!=(f)->lbf && (f)->wpos<(f)->wend) \
+	? *(f)->wpos++ = (c) : __overflow((f),(c)) )
 
 /* Caller-allocated FILE * operations */
 FILE *__fopen_rb_ca(const char *, FILE *, unsigned char *, size_t);

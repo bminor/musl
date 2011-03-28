@@ -11,9 +11,9 @@ int vdprintf(int fd, const char *fmt, va_list ap)
 	unsigned char buf[BUFSIZ];
 	FILE f = {
 		.fd = fd, .lbf = EOF, .write = wrap_write,
-		.buf = buf+UNGET, .buf_size = sizeof buf - UNGET
+		.buf = buf+UNGET, .buf_size = sizeof buf - UNGET,
+		.lock = -1
 	};
 	r = vfprintf(&f, fmt, ap);
-	__oflow(&f);
-	return r;
+	return fflush(&f) ? EOF : r;
 }

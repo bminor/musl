@@ -3,8 +3,9 @@
 int fputc(int c, FILE *f)
 {
 	FLOCK(f);
-	if (c != f->lbf && f->wpos + 1 < f->wend) *f->wpos++ = c;
-	else c = __overflow(f, c);
+	c = putc_unlocked(c, f);
 	FUNLOCK(f);
 	return c;
 }
+
+weak_alias(fputc, putc);

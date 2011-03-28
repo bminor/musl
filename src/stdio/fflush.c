@@ -2,17 +2,23 @@
 
 static int __fflush_unlocked(FILE *f)
 {
-	/* If writing, flush output. */
-	if (f->wpos > f->buf && __oflow(f)) return -1;
+	/* If writing, flush output */
+	if (f->wpos > f->wbase) {
+		f->write(f, 0, 0);
+		if (!f->wpos) return EOF;
+	}
 
 	/* If reading, sync position, per POSIX */
 	if (f->rpos < f->rend) f->seek(f, f->rpos-f->rend, SEEK_CUR);
-	f->rpos = f->rend;
+
+	/* Clear read and write modes */
+	f->wpos = f->wbase = f->wend = 0;
+	f->rpos = f->rend = 0;
 
 	/* Hook for special behavior on flush */
 	if (f->flush) f->flush(f);
 
-	return (f->flags & F_ERR) ? EOF : 0;
+	return 0;
 }
 
 /* stdout.c will override this if linked */
@@ -36,9 +42,9 @@ int fflush(FILE *f)
 	OFLLOCK();
 	for (f=ofl_head; f; f=next) {
 		FLOCK(f);
-		OFLUNLOCK();
+		//OFLUNLOCK();
 		r |= __fflush_unlocked(f);
-		OFLLOCK();
+		//OFLLOCK();
 		next = f->next;
 		FUNLOCK(f);
 	}

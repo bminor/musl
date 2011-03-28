@@ -4,7 +4,9 @@ int fgetc(FILE *f)
 {
 	int c;
 	FLOCK(f);
-	c = f->rpos < f->rstop ? *f->rpos++ : __uflow(f);
+	c = getc_unlocked(f);
 	FUNLOCK(f);
 	return c;
 }
+
+weak_alias(fgetc, getc);

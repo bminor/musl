@@ -17,7 +17,7 @@ void exit(int code)
 
 	/* Only do atexit & stdio flush if they were actually used */
 	if (__funcs_on_exit) __funcs_on_exit();
-	if (__fflush_on_exit) __fflush_on_exit(0);
+	if (__fflush_on_exit) __fflush_on_exit((void *)0);
 
 	/* Destructor s**t is kept separate from atexit to avoid bloat */
 	if (libc.fini) libc.fini();
