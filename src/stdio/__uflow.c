@@ -5,7 +5,7 @@
 
 int __uflow(FILE *f)
 {
-	unsigned char c = EOF;
-	if (f->rend || !__toread(f)) f->read(f, &c, 1);
-	return c;
+	unsigned char c;
+	if ((f->rend || !__toread(f)) && f->read(f, &c, 1)==1) return c;
+	return EOF;
 }
