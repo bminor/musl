@@ -2,6 +2,6 @@
 
 int pthread_spin_lock(pthread_spinlock_t *s)
 {
-	while (*s || a_xchg(s, 1));
+	while (a_xchg(s, 1));
 	return 0;
 }
