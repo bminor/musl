@@ -6,7 +6,7 @@ static inline long __syscall0(long __n)
 {
 	unsigned long __ret;
 	__asm__ __volatile__ ("int $128" : "=a"(__ret) : "a"(__n) : "memory");
-	return __syscall_ret(__ret);
+	return __ret;
 }
 
 #ifndef __PIC__
