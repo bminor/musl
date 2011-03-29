@@ -7,7 +7,7 @@ int pthread_mutex_trylock(pthread_mutex_t *m)
 	pthread_t self;
 
 	if (m->_m_type == PTHREAD_MUTEX_NORMAL)
-		return (m->_m_lock || a_swap(&m->_m_lock, 1)) ? EBUSY : 0;
+		return -a_swap(&m->_m_lock, 1) & EBUSY;
 
 	self = pthread_self();
 	tid = self->tid | 0x80000000;
