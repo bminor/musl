@@ -41,10 +41,14 @@ struct pthread {
 		long off;
 		void *pending;
 	} robust_list;
+	int unblock_cancel;
 };
 
 struct __timer {
-	struct sigevent sev;
+	int timerid;
+	union sigval val;
+	void (*notify)(union sigval);
+	pthread_t thread;
 };
 
 #define __SU (sizeof(size_t)/sizeof(int))
@@ -73,7 +77,6 @@ struct __timer {
 
 #define SIGCANCEL 32
 #define SIGSYSCALL 33
-#define SIGTIMER  32 /* ?? */
 
 int __set_thread_area(void *);
 int __libc_sigaction(int, const struct sigaction *, struct sigaction *);

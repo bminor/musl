@@ -47,20 +47,19 @@ void __pthread_unwind_next(struct __ptcb *cb)
 static void docancel(struct pthread *self)
 {
 	struct __ptcb cb = { .__next = self->cancelbuf };
-	sigset_t set;
 	self->canceldisable = 1;
 	self->cancelasync = 0;
-	sigemptyset(&set);
-	sigaddset(&set, SIGCANCEL);
-	__libc_sigprocmask(SIG_UNBLOCK, &set, 0);
 	__pthread_unwind_next(&cb);
 }
 
 static void cancel_handler(int sig, siginfo_t *si, void *ctx)
 {
 	struct pthread *self = __pthread_self();
-	if (si->si_code > 0 || si->si_pid != self->pid) return;
-	self->cancel = 1;
+	if (!self->cancel) {
+		if (si->si_code == SI_TIMER && libc.sigtimer)
+			libc.sigtimer(sig, si, ctx);
+		return;
+	}
 	if (self->canceldisable) return;
 	if (self->cancelasync || (self->cancelpoint==1 && PC_AT_SYS(ctx)))
 		docancel(self);
@@ -176,6 +175,12 @@ static void init_threads()
 static int start(void *p)
 {
 	struct pthread *self = p;
+	if (self->unblock_cancel) {
+		sigset_t set;
+		sigemptyset(&set);
+		sigaddset(&set, SIGCANCEL);
+		__libc_sigprocmask(SIG_UNBLOCK, &set, 0);
+	}
 	pthread_exit(self->start(self->start_arg));
 	return 0;
 }
@@ -220,6 +225,7 @@ int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(vo
 	new->tsd = (void *)tsd;
 	new->detached = attr->_a_detach;
 	new->attr = *attr;
+	new->unblock_cancel = self->cancel;
 	memcpy(new->tlsdesc, self->tlsdesc, sizeof new->tlsdesc);
 	new->tlsdesc[1] = (uintptr_t)new;
 	stack = (void *)((uintptr_t)new-1 & ~(uintptr_t)15);

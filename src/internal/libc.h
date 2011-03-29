@@ -18,6 +18,7 @@ struct __libc {
 	FILE *ofl_head;
 	int ofl_lock;
 	void (*lockfile)(FILE *);
+	void (*sigtimer)();
 };
 
 
