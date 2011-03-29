@@ -47,6 +47,7 @@ wchar_t *wcsncat (wchar_t *, const wchar_t *, size_t);
 int wcscmp (const wchar_t *, const wchar_t *);
 int wcsncmp (const wchar_t *, const wchar_t *, size_t);
 
+int wcscoll(const wchar_t *, const wchar_t *);
 size_t wcsxfrm (wchar_t *, const wchar_t *, size_t n);
 
 wchar_t *wcschr (const wchar_t *, wchar_t);
