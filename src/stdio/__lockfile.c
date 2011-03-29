@@ -13,7 +13,7 @@ void __lockfile(FILE *f)
 		f->lockcount++;
 		return;
 	}
-	while (f->lock || a_cas(&f->lock, 0, tid))
+	while (a_cas(&f->lock, 0, tid))
 		if (spins) spins--, a_spin();
 		else syscall(SYS_sched_yield);
 	f->lockcount = 1;
