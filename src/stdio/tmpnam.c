@@ -26,5 +26,5 @@ char *tmpnam(char *s)
 		n = ts.tv_nsec ^ (unsigned)&s ^ (unsigned)s;
 		snprintf(s, L_tmpnam, "/tmp/t%x-%x", a_fetch_add(&index, 1), n);
 	} while (!__syscall(SYS_access, s, F_OK) && try++<MAXTRIES);
-	return try==MAXTRIES ? 0 : s;
+	return try>=MAXTRIES ? 0 : s;
 }

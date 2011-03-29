@@ -1,19 +1,22 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <fcntl.h>
 #include <unistd.h>
-#include <limits.h>
-#include <errno.h>
+#include <time.h>
 #include "libc.h"
+#include "atomic.h"
+
+#define MAXTRIES 100
 
 char *tempnam(const char *dir, const char *pfx)
 {
-	static int lock;
 	static int index;
 	char *s;
+	struct timespec ts;
 	int pid = getpid();
-	int l;
+	size_t l;
+	int n;
+	int try=0;
 
 	if (!dir) dir = P_tmpdir;
 	if (!pfx) pfx = "temp";
@@ -21,22 +24,18 @@ char *tempnam(const char *dir, const char *pfx)
 	if (access(dir, R_OK|W_OK|X_OK) != 0)
 		return NULL;
 
-	l = strlen(dir) + 1 + strlen(pfx) + 2 + sizeof(int)*3*2 + 1;
+	l = strlen(dir) + 1 + strlen(pfx) + 3*(sizeof(int)*3+2) + 1;
 	s = malloc(l);
-	if (!s) {
-		errno = ENOMEM;
-		return NULL;
-	}
+	if (!s) return s;
 
-	LOCK(&lock);
-	for (; index < TMP_MAX; index++) {
-		snprintf(s, l, "%s/%s-%d-%d", dir, pfx, pid, index);
-		if (access(s, F_OK) != 0) {
-			UNLOCK(&lock);
-			return s;
-		}
+	do {
+		clock_gettime(CLOCK_REALTIME, &ts);
+		n = ts.tv_nsec ^ (unsigned)&s ^ (unsigned)s;
+		snprintf(s, l, "%s/%s-%d-%d-%x", dir, pfx, pid, a_fetch_add(&index, 1), n);
+	} while (!access(s, F_OK) && try++<MAXTRIES);
+	if (try>=MAXTRIES) {
+		free(s);
+		return 0;
 	}
-	UNLOCK(&lock);
-	free(s);
-	return NULL;	
+	return s;
 }
