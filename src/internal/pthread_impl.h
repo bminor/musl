@@ -43,6 +43,10 @@ struct pthread {
 	} robust_list;
 };
 
+struct __timer {
+	struct sigevent sev;
+};
+
 #define __SU (sizeof(size_t)/sizeof(int))
 
 #define _a_stacksize __u.__s[0]
