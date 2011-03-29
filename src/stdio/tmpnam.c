@@ -1,38 +1,30 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <limits.h>
 #include <unistd.h>
+#include <time.h>
 #include "libc.h"
+#include "syscall.h"
+#include "atomic.h"
+
+#define MAXTRIES 100
 
 char *tmpnam(char *s)
 {
-	static int lock;
 	static int index;
-	static char *s2;
-	int pid = getpid();
-	char *dir = getenv("TMPDIR");
+	static char s2[L_tmpnam];
+	struct timespec ts;
+	int try = 0;
+	unsigned n;
 
-	if (!s) {
-		if (!s2) s2 = malloc(L_tmpnam);
-		s = s2;
-	}
+	if (!s) s = s2;
 
-	/* this interface is insecure anyway but at least we can try.. */
-	if (!dir || strlen(dir) > L_tmpnam-32)
-		dir = P_tmpdir;
-
-	if (access(dir, R_OK|W_OK|X_OK) != 0)
+	if (__syscall(SYS_access, P_tmpdir, R_OK|W_OK|X_OK) != 0)
 		return NULL;
 
-	LOCK(&lock);
-	for (index++; index < TMP_MAX; index++) {
-		snprintf(s, L_tmpnam, "%s/temp%d-%d", dir, pid, index);
-		if (access(s, F_OK) != 0) {
-			UNLOCK(&lock);
-			return s;
-		}
-	}
-	UNLOCK(&lock);
-	return NULL;
+	do {
+		__syscall(SYS_clock_gettime, CLOCK_REALTIME, &ts, 0);
+		n = ts.tv_nsec ^ (unsigned)&s ^ (unsigned)s;
+		snprintf(s, L_tmpnam, "/tmp/t%x-%x", a_fetch_add(&index, 1), n);
+	} while (!__syscall(SYS_access, s, F_OK) && try++<MAXTRIES);
+	return try==MAXTRIES ? 0 : s;
 }
