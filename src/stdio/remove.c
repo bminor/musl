@@ -4,6 +4,6 @@
 
 int remove(const char *path)
 {
-	return (syscall(SYS_unlink, path) && errno == EISDIR)
-		? syscall(SYS_rmdir, path) : 0;
+	int r = syscall(SYS_unlink, path);
+	return (r && errno == EISDIR) ? syscall(SYS_rmdir, path) : r;
 }
