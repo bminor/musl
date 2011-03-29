@@ -30,7 +30,6 @@ struct pthread {
 	void *start_arg;
 	void *(*start)(void *);
 	void *result;
-	jmp_buf exit_jmp_buf;
 	int detached;
 	int exitlock;
 	struct __ptcb *cancelbuf;
