@@ -17,6 +17,7 @@ extern "C" {
 #define __NEED_uid_t
 #define __NEED_struct_timespec
 #define __NEED_pthread_t
+#define __NEED_pthread_attr_t
 #define __NEED_time_t
 #define __NEED_clock_t
 #define __NEED_sigset_t
@@ -24,8 +25,7 @@ extern "C" {
 
 #include <bits/alltypes.h>
 
-struct sigaction
-{
+struct sigaction {
 	union {
 		void (*sa_handler)(int);
 		void (*sa_sigaction)(int, siginfo_t *, void *);
@@ -37,18 +37,28 @@ struct sigaction
 #define sa_handler   __sa_handler.sa_handler
 #define sa_sigaction __sa_handler.sa_sigaction
 
-typedef struct
-{
+typedef struct {
 	void *ss_sp;
 	int ss_flags;
 	size_t ss_size;
 } stack_t;
 
-union sigval
-{
+union sigval {
 	int sival_int;
 	void *sival_ptr;
 };
+
+struct sigevent {
+	union sigval sigev_value;
+	int sigev_signo;
+	int sigev_notify;
+	void (*sigev_notify_function)(union sigval);
+	pthread_attr_t *sigev_notify_attributes;
+};
+
+#define SIGEV_SIGNAL 0
+#define SIGEV_NONE 1
+#define SIGEV_THREAD 2
 
 int __libc_current_sigrtmin(void);
 int __libc_current_sigrtmax(void);
