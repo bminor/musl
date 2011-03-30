@@ -61,21 +61,28 @@ int timer_create(clockid_t clk, struct sigevent *evp, timer_t *res)
 	struct start_args args;
 	timer_t t;
 	struct ksigevent ksev;
+	int timerid;
 
 	if (evp) sev = *evp;
 
 	switch (sev.sigev_notify) {
 	case SIGEV_NONE:
 	case SIGEV_SIGNAL:
-		if (!(t = calloc(1, sizeof *t)))
-			return -1;
 		ksev.sigev_value = evp ? sev.sigev_value
 			: (union sigval){.sival_ptr=t};
 		ksev.sigev_signo = sev.sigev_signo;
 		ksev.sigev_notify = sev.sigev_notify;
 		ksev.sigev_tid = 0;
+		if (syscall(SYS_timer_create, clk, &ksev, &timerid) < 0)
+			return -1;
+		if (!(t = calloc(1, sizeof *t))) {
+			syscall(SYS_timer_delete, timerid);
+			return -1;
+		}
+		t->timerid = timerid;
 		break;
 	case SIGEV_THREAD:
+		if (!libc.sigtimer) libc.sigtimer = sighandler;
 		if (sev.sigev_notify_attributes)
 			attr = *sev.sigev_notify_attributes;
 		else
@@ -95,13 +102,14 @@ int timer_create(clockid_t clk, struct sigevent *evp, timer_t *res)
 		ksev.sigev_signo = SIGCANCEL;
 		ksev.sigev_notify = 4; /* SIGEV_THREAD_ID */
 		ksev.sigev_tid = td->tid;
-		if (!libc.sigtimer) libc.sigtimer = sighandler;
+		if (syscall(SYS_timer_create, clk, &ksev, &t->timerid) < 0) {
+			t->timerid = -1;
+			pthread_cancel(td);
+			return -1;
+		}
 		break;
-	}
-
-	t->timerid = -1;
-	if (syscall(SYS_timer_create, clk, &ksev, &t->timerid) < 0) {
-		timer_delete(t);
+	default:
+		errno = EINVAL;
 		return -1;
 	}
 
