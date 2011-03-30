@@ -11,7 +11,6 @@ struct ksigevent {
 struct start_args {
 	pthread_barrier_t b;
 	struct sigevent *sev;
-	timer_t t;
 };
 
 static void sighandler(int sig, siginfo_t *si, void *ctx)
@@ -26,30 +25,21 @@ static void sighandler(int sig, siginfo_t *si, void *ctx)
 	pthread_setcancelstate(st, 0);
 }
 
-static void killtimer(void *arg)
-{
-	timer_t t = arg;
-	if (t->timerid >= 0) __syscall(SYS_timer_delete, t->timerid);
-}
-
 static void *start(void *arg)
 {
 	pthread_t self = __pthread_self();
 	struct start_args *args = arg;
-	struct __timer t = { .timerid = -1 };
 
 	/* Reuse no-longer-needed thread structure fields to avoid
 	 * needing the timer address in the signal handler. */
 	self->start = (void *(*)(void *))args->sev->sigev_notify_function;
 	self->start_arg = args->sev->sigev_value.sival_ptr;
-	args->t = &t;
+	self->result = (void *)-1;
 
-	pthread_cleanup_push(killtimer, &t);
 	pthread_barrier_wait(&args->b);
 	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, 0);
 	/* Loop on async-signal-safe cancellation point */
 	for (;;) sleep(1);
-	pthread_cleanup_pop(1);
 	return 0;
 }
 
@@ -79,11 +69,7 @@ int timer_create(clockid_t clk, struct sigevent *evp, timer_t *res)
 		ksev.sigev_tid = 0;
 		if (syscall(SYS_timer_create, clk, &ksev, &timerid) < 0)
 			return -1;
-		if (!(t = calloc(1, sizeof *t))) {
-			syscall(SYS_timer_delete, timerid);
-			return -1;
-		}
-		t->timerid = timerid;
+		*res = (void *)(2*timerid+1);
 		break;
 	case SIGEV_THREAD:
 		if (!libc.sigtimer) libc.sigtimer = sighandler;
@@ -105,19 +91,17 @@ int timer_create(clockid_t clk, struct sigevent *evp, timer_t *res)
 		ksev.sigev_tid = td->tid;
 		r = syscall(SYS_timer_create, clk, &ksev, &timerid);
 		pthread_barrier_wait(&args.b);
-		t = args.t;
 		if (r < 0) {
 			pthread_cancel(td);
 			return -1;
 		}
-		t->timerid = timerid;
-		t->thread = td;
+		td->result = (void *)timerid;
+		*res = td;
 		break;
 	default:
 		errno = EINVAL;
 		return -1;
 	}
 
-	*res = t;
 	return 0;
 }

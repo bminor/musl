@@ -3,5 +3,7 @@
 
 int timer_getoverrun(timer_t t)
 {
-	return syscall(SYS_timer_getoverrun, t->timerid);
+	if ((uintptr_t)t & 1) t = (void *)((unsigned long)t / 2);
+	else t = ((pthread_t)t)->result;
+	return syscall(SYS_timer_getoverrun, (long)t);
 }

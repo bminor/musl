@@ -3,5 +3,7 @@
 
 int timer_gettime(timer_t t, struct itimerspec *val)
 {
-	return syscall(SYS_timer_gettime, t->timerid, val);
+	if ((uintptr_t)t & 1) t = (void *)((unsigned long)t / 2);
+	else t = ((pthread_t)t)->result;
+	return syscall(SYS_timer_gettime, (long)t, val);
 }
