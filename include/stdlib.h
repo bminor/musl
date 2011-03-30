@@ -124,6 +124,7 @@ void lcong48 (unsigned short [7]);
 char *mktemp (char *);
 void *valloc (size_t);
 void *memalign(size_t, size_t);
+int clearenv(void);
 #endif
 
 
