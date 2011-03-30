@@ -46,8 +46,6 @@ struct pthread {
 
 struct __timer {
 	int timerid;
-	union sigval val;
-	void (*notify)(union sigval);
 	pthread_t thread;
 };
 
