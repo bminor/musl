@@ -2,6 +2,6 @@
 
 int pthread_cancel(pthread_t t)
 {
-	t->cancel = 1;
+	a_store(&t->cancel, 1);
 	return pthread_kill(t, SIGCANCEL);
 }
