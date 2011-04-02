@@ -5,20 +5,20 @@
 #include <stdio.h>
 
 struct __libc {
-	void (*lock)(volatile int *);
+	int *(*errno_location)(void);
 	void (*cancelpt)(int);
+	void (*lock)(volatile int *);
+	void (*lockfile)(FILE *);
+	void (**tsd_keys)(void *);
+	void (*sigtimer)();
 	int (*atexit)(void (*)(void));
 	void (*fini)(void);
 	void (*ldso_fini)(void);
-	int *(*errno_location)(void);
 	volatile int threads_minus_1;
+	int ofl_lock;
 	int (*rsyscall)(int, long, long, long, long, long, long);
-	void (**tsd_keys)(void *);
 	void (*fork_handler)(int);
 	FILE *ofl_head;
-	int ofl_lock;
-	void (*lockfile)(FILE *);
-	void (*sigtimer)();
 };
 
 
