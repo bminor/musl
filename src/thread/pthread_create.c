@@ -13,7 +13,6 @@ void __pthread_unwind_next(struct __ptcb *cb)
 	if (cb->__next) longjmp((void *)cb->__next->__jb, 1);
 
 	self = pthread_self();
-	if (self->cancel) self->result = PTHREAD_CANCELED;
 
 	LOCK(&self->exitlock);
 
@@ -226,6 +225,7 @@ int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(vo
 	new->detached = attr->_a_detach;
 	new->attr = *attr;
 	new->unblock_cancel = self->cancel;
+	new->result = PTHREAD_CANCELED;
 	memcpy(new->tlsdesc, self->tlsdesc, sizeof new->tlsdesc);
 	new->tlsdesc[1] = (uintptr_t)new;
 	stack = (void *)((uintptr_t)new-1 & ~(uintptr_t)15);
