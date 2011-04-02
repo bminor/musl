@@ -13,7 +13,7 @@ void __pthread_unwind_next(struct __ptcb *cb)
 	if (cb->__next) longjmp((void *)cb->__next->__jb, 1);
 
 	self = pthread_self();
-	if (self->cancel) self->result = PTHREAD_CANCELLED;
+	if (self->cancel) self->result = PTHREAD_CANCELED;
 
 	LOCK(&self->exitlock);
 

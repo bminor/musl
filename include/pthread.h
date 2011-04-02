@@ -65,7 +65,7 @@ extern "C" {
 #define PTHREAD_CANCEL_DEFERRED 0
 #define PTHREAD_CANCEL_ASYNCHRONOUS 1
 
-#define PTHREAD_CANCELLED ((void *)-1)
+#define PTHREAD_CANCELED ((void *)-1)
 
 
 #define PTHREAD_BARRIER_SERIAL_THREAD (-1)
