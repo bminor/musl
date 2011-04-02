@@ -179,7 +179,7 @@ fail:
 	return 0;
 }
 
-static int init_malloc()
+static int init_malloc(size_t n)
 {
 	static int init, waiters;
 	int state;
@@ -196,7 +196,7 @@ static int init_malloc()
 
 	mal.brk = __brk(0) + 2*SIZE_ALIGN-1 & -SIZE_ALIGN;
 
-	c = expand_heap(1);
+	c = expand_heap(n);
 
 	if (!c) {
 		a_store(&init, 0);
@@ -210,7 +210,7 @@ static int init_malloc()
 
 	a_store(&init, 2);
 	if (waiters) __wake(&init, -1, 1);
-	return 0;
+	return 1;
 }
 
 static int adjust_size(size_t *n)
@@ -347,7 +347,7 @@ void *malloc(size_t n)
 	for (;;) {
 		uint64_t mask = mal.binmap & -(1ULL<<i);
 		if (!mask) {
-			init_malloc();
+			if (init_malloc(n) > 0) continue;
 			c = expand_heap(n);
 			if (!c) return 0;
 			if (alloc_rev(c)) {
