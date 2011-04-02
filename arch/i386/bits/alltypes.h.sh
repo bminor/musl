@@ -68,7 +68,6 @@ TYPEDEF long long          intmax_t;
 TYPEDEF unsigned long long uintmax_t;
 
 TYPEDEF long time_t;
-TYPEDEF unsigned useconds_t;
 TYPEDEF int suseconds_t;
 STRUCT timeval { time_t tv_sec; int tv_usec; };
 STRUCT timespec { time_t tv_sec; long tv_nsec; };

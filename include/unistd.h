@@ -29,7 +29,6 @@ extern "C" {
 #define __NEED_gid_t
 #define __NEED_off_t
 #define __NEED_pid_t
-#define __NEED_useconds_t
 #define __NEED_intptr_t
 
 #include <bits/alltypes.h>
@@ -152,8 +151,8 @@ int vhangup(void);
 int chroot(const char *);
 int getpagesize(void);
 int sethostname(const char *, size_t);
-int usleep(useconds_t);
-useconds_t ualarm(useconds_t, useconds_t);
+int usleep(unsigned);
+unsigned ualarm(unsigned, unsigned);
 int setgroups(int, const gid_t []);
 #endif
 
