@@ -88,7 +88,8 @@ implemented POSIX timers.
 
 optimized and simplified many thread-related functions.
 
-eliminated resource leak races in thread cancellation.
+eliminated resource leak races in thread cancellation. (almost all
+existing implementations, including glibc, have these leaks.)
 
 overhauled stdio implementation to take advantage of readv/writev for
 reduced syscall load, and improved stdio's handling of error status.
