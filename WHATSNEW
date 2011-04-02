@@ -79,3 +79,22 @@ implemented flockfile, wprintf, and robust mutex functions.
 
 fixed stack corruption bug in times(), minor header bugs, and some
 error return value bugs in thread interfaces.
+
+
+
+0.7.5 - new features, major optimization, and robustness
+
+implemented POSIX timers.
+
+optimized and simplified many thread-related functions.
+
+eliminated resource leak races in thread cancellation.
+
+overhauled stdio implementation to take advantage of readv/writev for
+reduced syscall load, and improved stdio's handling of error status.
+
+added syscall header and interface for applications to use and
+greatly simplified internal system for making syscalls.
+
+strangthened tmpnam/tempnam/tmpfile filename generation and made the
+straight C functions not depend on POSIX symbols.
