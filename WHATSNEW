@@ -98,3 +98,9 @@ greatly simplified internal system for making syscalls.
 
 strangthened tmpnam/tempnam/tmpfile filename generation and made the
 straight C functions not depend on POSIX symbols.
+
+fixed pthread cancellation ABI on i386 to match the LSB/glibc ABI
+
+better double-free handling in malloc
+
+various minor bug fixes
