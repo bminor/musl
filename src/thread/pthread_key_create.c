@@ -15,7 +15,6 @@ int pthread_key_create(pthread_key_t *k, void (*dtor)(void *))
 	unsigned j = i;
 
 	pthread_self();
-	libc.tsd_keys = keys;
 	if (!dtor) dtor = nodtor;
 	do {
 		if (!a_cas_p(keys+j, 0, dtor)) {
@@ -24,6 +23,12 @@ int pthread_key_create(pthread_key_t *k, void (*dtor)(void *))
 		}
 	} while ((j=(j+1)%PTHREAD_KEYS_MAX) != i);
 	return EAGAIN;
+}
+
+int pthread_key_delete(pthread_key_t k)
+{
+	keys[k] = 0;
+	return 0;
 }
 
 void __pthread_tsd_run_dtors(pthread_t self)
