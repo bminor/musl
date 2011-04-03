@@ -85,7 +85,7 @@ static void rsyscall_handler(int sig, siginfo_t *si, void *ctx)
 	/* Threads which have already decremented themselves from the
 	 * thread count must not increment rs.cnt or otherwise act. */
 	if (self->dead) {
-		__wait(&rs.hold, 0, 1, 1);
+		sigaddset(&((ucontext_t *)ctx)->uc_sigmask, SIGSYSCALL);
 		return;
 	}
 
