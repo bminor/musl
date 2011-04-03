@@ -1,5 +1,6 @@
 #include <locale.h>
 #include <langinfo.h>
+#include "libc.h"
 
 static const char c_time[] =
 	"Sun\0" "Mon\0" "Tue\0" "Wed\0" "Thu\0" "Fri\0" "Sat\0"
@@ -24,7 +25,7 @@ static const char c_time[] =
 static const char c_messages[] = "^[yY]\0" "^[nN]";
 static const char c_numeric[] = ".\0" "";
 
-const char *__langinfo(nl_item item)
+char *__langinfo(nl_item item)
 {
 	int cat = item >> 16;
 	int idx = item & 65535;
@@ -54,5 +55,7 @@ const char *__langinfo(nl_item item)
 	}
 
 	for (; idx; idx--, str++) for (; *str; str++);
-	return str;
+	return (char *)str;
 }
+
+weak_alias(__langinfo, nl_langinfo);
