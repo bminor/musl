@@ -21,6 +21,8 @@ struct dirent
 	char d_name[1];
 };
 
+#define d_fileno d_ino
+
 int            closedir(DIR *);
 DIR           *fdopendir(int);
 DIR           *opendir(const char *);
