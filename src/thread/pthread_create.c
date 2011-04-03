@@ -195,7 +195,7 @@ int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(vo
 	unsigned char *map, *stack, *tsd;
 	static const pthread_attr_t default_attr;
 
-	if (!self) return errno = ENOSYS;
+	if (!self) return ENOSYS;
 	if (!init && ++init) init_threads();
 
 	if (!attr) attr = &default_attr;
