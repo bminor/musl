@@ -11,5 +11,5 @@ struct statvfs {
 	unsigned long f_frsize;
 	fsfilcnt_t f_favail;
 	unsigned long f_flag;
-	unsigned long __reserved[2];
+	unsigned long __reserved[3];
 };
