@@ -24,6 +24,12 @@ void __sigtimer_handler(pthread_t self)
 	pthread_setcancelstate(st, 0);
 }
 
+static void cleanup(void *p)
+{
+	pthread_t self = p;
+	__syscall(SYS_timer_delete, self->result);
+}
+
 static void *start(void *arg)
 {
 	pthread_t self = __pthread_self();
@@ -35,10 +41,12 @@ static void *start(void *arg)
 	self->start_arg = args->sev->sigev_value.sival_ptr;
 	self->result = (void *)-1;
 
+	pthread_cleanup_push(cleanup, self);
 	pthread_barrier_wait(&args->b);
 	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, 0);
 	/* Loop on async-signal-safe cancellation point */
 	for (;;) sleep(1);
+	pthread_cleanup_pop(0);
 	return 0;
 }
 
