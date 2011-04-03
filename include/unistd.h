@@ -141,6 +141,7 @@ void swab(const void *, void *, ssize_t);
 long gethostid(void);
 int nice(int);
 void sync(void);
+int getdtablesize(void);
 #endif
 
 #ifdef _GNU_SOURCE
