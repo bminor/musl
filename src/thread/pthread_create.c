@@ -1,5 +1,10 @@
 #include "pthread_impl.h"
 
+static void dummy_1(pthread_t self)
+{
+}
+weak_alias(dummy_1, __pthread_tsd_run_dtors);
+
 #ifdef __pthread_unwind_next
 #undef __pthread_unwind_next
 #define __pthread_unwind_next __pthread_unwind_next_3
@@ -7,7 +12,6 @@
 
 void __pthread_unwind_next(struct __ptcb *cb)
 {
-	int i, j, not_finished;
 	pthread_t self;
 
 	if (cb->__next) longjmp((void *)cb->__next->__jb, 1);
@@ -16,18 +20,7 @@ void __pthread_unwind_next(struct __ptcb *cb)
 
 	LOCK(&self->exitlock);
 
-	not_finished = self->tsd_used;
-	for (j=0; not_finished && j<PTHREAD_DESTRUCTOR_ITERATIONS; j++) {
-		not_finished = 0;
-		for (i=0; i<PTHREAD_KEYS_MAX; i++) {
-			if (self->tsd[i] && libc.tsd_keys[i]) {
-				void *tmp = self->tsd[i];
-				self->tsd[i] = 0;
-				libc.tsd_keys[i](tmp);
-				not_finished = 1;
-			}
-		}
-	}
+	__pthread_tsd_run_dtors(self);
 
 	/* Mark this thread dead before decrementing count */
 	self->dead = 1;
