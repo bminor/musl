@@ -4,6 +4,7 @@ static void dummy_1(pthread_t self)
 {
 }
 weak_alias(dummy_1, __pthread_tsd_run_dtors);
+weak_alias(dummy_1, __sigtimer_handler);
 
 #ifdef __pthread_unwind_next
 #undef __pthread_unwind_next
@@ -47,13 +48,9 @@ static void docancel(struct pthread *self)
 static void cancel_handler(int sig, siginfo_t *si, void *ctx)
 {
 	struct pthread *self = __pthread_self();
-	if (!self->cancel) {
-		if (si->si_code == SI_TIMER && libc.sigtimer)
-			libc.sigtimer(sig, si, ctx);
-		return;
-	}
-	if (self->canceldisable) return;
-	if (self->cancelasync || (self->cancelpoint==1 && PC_AT_SYS(ctx)))
+	if (si->si_code == SI_TIMER) __sigtimer_handler(self);
+	if (self->cancel && !self->canceldisable &&
+	    (self->cancelasync || (self->cancelpoint==1 && PC_AT_SYS(ctx))))
 		docancel(self);
 }
 

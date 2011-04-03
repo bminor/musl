@@ -10,13 +10,12 @@ struct __libc {
 	void (*lock)(volatile int *);
 	void (*lockfile)(FILE *);
 	void (*fork_handler)(int);
-	void (*sigtimer)();
+	int (*rsyscall)(int, long, long, long, long, long, long);
 	int (*atexit)(void (*)(void));
 	void (*fini)(void);
 	void (*ldso_fini)(void);
 	volatile int threads_minus_1;
 	int ofl_lock;
-	int (*rsyscall)(int, long, long, long, long, long, long);
 	FILE *ofl_head;
 };
 

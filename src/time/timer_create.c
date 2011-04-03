@@ -13,10 +13,9 @@ struct start_args {
 	struct sigevent *sev;
 };
 
-static void sighandler(int sig, siginfo_t *si, void *ctx)
+void __sigtimer_handler(pthread_t self)
 {
 	int st;
-	pthread_t self = __pthread_self();
 	void (*notify)(union sigval) = (void (*)(union sigval))self->start;
 	union sigval val = { .sival_ptr = self->start_arg };
 
@@ -72,7 +71,6 @@ int timer_create(clockid_t clk, struct sigevent *evp, timer_t *res)
 		*res = (void *)(2*timerid+1);
 		break;
 	case SIGEV_THREAD:
-		if (!libc.sigtimer) libc.sigtimer = sighandler;
 		if (sev.sigev_notify_attributes)
 			attr = *sev.sigev_notify_attributes;
 		else
