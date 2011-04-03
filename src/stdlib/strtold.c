@@ -2,6 +2,11 @@
 #include <errno.h>
 #include <ctype.h>
 
+static int valid_exp(const unsigned char *s)
+{
+	return isdigit(*s) || ((s[0]=='+'||s[0]=='-') && isdigit(s[1]));
+}
+
 long double strtold(const char *s1, char **p)
 {
 	const unsigned char *s = (void *)s1;
@@ -11,6 +16,7 @@ long double strtold(const char *s1, char **p)
 	int nonzero = 0;
 	int radix = '.';
 	long e;
+	int saved_errno = errno;
 
 	if (!p) p = (char **)&s1;
 
@@ -41,26 +47,23 @@ long double strtold(const char *s1, char **p)
 		/* We have a real hex float */
 		s += 2;
 		for (; isxdigit(*s); s++) {
-			x = 16*x + (isdigit(*s)?*s-'0':(*s|32)-'a');
+			x = 16*x + (isdigit(*s)?*s-'0':(*s|32)-'a'+10);
 			if (*s!='0') nonzero=1;
 		}
 		if (*s == radix) {
 			frac = 1.0/16.0;
 			for (s++; isxdigit(*s); s++) {
-				x += frac * (isdigit(*s)?*s-'0':(*s|32)-'a');
+				x += frac * (isdigit(*s)?*s-'0':(*s|32)-'a'+10);
 				frac *= 1.0/16.0;
 				if (*s!='0') nonzero=1;
 			}
 		}
-		if ((*s|32) == 'p') {
+		if ((*s|32) == 'p' && valid_exp(s+1)) {
 			e = strtol((void *)(s+1), (void *)&s, 10);
 			for (; e>0; e--) x *= 2.0;
 			for (; e<0; e++) x *= 0.5;
 		}
-		if ((nonzero && !x) || !(1.0/x))
-			errno = ERANGE;
-		*p = (char *)s;
-		return sign ? -x : x;
+		goto finish;
 	}
 
 	/* Mantissa must be non-degenerate */
@@ -81,13 +84,13 @@ long double strtold(const char *s1, char **p)
 			if (*s!='0') nonzero=1;
 		}
 	}
-	if ((*s|32)=='e') {
+	if ((*s|32)=='e' && valid_exp(s+1)) {
 		e = strtol((void *)++s, (void *)&s, 10);
 		for (; e>0; e--) x *= 10.0;
 		for (; e<0; e++) x /= 10.0;
 	}
-	if ((nonzero && !x) || !(1.0/x))
-		errno = ERANGE;
+finish:
+	errno = ((nonzero && !x) || !(1.0/x)) ? ERANGE : saved_errno;
 	*p = (char*)s;
 	return sign ? -x : x;
 }
