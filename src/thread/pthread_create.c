@@ -80,8 +80,7 @@ static void rsyscall_handler(int sig, siginfo_t *si, void *ctx)
 {
 	struct pthread *self = __pthread_self();
 
-	if (si->si_code > 0 || si->si_pid != self->pid ||
-		rs.cnt == libc.threads_minus_1) return;
+	if (!rs.hold || rs.cnt == libc.threads_minus_1) return;
 
 	/* Threads which have already decremented themselves from the
 	 * thread count must not increment rs.cnt or otherwise act. */
@@ -118,9 +117,9 @@ static int rsyscall(int nr, long a, long b, long c, long d, long e, long f)
 	rs.arg[0] = a; rs.arg[1] = b;
 	rs.arg[2] = c; rs.arg[3] = d;
 	rs.arg[4] = d; rs.arg[5] = f;
-	rs.hold = 1;
 	rs.err = 0;
 	rs.cnt = 0;
+	rs.hold = 1;
 
 	/* Dispatch signals until all threads respond */
 	for (i=libc.threads_minus_1; i; i--)
