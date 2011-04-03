@@ -85,7 +85,7 @@ static void rsyscall_handler(int sig, siginfo_t *si, void *ctx)
 	/* Threads which have already decremented themselves from the
 	 * thread count must not increment rs.cnt or otherwise act. */
 	if (self->dead) {
-		sigaddset(&((ucontext_t *)ctx)->uc_sigmask, SIGSYSCALL);
+		sigfillset(&((ucontext_t *)ctx)->uc_sigmask);
 		return;
 	}
 
@@ -151,13 +151,18 @@ static void init_threads()
 	libc.lockfile = __lockfile;
 	libc.cancelpt = cancelpt;
 	libc.rsyscall = rsyscall;
-	sa.sa_sigaction = cancel_handler;
-	__libc_sigaction(SIGCANCEL, &sa, 0);
-	sigaddset(&sa.sa_mask, SIGSYSCALL);
-	sigaddset(&sa.sa_mask, SIGCANCEL);
+
+	sigfillset(&sa.sa_mask);
 	sa.sa_sigaction = rsyscall_handler;
 	__libc_sigaction(SIGSYSCALL, &sa, 0);
-	sigprocmask(SIG_UNBLOCK, &sa.sa_mask, 0);
+
+	sigemptyset(&sa.sa_mask);
+	sa.sa_sigaction = cancel_handler;
+	__libc_sigaction(SIGCANCEL, &sa, 0);
+
+	sigaddset(&sa.sa_mask, SIGSYSCALL);
+	sigaddset(&sa.sa_mask, SIGCANCEL);
+	__libc_sigprocmask(SIG_UNBLOCK, &sa.sa_mask, 0);
 }
 
 static int start(void *p)
