@@ -45,7 +45,7 @@ static void *start(void *arg)
 	pthread_barrier_wait(&args->b);
 	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, 0);
 	/* Loop on async-signal-safe cancellation point */
-	for (;;) sleep(1);
+	for (;;) sleep(1000000000);
 	pthread_cleanup_pop(0);
 	return 0;
 }
