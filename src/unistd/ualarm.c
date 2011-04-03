@@ -1,8 +1,13 @@
+#define _GNU_SOURCE
 #include <unistd.h>
-#include "syscall.h"
+#include <sys/time.h>
 
-/* FIXME: ?? */
-unsigned ualarm(unsigned useconds, unsigned interval)
+unsigned ualarm(unsigned value, unsigned interval)
 {
-	return -1;
+	struct itimerval it = {
+		.it_interval.tv_usec = interval,
+		.it_value.tv_usec = value
+	};
+	setitimer(ITIMER_REAL, &it, &it);
+	return it.it_value.tv_sec*1000000 + it.it_value.tv_usec;
 }
