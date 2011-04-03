@@ -154,6 +154,8 @@ int sethostname(const char *, size_t);
 int usleep(unsigned);
 unsigned ualarm(unsigned, unsigned);
 int setgroups(int, const gid_t []);
+int setresuid(uid_t, uid_t, uid_t);
+int setresgid(gid_t, gid_t, gid_t);
 #endif
 
 #define _XOPEN_VERSION          700
