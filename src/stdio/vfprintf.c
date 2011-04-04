@@ -627,13 +627,26 @@ int vfprintf(FILE *f, const char *fmt, va_list ap)
 	va_list ap2;
 	int nl_type[NL_ARGMAX] = {0};
 	union arg nl_arg[NL_ARGMAX];
+	unsigned char internal_buf[80], *saved_buf = 0;
 	int ret;
 
 	va_copy(ap2, ap);
 	if (printf_core(0, fmt, &ap2, nl_arg, nl_type) < 0) return -1;
 
 	FLOCK(f);
+	if (!f->buf_size) {
+		saved_buf = f->buf;
+		f->buf = internal_buf;
+		f->buf_size = sizeof internal_buf;
+	}
 	ret = printf_core(f, fmt, &ap2, nl_arg, nl_type);
+	if (saved_buf) {
+		f->write(f, 0, 0);
+		if (!f->wpos) ret = -1;
+		f->buf = saved_buf;
+		f->buf_size = 0;
+		f->wpos = f->wbase = f->wend = 0;
+	}
 	FUNLOCK(f);
 	va_end(ap2);
 	return ret;

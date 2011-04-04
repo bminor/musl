@@ -6,6 +6,7 @@ static FILE f = {
 	.buf_size = 0,
 	.fd = 2,
 	.flags = F_PERM | F_NORD,
+	.lbf = -1,
 	.write = __stdio_write,
 	.seek = __stdio_seek,
 	.close = __stdio_close,
