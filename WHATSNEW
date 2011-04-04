@@ -105,3 +105,27 @@ fixed pthread cancellation ABI on i386 to match the LSB/glibc ABI
 better double-free handling in malloc
 
 various minor bug fixes
+
+
+
+0.7.6 - major bug fixes
+
+fixed rare but serious under-allocation bug in malloc.
+
+fixed signedness bug in strchr that prevented finding high bytes.
+
+fixed serious parsing bugs in strtold.
+
+fixed statvfs syscall (it was always failing with EINVAL).
+
+fixed race condition in set*id() functions with threads (possible
+deadlock). further audit still needed though.
+
+fseek no longer sets the stream error flag on failed seeks (this was
+wrong and broke some programs, notably GNU m4).
+
+nl_langinfo is no longer a dummy function. (the functionality was
+previously implemented but accidentally left unused).
+
+various small fixes have been made to the implementations and
+prototypes for nonstandard and obsolete functions
