@@ -7,13 +7,10 @@ static size_t wrap_write(FILE *f, const unsigned char *buf, size_t len)
 
 int vdprintf(int fd, const char *fmt, va_list ap)
 {
-	int r;
-	unsigned char buf[BUFSIZ];
 	FILE f = {
 		.fd = fd, .lbf = EOF, .write = wrap_write,
-		.buf = buf+UNGET, .buf_size = sizeof buf - UNGET,
+		.buf = (void *)fmt, .buf_size = 0,
 		.lock = -1
 	};
-	r = vfprintf(&f, fmt, ap);
-	return fflush(&f) ? EOF : r;
+	return vfprintf(&f, fmt, ap);
 }
