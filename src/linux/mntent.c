@@ -13,21 +13,19 @@ int endmntent(FILE *f)
 	return 1;
 }
 
-struct mntent *getmntent(FILE *f)
+struct mntent *getmntent_r(FILE *f, struct mntent *mnt, char *linebuf, int buflen)
 {
-	static char linebuf[256];
-	static struct mntent mnt;
 	int cnt, n[8];
 
-	mnt.mnt_freq = 0;
-	mnt.mnt_passno = 0;
+	mnt->mnt_freq = 0;
+	mnt->mnt_passno = 0;
 
 	do {
-		fgets(linebuf, sizeof linebuf, f);
+		fgets(linebuf, buflen, f);
 		if (feof(f)) return NULL;
 		cnt = sscanf(linebuf, " %n%*s%n %n%*s%n %n%*s%n %n%*s%n %d %d",
 			n, n+1, n+2, n+3, n+4, n+5, n+6, n+7,
-			&mnt.mnt_freq, &mnt.mnt_passno);
+			&mnt->mnt_freq, &mnt->mnt_passno);
 	} while (cnt >= 8 && linebuf[n[0]] != '#');
 
 	linebuf[n[1]] = 0;
@@ -35,12 +33,19 @@ struct mntent *getmntent(FILE *f)
 	linebuf[n[5]] = 0;
 	linebuf[n[7]] = 0;
 
-	mnt.mnt_fsname = linebuf+n[0];
-	mnt.mnt_dir = linebuf+n[2];
-	mnt.mnt_type = linebuf+n[4];
-	mnt.mnt_opts = linebuf+n[6];
+	mnt->mnt_fsname = linebuf+n[0];
+	mnt->mnt_dir = linebuf+n[2];
+	mnt->mnt_type = linebuf+n[4];
+	mnt->mnt_opts = linebuf+n[6];
 
-	return &mnt;
+	return mnt;
+}
+
+struct mntent *getmntent(FILE *f)
+{
+	static char linebuf[256];
+	static struct mntent mnt;
+	return getmntent_r(f, &mnt, linebuf, sizeof linebuf);
 }
 
 int addmntent(FILE *f, const struct mntent *mnt)
