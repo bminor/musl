@@ -1,4 +1,4 @@
-#include "stdio_impl.h"
+#include <stdio.h>
 
 void setbuf(FILE *f, char *buf)
 {

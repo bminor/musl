@@ -156,6 +156,8 @@ char *cuserid(char *);
 #define off64_t off_t
 int asprintf(char **, const char *, ...);
 int vasprintf(char **, const char *, va_list);
+void setlinebuf(FILE *);
+void setbuffer(FILE *, char *, size_t);
 #endif
 
 #ifdef __cplusplus
