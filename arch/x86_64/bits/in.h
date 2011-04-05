@@ -71,6 +71,18 @@ struct in_pktinfo
 	struct in_addr ipi_addr;
 };
 
+struct in6_pktinfo
+{
+	struct in6_addr ipi6_addr;
+	unsigned ipi6_ifindex;
+};
+
+struct in6_mutinfo
+{
+	struct sockaddr_in6 ip6m_addr;
+	uint32_t ip6m_mtu;
+};
+
 #define IPV6_ADDRFORM           1
 #define IPV6_2292PKTINFO        2
 #define IPV6_2292HOPOPTS        3
