@@ -129,3 +129,17 @@ previously implemented but accidentally left unused).
 
 various small fixes have been made to the implementations and
 prototypes for nonstandard and obsolete functions
+
+
+
+next release - more bug fixes
+
+fixed floating point formatting and rounding bugs in printf.
+
+fixed broken %N$ positional argument specifiers in printf.
+
+fixed misaligned read/overread bug in strchr which could lead to
+crashes scanning tiny strings at the end of a page when the next page
+is not readable, or on archs (not yet supported) that forbid
+misaligned reads.
+
