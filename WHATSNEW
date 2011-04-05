@@ -143,3 +143,5 @@ crashes scanning tiny strings at the end of a page when the next page
 is not readable, or on archs (not yet supported) that forbid
 misaligned reads.
 
+added many compatibility and system-level interfaces, increasing the
+proportion of busybox that works with musl.
