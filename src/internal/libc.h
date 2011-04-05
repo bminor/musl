@@ -45,6 +45,8 @@ void __lockfile(FILE *);
 #define CANCELPT_BEGIN CANCELPT(1)
 #define CANCELPT_TRY CANCELPT(0)
 #define CANCELPT_END CANCELPT(-1)
+#define CANCELPT_INHIBIT CANCELPT(2)
+#define CANCELPT_RESUME CANCELPT(-2)
 
 extern char **__environ;
 #define environ __environ

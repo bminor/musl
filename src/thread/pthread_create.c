@@ -57,9 +57,19 @@ static void cancel_handler(int sig, siginfo_t *si, void *ctx)
 static void cancelpt(int x)
 {
 	struct pthread *self = __pthread_self();
-	if (self->canceldisable) return;
-	if ((self->cancelpoint+=x)==1 && x>=0 && self->cancel)
-		docancel(self);
+	switch (x) {
+	case 1:
+		self->cancelpoint++;
+	case 0:
+		if (self->cancel && self->cancelpoint==1 && !self->canceldisable)
+			docancel(self);
+		break;
+	case -1:
+		self->cancelpoint--;
+		break;
+	default:
+		self->canceldisable += x;
+	}
 }
 
 /* "rsyscall" is a mechanism by which a thread can synchronously force all
