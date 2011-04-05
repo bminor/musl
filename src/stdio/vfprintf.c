@@ -193,7 +193,7 @@ static int fmt_fp(FILE *f, long double y, int w, int p, int fl, int t)
 	uint32_t *a, *d, *r, *z;
 	int e2=0, e, i, j, l;
 	char buf[9+LDBL_MANT_DIG/4], *s;
-	const char *prefix="-+ ";
+	const char *prefix="-0X+0X 0X-0x+0x 0x";
 	int pl;
 	char ebuf0[3*sizeof(int)], *ebuf=&ebuf0[3*sizeof(int)], *estr;
 
@@ -201,10 +201,10 @@ static int fmt_fp(FILE *f, long double y, int w, int p, int fl, int t)
 	if (y<0 || 1/y<0) {
 		y=-y;
 	} else if (fl & MARK_POS) {
-		prefix++;
+		prefix+=3;
 	} else if (fl & PAD_POS) {
-		prefix+=2;
-	} else pl=0;
+		prefix+=6;
+	} else prefix++, pl=0;
 
 	if (!isfinite(y)) {
 		char *s = (t&32)?"inf":"INF";
@@ -223,15 +223,23 @@ static int fmt_fp(FILE *f, long double y, int w, int p, int fl, int t)
 		long double round = 8.0;
 		int re;
 
+		if (t&32) prefix += 9;
+		pl += 2;
+
 		if (p<0 || p>=LDBL_MANT_DIG/4-1) re=0;
 		else re=LDBL_MANT_DIG/4-1-p;
 
 		if (re) {
-			if (pl && *prefix=='-') y=-y;
 			while (re--) round*=16;
-			y+=round;
-			y-=round;
-			if (y<0) y=-y;
+			if (*prefix=='-') {
+				y=-y;
+				y-=round;
+				y+=round;
+				y=-y;
+			} else {
+				y+=round;
+				y-=round;
+			}
 		}
 
 		estr=fmt_u(e2<0 ? -e2 : e2, ebuf);
@@ -240,17 +248,17 @@ static int fmt_fp(FILE *f, long double y, int w, int p, int fl, int t)
 		*--estr = t+('p'-'a');
 
 		s=buf;
-		*s++='0';
-		*s++=t+('x'-'a');
 		do {
 			int x=y;
 			*s++=xdigits[x]|(t&32);
 			y=16*(y-x);
-			if (s-buf==3 && (y||p>0||(fl&ALT_FORM))) *s++='.';
+			if (s-buf==1 && (y||p>0||(fl&ALT_FORM))) *s++='.';
 		} while (y);
 
-		if (p<0) p = s-buf-4;
-		l = 1 + p + (p || (fl&ALT_FORM)) + ebuf-estr;
+		if (p && s-buf-2 < p)
+			l = (p+2) + (ebuf-estr);
+		else
+			l = (s-buf) + (ebuf-estr);
 
 		pad(f, ' ', w, pl+l, fl);
 		out(f, prefix, pl);
@@ -258,12 +266,12 @@ static int fmt_fp(FILE *f, long double y, int w, int p, int fl, int t)
 		out(f, buf, s-buf);
 		pad(f, '0', l-(ebuf-estr)-(s-buf), 0, 0);
 		out(f, estr, ebuf-estr);
-		pad(f, '0', w, pl+l, fl^LEFT_ADJ);
+		pad(f, ' ', w, pl+l, fl^LEFT_ADJ);
 		return MAX(w, pl+l);
 	}
 	if (p<0) p=6;
 
-	y *= 0x1p28; e2-=28;
+	if (y) y *= 0x1p28, e2-=28;
 
 	if (e2<0) a=r=z=big;
 	else a=r=z=big+sizeof(big)/sizeof(*big) - LDBL_MANT_DIG - 1;
@@ -305,7 +313,7 @@ static int fmt_fp(FILE *f, long double y, int w, int p, int fl, int t)
 	else e=0;
 
 	/* Perform rounding: j is precision after the radix (possibly neg) */
-	j = p - ((t|32)!='f')*e - ((t|32)=='g');
+	j = p - ((t|32)!='f')*e - ((t|32)=='g' && p);
 	if (j < 9*(z-r-1)) {
 		uint32_t x;
 		/* We avoid C's broken division of negative numbers */
@@ -347,7 +355,7 @@ static int fmt_fp(FILE *f, long double y, int w, int p, int fl, int t)
 		}
 		if (!(fl&ALT_FORM)) {
 			/* Count trailing zeros in last place */
-			if (z>a) for (i=10, j=0; z[-1]%i==0; i*=10, j++);
+			if (z>a && z[-1]) for (i=10, j=0; z[-1]%i==0; i*=10, j++);
 			else j=9;
 			if ((t|32)=='f')
 				p = MIN(p,MAX(0,9*(z-r-1)-j));
