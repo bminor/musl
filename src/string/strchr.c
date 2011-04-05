@@ -15,8 +15,9 @@ char *strchr(const char *s, int c)
 	c = (unsigned char)c;
 	if (!c) return (char *)s + strlen(s);
 
-	for (; ((uintptr_t)s & ALIGN) && *s; s++)
+	for (; ((uintptr_t)s & ALIGN); s++)
 		if (*(unsigned char *)s == c) return (char *)s;
+		else if (!*s) return 0;
 	k = ONES * c;
 	for (w = (void *)s; !HASZERO(*w) && !HASZERO(*w^k); w++);
 	for (s = (void *)w; *s; s++)
