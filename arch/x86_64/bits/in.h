@@ -5,7 +5,7 @@
 #define IP_ROUTER_ALERT    5
 #define IP_RECVOPTS        6
 #define IP_RETOPTS         7
-//#define IP_PKTINFO         8
+#define IP_PKTINFO         8
 #define IP_PKTOPTIONS      9
 #define IP_PMTUDISC        10
 #define IP_MTU_DISCOVER    10
