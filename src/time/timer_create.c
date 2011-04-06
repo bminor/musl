@@ -52,40 +52,35 @@ static void *start(void *arg)
 
 int timer_create(clockid_t clk, struct sigevent *evp, timer_t *res)
 {
-	struct sigevent sev = { 
-		.sigev_notify = SIGEV_SIGNAL,
-		.sigev_signo = SIGALRM
-	};
 	pthread_t td;
 	pthread_attr_t attr;
 	int r;
 	struct start_args args;
-	timer_t t;
-	struct ksigevent ksev;
+	struct ksigevent ksev, *ksevp=0;
 	int timerid;
 
-	if (evp) sev = *evp;
-
-	switch (sev.sigev_notify) {
+	switch (evp ? evp->sigev_notify : SIGEV_SIGNAL) {
 	case SIGEV_NONE:
 	case SIGEV_SIGNAL:
-		ksev.sigev_value = evp ? sev.sigev_value
-			: (union sigval){.sival_ptr=t};
-		ksev.sigev_signo = sev.sigev_signo;
-		ksev.sigev_notify = sev.sigev_notify;
-		ksev.sigev_tid = 0;
-		if (syscall(SYS_timer_create, clk, &ksev, &timerid) < 0)
+		if (evp) {
+			ksev.sigev_value = evp->sigev_value;
+			ksev.sigev_signo = evp->sigev_signo;
+			ksev.sigev_notify = evp->sigev_notify;
+			ksev.sigev_tid = 0;
+			ksevp = &ksev;
+		}
+		if (syscall(SYS_timer_create, clk, ksevp, &timerid) < 0)
 			return -1;
-		*res = (void *)(2*timerid+1);
+		*res = (void *)timerid;
 		break;
 	case SIGEV_THREAD:
-		if (sev.sigev_notify_attributes)
-			attr = *sev.sigev_notify_attributes;
+		if (evp->sigev_notify_attributes)
+			attr = *evp->sigev_notify_attributes;
 		else
 			pthread_attr_init(&attr);
 		pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 		pthread_barrier_init(&args.b, 0, 2);
-		args.sev = &sev;
+		args.sev = evp;
 		r = pthread_create(&td, &attr, start, &args);
 		if (r) {
 			errno = r;

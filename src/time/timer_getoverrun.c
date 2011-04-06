@@ -3,7 +3,6 @@
 
 int timer_getoverrun(timer_t t)
 {
-	if ((uintptr_t)t & 1) t = (void *)((unsigned long)t / 2);
-	else t = ((pthread_t)t)->result;
+	if ((uintptr_t)t >= 0x100000) t = ((pthread_t)t)->result;
 	return syscall(SYS_timer_getoverrun, (long)t);
 }
