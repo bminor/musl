@@ -30,7 +30,7 @@ struct msqid_ds
 
 int msgctl (int, int, struct msqid_ds *);
 int msgget (key_t, int);
-int msgrcv (int, void *, size_t, long, int);
+ssize_t msgrcv (int, void *, size_t, long, int);
 int msgsnd (int, const void *, size_t, int);
 
 #endif

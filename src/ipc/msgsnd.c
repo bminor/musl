@@ -3,7 +3,7 @@
 #include "ipc.h"
 #include "libc.h"
 
-ssize_t msgsnd(int q, const void *m, size_t len, int flag)
+int msgsnd(int q, const void *m, size_t len, int flag)
 {
 	ssize_t r;
 	CANCELPT_BEGIN;
