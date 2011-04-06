@@ -30,11 +30,11 @@ void __pthread_unwind_next(struct __ptcb *cb)
 		exit(0);
 
 	if (self->detached && self->map_base) {
-		syscall(__NR_rt_sigprocmask, SIG_BLOCK, (long)(uint64_t[1]){-1},0,8);
+		__syscall(__NR_rt_sigprocmask, SIG_BLOCK, (long)(uint64_t[1]){-1},0,8);
 		__unmapself(self->map_base, self->map_size);
 	}
 
-	syscall(SYS_exit, 0);
+	__syscall(SYS_exit, 0);
 }
 
 static void docancel(struct pthread *self)
