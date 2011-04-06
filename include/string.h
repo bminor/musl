@@ -73,7 +73,7 @@ int strcasecmp (const char *, const char *);
 int strncasecmp (const char *, const char *, size_t);
 char *strchrnul(const char *, int);
 char *strcasestr(const char *, const char *);
-char *strsep(char **, char *);
+char *strsep(char **, const char *);
 #endif
 
 #ifdef __cplusplus
