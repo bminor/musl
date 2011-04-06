@@ -132,7 +132,7 @@ prototypes for nonstandard and obsolete functions
 
 
 
-next release - more bug fixes
+0.7.7 - more bug fixes and program-compatibility improvements
 
 fixed floating point formatting and rounding bugs in printf.
 
@@ -142,6 +142,15 @@ fixed misaligned read/overread bug in strchr which could lead to
 crashes scanning tiny strings at the end of a page when the next page
 is not readable, or on archs (not yet supported) that forbid
 misaligned reads.
+
+fixed breakage of statvfs on x86_64
+
+fixed crash in getmntent_r
+
+fixed bug in POSIX timers created with NULL sigevent argument
+
+improved semaphore performance, and sem_wait is now interruptable by
+signals, as required by POSIX.
 
 added many compatibility and system-level interfaces, increasing the
 proportion of busybox that works with musl.
