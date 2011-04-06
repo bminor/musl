@@ -153,4 +153,6 @@ uint16_t ntohs(uint16_t);
 #define	IN_EXPERIMENTAL(a)	((((in_addr_t)(a)) & 0xe0000000) == 0xe0000000)
 #define	IN_BADCLASS(a)		((((in_addr_t)(a)) & 0xf0000000) == 0xf0000000)
 
+#define IN_LOOPBACKNET 127
+
 #endif
