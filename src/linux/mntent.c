@@ -26,7 +26,7 @@ struct mntent *getmntent_r(FILE *f, struct mntent *mnt, char *linebuf, int bufle
 		cnt = sscanf(linebuf, " %n%*s%n %n%*s%n %n%*s%n %n%*s%n %d %d",
 			n, n+1, n+2, n+3, n+4, n+5, n+6, n+7,
 			&mnt->mnt_freq, &mnt->mnt_passno);
-	} while (cnt >= 8 && linebuf[n[0]] != '#');
+	} while (cnt < 2 || linebuf[n[0]] == '#');
 
 	linebuf[n[1]] = 0;
 	linebuf[n[3]] = 0;
