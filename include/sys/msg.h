@@ -23,7 +23,7 @@ struct msqid_ds
 	msgqnum_t msg_qnum;
 	msglen_t msg_qbytes;
 	pid_t msg_lspid;
-	pid_t msd_lrpid;
+	pid_t msg_lrpid;
 };
 
 #define MSG_NOERROR 010000
