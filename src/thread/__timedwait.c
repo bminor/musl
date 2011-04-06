@@ -18,6 +18,6 @@ int __timedwait(volatile int *addr, int val, clockid_t clk, const struct timespe
 	}
 	if (priv) priv = 128; priv=0;
 	r = -__syscall(__NR_futex, (long)addr, FUTEX_WAIT | priv, val, at ? (long)&to : 0);
-	if (r == ETIMEDOUT) return r;
+	if (r == ETIMEDOUT || r == EINTR) return r;
 	return 0;
 }

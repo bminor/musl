@@ -16,7 +16,8 @@ int pthread_cond_timedwait(pthread_cond_t *c, pthread_mutex_t *m, const struct t
 	if ((r=pthread_mutex_unlock(m))) return r;
 
 	CANCELPT_BEGIN;
-	e = __timedwait(&c->_c_block, 1, c->_c_clock, ts, 0);
+	do e = __timedwait(&c->_c_block, 1, c->_c_clock, ts, 0);
+	while (e == EINTR);
 	CANCELPT_END;
 
 	pthread_cleanup_pop(0);
