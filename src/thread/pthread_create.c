@@ -89,6 +89,7 @@ static struct {
 static void rsyscall_handler(int sig, siginfo_t *si, void *ctx)
 {
 	struct pthread *self = __pthread_self();
+	long r;
 
 	if (!rs.hold || rs.cnt == libc.threads_minus_1) return;
 
@@ -99,8 +100,9 @@ static void rsyscall_handler(int sig, siginfo_t *si, void *ctx)
 		return;
 	}
 
-	if (syscall(rs.nr, rs.arg[0], rs.arg[1], rs.arg[2],
-		rs.arg[3], rs.arg[4], rs.arg[5]) < 0 && !rs.err) rs.err=errno;
+	r = __syscall(rs.nr, rs.arg[0], rs.arg[1],
+		rs.arg[2], rs.arg[3], rs.arg[4], rs.arg[5]);
+	if (r < 0) rs.err=-r;
 
 	a_inc(&rs.cnt);
 	__wake(&rs.cnt, 1, 1);
