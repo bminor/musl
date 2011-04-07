@@ -34,7 +34,7 @@ uintmax_t wcstoumax(const wchar_t *s, wchar_t **p, int base)
 
 	/* Convert to normal char string so we can use strtoumax */
 	buf[0] = sign;
-	if (wcstombs(buf+!!sign, s, sizeof buf-1) < 0) return 0;
+	if (wcstombs(buf+!!sign, s, sizeof buf-1) == -1) return 0;
 	buf[sizeof buf-1]=0;
 
 	/* Compute final position */
