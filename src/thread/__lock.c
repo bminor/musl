@@ -7,5 +7,5 @@ void __lock(volatile int *l)
 	 * assignment to optimize non-pathological code with no contention. */
 	while (a_xchg(l, 1))
 		if (spins) spins--, a_spin();
-		else __syscall(__NR_sched_yield);
+		else __syscall(SYS_sched_yield);
 }

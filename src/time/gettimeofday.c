@@ -3,6 +3,6 @@
 
 int gettimeofday(struct timeval *tv, void *tz)
 {
-	__syscall(__NR_gettimeofday, tv, 0);
+	__syscall(SYS_gettimeofday, tv, 0);
 	return 0;
 }

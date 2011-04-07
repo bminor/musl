@@ -4,7 +4,7 @@
 
 int msgctl(int q, int cmd, struct msqid_ds *buf)
 {
-#ifdef __NR_msgctl
+#ifdef SYS_msgctl
 	return syscall(SYS_msgctl, q, cmd, buf);
 #else
 	return syscall(SYS_ipc, IPCOP_msgctl, q, cmd, buf);

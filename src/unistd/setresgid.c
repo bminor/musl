@@ -5,5 +5,5 @@
 
 int setresgid(gid_t rgid, gid_t egid, gid_t sgid)
 {
-	return __rsyscall(__NR_setresgid, rgid, egid, sgid, 0, 0, 0);
+	return __rsyscall(SYS_setresgid, rgid, egid, sgid, 0, 0, 0);
 }

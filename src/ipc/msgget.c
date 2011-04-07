@@ -4,7 +4,7 @@
 
 int msgget(key_t k, int flag)
 {
-#ifdef __NR_msgget
+#ifdef SYS_msgget
 	return syscall(SYS_msgget, k, flag);
 #else
 	return syscall(SYS_ipc, IPCOP_msgget, k, flag);

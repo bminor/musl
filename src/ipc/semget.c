@@ -4,7 +4,7 @@
 
 int semget(key_t key, int n, int fl)
 {
-#ifdef __NR_semget
+#ifdef SYS_semget
 	return syscall(SYS_semget, key, n, fl);
 #else
 	return syscall(SYS_ipc, IPCOP_semget, key, n, fl);

@@ -7,7 +7,7 @@ int msgsnd(int q, const void *m, size_t len, int flag)
 {
 	ssize_t r;
 	CANCELPT_BEGIN;
-#ifdef __NR_msgsnd
+#ifdef SYS_msgsnd
 	r = syscall(SYS_msgsnd, q, m, len, flag);
 #else
 	r = syscall(SYS_ipc, IPCOP_msgsnd, q, len, flag, m);

@@ -4,5 +4,5 @@
 
 int setgid(gid_t gid)
 {
-	return __rsyscall(__NR_setgid, gid, 0, 0, 0, 0, 0);
+	return __rsyscall(SYS_setgid, gid, 0, 0, 0, 0, 0);
 }

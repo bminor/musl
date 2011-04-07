@@ -8,7 +8,7 @@ int sigtimedwait(const sigset_t *mask, siginfo_t *si, const struct timespec *tim
 	int ret;
 	CANCELPT_BEGIN;
 	do {
-		ret = syscall(__NR_rt_sigtimedwait, mask, si, timeout, 8);
+		ret = syscall(SYS_rt_sigtimedwait, mask, si, timeout, 8);
 		if (ret<0) CANCELPT_TRY;
 	} while (ret<0 && errno==EINTR);
 	CANCELPT_END;

@@ -10,7 +10,7 @@ int semctl(int id, int num, int cmd, ...)
 	va_start(ap, cmd);
 	arg = va_arg(ap, long);
 	va_end(ap);
-#ifdef __NR_semctl
+#ifdef SYS_semctl
 	return syscall(SYS_semctl, id, num, cmd, arg);
 #else
 	return syscall(SYS_ipc, IPCOP_semctl, id, num, cmd | 0x100, &arg);

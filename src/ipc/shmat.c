@@ -2,7 +2,7 @@
 #include "syscall.h"
 #include "ipc.h"
 
-#ifdef __NR_shmat
+#ifdef SYS_shmat
 void *shmat(int id, const void *addr, int flag)
 {
 	return (void *)syscall(SYS_shmat, id, addr, flag);
