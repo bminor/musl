@@ -310,7 +310,7 @@ iconv_t iconv_open(const char *to, const char *from)
 {
 	size_t f, t;
 
-	if ((t = find_charmap(to)) < 0 || (f = find_charmap(from)) < 0) {
+	if ((t = find_charmap(to))==-1 || (f = find_charmap(from))==-1) {
 		errno = EINVAL;
 		return (iconv_t)-1;
 	}
