@@ -61,12 +61,14 @@ int __rsyscall(int nr, long a, long b, long c, long d, long e, long f)
 
 	if (!rs.init) {
 		struct sigaction sa = {
+			.sa_flags = SA_SIGINFO | SA_RESTART,
 			.sa_sigaction = rsyscall_handler,
 			.sa_mask = set
 		};
 		sigfillset(&sa.sa_mask);
 		sa.sa_sigaction = rsyscall_handler;
 		__libc_sigaction(SIGSYSCALL, &sa, 0);
+		rs.init = 1;
 	}
 
 	rs.nr = nr;
