@@ -4,6 +4,5 @@
 
 int setgid(gid_t gid)
 {
-	if (libc.rsyscall) return libc.rsyscall(__NR_setgid, gid, 0, 0, 0, 0, 0);
-	return syscall(SYS_setgid, gid);
+	return __rsyscall(__NR_setgid, gid, 0, 0, 0, 0, 0);
 }

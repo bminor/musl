@@ -86,6 +86,9 @@ int __timedwait(volatile int *, int, clockid_t, const struct timespec *, int);
 void __wait(volatile int *, volatile int *, int, int);
 void __wake(volatile int *, int, int);
 
+void __rsyscall_lock();
+void __rsyscall_unlock();
+
 #define DEFAULT_STACK_SIZE (16384-PAGE_SIZE)
 #define DEFAULT_GUARD_SIZE PAGE_SIZE
 

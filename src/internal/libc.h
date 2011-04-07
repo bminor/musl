@@ -10,7 +10,6 @@ struct __libc {
 	void (*lock)(volatile int *);
 	void (*lockfile)(FILE *);
 	void (*fork_handler)(int);
-	int (*rsyscall)(int, long, long, long, long, long, long);
 	int (*atexit)(void (*)(void));
 	void (*fini)(void);
 	void (*ldso_fini)(void);
@@ -47,6 +46,8 @@ void __lockfile(FILE *);
 #define CANCELPT_END CANCELPT(-1)
 #define CANCELPT_INHIBIT CANCELPT(2)
 #define CANCELPT_RESUME CANCELPT(-2)
+
+int __rsyscall(int, long, long, long, long, long, long);
 
 extern char **__environ;
 #define environ __environ

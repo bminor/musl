@@ -4,6 +4,5 @@
 
 int setreuid(uid_t ruid, uid_t euid)
 {
-	if (libc.rsyscall) return libc.rsyscall(__NR_setreuid, ruid, euid, 0, 0, 0, 0);
-	return syscall(SYS_setreuid, ruid, euid);
+	return __rsyscall(__NR_setreuid, ruid, euid, 0, 0, 0, 0);
 }

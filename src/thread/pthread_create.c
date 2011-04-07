@@ -1,5 +1,11 @@
 #include "pthread_impl.h"
 
+static void dummy_0()
+{
+}
+weak_alias(dummy_0, __rsyscall_lock);
+weak_alias(dummy_0, __rsyscall_unlock);
+
 static void dummy_1(pthread_t self)
 {
 }
@@ -72,101 +78,12 @@ static void cancelpt(int x)
 	}
 }
 
-/* "rsyscall" is a mechanism by which a thread can synchronously force all
- * other threads to perform an arbitrary syscall. It is necessary to work
- * around the non-conformant implementation of setuid() et al on Linux,
- * which affect only the calling thread and not the whole process. This
- * implementation performs some tricks with signal delivery to work around
- * the fact that it does not keep any list of threads in userspace. */
-
-static struct {
-	volatile int lock, hold, blocks, cnt;
-	unsigned long arg[6];
-	int nr;
-	int err;
-} rs;
-
-static void rsyscall_handler(int sig, siginfo_t *si, void *ctx)
-{
-	struct pthread *self = __pthread_self();
-	long r;
-
-	if (!rs.hold || rs.cnt == libc.threads_minus_1) return;
-
-	/* Threads which have already decremented themselves from the
-	 * thread count must not increment rs.cnt or otherwise act. */
-	if (self->dead) {
-		sigfillset(&((ucontext_t *)ctx)->uc_sigmask);
-		return;
-	}
-
-	r = __syscall(rs.nr, rs.arg[0], rs.arg[1],
-		rs.arg[2], rs.arg[3], rs.arg[4], rs.arg[5]);
-	if (r < 0) rs.err=-r;
-
-	a_inc(&rs.cnt);
-	__wake(&rs.cnt, 1, 1);
-	while(rs.hold)
-		__wait(&rs.hold, 0, 1, 1);
-	a_dec(&rs.cnt);
-	if (!rs.cnt) __wake(&rs.cnt, 1, 1);
-}
-
-static int rsyscall(int nr, long a, long b, long c, long d, long e, long f)
-{
-	int i, ret;
-	sigset_t set = { 0 };
-	struct pthread *self = __pthread_self();
-	sigaddset(&set, SIGSYSCALL);
-
-	LOCK(&rs.lock);
-	while ((i=rs.blocks))
-		__wait(&rs.blocks, 0, i, 1);
-
-	__libc_sigprocmask(SIG_BLOCK, &set, 0);
-
-	rs.nr = nr;
-	rs.arg[0] = a; rs.arg[1] = b;
-	rs.arg[2] = c; rs.arg[3] = d;
-	rs.arg[4] = d; rs.arg[5] = f;
-	rs.err = 0;
-	rs.cnt = 0;
-	rs.hold = 1;
-
-	/* Dispatch signals until all threads respond */
-	for (i=libc.threads_minus_1; i; i--)
-		sigqueue(self->pid, SIGSYSCALL, (union sigval){0});
-	while ((i=rs.cnt) < libc.threads_minus_1) {
-		sigqueue(self->pid, SIGSYSCALL, (union sigval){0});
-		__wait(&rs.cnt, 0, i, 1);
-	}
-
-	/* Handle any lingering signals with no-op */
-	__libc_sigprocmask(SIG_UNBLOCK, &set, 0);
-
-	/* Resume other threads' signal handlers and wait for them */
-	rs.hold = 0;
-	__wake(&rs.hold, -1, 0);
-	while((i=rs.cnt)) __wait(&rs.cnt, 0, i, 1);
-
-	if (rs.err) errno = rs.err, ret = -1;
-	else ret = syscall(nr, a, b, c, d, e, f);
-
-	UNLOCK(&rs.lock);
-	return ret;
-}
-
 static void init_threads()
 {
 	struct sigaction sa = { .sa_flags = SA_SIGINFO | SA_RESTART };
 	libc.lock = __lock;
 	libc.lockfile = __lockfile;
 	libc.cancelpt = cancelpt;
-	libc.rsyscall = rsyscall;
-
-	sigfillset(&sa.sa_mask);
-	sa.sa_sigaction = rsyscall_handler;
-	__libc_sigaction(SIGSYSCALL, &sa, 0);
 
 	sigemptyset(&sa.sa_mask);
 	sa.sa_sigaction = cancel_handler;
@@ -205,7 +122,7 @@ int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(vo
 	size_t size, guard;
 	struct pthread *self = pthread_self(), *new;
 	unsigned char *map, *stack, *tsd;
-	static const pthread_attr_t default_attr;
+	const pthread_attr_t default_attr = { 0 };
 
 	if (!self) return ENOSYS;
 	if (!init && ++init) init_threads();
@@ -236,16 +153,12 @@ int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(vo
 	new->tlsdesc[1] = (uintptr_t)new;
 	stack = (void *)((uintptr_t)new-1 & ~(uintptr_t)15);
 
-	/* We must synchronize new thread creation with rsyscall
-	 * delivery. This looks to be the least expensive way: */
-	a_inc(&rs.blocks);
-	while (rs.lock) __wait(&rs.lock, 0, 1, 1);
+	__rsyscall_lock();
 
 	a_inc(&libc.threads_minus_1);
 	ret = __uniclone(stack, start, new);
 
-	a_dec(&rs.blocks);
-	if (rs.lock) __wake(&rs.blocks, 1, 1);
+	__rsyscall_unlock();
 
 	if (ret < 0) {
 		a_dec(&libc.threads_minus_1);
