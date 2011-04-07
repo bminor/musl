@@ -22,7 +22,7 @@ void *memccpy(void *dest, const void *src, int c, size_t n)
 		k = ONES * c;
 		wd=(void *)d; ws=(const void *)s;
 		for (; n>=sizeof(size_t) && !HASZERO(*ws^k);
-		       n-=sizeof(size_t), ws++, *wd++) *wd = *ws;
+		       n-=sizeof(size_t), ws++, wd++) *wd = *ws;
 		d=(void *)wd; s=(const void *)ws;
 	}
 	for (; n && (*d=*s)!=c; n--, s++, d++);

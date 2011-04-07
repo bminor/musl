@@ -21,7 +21,7 @@ size_t strlcpy(char *d, const char *s, size_t n)
 		if (n && *s) {
 			wd=(void *)d; ws=(const void *)s;
 			for (; n>=sizeof(size_t) && !HASZERO(*ws);
-			       n-=sizeof(size_t), ws++, *wd++) *wd = *ws;
+			       n-=sizeof(size_t), ws++, wd++) *wd = *ws;
 			d=(void *)wd; s=(const void *)ws;
 		}
 	}
