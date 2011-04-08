@@ -31,8 +31,8 @@ int __dns_doqueries(unsigned char *dest, const char *name, int *rr, int rrcnt)
 		struct sockaddr_in6 sin6;
 	} sa = {0}, ns[3] = {{0}};
 	socklen_t sl;
-	int nns;
-	int family;
+	int nns = 0;
+	int family = AF_UNSPEC;
 	unsigned char q[280] = "", *r = dest;
 	int ql;
 	int rlen;
