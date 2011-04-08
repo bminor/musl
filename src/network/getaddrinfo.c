@@ -117,6 +117,7 @@ int getaddrinfo(const char *host, const char *serv, const struct addrinfo *hint,
 		buf->ai.ai_addr = (void *)&buf->sa;
 		buf->ai.ai_addrlen = family==AF_INET6 ? sizeof sa.sin6 : sizeof sa.sin;
 		buf->ai.ai_family = family;
+		buf->ai.ai_canonname = (char *)host;
 		buf->sa = sa;
 		buf->sa.sin.sin_port = port;
 		*res = &buf->ai;
