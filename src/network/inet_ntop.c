@@ -21,9 +21,11 @@ const char *inet_ntop(int af, const void *a0, char *s, socklen_t l)
 		memset(buf, 'x', sizeof buf);
 		buf[sizeof buf-1]=0;
 		snprintf(buf, sizeof buf, 
-			"%.0x%x:%.0x%x:%.0x%x:%.0x%x:%.0x%x:%.0x%x:%.0x%x:%.0x%x",
-			a[0],a[1],a[2],a[3],a[4],a[5],a[6],a[7],
-			a[8],a[9],a[10],a[11],a[12],a[13],a[14],a[15]);
+			"%x:%x:%x:%x:%x:%x:%x:%x",
+			256*a[0]+a[1],256*a[2]+a[3],
+			256*a[4]+a[5],256*a[6]+a[7],
+			256*a[8]+a[9],256*a[10]+a[11],
+			256*a[12]+a[13],256*a[14]+a[15]);
 		/* Replace longest /(^0|:)[:0]{2,}/ with "::" */
 		for (i=best=0, max=2; buf[i]; i++) {
 			if (i && buf[i] != ':') continue;
