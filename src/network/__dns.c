@@ -257,10 +257,12 @@ int __dns_count_addrs(const unsigned char *r, int cnt)
 	int found=0, res, i;
 	static const int p[2][2] = { { 4, RR_A }, { 16, RR_AAAA } };
 
-	while (cnt--) for (i=0; i<2; i++) {
-		res = __dns_get_rr(0, 0, p[i][0], -1, r, p[i][1], 0);
-		if (res < 0) return res;
-		found += res;
+	while (cnt--) {
+		for (i=0; i<2; i++) {
+			res = __dns_get_rr(0, 0, p[i][0], -1, r, p[i][1], 0);
+			if (res < 0) return res;
+			found += res;
+		}
 		r += 512;
 	}
 	return found;
