@@ -13,11 +13,17 @@ struct start_args {
 	struct sigevent *sev;
 };
 
+static void dummy_1(pthread_t self)
+{
+}
+weak_alias(dummy_1, __pthread_tsd_run_dtors);
+
 static void cleanup_fromsig(void *p)
 {
 	pthread_t self = __pthread_self();
 	self->cancel = 0;
 	self->cancelbuf = 0;
+	__pthread_tsd_run_dtors(self);
 	longjmp(p, 1);
 }
 
