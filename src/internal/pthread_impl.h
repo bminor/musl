@@ -42,6 +42,7 @@ struct pthread {
 		void *pending;
 	} robust_list;
 	int unblock_cancel;
+	int delete_timer;
 };
 
 struct __timer {

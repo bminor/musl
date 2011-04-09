@@ -13,21 +13,24 @@ struct start_args {
 	struct sigevent *sev;
 };
 
+static void cleanup_fromsig(void *p)
+{
+	pthread_t self = __pthread_self();
+	self->cancel = 0;
+	self->cancelbuf = 0;
+	longjmp(p, 1);
+}
+
 void __sigtimer_handler(pthread_t self)
 {
-	int st;
+	jmp_buf jb;
 	void (*notify)(union sigval) = (void (*)(union sigval))self->start;
 	union sigval val = { .sival_ptr = self->start_arg };
 
-	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &st);
+	if (setjmp(jb)) return;
+	pthread_cleanup_push(cleanup_fromsig, jb);
 	notify(val);
-	pthread_setcancelstate(st, 0);
-}
-
-static void cleanup(void *p)
-{
-	pthread_t self = p;
-	__syscall(SYS_timer_delete, self->result);
+	pthread_cleanup_pop(0);
 }
 
 static void *start(void *arg)
@@ -41,12 +44,9 @@ static void *start(void *arg)
 	self->start_arg = args->sev->sigev_value.sival_ptr;
 	self->result = (void *)-1;
 
-	pthread_cleanup_push(cleanup, self);
 	pthread_barrier_wait(&args->b);
-	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, 0);
-	/* Loop on async-signal-safe cancellation point */
-	for (;;) sleep(1000000000);
-	pthread_cleanup_pop(0);
+	__wait(&self->delete_timer, 0, 0, 1);
+	__syscall(SYS_timer_delete, self->result);
 	return 0;
 }
 
