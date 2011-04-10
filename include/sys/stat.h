@@ -65,6 +65,9 @@ extern "C" {
 #define S_IRWXO 0007
 #endif
 
+#define UTIME_NOW  0x3fffffff
+#define UTIME_OMIT 0x3ffffffe
+
 int stat(const char *, struct stat *);
 int fstat(int, struct stat *);
 int lstat(const char *, struct stat *);
