@@ -35,12 +35,11 @@ int scandir(const char *path, struct dirent ***res,
 	closedir(d);
 
 	if (errno) {
-		old_errno = errno;
 		if (names) while (cnt-->0) free(names[cnt]);
 		free(names);
-		errno = old_errno;
 		return -1;
 	}
+	errno = old_errno;
 
 	if (cmp) qsort(names, cnt, sizeof *names, (int (*)(const void *, const void *))cmp);
 	*res = names;
