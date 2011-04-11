@@ -23,12 +23,9 @@ extern "C" {
 #define __NEED_int32_t
 #define __NEED_int64_t
 
-#define __NEED_u_int8_t
-#define __NEED_u_int16_t
-#define __NEED_u_int32_t
-#define __NEED_u_int64_t
-
-#define __NEED_register_t
+#define __NEED___uint16_t
+#define __NEED___uint32_t
+#define __NEED___uint64_t
 
 #define __NEED_blkcnt_t
 #define __NEED_fsblkcnt_t
@@ -37,7 +34,6 @@ extern "C" {
 #define __NEED_id_t
 #define __NEED_key_t
 #define __NEED_clock_t
-#define __NEED_useconds_t
 #define __NEED_suseconds_t
 #define __NEED_blksize_t
 
@@ -57,6 +53,11 @@ extern "C" {
 
 #include <bits/alltypes.h>
 
+typedef unsigned char u_int8_t;
+typedef __uint16_t u_int16_t;
+typedef __uint32_t u_int32_t;
+typedef __uint64_t u_int64_t;
+
 #ifdef _GNU_SOURCE
 typedef unsigned long caddr_t;
 typedef unsigned char u_char;
@@ -65,6 +66,7 @@ typedef unsigned u_int, uint;
 typedef unsigned long u_long, ulong;
 typedef long long quad_t;
 typedef unsigned long long u_quad_t;
+typedef long register_t;
 #include <endian.h>
 #include <sys/select.h>
 #include <sys/sysmacros.h>

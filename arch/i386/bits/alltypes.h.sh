@@ -36,20 +36,9 @@ TYPEDEF unsigned short     uint16_t;
 TYPEDEF unsigned int       uint32_t;
 TYPEDEF unsigned long long uint64_t;
 
-TYPEDEF unsigned char      __uint8_t;
 TYPEDEF unsigned short     __uint16_t;
 TYPEDEF unsigned int       __uint32_t;
 TYPEDEF unsigned long long __uint64_t;
-
-TYPEDEF int8_t  int_least8_t;
-TYPEDEF int16_t int_least16_t;
-TYPEDEF int32_t int_least32_t;
-TYPEDEF int64_t int_least64_t;
-
-TYPEDEF uint8_t  uint_least8_t;
-TYPEDEF uint16_t uint_least16_t;
-TYPEDEF uint32_t uint_least32_t;
-TYPEDEF uint64_t uint_least64_t;
 
 TYPEDEF int8_t    int_fast8_t;
 TYPEDEF int       int_fast16_t;
