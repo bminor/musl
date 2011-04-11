@@ -11,16 +11,6 @@
 #define __NEED_uint32_t
 #define __NEED_uint64_t
 
-#define __NEED_int_least8_t
-#define __NEED_int_least16_t
-#define __NEED_int_least32_t
-#define __NEED_int_least64_t
-
-#define __NEED_uint_least8_t
-#define __NEED_uint_least16_t
-#define __NEED_uint_least32_t
-#define __NEED_uint_least64_t
-
 #define __NEED_int_fast8_t
 #define __NEED_int_fast16_t
 #define __NEED_int_fast32_t
@@ -33,8 +23,6 @@
 
 #define __NEED_intptr_t
 #define __NEED_uintptr_t
-#define __NEED_intmax_t
-#define __NEED_uintmax_t
 
 #include <bits/alltypes.h>
 
@@ -47,6 +35,9 @@ typedef uint8_t  uint_least8_t;
 typedef uint16_t uint_least16_t;
 typedef uint32_t uint_least32_t;
 typedef uint64_t uint_least64_t;
+
+typedef long long          intmax_t;
+typedef unsigned long long uintmax_t;
 
 #if !defined __cplusplus || defined __STDC_LIMIT_MACROS
 
