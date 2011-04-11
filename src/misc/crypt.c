@@ -2391,7 +2391,7 @@ static void des_setkey(struct des_ctx *ctx, const unsigned char *key)
 static void do_des(struct des_ctx *ctx, uint32_t *l_out, uint32_t *r_out, int count)
 {
 	uint32_t l, r, *kl, *kr;
-	uint32_t f = f; /* silence gcc */
+	uint32_t f;
 	uint32_t r48l, r48r;
 	int round;
 
