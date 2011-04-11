@@ -30,10 +30,10 @@ you to link programs with musl on a "standard" glibc Linux system),
 find whatever embarassing bugs I've let slip through, and provide
 feedback on issues encountered building various software against musl.
 
-Please visit #musl on Freenode IRC or contact me via email at dalias
-AT etalabs DOT net for bug reports, support requests, or to get
-involved in development. As this has been a one-person project so far,
-mailing lists will be setup in due time on an as-needed basis.
+For bug reports, support requests, or to get involved in development,
+please visit #musl on Freenode IRC or subscribe to the musl mailing
+list by sending a blank email to musl-subscribe AT lists DOT openwall
+DOT com.
 
 Thank you for trying out musl.
 
