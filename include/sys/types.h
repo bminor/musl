@@ -59,6 +59,14 @@ extern "C" {
 
 #ifdef _GNU_SOURCE
 typedef unsigned long caddr_t;
+typedef unsigned char u_char;
+typedef unsigned short u_short, ushort;
+typedef unsigned u_int, uint;
+typedef unsigned long u_long, ulong;
+typedef long long quad_t;
+typedef unsigned long long u_quad_t;
+#include <endian.h>
+#include <sys/select.h>
 #include <sys/sysmacros.h>
 #endif
 
