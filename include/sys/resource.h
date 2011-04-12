@@ -67,7 +67,15 @@ int setpriority (int, id_t, int);
 #define RLIMIT_NPROC   6
 #define RLIMIT_MEMLOCK 8
 #define RLIMIT_LOCKS   10
+#define RLIMIT_SIGPENDING 11
+#define RLIMIT_MSGQUEUE 12
+#define RLIMIT_NICE    13
+#define RLIMIT_RTPRIO  14
+#define RLIMIT_NLIMITS 15
 
+#ifdef _GNU_SOURCE
+#define RLIMT_NLIMIT RLIMIT_NLIMITS
+#endif
 
 
 #endif
