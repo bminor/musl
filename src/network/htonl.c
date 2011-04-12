@@ -1,10 +1,8 @@
 #include <netinet/in.h>
+#include <byteswap.h>
 
 uint32_t htonl(uint32_t n)
 {
-	union {
-		uint8_t b[4];
-		uint32_t i;
-	} u = { { n>>24, n>>16, n>>8, n } };
-	return u.i;
+	union { int i; char c; } u = { 1 };
+	return u.c ? bswap_32(n) : n;
 }

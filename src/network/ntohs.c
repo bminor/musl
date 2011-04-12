@@ -1,10 +1,8 @@
 #include <netinet/in.h>
+#include <byteswap.h>
 
 uint16_t ntohs(uint16_t n)
 {
-	union {
-		uint16_t s;
-		uint8_t b[2];
-	} u = { n };
-	return (u.b[0]<<8) | u.b[1];
+	union { int i; char c; } u = { 1 };
+	return u.c ? bswap_16(n) : n;
 }
