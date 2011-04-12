@@ -157,7 +157,7 @@ proportion of busybox that works with musl.
 
 
 
-0.7.8 (pending release) - more bug fixes
+0.7.8 (pending release) - more bug fixes and compatibility improvements
 
 fixed problems with ipv6 dns and address printing code that made ipv6
 support practically unusable, and some other getaddrinfo bugs.
@@ -172,3 +172,14 @@ after getting a blank line, due to a bug in the linux readv syscall.
 
 various improvements to the "rsyscall" system used to implement
 threaded setuid, setgid, etc.
+
+exiting/cancelling the a timer handler thread no longer kills the
+timer.
+
+fixed incorrect trailing zeros on some %g conversions in printf.
+
+fixed buggy byte-swapping functions and moved them to inlines in
+byteswap.h.
+
+many small improvements to header/application compatibility, support
+for nonstandard macros, etc.
