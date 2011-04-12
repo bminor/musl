@@ -22,9 +22,9 @@ struct utmpx
 	char ut_user[32];
 	char ut_host[256];
 	struct {
-		short __e_termination;
-		short __e_exit;
-	} __ut_exit;
+		short e_termination;
+		short e_exit;
+	} ut_exit;
 	long ut_session;
 	struct timeval ut_tv;
 	unsigned ut_addr_v6[4];
