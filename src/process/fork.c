@@ -10,8 +10,7 @@ pid_t fork(void)
 	ret = syscall(SYS_fork);
 	if (libc.lock && !ret) {
 		pthread_t self = __pthread_self();
-		self->pid = syscall(SYS_getpid);
-		self->tid = syscall(SYS_gettid);
+		self->tid = self->pid = syscall(SYS_getpid);
 		libc.threads_minus_1 = 0;
 	}
 	if (libc.fork_handler) libc.fork_handler(!ret);
