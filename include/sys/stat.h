@@ -90,6 +90,12 @@ int utimensat(int, const char *, const struct timespec [2], int);
 int lchmod(const char *, mode_t);
 #endif
 
+#ifdef _GNU_SOURCE
+#define S_IREAD S_IRUSR
+#define S_IWRITE S_IWUSR
+#define S_IEXEC S_IXUSR
+#endif
+
 #ifdef __cplusplus
 }
 #endif
