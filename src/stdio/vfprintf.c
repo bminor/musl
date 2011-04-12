@@ -330,9 +330,10 @@ static int fmt_fp(FILE *f, long double y, int w, int p, int fl, int t)
 			else if (i==i/2 && d+1==z) small=0x10p-1;
 			else small=0x11p-1;
 			if (pl && *prefix=='-') round*=-1, small*=-1;
+			*d -= x;
 			/* Decide whether to round by probing round+small */
 			if (round+small != round) {
-				*d = *d - x + i;
+				*d = *d + i;
 				while (*d > 999999999) {
 					*d--=0;
 					(*d)++;
@@ -341,6 +342,7 @@ static int fmt_fp(FILE *f, long double y, int w, int p, int fl, int t)
 				for (i=10, e=9*(r-a); *a>=i; i*=10, e++);
 			}
 		}
+		if (z>d+1) z=d+1;
 		for (; !z[-1] && z>a; z--);
 	}
 	
