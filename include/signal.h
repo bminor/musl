@@ -100,7 +100,7 @@ void (*sigset(int, void (*)(int)))(int);
 #endif
 
 #ifdef _GNU_SOURCE
-typedef int (*sighandler_t)(int);
+typedef void (*sighandler_t)(int);
 void (*bsd_signal(int, void (*)(int)))(int);
 #endif
 
