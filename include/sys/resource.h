@@ -73,9 +73,7 @@ int setpriority (int, id_t, int);
 #define RLIMIT_RTPRIO  14
 #define RLIMIT_NLIMITS 15
 
-#ifdef _GNU_SOURCE
-#define RLIMT_NLIMIT RLIMIT_NLIMITS
-#endif
+#define RLIM_NLIMITS RLIMIT_NLIMITS
 
 
 #endif
