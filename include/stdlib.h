@@ -125,6 +125,7 @@ char *mktemp (char *);
 void *valloc (size_t);
 void *memalign(size_t, size_t);
 int clearenv(void);
+int ptsname_r(int, char *, size_t);
 #endif
 
 

@@ -2,6 +2,7 @@
 #include <sys/ioctl.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include "libc.h"
 
 int posix_openpt(int flags)
 {
@@ -19,17 +20,12 @@ int unlockpt(int fd)
 	return ioctl(fd, TIOCSPTLCK, &unlock);
 }
 
-char *ptsname(int fd)
+int __ptsname_r(int fd, char *buf, size_t len)
 {
-	static char buf[9 + sizeof(int)*3 + 1];
-	char *s = buf+sizeof(buf)-1;
 	int pty;
-	if (ioctl (fd, TIOCGPTN, &pty))
-		return NULL;
-	if (pty) for (; pty; pty/=10) *--s = '0' + pty%10;
-	else *--s = '0';
-	s -= 9;
-        s[0] = '/'; s[1] = 'd'; s[2] = 'e'; s[3] = 'v';
-	s[4] = '/'; s[5] = 'p'; s[6] = 't'; s[7] = 's'; s[8] = '/';
-	return s;
+	if (!buf) len = 0;
+	return -( ioctl (fd, TIOCGPTN, &pty) < 0
+		|| snprintf(buf, len, "/dev/pts/%d", pty) >= len );
 }
+
+weak_alias(__ptsname_r, ptsname_r);
