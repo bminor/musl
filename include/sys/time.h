@@ -4,16 +4,7 @@
 extern "C" {
 #endif
 
-/* All symbols from select.h except pselect are required anyway... */
 #include <sys/select.h>
-
-#define __NEED_time_t
-#define __NEED_suseconds_t
-#define __NEED_struct_timeval
-
-#include <bits/alltypes.h>
-
-
 
 int gettimeofday (struct timeval *, void *);
 
