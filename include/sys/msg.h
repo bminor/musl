@@ -14,19 +14,19 @@
 typedef unsigned long msgqnum_t;
 typedef unsigned long msglen_t;
 
-struct msqid_ds
-{
-	struct ipc_perm msg_perm;
-	time_t msg_stime;
-	time_t msg_rtime;
-	time_t msg_ctime;
-	msgqnum_t msg_qnum;
-	msglen_t msg_qbytes;
-	pid_t msg_lspid;
-	pid_t msg_lrpid;
-};
+#include <bits/msg.h>
+
+#define __msg_cbytes msg_cbytes
 
 #define MSG_NOERROR 010000
+
+#define MSG_STAT 11
+#define MSG_INFO 12
+
+struct msginfo {
+	int msgpool, msgmap, msgmax, msgmnb, msgmni, msgssz, msgtql;
+	unsigned short msgseg;
+};
 
 int msgctl (int, int, struct msqid_ds *);
 int msgget (key_t, int);
