@@ -74,6 +74,7 @@ int strncasecmp (const char *, const char *, size_t);
 char *strchrnul(const char *, int);
 char *strcasestr(const char *, const char *);
 char *strsep(char **, const char *);
+void *memrchr(const void *, int, size_t);
 #endif
 
 #ifdef __cplusplus
