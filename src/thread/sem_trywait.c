@@ -3,9 +3,8 @@
 
 int sem_trywait(sem_t *sem)
 {
-	if (a_fetch_add(sem->__val, -1) > 0) return 0;
-	if (!a_fetch_add(sem->__val, 1) && sem->__val[1])
-		__wake(sem->__val, 1, 0);
+	int val = sem->__val[0];
+	if (val>0 && a_cas(sem->__val, val, val-1)==val) return 0;
 	errno = EAGAIN;
 	return -1;
 }
