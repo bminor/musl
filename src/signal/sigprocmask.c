@@ -22,6 +22,7 @@ int __sigprocmask(int how, const sigset_t *set, sigset_t *old)
 		set = &tmp;
 		sigdelset(&tmp, SIGCANCEL);
 		sigdelset(&tmp, SIGSYSCALL);
+		sigdelset(&tmp, SIGTIMER);
 	}
 	return __libc_sigprocmask(how, set, old);
 }

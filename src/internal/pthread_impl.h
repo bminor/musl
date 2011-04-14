@@ -76,6 +76,7 @@ struct __timer {
 
 #define SIGCANCEL 32
 #define SIGSYSCALL 33
+#define SIGTIMER 34
 
 int __set_thread_area(void *);
 int __libc_sigaction(int, const struct sigaction *, struct sigaction *);

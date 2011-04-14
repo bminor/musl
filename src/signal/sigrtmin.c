@@ -1,4 +1,4 @@
 int __libc_current_sigrtmin()
 {
-	return 34;
+	return 35;
 }
