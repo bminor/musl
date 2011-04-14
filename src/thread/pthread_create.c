@@ -63,19 +63,8 @@ static void cancel_handler(int sig, siginfo_t *si, void *ctx)
 static void cancelpt(int x)
 {
 	struct pthread *self = __pthread_self();
-	switch (x) {
-	case 1:
-		self->cancelpoint++;
-	case 0:
-		if (self->cancel && self->cancelpoint==1 && !self->canceldisable)
-			docancel(self);
-		break;
-	case -1:
-		self->cancelpoint--;
-		break;
-	default:
-		self->canceldisable += x;
-	}
+	if ((self->cancelpoint+=x)==1 && self->cancel
+		&& x<2U && !self->canceldisable) docancel(self);
 }
 
 static void init_threads()
