@@ -39,9 +39,9 @@
 #define F_SETOWN 8
 #define F_GETOWN 9
 
-#define F_GETLK 12
-#define F_SETLK 13
-#define F_SETLKW 14
+#define F_GETLK 5
+#define F_SETLK 6
+#define F_SETLKW 7
 
 #define FD_CLOEXEC 1
 
