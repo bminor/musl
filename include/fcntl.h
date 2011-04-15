@@ -78,6 +78,14 @@ int posix_fallocate(int, off_t, off_t);
 #define S_IRWXO 0007
 #endif
 
+#ifdef _GNU_SOURCE
+#define FAPPEND O_APPEND
+#define FFSYNC O_FSYNC
+#define FASYNC O_ASYNC
+#define FNONBLOCK O_NONBLOCK
+#define FNDELAY O_NDELAY
+#endif
+
 #ifdef __cplusplus
 }
 #endif
