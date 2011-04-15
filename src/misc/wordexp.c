@@ -83,7 +83,6 @@ int wordexp(const char *s, wordexp_t *we, int flags)
 	cmd = malloc(len);
 	if (!cmd) return WRDE_NOSPACE;
 	snprintf(cmd, len, "printf %%s\\\\0 %s %s", s, redir);
-printf("{%s}\n", cmd);
 	f = popen(cmd, "r");
 	free(cmd);
 	if (!f) return WRDE_NOSPACE;
