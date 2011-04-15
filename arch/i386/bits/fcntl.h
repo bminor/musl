@@ -1,8 +1,3 @@
-#define O_ACCMODE 03
-#define O_RDONLY  00
-#define O_WRONLY  01
-#define O_RDWR    02
-
 #define O_CREAT        0100
 #define O_EXCL         0200
 #define O_NOCTTY       0400
@@ -42,22 +37,3 @@
 #define F_GETLK 12
 #define F_SETLK 13
 #define F_SETLKW 14
-
-#define FD_CLOEXEC 1
-
-#define F_RDLCK 0
-#define F_WRLCK 1
-#define F_UNLCK 2
-
-#define AT_FDCWD (-100)
-#define AT_SYMLINK_NOFOLLOW 0x100
-#define AT_REMOVEDIR 0x200
-#define AT_SYMLINK_FOLLOW 0x400
-#define AT_EACCESS 0x200
-
-#define POSIX_FADV_NORMAL     0
-#define POSIX_FADV_RANDOM     1
-#define POSIX_FADV_SEQUENTIAL 2
-#define POSIX_FADV_WILLNEED   3
-#define POSIX_FADV_DONTNEED   4
-#define POSIX_FADV_NOREUSE    5
