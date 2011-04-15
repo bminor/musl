@@ -157,7 +157,7 @@ proportion of busybox that works with musl.
 
 
 
-0.7.8 (pending release) - more bug fixes and compatibility improvements
+0.7.8 - more bug fixes and compatibility improvements
 
 fixed problems with ipv6 dns and address printing code that made ipv6
 support practically unusable, and some other getaddrinfo bugs.
@@ -183,3 +183,20 @@ byteswap.h.
 
 many small improvements to header/application compatibility, support
 for nonstandard macros, etc.
+
+
+
+0.7.9 (pending release) - more bug fixes, compatibility, optimization, cleanup
+
+fixed fcntl locking on x86_64.
+
+fixed syslog implementation to work correctly with busybox syslogd and
+presumably all other syslogd implementations using /dev/log.
+
+fixed major problems, including wrong public struct definitions, in
+sysvipc interfaces.
+
+improved timers with thread delivery to avoid some issues with reusing
+the same thread for all expirations.
+
+optimized various pthread internals.
