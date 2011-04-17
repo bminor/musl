@@ -14,6 +14,7 @@ static int *errno_location()
 
 static int init_main_thread()
 {
+	main_thread.canceldisable = libc.canceldisable;
 	main_thread.tsd = (void **)__pthread_tsd_main;
 	main_thread.self = &main_thread;
 	if (__set_thread_area(&main_thread) < 0)
