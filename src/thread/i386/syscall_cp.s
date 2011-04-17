@@ -33,4 +33,4 @@ __syscall_cp_asm:
 	movl %eax,4(%ecx)
 	movl %eax,(%ecx)
 	pushl $-1
-	call pthread_exit
+	call __cancel

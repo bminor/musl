@@ -1,5 +1,13 @@
 #include "pthread_impl.h"
 
+void __cancel()
+{
+	pthread_t self = __pthread_self();
+	self->canceldisable = 1;
+	self->cancelasync = 0;
+	pthread_exit(PTHREAD_CANCELED);
+}
+
 long __syscall_cp_asm(volatile void *, long, long, long, long, long, long, long);
 
 long (__syscall_cp)(long nr, long u, long v, long w, long x, long y, long z)
@@ -18,7 +26,7 @@ long (__syscall_cp)(long nr, long u, long v, long w, long x, long y, long z)
 	r = __syscall_cp_asm(&self->cp_sp, nr, u, v, w, x, y, z);
 	self->cp_sp = old_sp;
 	self->cp_ip = old_ip;
-	if (r == -EINTR && self->cancel) pthread_exit(PTHREAD_CANCELED);
+	if (r == -EINTR && self->cancel) __cancel();
 	return r;
 }
 
@@ -31,23 +39,23 @@ static void cancel_handler(int sig, siginfo_t *si, void *ctx)
 
 	if (!self->cancel || self->canceldisable) return;
 
-	if (self->cancelasync) pthread_exit(PTHREAD_CANCELED);
+	sigaddset(&uc->uc_sigmask, SIGCANCEL);
 
-	if (sp != self->cp_sp) {
-		if (!sp) return;
-		sigaddset(&uc->uc_sigmask, SIGCANCEL);
-		__syscall(SYS_tgkill, self->pid, self->tid, SIGCANCEL);
-		return;
+	if (self->cancelasync || sp == self->cp_sp && ip <= self->cp_ip) {
+		self->canceldisable = 1;
+		pthread_sigmask(SIG_SETMASK, &uc->uc_sigmask, 0);
+		__cancel();
 	}
 
-	if (ip <= self->cp_ip) pthread_exit(PTHREAD_CANCELED);
+	if (self->cp_sp)
+		__syscall(SYS_tgkill, self->pid, self->tid, SIGCANCEL);
 }
 
 static void testcancel()
 {
 	pthread_t self = __pthread_self();
 	if (self->cancel && !self->canceldisable)
-		pthread_exit(PTHREAD_CANCELED);
+		__cancel();
 }
 
 static void init_cancellation()

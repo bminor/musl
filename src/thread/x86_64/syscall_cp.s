@@ -21,4 +21,4 @@ __syscall_cp_asm:
 	mov %rdi,8(%r10)
 	mov %rdi,(%r10)
 	dec %rdi
-	jmp pthread_exit
+	jmp __cancel
