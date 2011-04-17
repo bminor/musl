@@ -5,5 +5,5 @@ static inline struct pthread *__pthread_self()
 	return self;
 }
 
-#define PC_AT_SYS(c) \
-	(*(uint16_t *)(((ucontext_t *)(c))->uc_mcontext.__gregs[14])==0x80cd)
+#define CANCEL_REG_SP 7
+#define CANCEL_REG_IP 14

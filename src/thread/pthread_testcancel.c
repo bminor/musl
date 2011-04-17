@@ -2,6 +2,5 @@
 
 void pthread_testcancel()
 {
-	CANCELPT_BEGIN;
-	CANCELPT_END;
+	if (libc.testcancel) libc.testcancel();
 }

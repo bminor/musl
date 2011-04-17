@@ -60,7 +60,8 @@ static inline long __syscall6(long __n, long __a1, long __a2, long __a3, long __
 	return __ret;
 }
 
-#define __socketcall(nm, a, b, c, d, e, f) syscall(__NR_##nm, a, b, c, d, e, f)
+#define __socketcall(nm,a,b,c,d,e,f) syscall(__NR_##nm, a, b, c, d, e, f)
+#define __socketcall_cp(nm,a,b,c,d,e,f) syscall_cp(__NR_##nm, a, b, c, d, e, f)
 
 #define __NR_read				0
 #define __NR_write				1

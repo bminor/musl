@@ -24,7 +24,8 @@ struct pthread {
 	unsigned long tlsdesc[4];
 	pid_t tid, pid;
 	int tsd_used, errno_val, *errno_ptr;
-	volatile int canceldisable, cancelasync, cancelpoint, cancel;
+	volatile uintptr_t cp_sp, cp_ip;
+	volatile int cancel, canceldisable, cancelasync;
 	unsigned char *map_base;
 	size_t map_size;
 	void *start_arg;
@@ -85,6 +86,7 @@ void __lock(volatile int *);
 void __unmapself(void *, size_t);
 
 int __timedwait(volatile int *, int, clockid_t, const struct timespec *, int);
+int __timedwait_cp(volatile int *, int, clockid_t, const struct timespec *, int);
 void __wait(volatile int *, volatile int *, int, int);
 void __wake(volatile int *, int, int);
 

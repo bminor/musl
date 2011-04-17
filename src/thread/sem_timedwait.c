@@ -21,19 +21,16 @@ int sem_timedwait(sem_t *sem, const struct timespec *at)
 	a_inc(sem->__val+1);
 	pthread_cleanup_push(cleanup, sem->__val+1)
 
-	CANCELPT_BEGIN;
 	for (;;) {
 		r = 0;
 		if (!sem_trywait(sem)) break;
-		r = __timedwait(sem->__val, 0, CLOCK_REALTIME, at, 0);
+		r = __timedwait_cp(sem->__val, 0, CLOCK_REALTIME, at, 0);
 		if (r) {
 			errno = r;
 			r = -1;
 			break;
 		}
-		CANCELPT_TRY;
 	}
-	CANCELPT_END;
 
 	pthread_cleanup_pop(1);
 

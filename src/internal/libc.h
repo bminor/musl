@@ -6,7 +6,7 @@
 
 struct __libc {
 	int *(*errno_location)(void);
-	void (*cancelpt)(int);
+	void (*testcancel)(void);
 	void (*lock)(volatile int *);
 	void (*lockfile)(FILE *);
 	void (*fork_handler)(int);
@@ -40,12 +40,6 @@ void __lock(volatile int *);
 void __lockfile(FILE *);
 #define LOCK(x) (libc.threads_minus_1 ? (__lock(x),1) : ((void)(x),1))
 #define UNLOCK(x) (*(x)=0)
-#define CANCELPT(x) (libc.cancelpt ? libc.cancelpt((x)),0 : (void)(x),0)
-#define CANCELPT_BEGIN CANCELPT(1)
-#define CANCELPT_TRY CANCELPT(0)
-#define CANCELPT_END CANCELPT(-1)
-#define CANCELPT_INHIBIT CANCELPT(2)
-#define CANCELPT_RESUME CANCELPT(-2)
 
 int __rsyscall(int, long, long, long, long, long, long);
 

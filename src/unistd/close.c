@@ -4,8 +4,7 @@
 
 int close(int fd)
 {
-	int ret = syscall(SYS_close, fd);
-	CANCELPT_BEGIN;
-	CANCELPT_END;
+	int ret = syscall_cp(SYS_close, fd);
+	if (libc.testcancel) libc.testcancel();
 	return ret;
 }

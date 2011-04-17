@@ -1,13 +1,9 @@
 #include <termios.h>
 #include <sys/ioctl.h>
 #include "libc.h"
+#include "syscall.h"
 
 int tcdrain(int fd)
 {
-	int ret;
-	CANCELPT_BEGIN;
-	ret = ioctl(fd, TCSBRK, 1);
-	CANCELPT_TRY;
-	CANCELPT_END;
-	return ret;
+	return syscall_cp(SYS_ioctl, fd, TCSBRK, 1);
 }

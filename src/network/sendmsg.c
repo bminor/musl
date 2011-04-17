@@ -5,7 +5,6 @@
 
 ssize_t sendmsg(int fd, const struct msghdr *msg, int flags)
 {
-	ssize_t r;
 #if LONG_MAX > INT_MAX
 	struct msghdr h;
 	if (msg) {
@@ -14,8 +13,5 @@ ssize_t sendmsg(int fd, const struct msghdr *msg, int flags)
 		msg = &h;
 	}
 #endif
-	CANCELPT_BEGIN;
-	r = socketcall(sendmsg, fd, msg, flags, 0, 0, 0);
-	CANCELPT_END;
-	return r;
+	return socketcall_cp(sendmsg, fd, msg, flags, 0, 0, 0);
 }
