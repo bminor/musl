@@ -19,7 +19,7 @@ __syscall_cp_asm:
 	mov %r11,8(%rsp)
 1:	syscall
 	xor %ecx,%ecx
-	mov 8(%rsp),%edi
+	mov 8(%rsp),%rdi
 	mov %rcx,(%rdi)
 	ret
 2:	call __cancel
