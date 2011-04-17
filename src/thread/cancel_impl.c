@@ -71,8 +71,11 @@ static void init_cancellation()
 
 int pthread_cancel(pthread_t t)
 {
-	static pthread_once_t once;
-	pthread_once(&once, init_cancellation);
+	static int init;
+	if (!init) {
+		init_cancellation();
+		init = 1;
+	}
 	a_store(&t->cancel, 1);
 	return pthread_kill(t, SIGCANCEL);
 }
