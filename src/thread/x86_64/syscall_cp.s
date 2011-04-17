@@ -8,6 +8,7 @@ __syscall_cp_asm:
 	mov 16(%rdi),%eax
 	test %eax,%eax
 	jnz 2f
+	mov %rdi,%r11
 	mov %rsi,%rax
 	mov %rdx,%rdi
 	mov %rcx,%rsi
@@ -15,10 +16,10 @@ __syscall_cp_asm:
 	mov %r9,%r10
 	mov 8(%rsp),%r8
 	mov 16(%rsp),%r9
+	mov %r11,8(%rsp)
 1:	syscall
+	xor %ecx,%ecx
+	mov 8(%rsp),%edi
+	mov %rcx,(%rdi)
 	ret
-2:	xor %edi,%edi
-	mov %rdi,8(%r10)
-	mov %rdi,(%r10)
-	dec %rdi
-	jmp __cancel
+2:	call __cancel

@@ -28,9 +28,8 @@ __syscall_cp_asm:
 	popl %edi
 	popl %esi
 	popl %ebx
+	xorl %edx,%edx
+	movl 4(%esp),%ecx
+	movl %edx,(%ecx)
 	ret
-2:	xorl %eax,%eax
-	movl %eax,4(%ecx)
-	movl %eax,(%ecx)
-	pushl $-1
-	call __cancel
+2:	call __cancel

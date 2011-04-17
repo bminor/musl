@@ -3,6 +3,7 @@
 void __cancel()
 {
 	pthread_t self = __pthread_self();
+	self->cp_sp = 0;
 	self->canceldisable = 1;
 	self->cancelasync = 0;
 	pthread_exit(PTHREAD_CANCELED);
@@ -24,8 +25,8 @@ long (__syscall_cp)(long nr, long u, long v, long w, long x, long y, long z)
 	self->cp_sp = 0;
 	self->cp_ip = 0;
 	r = __syscall_cp_asm(&self->cp_sp, nr, u, v, w, x, y, z);
-	self->cp_sp = old_sp;
 	self->cp_ip = old_ip;
+	self->cp_sp = old_sp;
 	if (r == -EINTR && self->cancel) __cancel();
 	return r;
 }
