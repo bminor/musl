@@ -18,12 +18,13 @@ weak_alias(dummy_1, __pthread_tsd_run_dtors);
 
 void __pthread_unwind_next(struct __ptcb *cb)
 {
-	pthread_t self;
+	pthread_t self = pthread_self();
 	int n;
 
-	if (cb->__next) longjmp((void *)cb->__next->__jb, 1);
-
-	self = pthread_self();
+	if (cb->__next) {
+		self->cancelbuf = cb->__next->__next;
+		longjmp((void *)cb->__next->__jb, 1);
+	}
 
 	LOCK(&self->exitlock);
 
@@ -104,7 +105,6 @@ int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(vo
 	new->detached = attr->_a_detach;
 	new->attr = *attr;
 	new->unblock_cancel = self->cancel;
-	new->result = PTHREAD_CANCELED;
 	memcpy(new->tlsdesc, self->tlsdesc, sizeof new->tlsdesc);
 	new->tlsdesc[1] = (uintptr_t)new;
 	stack = (void *)((uintptr_t)new-1 & ~(uintptr_t)15);
