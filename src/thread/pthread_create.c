@@ -130,7 +130,5 @@ void pthread_exit(void *result)
 	struct pthread *self = pthread_self();
 	struct __ptcb cb = { .__next = self->cancelbuf };
 	self->result = result;
-	self->canceldisable = 1;
-	self->cancelasync = 0;
 	__pthread_unwind_next(&cb);
 }
