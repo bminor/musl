@@ -17,7 +17,7 @@ FILE *tmpfile(void)
 		fd = syscall(SYS_open, s, O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE, 0600);
 		if (fd >= 0) {
 			f = __fdopen(fd, "w+");
-			syscall(SYS_unlink, s);
+			__syscall(SYS_unlink, s);
 			return f;
 		}
 	}

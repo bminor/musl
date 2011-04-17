@@ -15,6 +15,6 @@ void __lockfile(FILE *f)
 	}
 	while (a_cas(&f->lock, 0, tid))
 		if (spins) spins--, a_spin();
-		else syscall(SYS_sched_yield);
+		else __syscall(SYS_sched_yield);
 	f->lockcount = 1;
 }

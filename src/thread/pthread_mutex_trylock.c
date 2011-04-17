@@ -14,7 +14,7 @@ int pthread_mutex_trylock(pthread_mutex_t *m)
 
 	if (m->_m_type >= 4) {
 		if (!self->robust_list.off)
-			syscall(SYS_set_robust_list,
+			__syscall(SYS_set_robust_list,
 				&self->robust_list, 3*sizeof(long));
 		self->robust_list.off = (char*)&m->_m_lock-(char *)&m->_m_next;
 		self->robust_list.pending = &m->_m_next;

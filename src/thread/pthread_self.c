@@ -22,7 +22,7 @@ static int init_main_thread()
 	main_thread.errno_ptr = __errno_location();
 	libc.errno_location = errno_location;
 	main_thread.tid = main_thread.pid = 
-		syscall(SYS_set_tid_address, &main_thread.tid);
+		__syscall(SYS_set_tid_address, &main_thread.tid);
 	return 0;
 }
 

@@ -27,7 +27,7 @@ FILE *fopen(const char *filename, const char *mode)
 	f = __fdopen(fd, mode);
 	if (f) return f;
 
-	syscall(SYS_close, fd);
+	__syscall(SYS_close, fd);
 	return 0;
 }
 
