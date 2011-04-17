@@ -4,7 +4,6 @@
 int ftrylockfile(FILE *f)
 {
 	int tid = pthread_self()->tid;
-	if (!libc.lockfile) libc.lockfile = __lockfile;
 	if (f->lock == tid) {
 		if (f->lockcount == INT_MAX)
 			return -1;

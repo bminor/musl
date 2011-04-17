@@ -7,8 +7,8 @@
 struct __libc {
 	int *(*errno_location)(void);
 	void (*testcancel)(void);
-	void (*lock)(volatile int *);
-	void (*lockfile)(FILE *);
+	int threaded;
+	int canceldisable;
 	void (*fork_handler)(int);
 	int (*atexit)(void (*)(void));
 	void (*fini)(void);
@@ -16,7 +16,6 @@ struct __libc {
 	volatile int threads_minus_1;
 	int ofl_lock;
 	FILE *ofl_head;
-	int canceldisable;
 };
 
 
@@ -40,7 +39,7 @@ extern struct __libc *__libc_loc(void) __attribute__((const));
 void __lock(volatile int *);
 void __lockfile(FILE *);
 #define LOCK(x) (libc.threads_minus_1 ? (__lock(x),1) : ((void)(x),1))
-#define UNLOCK(x) (*(x)=0)
+#define UNLOCK(x) (*(volatile int *)(x)=0)
 
 int __rsyscall(int, long, long, long, long, long, long);
 

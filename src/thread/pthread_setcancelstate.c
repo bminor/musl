@@ -3,7 +3,7 @@
 int pthread_setcancelstate(int new, int *old)
 {
 	if (new > 1U) return EINVAL;
-	if (libc.lock) {
+	if (libc.threaded) {
 		struct pthread *self = __pthread_self();
 		if (old) *old = self->canceldisable;
 		self->canceldisable = new;

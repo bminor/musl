@@ -17,7 +17,7 @@ long (__syscall_cp)(long nr, long u, long v, long w, long x, long y, long z)
 	uintptr_t old_sp, old_ip;
 	long r;
 
-	if (!libc.lock || (self = __pthread_self())->canceldisable)
+	if (!libc.threaded || (self = __pthread_self())->canceldisable)
 		return __syscall(nr, u, v, w, x, y, z);
 
 	old_sp = self->cp_sp;

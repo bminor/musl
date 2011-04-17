@@ -44,18 +44,6 @@ void __pthread_unwind_next(struct __ptcb *cb)
 	__syscall(SYS_exit, 0);
 }
 
-static void init_threads()
-{
-	sigset_t set;
-	libc.lock = __lock;
-	libc.lockfile = __lockfile;
-
-	sigemptyset(&set);
-	sigaddset(&set, SIGSYSCALL);
-	sigaddset(&set, SIGCANCEL);
-	__libc_sigprocmask(SIG_UNBLOCK, &set, 0);
-}
-
 static int start(void *p)
 {
 	struct pthread *self = p;
@@ -79,7 +67,6 @@ weak_alias(dummy, __pthread_tsd_size);
 
 int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(void *), void *arg)
 {
-	static int init;
 	int ret;
 	size_t size, guard;
 	struct pthread *self = pthread_self(), *new;
@@ -87,7 +74,14 @@ int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(vo
 	const pthread_attr_t default_attr = { 0 };
 
 	if (!self) return ENOSYS;
-	if (!init && ++init) init_threads();
+	if (!libc.threaded) {
+		sigset_t set;
+		sigemptyset(&set);
+		sigaddset(&set, SIGSYSCALL);
+		sigaddset(&set, SIGCANCEL);
+		__libc_sigprocmask(SIG_UNBLOCK, &set, 0);
+		libc.threaded = 1;
+	}
 
 	if (!attr) attr = &default_attr;
 	guard = ROUND(attr->_a_guardsize + DEFAULT_GUARD_SIZE);

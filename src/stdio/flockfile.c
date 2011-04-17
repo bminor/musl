@@ -3,9 +3,6 @@
 
 void flockfile(FILE *f)
 {
-	if (!libc.lockfile) {
-		pthread_self();
-		libc.lockfile = __lockfile;
-	}
+	if (!libc.threaded) pthread_self();
 	__lockfile(f);
 }

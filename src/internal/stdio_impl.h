@@ -24,7 +24,7 @@
 
 #define UNGET 8
 
-#define FLOCK(f) ((libc.lockfile && (f)->lock>=0) ? (libc.lockfile((f)),0) : 0)
+#define FLOCK(f) ((libc.threads_minus_1 && (f)->lock>=0) ? (__lockfile((f)),0) : 0)
 #define FUNLOCK(f) ((f)->lockcount && (--(f)->lockcount || ((f)->lock=0)))
 
 #define F_PERM 1
