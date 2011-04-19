@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <limits.h>
 #include "__dirent.h"
+#include "syscall.h"
 
 DIR *opendir(const char *name)
 {
@@ -17,7 +18,7 @@ DIR *opendir(const char *name)
 		return 0;
 	fcntl(fd, F_SETFD, FD_CLOEXEC);
 	if (!(dir = calloc(1, sizeof *dir))) {
-		close(fd);
+		__syscall(SYS_close, fd);
 		return 0;
 	}
 	dir->fd = fd;
