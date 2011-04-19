@@ -9,5 +9,6 @@ int sem_init(sem_t *sem, int pshared, unsigned value)
 		return -1;
 	}
 	sem->__val[0] = value;
+	sem->__val[1] = 0;
 	return 0;
 }
