@@ -7,6 +7,7 @@
 #include <time.h>
 #include <signal.h>
 #include <string.h>
+#include <pthread.h>
 #include "libc.h"
 
 static int lock;
@@ -33,10 +34,13 @@ static const struct {
 
 void closelog(void)
 {
+	int cs;
+	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
 	LOCK(&lock);
 	close(log_fd);
 	log_fd = -1;
 	UNLOCK(&lock);
+	pthread_setcancelstate(cs, 0);
 }
 
 static void __openlog(const char *ident, int opt, int facility)
@@ -53,12 +57,15 @@ static void __openlog(const char *ident, int opt, int facility)
 
 void openlog(const char *ident, int opt, int facility)
 {
+	int cs;
+	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
 	LOCK(&lock);
 	__openlog(ident, opt, facility);
 	UNLOCK(&lock);
+	pthread_setcancelstate(cs, 0);
 }
 
-void __vsyslog(int priority, const char *message, va_list ap)
+static void _vsyslog(int priority, const char *message, va_list ap)
 {
 	char timebuf[16];
 	time_t now;
@@ -66,10 +73,6 @@ void __vsyslog(int priority, const char *message, va_list ap)
 	char buf[256];
 	int pid;
 	int l, l2;
-
-	if (!(log_mask & LOG_MASK(priority&7)) || (priority&~0x3ff)) return;
-
-	LOCK(&lock);
 
 	if (log_fd < 0) {
 		__openlog(log_ident, log_opt | LOG_NDELAY, log_facility);
@@ -96,6 +99,17 @@ void __vsyslog(int priority, const char *message, va_list ap)
 	}
 
 	UNLOCK(&lock);
+}
+
+void __vsyslog(int priority, const char *message, va_list ap)
+{
+	int cs;
+	if (!(log_mask & LOG_MASK(priority&7)) || (priority&~0x3ff)) return;
+	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
+	LOCK(&lock);
+	_vsyslog(priority, message, ap);
+	UNLOCK(&lock);
+	pthread_setcancelstate(cs, 0);
 }
 
 void syslog(int priority, const char *message, ...)
