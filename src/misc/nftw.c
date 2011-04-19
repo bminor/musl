@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <limits.h>
+#include <pthread.h>
 #include "libc.h"
 
 struct history
@@ -103,6 +104,7 @@ static int do_nftw(char *path, int (*fn)(const char *, const struct stat *, int,
 
 int nftw(const char *path, int (*fn)(const char *, const struct stat *, int, struct FTW *), int fd_limit, int flags)
 {
+	int r, cs;
 	size_t l;
 	char pathbuf[PATH_MAX+1];
 
@@ -115,7 +117,10 @@ int nftw(const char *path, int (*fn)(const char *, const struct stat *, int, str
 	}
 	memcpy(pathbuf, path, l+1);
 	
-	return do_nftw(pathbuf, fn, fd_limit, flags, NULL);
+	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
+	r = do_nftw(pathbuf, fn, fd_limit, flags, NULL);
+	pthread_setcancelstate(cs, 0);
+	return r;
 }
 
 LFS64(nftw);
