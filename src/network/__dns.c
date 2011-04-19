@@ -11,6 +11,7 @@
 #include <time.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <pthread.h>
 #include "__dns.h"
 #include "stdio_impl.h"
 
@@ -42,14 +43,15 @@ int __dns_doqueries(unsigned char *dest, const char *name, int *rr, int rrcnt)
 	struct timeval tv;
 	fd_set fds;
 	int id;
+	int cs;
 
 	/* Construct query template - RR and ID will be filled later */
-	if (strlen(name)-1 >= 254U) return -1;
+	if (strlen(name)-1 >= 254U) return EAI_NONAME;
 	q[2] = q[5] = 1;
 	strcpy((char *)q+13, name);
 	for (i=13; q[i]; i=j+1) {
 		for (j=i; q[j] && q[j] != '.'; j++);
-		if (j-i-1u > 62u) return -1;
+		if (j-i-1u > 62u) return EAI_NONAME;
 		q[i-1] = j-i;
 	}
 	q[i+3] = 1;
@@ -80,12 +82,14 @@ int __dns_doqueries(unsigned char *dest, const char *name, int *rr, int rrcnt)
 		sl = sizeof sa.sin;
 	}
 
+	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
+
 	/* Get local address and open/bind a socket */
 	sa.sin.sin_family = family;
 	fd = socket(family, SOCK_DGRAM, 0);
 	if (bind(fd, (void *)&sa, sl) < 0) {
-		close(fd);
-		return -1;
+		errcode = EAI_SYSTEM;
+		goto out;
 	}
 	/* Nonblocking to work around Linux UDP select bug */
 	fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK);
@@ -140,7 +144,9 @@ int __dns_doqueries(unsigned char *dest, const char *name, int *rr, int rrcnt)
 		/* Check to see if we have answers to all queries */
 		if (got+failed == rrcnt) break;
 	}
+out:
 	close(fd);
+	pthread_setcancelstate(cs, 0);
 
 	/* Return the number of results, or an error code if none */
 	if (got) return got;
