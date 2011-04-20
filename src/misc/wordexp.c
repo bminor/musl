@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <pthread.h>
 
 static char *getword(FILE *f)
 {
@@ -14,7 +15,7 @@ static char *getword(FILE *f)
 	return getdelim(&s, (size_t [1]){0}, 0, f) < 0 ? 0 : s;
 }
 
-int wordexp(const char *s, wordexp_t *we, int flags)
+static int do_wordexp(const char *s, wordexp_t *we, int flags)
 {
 	size_t i, l;
 	int sq=0, dq=0;
@@ -83,8 +84,13 @@ int wordexp(const char *s, wordexp_t *we, int flags)
 		i += we->we_offs;
 	}
 
-	pipe(p);
+	if (pipe(p) < 0) return WRDE_NOSPACE;
 	pid = fork();
+	if (pid < 0) {
+		close(p[0]);
+		close(p[1]);
+		return WRDE_NOSPACE;
+	}
 	if (!pid) {
 		dup2(p[1], 1);
 		close(p[0]);
@@ -132,6 +138,15 @@ int wordexp(const char *s, wordexp_t *we, int flags)
 	we->we_wordv = wv;
 	we->we_wordc = i - we->we_offs;
 	return err;
+}
+
+int wordexp(const char *s, wordexp_t *we, int flags)
+{
+	int r, cs;
+	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
+	r = do_wordexp(s, we, flags);
+	pthread_setcancelstate(cs, 0);
+	return r;
 }
 
 void wordfree(wordexp_t *we)
