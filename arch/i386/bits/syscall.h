@@ -527,6 +527,8 @@ static inline long __syscall6(long __n, long __a1, long __a2, long __a3, long __
 #define __NR_pread __NR_pread64
 #define __NR_pwrite __NR_pwrite64
 
+#define __NR_fadvise __NR_fadvise64_64
+
 #undef __NR_getrlimit
 #define __NR_getrlimit __NR_ugetrlimit
 
@@ -935,6 +937,8 @@ static inline long __syscall6(long __n, long __a1, long __a2, long __a3, long __
 #define SYS_fstatat SYS_fstatat64
 #define SYS_pread SYS_pread64
 #define SYS_pwrite SYS_pwrite64
+
+#define SYS_fadvise SYS_fadvise64_64
 
 #undef SYS_getrlimit
 #define SYS_getrlimit SYS_ugetrlimit

@@ -375,6 +375,7 @@ static inline long __syscall6(long __n, long __a1, long __a2, long __a3, long __
 #define __NR_pread __NR_pread64
 #define __NR_pwrite __NR_pwrite64
 #define __NR_getdents __NR_getdents64
+#define __NR_fadvise __NR_fadvise64
 
 
 
@@ -692,5 +693,6 @@ static inline long __syscall6(long __n, long __a1, long __a2, long __a3, long __
 #define SYS_pread SYS_pread64
 #define SYS_pwrite SYS_pwrite64
 #define SYS_getdents SYS_getdents64
+#define SYS_fadvise SYS_fadvise64
 
 
