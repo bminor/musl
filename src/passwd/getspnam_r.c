@@ -1,6 +1,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <ctype.h>
 #include "pwf.h"
 
 /* This implementation support Openwall-style TCB passwords in place of
@@ -9,6 +10,11 @@
  * which a malicious user might create in place of his or her TCB shadow
  * file. It also avoids any allocation to prevent memory-exhaustion
  * attacks via huge TCB shadow files. */
+
+static long xatol(const char *s)
+{
+	return isdigit(*s) ? atol(s) : -1;
+}
 
 int getspnam_r(const char *name, struct spwd *sp, char *buf, size_t size, struct spwd **res)
 {
@@ -64,25 +70,25 @@ int getspnam_r(const char *name, struct spwd *sp, char *buf, size_t size, struct
 		*s++ = 0; sp->sp_pwdp = s;
 		if (!(s = strchr(s, ':'))) continue;
 
-		*s++ = 0; sp->sp_lstchg = atol(s);
+		*s++ = 0; sp->sp_lstchg = xatol(s);
 		if (!(s = strchr(s, ':'))) continue;
 
-		*s++ = 0; sp->sp_min = atol(s);
+		*s++ = 0; sp->sp_min = xatol(s);
 		if (!(s = strchr(s, ':'))) continue;
 
-		*s++ = 0; sp->sp_max = atol(s);
+		*s++ = 0; sp->sp_max = xatol(s);
 		if (!(s = strchr(s, ':'))) continue;
 
-		*s++ = 0; sp->sp_warn = atol(s);
+		*s++ = 0; sp->sp_warn = xatol(s);
 		if (!(s = strchr(s, ':'))) continue;
 
-		*s++ = 0; sp->sp_inact = atol(s);
+		*s++ = 0; sp->sp_inact = xatol(s);
 		if (!(s = strchr(s, ':'))) continue;
 
-		*s++ = 0; sp->sp_expire = atol(s);
+		*s++ = 0; sp->sp_expire = xatol(s);
 		if (!(s = strchr(s, ':'))) continue;
 
-		*s++ = 0; sp->sp_flag = atol(s);
+		*s++ = 0; sp->sp_flag = xatol(s);
 		*res = sp;
 		break;
 	}
