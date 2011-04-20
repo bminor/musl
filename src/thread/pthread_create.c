@@ -5,11 +5,7 @@ static void dummy_0()
 }
 weak_alias(dummy_0, __rsyscall_lock);
 weak_alias(dummy_0, __rsyscall_unlock);
-
-static void dummy_1(pthread_t self)
-{
-}
-weak_alias(dummy_1, __pthread_tsd_run_dtors);
+weak_alias(dummy_0, __pthread_tsd_run_dtors);
 
 #ifdef __pthread_unwind_next
 #undef __pthread_unwind_next
@@ -28,7 +24,7 @@ void __pthread_unwind_next(struct __ptcb *cb)
 
 	LOCK(&self->exitlock);
 
-	__pthread_tsd_run_dtors(self);
+	__pthread_tsd_run_dtors();
 
 	/* Mark this thread dead before decrementing count */
 	self->dead = 1;

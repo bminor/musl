@@ -31,8 +31,9 @@ int pthread_key_delete(pthread_key_t k)
 	return 0;
 }
 
-void __pthread_tsd_run_dtors(pthread_t self)
+void __pthread_tsd_run_dtors()
 {
+	pthread_t self = __pthread_self();
 	int i, j, not_finished = self->tsd_used;
 	for (j=0; not_finished && j<PTHREAD_DESTRUCTOR_ITERATIONS; j++) {
 		not_finished = 0;
