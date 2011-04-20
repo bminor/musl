@@ -5,6 +5,8 @@
 #include <limits.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <sys/wait.h>
+#include <signal.h>
 
 static char *getword(FILE *f)
 {
@@ -14,15 +16,17 @@ static char *getword(FILE *f)
 
 int wordexp(const char *s, wordexp_t *we, int flags)
 {
-	size_t i, l, len;
+	size_t i, l;
 	int sq=0, dq=0;
 	size_t np=0;
-	char *cmd, *w, **tmp;
+	char *w, **tmp;
 	char *redir = (flags & WRDE_SHOWERR) ? "" : "2>/dev/null";
 	int err = 0, status;
 	FILE *f;
 	size_t wc = 0;
 	char **wv = 0;
+	int p[2];
+	pid_t pid;
 
 	if (flags & WRDE_REUSE) wordfree(we);
 
@@ -79,13 +83,26 @@ int wordexp(const char *s, wordexp_t *we, int flags)
 		i += we->we_offs;
 	}
 
-	len = 50 + strlen(s);
-	cmd = malloc(len);
-	if (!cmd) return WRDE_NOSPACE;
-	snprintf(cmd, len, "printf %%s\\\\0 %s %s", s, redir);
-	f = popen(cmd, "r");
-	free(cmd);
-	if (!f) return WRDE_NOSPACE;
+	pipe(p);
+	pid = fork();
+	if (!pid) {
+		dup2(p[1], 1);
+		close(p[0]);
+		close(p[1]);
+		execl("/bin/sh", "sh", "-c",
+			"eval \"printf %s\\\\\\\\0 $1 $2\"",
+			"sh", s, redir, (char *)0);
+		_exit(1);
+	}
+	close(p[1]);
+	
+	f = fdopen(p[0], "r");
+	if (!f) {
+		close(p[0]);
+		kill(pid, SIGKILL);
+		waitpid(pid, &status, 0);
+		return WRDE_NOSPACE;
+	}
 
 	l = wv ? i+1 : 0;
 
@@ -101,7 +118,8 @@ int wordexp(const char *s, wordexp_t *we, int flags)
 	}
 	if (!feof(f)) err = WRDE_NOSPACE;
 
-	status = pclose(f);
+	fclose(f);
+	waitpid(pid, &status, 0);
 	if (WEXITSTATUS(status)) {
 		if (!(flags & WRDE_APPEND)) {
 			free(wv);
