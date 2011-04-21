@@ -81,7 +81,14 @@ size_t wcstombs (char *, const wchar_t *, size_t);
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
 
 #ifndef WEXITSTATUS
-#include <bits/wexitstatus.h>
+#define WEXITSTATUS(s) (((s) & 0xff00) >> 8)
+#define WTERMSIG(s) ((s) & 0x7f)
+#define WSTOPSIG(s) WEXITSTATUS(s)
+#define WCOREDUMP(s) ((s) & 0x80)
+#define WIFEXITED(s) (!WTERMSIG(s))
+#define WIFSTOPPED(s) (((s) & 0xff) == 0x7f)
+#define WIFSIGNALED(s) (((signed char) (((s) & 0x7f) + 1) >> 1) > 0)
+#define WIFCONTINUED(s) ((s) == 0xffff)
 #endif
 
 int posix_memalign (void **, size_t, size_t);
