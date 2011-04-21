@@ -75,6 +75,7 @@ int getaddrinfo(const char *host, const char *serv, const struct addrinfo *hint,
 		type = proto==IPPROTO_UDP ? SOCK_DGRAM : SOCK_STREAM;
 
 	if (serv) {
+		if (!*serv) return EAI_SERVICE;
 		port = strtoul(serv, &z, 0);
 		if (!*z && port > 65535) return EAI_SERVICE;
 		if (!port) {
@@ -106,6 +107,8 @@ int getaddrinfo(const char *host, const char *serv, const struct addrinfo *hint,
 		*res = &buf->ai;
 		return 0;
 	}
+
+	if (!*host) return EAI_NONAME;
 
 	/* Try as a numeric address */
 	if (__ipparse(&sa, family, host) >= 0) {
