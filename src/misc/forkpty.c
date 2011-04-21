@@ -1,5 +1,6 @@
 #include <pty.h>
 #include <unistd.h>
+#include <sys/ioctl.h>
 
 int forkpty(int *m, char *name, const struct termios *tio, const struct winsize *ws)
 {
@@ -10,10 +11,12 @@ int forkpty(int *m, char *name, const struct termios *tio, const struct winsize 
 	pid = fork();
 	if (!pid) {
 		close(*m);
+		setsid();
+		ioctl(s, TIOCSCTTY, (char *)0);
 		dup2(s, 0);
 		dup2(s, 1);
 		dup2(s, 2);
-		close(s);
+		if (s>2) close(s);
 		return 0;
 	}
 	close(s);
