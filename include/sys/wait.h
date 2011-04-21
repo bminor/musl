@@ -4,10 +4,10 @@
 extern "C" {
 #endif
 
+#include <signal.h>
+
 #define __NEED_pid_t
 #define __NEED_id_t
-#define __NEED_time_t
-#define __NEED_struct_timeval
 #define __NEED_siginfo_t
 #include <bits/alltypes.h>
 
