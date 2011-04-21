@@ -14,9 +14,10 @@ int __ipparse(void *dest, int family, const char *s)
 
 	if (family == AF_INET6) goto not_v4;
 
-	for (i=0; i<4 && *s; i++) {
+	for (i=0; i<4; i++) {
 		a[i] = strtoul(s, (char **)&z, 0);
 		if (z==s || (*z && *z != '.')) goto not_v4;
+		if (!*z) break;
 		s=z+1;
 	}
 	switch (i) {
