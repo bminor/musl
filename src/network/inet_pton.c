@@ -21,11 +21,11 @@ int inet_pton(int af, const char *s, void *a0)
 				return 0;
 			s=z+1;
 		}
-		return 0;
+		return 1;
 	} else if (af==AF_INET6) {
 		return !__ipparse(a, AF_INET6, s);
 	}
 
 	errno = EAFNOSUPPORT;
-	return 0;
+	return -1;
 }
