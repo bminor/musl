@@ -5,7 +5,7 @@
 /* rdi = child_stack, rsi = start, rdx = pthread_struct */
 __uniclone:
         subq    $8,%rsp         /* pad parent stack to prevent branch later */
-        subq    $16,%rdi        /* grow child_stack */
+        subq    $24,%rdi        /* grow child_stack */
         mov     %rsi,8(%rdi)    /* push start onto child_stack as return ptr */
         mov     %rdx,0(%rdi)    /* push pthread_struct onto child_stack */
         mov     %rdx,%r8        /* r8 = tls */
