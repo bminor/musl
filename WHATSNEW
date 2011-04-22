@@ -186,7 +186,18 @@ for nonstandard macros, etc.
 
 
 
-0.7.9 (pending release) - more bug fixes, compatibility, optimization, cleanup
+0.7.9 - new cancellation, bug fixes, compatibility, optimization, cleanup
+
+major changes to pthread cancellation handling which simplify and
+reduce code size while ensuring no resource leaks or dangerous
+behavior with signals.
+
+better code factorization for smaller static binary sizes, especially
+in the presence of library code that is thread-aware but never
+actually creates any threads.
+
+optimizations for size and performance in many syscall wrappers and
+pthread functions.
 
 fixed fcntl locking on x86_64.
 
@@ -198,5 +209,3 @@ sysvipc interfaces.
 
 improved timers with thread delivery to avoid some issues with reusing
 the same thread for all expirations.
-
-optimized various pthread internals.
