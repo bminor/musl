@@ -3,5 +3,5 @@
 
 uid_t getuid(void)
 {
-	return syscall(SYS_getuid);
+	return __syscall(SYS_getuid);
 }
