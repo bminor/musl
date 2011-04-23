@@ -186,26 +186,36 @@ for nonstandard macros, etc.
 
 
 
-0.7.9 - new cancellation, bug fixes, compatibility, optimization, cleanup
+0.7.9 release notes
 
-major changes to pthread cancellation handling which simplify and
-reduce code size while ensuring no resource leaks or dangerous
-behavior with signals.
+new pthread cancellation implementation:
+- safe against resource-leak/side-effect-leak race conditions
+- safe against interruption by signal handlers
+- reduced bloat in all cancellable functions
+- reduced bloat for blocking cancellation
 
-better code factorization for smaller static binary sizes, especially
-in the presence of library code that is thread-aware but never
-actually creates any threads.
+new interfaces implemented:
+- realpath (limited functionality)
+- wordexp (limited functionality)
+- flock (nonstandard)
+- forkpty (nonstandard)
+- posix_fadvise
+- posix_fallocate
 
-optimizations for size and performance in many syscall wrappers and
-pthread functions.
+general bug fixes:
+- syslog function failure to communicate with syslogd
+- bug in siginfo_t definition if wait.h was included before signal.h
+- incorrect struct definitions for most of sysv ipc
+- pthread_exit/cancel on timer handler wrongly destroying the timer
+- linux dup2 ebusy workaround
+- obscure issues in non-threaded programs using some pthread functions
+- getopt_long allowed mismatch in last char of option name
+- incorrect parsing of obscure ip address forms
+- initgroups not working reliably (uninitialized var)
+- shadow pass treating empty expiry field as pass-expired-in-1970
+- bogus longjmp if pthread_exit was called from cancellation handlers
 
-fixed fcntl locking on x86_64.
-
-fixed syslog implementation to work correctly with busybox syslogd and
-presumably all other syslogd implementations using /dev/log.
-
-fixed major problems, including wrong public struct definitions, in
-sysvipc interfaces.
-
-improved timers with thread delivery to avoid some issues with reusing
-the same thread for all expirations.
+x86_64-specific bug fixes:
+- fcntl file locking
+- thread stack alignment
+- broken select timeouts due to incorrect timeval definition
