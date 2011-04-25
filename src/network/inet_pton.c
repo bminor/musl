@@ -36,10 +36,7 @@ int inet_pton(int af, const char *s, void *a0)
 		return -1;
 	}
 
-	if (s[0]==':' && s[1]==':') {
-		s+=2;
-		brk=0;
-	}
+	if (s[0]==':' && s[1]==':') s++;
 
 	for (i=0; ; i++, s+=j+1) {
 		if (s[0]==':' && brk<0) {
