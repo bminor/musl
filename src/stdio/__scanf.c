@@ -22,8 +22,7 @@ static int read(rctx_t *r)
 
 static void unread(rctx_t *r)
 {
-	//if (r->u || r->w < 0) return;
-	if (r->w < 0) return;
+	if (r->c < 0 || r->w < 0) return;
 	r->w++;
 	r->u = 1;
 }
@@ -99,7 +98,9 @@ int __scanf(rctx_t *r, const wchar_t *fmt, va_list ap)
 		} else if (*p != '%' || p[1] == '%') {
 			if (*p == '%') p++;
 			r->w = 1;
-			if (*p++ != read(r))
+			if ((c = read(r)) < 0)
+				goto input_fail;
+			if (*p++ != c)
 				goto match_fail;
 			continue;
 		}
