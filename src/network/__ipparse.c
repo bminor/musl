@@ -2,11 +2,13 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include "__dns.h"
 #include <stdio.h>
 
-int __ipparse(void *dest, int family, const char *s)
+int __ipparse(void *dest, int family, const char *s0)
 {
+	const char *s = s0;
 	unsigned char *d = dest;
 	unsigned long a[16] = { 0 };
 	const char *z;
@@ -37,5 +39,7 @@ int __ipparse(void *dest, int family, const char *s)
 	return 0;
 
 not_v4:
-	return -1;
+	s = s0;
+	((struct sockaddr_in6 *)d)->sin6_family = AF_INET6;
+	return inet_pton(AF_INET6, s, (void *)&((struct sockaddr_in6 *)d)->sin6_addr) <= 0 ? -1 : 0;
 }
