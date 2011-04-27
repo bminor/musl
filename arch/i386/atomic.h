@@ -1,5 +1,5 @@
-#ifndef _INTERNAA_ATOMIC_H
-#define _INTERNAA_ATOMIC_H
+#ifndef _INTERNAL_ATOMIC_H
+#define _INTERNAL_ATOMIC_H
 
 #include <stdint.h>
 
@@ -11,6 +11,12 @@ static inline int a_ctz_64(uint64_t x)
 	return r;
 }
 
+static inline int a_ctz_l(unsigned long x)
+{
+	long r;
+	__asm__( "bsf %1,%0" : "=r"(r) : "r"(x) );
+	return r;
+}
 
 static inline void a_and_64(volatile uint64_t *p, uint64_t v)
 {
