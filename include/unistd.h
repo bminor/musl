@@ -81,10 +81,10 @@ int pause(void);
 pid_t fork(void);
 int execve(const char *, char *const [], char *const []);
 int execv(const char *, char *const []);
-int execle(const char *, ...);
-int execl(const char *, ...);
+int execle(const char *, const char *, ...);
+int execl(const char *, const char *, ...);
 int execvp(const char *, char *const []);
-int execlp(const char *, ...);
+int execlp(const char *, const char *, ...);
 int fexecve(int, char *const [], char *const []);
 void _exit(int);
 
