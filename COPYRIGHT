@@ -19,6 +19,10 @@ The implementation of DES for crypt (src/misc/crypt.c) is Copyright ©
 1994 David Burren. It is licensed under a BSD license compatible with
 the GNU LGPL.
 
+The smoothsort implementation (src/stdlib/qsort.c) is Copyright © 2011
+Valentin Ochs and is licensed under an MIT-style license compatible
+with the GNU LGPL.
+
 The x86_64 port was written by Nicholas J. Kain. See individual files
 for their copyright status.
 
