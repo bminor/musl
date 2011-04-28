@@ -19,7 +19,12 @@ union \1 \2;\
 TYPEDEF unsigned size_t;
 TYPEDEF int ssize_t;
 TYPEDEF long ptrdiff_t;
+
+#if __GNUC__ >= 3
+TYPEDEF __builtin_va_list va_list;
+#else
 TYPEDEF struct __va_list * va_list;
+#endif
 
 TYPEDEF long wchar_t;
 TYPEDEF long wint_t;
