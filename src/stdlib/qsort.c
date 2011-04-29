@@ -155,11 +155,15 @@ void qsort(void *base, size_t nel, size_t width, cmpfun cmp)
 {
 	size_t lp[12*sizeof(size_t)];
 	size_t i, size = width * nel;
-	unsigned char *head = base,
-	              *high = head + size - width;
+	unsigned char *head, *high;
 	size_t p[2] = {1, 0};
 	int pshift = 1;
 	int trail;
+
+	if (!size) return;
+
+	head = base;
+	high = head + size - width;
 
 	/* Precompute Leonardo numbers, scaled by element width */
 	for(lp[0]=lp[1]=width, i=2; (lp[i]=lp[i-2]+lp[i-1]+width) < size; i++);
