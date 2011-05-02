@@ -13,7 +13,7 @@ int fclose(FILE *f)
 		OFLUNLOCK();
 	}
 
-	r = fflush(f) | f->close(f);
+	r = -(fflush(f) || f->close(f));
 
 	if (!perm) free(f);
 	
