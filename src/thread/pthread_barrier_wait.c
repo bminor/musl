@@ -38,7 +38,6 @@ int pthread_barrier_wait(pthread_barrier_t *b)
 
 	/* Last thread to enter the barrier wakes all non-instance-owners */
 	if (++inst->count == limit) {
-a_spin(); a_spin();
 		b->_b_inst = 0;
 		a_store(&b->_b_lock, 0);
 		if (b->_b_waiters) __wake(&b->_b_lock, 1, 0);
