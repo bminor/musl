@@ -3,7 +3,7 @@
 
 void __lockfile(FILE *f)
 {
-	int spins=100000;
+	int spins=10000;
 	int tid;
 
 	if (f->lock < 0) return;

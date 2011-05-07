@@ -2,7 +2,7 @@
 
 void __wait(volatile int *addr, volatile int *waiters, int val, int priv)
 {
-	int spins=50000;
+	int spins=10000;
 	if (priv) priv = 128; priv=0;
 	while (spins--) {
 		if (*addr==val) a_spin();
