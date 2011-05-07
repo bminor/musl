@@ -68,10 +68,10 @@ struct __timer {
 #define _rw_readers __u.__i[1]
 #define _rw_waiters __u.__i[2]
 #define _rw_owner __u.__i[3]
-#define _b_count __u.__i[0]
-#define _b_limit __u.__i[1]
-#define _b_left __u.__i[2]
-#define _b_waiters __u.__i[3]
+#define _b_inst __u.__p[0]
+#define _b_limit __u.__i[2]
+#define _b_lock __u.__i[3]
+#define _b_waiters __u.__i[4]
 
 #include "pthread_arch.h"
 
