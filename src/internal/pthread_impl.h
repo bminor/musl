@@ -79,8 +79,10 @@ struct __timer {
 #define SIGCANCEL 33
 #define SIGSYSCALL 34
 
-#define SIGPT_SET ((sigset_t){{[sizeof(long)==4] = 3<<(32*(sizeof(long)>4))}})
-#define SIGTIMER_SET ((sigset_t){{ 0x80000000 }})
+#define SIGPT_SET ((sigset_t *)(unsigned long [1+(sizeof(long)==4)]){ \
+	[sizeof(long)==4] = 3<<(32*(sizeof(long)>4)) })
+#define SIGTIMER_SET ((sigset_t *)(unsigned long [1+(sizeof(long)==4)]){ \
+	 0x80000000 })
 
 int __set_thread_area(void *);
 int __libc_sigaction(int, const struct sigaction *, struct sigaction *);

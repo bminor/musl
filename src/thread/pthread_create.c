@@ -45,7 +45,7 @@ static int start(void *p)
 {
 	struct pthread *self = p;
 	if (self->unblock_cancel)
-		__syscall(SYS_rt_sigprocmask, SIG_UNBLOCK, &SIGPT_SET, 0, 8);
+		__syscall(SYS_rt_sigprocmask, SIG_UNBLOCK, SIGPT_SET, 0, 8);
 	pthread_exit(self->start(self->start_arg));
 	return 0;
 }
@@ -68,7 +68,7 @@ int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(vo
 
 	if (!self) return ENOSYS;
 	if (!libc.threaded) {
-		__syscall(SYS_rt_sigprocmask, SIG_UNBLOCK, &SIGPT_SET, 0, 8);
+		__syscall(SYS_rt_sigprocmask, SIG_UNBLOCK, SIGPT_SET, 0, 8);
 		libc.threaded = 1;
 	}
 
