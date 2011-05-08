@@ -61,10 +61,10 @@ weak_alias(dummy, __pthread_tsd_size);
 int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(void *), void *arg)
 {
 	int ret;
-	size_t size, guard;
+	size_t size = DEFAULT_STACK_SIZE + DEFAULT_GUARD_SIZE;
+	size_t guard = DEFAULT_GUARD_SIZE;
 	struct pthread *self = pthread_self(), *new;
 	unsigned char *map, *stack, *tsd;
-	const pthread_attr_t default_attr = { 0 };
 
 	if (!self) return ENOSYS;
 	if (!libc.threaded) {
@@ -72,9 +72,10 @@ int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(vo
 		libc.threaded = 1;
 	}
 
-	if (!attr) attr = &default_attr;
-	guard = ROUND(attr->_a_guardsize + DEFAULT_GUARD_SIZE);
-	size = guard + ROUND(attr->_a_stacksize + DEFAULT_STACK_SIZE);
+	if (attr) {
+		guard = ROUND(attr->_a_guardsize + DEFAULT_GUARD_SIZE);
+		size = guard + ROUND(attr->_a_stacksize + DEFAULT_STACK_SIZE);
+	}
 	size += __pthread_tsd_size;
 	map = mmap(0, size, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_ANON, -1, 0);
 	if (!map) return EAGAIN;
@@ -90,8 +91,7 @@ int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(vo
 	new->start_arg = arg;
 	new->self = new;
 	new->tsd = (void *)tsd;
-	new->detached = attr->_a_detach;
-	new->attr = *attr;
+	if (attr) new->detached = attr->_a_detach;
 	new->unblock_cancel = self->cancel;
 	memcpy(new->tlsdesc, self->tlsdesc, sizeof new->tlsdesc);
 	new->tlsdesc[1] = (uintptr_t)new;
