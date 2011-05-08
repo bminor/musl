@@ -56,8 +56,7 @@ int __rsyscall(int nr, long a, long b, long c, long d, long e, long f)
 	while ((i=rs.blocks))
 		__wait(&rs.blocks, 0, i, 1);
 
-	sigfillset(&set);
-	__libc_sigprocmask(SIG_BLOCK, &set, &set);
+	__syscall(SYS_rt_sigprocmask, SIG_BLOCK, (uint64_t[]){-1}, &set, 8);
 
 	if (!rs.init) {
 		struct sigaction sa = {
@@ -88,7 +87,7 @@ int __rsyscall(int nr, long a, long b, long c, long d, long e, long f)
 	}
 
 	/* Handle any lingering signals with no-op */
-	__libc_sigprocmask(SIG_UNBLOCK, &set, &set);
+	__syscall(SYS_rt_sigprocmask, SIG_SETMASK, &set, &set, 8);
 
 	/* Resume other threads' signal handlers and wait for them */
 	rs.hold = 0;

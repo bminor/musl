@@ -34,7 +34,7 @@ void __pthread_unwind_next(struct __ptcb *cb)
 	if (!n) exit(0);
 
 	if (self->detached && self->map_base) {
-		__syscall(SYS_rt_sigprocmask, SIG_BLOCK, (long)(uint64_t[1]){-1},0,8);
+		__syscall(SYS_rt_sigprocmask, SIG_BLOCK, (uint64_t[]){-1},0,8);
 		__unmapself(self->map_base, self->map_size);
 	}
 
@@ -44,12 +44,8 @@ void __pthread_unwind_next(struct __ptcb *cb)
 static int start(void *p)
 {
 	struct pthread *self = p;
-	if (self->unblock_cancel) {
-		sigset_t set;
-		sigemptyset(&set);
-		sigaddset(&set, SIGCANCEL);
-		__libc_sigprocmask(SIG_UNBLOCK, &set, 0);
-	}
+	if (self->unblock_cancel)
+		__syscall(SYS_rt_sigprocmask, SIG_UNBLOCK, &SIGPT_SET, 0, 8);
 	pthread_exit(self->start(self->start_arg));
 	return 0;
 }
@@ -72,11 +68,7 @@ int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(vo
 
 	if (!self) return ENOSYS;
 	if (!libc.threaded) {
-		sigset_t set;
-		sigemptyset(&set);
-		sigaddset(&set, SIGSYSCALL);
-		sigaddset(&set, SIGCANCEL);
-		__libc_sigprocmask(SIG_UNBLOCK, &set, 0);
+		__syscall(SYS_rt_sigprocmask, SIG_UNBLOCK, &SIGPT_SET, 0, 8);
 		libc.threaded = 1;
 	}
 

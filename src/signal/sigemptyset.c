@@ -3,6 +3,7 @@
 
 int sigemptyset(sigset_t *set)
 {
-	memset(set, 0, sizeof *set);
+	set->__bits[0] = 0;
+	if (sizeof(long)==4) set->__bits[1] = 0;
 	return 0;
 }

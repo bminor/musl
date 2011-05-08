@@ -18,7 +18,7 @@ exec_prefix = /usr/local
 #CFLAGS += -fomit-frame-pointer -mno-accumulate-outgoing-args
 
 # Uncomment for warnings (as errors). Might need tuning to your gcc version.
-#CFLAGS += -Werror -Wall -Wpointer-arith -Wcast-align -Wno-parentheses -Wno-char-subscripts -Wno-uninitialized -Wno-sequence-point -Wno-missing-braces -Wno-unused-value
+#CFLAGS += -Werror -Wall -Wpointer-arith -Wcast-align -Wno-parentheses -Wno-char-subscripts -Wno-uninitialized -Wno-sequence-point -Wno-missing-braces -Wno-unused-value -Wno-overflow -Wno-int-to-pointer-cast
 
 # Uncomment if you want to build a shared library (experimental).
 #LIBC_LIBS += lib/libc.so

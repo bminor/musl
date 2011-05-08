@@ -35,7 +35,7 @@ int __libc_sigaction(int sig, const struct sigaction *sa, struct sigaction *old)
 
 int __sigaction(int sig, const struct sigaction *sa, struct sigaction *old)
 {
-	if (sig-SIGCANCEL < 3U) {
+	if (sig-32U < 3) {
 		errno = EINVAL;
 		return -1;
 	}

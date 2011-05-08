@@ -4,7 +4,7 @@
 int sigaddset(sigset_t *set, int sig)
 {
 	unsigned s = sig-1;
-	if (s >= 8*sizeof(sigset_t)) {
+	if (s >= 8*sizeof(sigset_t) || s-32U<3) {
 		errno = EINVAL;
 		return -1;
 	}
