@@ -326,9 +326,10 @@ static int fmt_fp(FILE *f, long double y, int w, int p, int fl, int t)
 		if (x || d+1!=z) {
 			long double round = CONCAT(0x1p,LDBL_MANT_DIG);
 			long double small;
-			if (x<i/2) small=0x01p-1;
-			else if (i==i/2 && d+1==z) small=0x10p-1;
-			else small=0x11p-1;
+			if (*d/i & 1) round += 2;
+			if (x<i/2) small=0x0.8p0;
+			else if (x==i/2 && d+1==z) small=0x1.0p0;
+			else small=0x1.8p0;
 			if (pl && *prefix=='-') round*=-1, small*=-1;
 			*d -= x;
 			/* Decide whether to round by probing round+small */
