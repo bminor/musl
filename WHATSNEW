@@ -219,3 +219,28 @@ x86_64-specific bug fixes:
 - fcntl file locking
 - thread stack alignment
 - broken select timeouts due to incorrect timeval definition
+
+
+
+0.7.10 release notes
+
+new features:
+- ipv6 numeric string parsing
+- eventfd syscall wrappers
+
+optimizations:
+- new qsort implementation using the smoothsort algorithm
+- much smaller/faster sigset_t handling functions
+- lowered spin count before futex wait in synchronization functions
+
+general bug fixes:
+- incorrect floating point round-to-even behavior in printf
+- major bugs in pthread barrier implementation
+- off-by-one error in scanf %n results
+- scanf failure to report EOF when scanning for literal text
+- minor missing/incorrect prototype issues
+- dependency on undefined call order in fclose
+
+compiler issue workarounds:
+- incorrect inlining of variadic functions on recent gcc versions
+- pcc preprocessor bug with recursive macro expansion
