@@ -7,16 +7,16 @@
 __setjmp:
 _setjmp:
 setjmp:
-	movl 4(%esp), %eax
-	movl    %ebx, (%eax)
-	movl    %esi, 4(%eax)
-	movl    %edi, 8(%eax)
-	movl    %ebp, 12(%eax)
-	leal 4(%esp), %ecx
-	movl    %ecx, 16(%eax)
-	movl  (%esp), %ecx
-	movl    %ecx, 20(%eax)
-	xorl    %eax, %eax
+	mov 4(%esp), %eax
+	mov    %ebx, (%eax)
+	mov    %esi, 4(%eax)
+	mov    %edi, 8(%eax)
+	mov    %ebp, 12(%eax)
+	lea 4(%esp), %ecx
+	mov    %ecx, 16(%eax)
+	mov  (%esp), %ecx
+	mov    %ecx, 20(%eax)
+	xor    %eax, %eax
 	ret
 .size __setjmp,.-__setjmp
 .size _setjmp,.-_setjmp

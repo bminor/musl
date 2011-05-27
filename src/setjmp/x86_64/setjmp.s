@@ -14,9 +14,9 @@ setjmp:
 	mov %r13,24(%rdi)
 	mov %r14,32(%rdi)
 	mov %r15,40(%rdi)
-	leaq 8(%rsp),%rdx       /* this is our rsp WITHOUT current ret addr */
+	lea 8(%rsp),%rdx        /* this is our rsp WITHOUT current ret addr */
 	mov %rdx,48(%rdi)
-	movq (%rsp),%rdx        /* save return addr ptr for new rip */
+	mov (%rsp),%rdx         /* save return addr ptr for new rip */
 	mov %rdx,56(%rdi)
 	xor %rax,%rax           /* always return 0 */
 	ret

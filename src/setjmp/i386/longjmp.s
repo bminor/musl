@@ -4,19 +4,19 @@
 .type longjmp,%function
 _longjmp:
 longjmp:
-	movl  4(%esp),%edx
-	movl  8(%esp),%eax
-	testl    %eax,%eax
-	jnz .L0
-	incl     %eax
-.L0:
-	movl   (%edx),%ebx
-	movl  4(%edx),%esi
-	movl  8(%edx),%edi
-	movl 12(%edx),%ebp
-	movl 16(%edx),%ecx
-	movl     %ecx,%esp
-	movl 20(%edx),%ecx
+	mov  4(%esp),%edx
+	mov  8(%esp),%eax
+	test    %eax,%eax
+	jnz 1f
+	inc     %eax
+1:
+	mov   (%edx),%ebx
+	mov  4(%edx),%esi
+	mov  8(%edx),%edi
+	mov 12(%edx),%ebp
+	mov 16(%edx),%ecx
+	mov     %ecx,%esp
+	mov 20(%edx),%ecx
 	jmp *%ecx
 .size _longjmp,.-_longjmp
 .size longjmp,.-longjmp
