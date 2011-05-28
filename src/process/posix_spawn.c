@@ -31,7 +31,9 @@ int __posix_spawnx(pid_t *res, const char *path,
 	for (i=1; i<=64; i++) {
 		struct sigaction sa;
 		sigaction(i, 0, &sa);
-		if (sa.sa_handler!=SIG_IGN || sigismember(&attr->__def, i)) {
+		if (sa.sa_handler!=SIG_IGN ||
+		    ((attr->__flags & POSIX_SPAWN_SETSIGDEF)
+		     && sigismember(&attr->__def, i) )) {
 			sa.sa_handler = SIG_DFL;
 			sigaction(i, &sa, 0);
 		}
