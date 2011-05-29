@@ -13,7 +13,8 @@ int posix_spawn_file_actions_addopen(posix_spawn_file_actions_t *fa, int fd, con
 	op->oflag = flags;
 	op->mode = mode;
 	strcpy(op->path, path);
-	op->next = fa->__actions;
+	if ((op->next = fa->__actions)) op->next->prev = op;
+	op->prev = 0;
 	fa->__actions = op;
 	return 0;
 }

@@ -10,7 +10,8 @@ int posix_spawn_file_actions_adddup2(posix_spawn_file_actions_t *fa, int fd, int
 	op->cmd = FDOP_DUP2;
 	op->fd = fd;
 	op->newfd = newfd;
-	op->next = fa->__actions;
+	if ((op->next = fa->__actions)) op->next->prev = op;
+	op->prev = 0;
 	fa->__actions = op;
 	return 0;
 }

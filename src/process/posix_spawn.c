@@ -51,10 +51,11 @@ int __posix_spawnx(pid_t *res, const char *path,
 		__syscall(SYS_setuid, __syscall(SYS_getuid)) ))
 		_exit(127);
 
-	if (fa) {
+	if (fa && fa->__actions) {
 		struct fdop *op;
 		int ret, fd;
-		for (op = fa->__actions; op; op = op->next) {
+		for (op = fa->__actions; op->next; op = op->next);
+		for (; op; op = op->prev) {
 			switch(op->cmd) {
 			case FDOP_CLOSE:
 				ret = __syscall(SYS_close, op->fd);
