@@ -2,7 +2,9 @@
 #include <unistd.h>
 #include <signal.h>
 #include <stdint.h>
+#include <fcntl.h>
 #include "syscall.h"
+#include "fdop.h"
 
 extern char **environ;
 
@@ -48,6 +50,32 @@ int __posix_spawnx(pid_t *res, const char *path,
 		__syscall(SYS_setgid, __syscall(SYS_getgid)) ||
 		__syscall(SYS_setuid, __syscall(SYS_getuid)) ))
 		_exit(127);
+
+	if (fa) {
+		struct fdop *op;
+		int ret, fd;
+		for (op = fa->__actions; op; op = op->next) {
+			switch(op->cmd) {
+			case FDOP_CLOSE:
+				ret = __syscall(SYS_close, op->fd);
+				break;
+			case FDOP_DUP2:
+				ret = __syscall(SYS_dup2, op->fd, op->newfd)<0;
+				break;
+			case FDOP_OPEN:
+				fd = __syscall(SYS_open, op->path,
+					op->oflag | O_LARGEFILE, op->mode);
+				if (fd == op->fd) {
+					ret = 0;
+				} else {
+					ret = __syscall(SYS_dup2, fd, op->fd)<0;
+					__syscall(SYS_close, fd);
+				}
+				break;
+			}
+			if (ret) _exit(127);
+		}
+	}
 
 	sigprocmask(SIG_SETMASK, (attr->__flags & POSIX_SPAWN_SETSIGMASK)
 		? &attr->__mask : &oldmask, 0);
