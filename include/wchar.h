@@ -131,6 +131,12 @@ size_t wcsftime (wchar_t *, size_t, const wchar_t *, const struct tm *);
 
 #undef iswdigit
 
+#if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
+ || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+size_t mbsnrtowcs(wchar_t *, const char **, size_t, size_t, mbstate_t *);
+size_t wcsnrtombs(char *, const wchar_t **, size_t, size_t, mbstate_t *);
+#endif
+
 #if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
 int wcwidth (wchar_t);
 int wcswidth (const wchar_t *, size_t);
