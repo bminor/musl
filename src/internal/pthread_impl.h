@@ -12,6 +12,7 @@
 #include <setjmp.h>
 #include <string.h>
 #include <time.h>
+#include <locale.h>
 #include "libc.h"
 #include "syscall.h"
 #include "atomic.h"
@@ -44,6 +45,7 @@ struct pthread {
 	} robust_list;
 	int unblock_cancel;
 	int delete_timer;
+	locale_t locale;
 };
 
 struct __timer {
