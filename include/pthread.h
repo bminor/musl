@@ -178,6 +178,9 @@ int pthread_barrierattr_setpshared(pthread_barrierattr_t *, int);
 
 int pthread_atfork(void (*)(void), void (*)(void), void (*)(void));
 
+int pthread_getconcurrency(void);
+int pthread_setconcurrency(int);
+
 #include <bits/pthread.h>
 
 int __setjmp(void *);
