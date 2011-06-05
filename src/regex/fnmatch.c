@@ -102,7 +102,7 @@ int fnmatch(const char *p, const char *s, int flags)
 					if (!*z || z-p > 32) { /* FIXME: symbolic const? */
 						return FNM_NOMATCH;
 					} else {
-						char class[z-p+1];
+						char class[33];
 						memcpy(class, p, z-p);
 						class[z-p] = 0;
 						if (iswctype(k, wctype(class)))
