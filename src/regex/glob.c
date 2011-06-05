@@ -171,6 +171,8 @@ int glob(const char *pat, int flags, int (*errfunc)(const char *path, int err), 
 		d = "";
 	}
 
+	if (strlen(p) > PATH_MAX) return GLOB_NOSPACE;
+
 	if (!errfunc) errfunc = ignore_err;
 
 	if (!(flags & GLOB_APPEND)) {
