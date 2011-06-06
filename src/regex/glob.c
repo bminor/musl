@@ -53,8 +53,7 @@ static int append(struct match **tail, const char *name, size_t len, int mark)
 static int match_in_dir(const char *d, const char *p, int flags, int (*errfunc)(const char *path, int err), struct match **tail)
 {
 	DIR *dir;
-	long long de_buf[(sizeof(struct dirent) + NAME_MAX + sizeof(long long))/sizeof(long long)];
-	struct dirent *de;
+	struct dirent de_buf, *de;
 	char pat[strlen(p)+1];
 	char *p2;
 	size_t l = strlen(d);
@@ -94,7 +93,7 @@ static int match_in_dir(const char *d, const char *p, int flags, int (*errfunc)(
 		closedir(dir);
 		return error;
 	}
-	while (!(error = readdir_r(dir, (void *)de_buf, &de)) && de) {
+	while (!(error = readdir_r(dir, &de_buf, &de)) && de) {
 		char namebuf[l+de->d_reclen+2], *name = namebuf;
 		if (!literal && fnmatch(p, de->d_name, fnm_flags))
 			continue;

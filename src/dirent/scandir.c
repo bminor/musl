@@ -12,7 +12,7 @@ int scandir(const char *path, struct dirent ***res,
 {
 	DIR *d = opendir(path);
 	struct dirent *de, **names=0, **tmp;
-	size_t cnt=0, len=0, size;
+	size_t cnt=0, len=0;
 	int old_errno = errno;
 
 	if (!d) return -1;
@@ -26,10 +26,9 @@ int scandir(const char *path, struct dirent ***res,
 			if (!tmp) break;
 			names = tmp;
 		}
-		size = offsetof(struct dirent,d_name) + strlen(de->d_name) + 1;
-		names[cnt] = malloc(size);
+		names[cnt] = malloc(de->d_reclen);
 		if (!names[cnt]) break;
-		memcpy(names[cnt++], de, size);
+		memcpy(names[cnt++], de, de->d_reclen);
 	}
 
 	closedir(d);
