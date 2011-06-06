@@ -21,7 +21,7 @@ char *__asctime(const struct tm *tm, char *buf)
 		 * application developers that they may not be so lucky
 		 * on other implementations (e.g. stack smashing..).
 		 */
-		*(int*)0 = 0;
+		*(volatile int*)0 = 0;
 	}
 	return buf;
 }
