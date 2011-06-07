@@ -76,6 +76,9 @@ int pthread_detach(pthread_t);
 void pthread_exit(void *);
 int pthread_join(pthread_t, void **);
 
+#ifdef __GNUC__
+__attribute__((const))
+#endif
 pthread_t pthread_self(void);
 int pthread_equal(pthread_t, pthread_t);
 
