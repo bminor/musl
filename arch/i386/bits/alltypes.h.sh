@@ -26,7 +26,11 @@ TYPEDEF __builtin_va_list va_list;
 TYPEDEF struct __va_list * va_list;
 #endif
 
+#ifdef __WCHAR_TYPE__
+TYPEDEF __WCHAR_TYPE__ wchar_t;
+#else
 TYPEDEF long wchar_t;
+#endif
 TYPEDEF long wint_t;
 TYPEDEF long wctrans_t;
 TYPEDEF long wctype_t;
