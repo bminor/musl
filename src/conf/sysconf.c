@@ -36,7 +36,7 @@ long sysconf(int name)
 		[_SC_AIO_PRIO_DELTA_MAX] = 0, /* ?? */
 		[_SC_DELAYTIMER_MAX] = _POSIX_DELAYTIMER_MAX,
 		[_SC_MQ_OPEN_MAX] = -1,
-		[_SC_MQ_PRIO_MAX] = _POSIX_MQ_PRIO_MAX,
+		[_SC_MQ_PRIO_MAX] = MQ_PRIO_MAX,
 		[_SC_VERSION] = VER,
 		[_SC_PAGE_SIZE] = PAGE_SIZE,
 		[_SC_RTSIG_MAX] = 63, /* ?? */

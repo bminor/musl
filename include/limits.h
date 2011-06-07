@@ -32,6 +32,7 @@
 #define SEM_VALUE_MAX 0x7fffffff
 #define SEM_NSEMS_MAX 256
 #define DELAYTIMER_MAX 0x7fffffff
+#define MQ_PRIO_MAX 32768
 
 /* Arbitrary numbers... */
 
