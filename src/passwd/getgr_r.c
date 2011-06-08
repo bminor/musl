@@ -47,7 +47,7 @@ int getgrnam_r(const char *name, struct group *gr, char *buf, size_t size, struc
 	return getgr_r(name, 0, gr, buf, size, res);
 }
 
-int getgruid_r(gid_t gid, struct group *gr, char *buf, size_t size, struct group **res)
+int getgrgid_r(gid_t gid, struct group *gr, char *buf, size_t size, struct group **res)
 {
 	return getgr_r(0, gid, gr, buf, size, res);
 }
