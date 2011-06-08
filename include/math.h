@@ -44,6 +44,24 @@ int __fpclassifyl(long double);
 #define isnormal(x) (fpclassify(x) == FP_NORMAL)
 #define isfinite(x) (fpclassify(x) > FP_INFINITE)
 
+#define isunordered(x,y) (isnan((x)) ? ((y),1) : isnan((y)))
+
+static inline int __isrel(long double __x, long double __y, int __rel)
+{
+	if (isunordered(__x, __y)) return 0;
+	if (__rel==-2) return __x < __y;
+	if (__rel==2) return __x > __y;
+	if (__rel==-1) return __x <= __y;
+	if (__rel==1) return __x >= __y;
+	return __x != __y;
+}
+
+#define isless(x,y) __isrel((x), (y), -2)
+#define islessequal(x,y) __isrel((x), (y), -1)
+#define islessgreater(x,y) __isrel((x), (y), 0)
+#define isgreaterequal(x,y) __isrel((x), (y), 1)
+#define isgreater(x,y) __isrel((x), (y), 2)
+
 double      acos(double);
 float       acosf(float);
 long double acosl(long double);
