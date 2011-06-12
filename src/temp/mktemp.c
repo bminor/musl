@@ -17,7 +17,8 @@ char *__mktemp(char *template)
 
 	if (l < 6 || strcmp(template+l-6, "XXXXXX")) {
 		errno = EINVAL;
-		return 0;
+		*template = 0;
+		return template;
 	}
 	clock_gettime(CLOCK_REALTIME, &ts);
 	r = ts.tv_nsec + (uintptr_t)&ts / 16 + (uintptr_t)template;
