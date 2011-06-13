@@ -27,10 +27,15 @@ feraiseexcept:
 
 .global fesetround
 fesetround:
+	mov 4(%esp),%ecx
 	xor %eax,%eax
-	mov $0xc00,%ecx
-	mov 4(%esp),%edx
-	jmp 2b
+	sub $32,%esp
+	fnstenv (%esp)
+	andb $0xf3,1(%esp)
+	or %ecx,(%esp)
+	fldenv (%esp)
+	add $32,%esp
+	ret
 
 .global fegetround
 fegetround:
