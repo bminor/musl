@@ -27,7 +27,9 @@ void __pthread_unwind_next(struct __ptcb *cb)
 	__lock(&self->exitlock);
 
 	/* Mark this thread dead before decrementing count */
+	__lock(&self->killlock);
 	self->dead = 1;
+	a_store(&self->killlock, 0);
 
 	do n = libc.threads_minus_1;
 	while (n && a_cas(&libc.threads_minus_1, n, n-1)!=n);

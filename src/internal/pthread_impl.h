@@ -46,6 +46,7 @@ struct pthread {
 	int unblock_cancel;
 	int delete_timer;
 	locale_t locale;
+	int killlock;
 };
 
 struct __timer {
