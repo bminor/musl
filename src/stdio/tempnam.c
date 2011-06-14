@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <unistd.h>
 #include <time.h>
 #include "libc.h"
@@ -30,7 +31,7 @@ char *tempnam(const char *dir, const char *pfx)
 
 	do {
 		clock_gettime(CLOCK_REALTIME, &ts);
-		n = ts.tv_nsec ^ (unsigned)&s ^ (unsigned)s;
+		n = ts.tv_nsec ^ (uintptr_t)&s ^ (uintptr_t)s;
 		snprintf(s, l, "%s/%s-%d-%d-%x", dir, pfx, pid, a_fetch_add(&index, 1), n);
 	} while (!access(s, F_OK) && try++<MAXTRIES);
 	if (try>=MAXTRIES) {

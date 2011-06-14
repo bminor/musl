@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <unistd.h>
 #include <time.h>
 #include "libc.h"
@@ -23,7 +24,7 @@ char *tmpnam(char *s)
 
 	do {
 		__syscall(SYS_clock_gettime, CLOCK_REALTIME, &ts, 0);
-		n = ts.tv_nsec ^ (unsigned)&s ^ (unsigned)s;
+		n = ts.tv_nsec ^ (uintptr_t)&s ^ (uintptr_t)s;
 		snprintf(s, L_tmpnam, "/tmp/t%x-%x", a_fetch_add(&index, 1), n);
 	} while (!__syscall(SYS_access, s, F_OK) && try++<MAXTRIES);
 	return try>=MAXTRIES ? 0 : s;
