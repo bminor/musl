@@ -82,7 +82,7 @@ struct __timer {
 #define SIGSYSCALL 34
 
 #define SIGPT_SET ((sigset_t *)(unsigned long [1+(sizeof(long)==4)]){ \
-	[sizeof(long)==4] = 3<<(32*(sizeof(long)>4)) })
+	[sizeof(long)==4] = 3UL<<(32*(sizeof(long)>4)) })
 #define SIGTIMER_SET ((sigset_t *)(unsigned long [1+(sizeof(long)==4)]){ \
 	 0x80000000 })
 
