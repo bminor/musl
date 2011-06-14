@@ -22,7 +22,7 @@ void __pthread_unwind_next(struct __ptcb *cb)
 		longjmp((void *)cb->__next->__jb, 1);
 	}
 
-	LOCK(&self->exitlock);
+	__lock(&self->exitlock);
 
 	__pthread_tsd_run_dtors();
 
