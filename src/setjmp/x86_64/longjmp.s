@@ -1,8 +1,6 @@
 /* Copyright 2011 Nicholas J. Kain, licensed GNU LGPL 2.1 or later */
 .global _longjmp
 .global longjmp
-.type _longjmp,%function
-.type longjmp,%function
 _longjmp:
 longjmp:
 	mov %rsi,%rax           /* val will be longjmp return */
@@ -20,5 +18,3 @@ longjmp:
 	mov %rdx,%rsp
 	mov 56(%rdi),%rdx       /* this is the instruction pointer */
 	jmp *%rdx               /* goto saved address without altering rsp */
-.size _longjmp,.-_longjmp
-.size longjmp,.-longjmp

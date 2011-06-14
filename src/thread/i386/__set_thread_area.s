@@ -1,6 +1,5 @@
 .text
 .global __set_thread_area
-.type   __set_thread_area,%function
 __set_thread_area:
 	pushl %ebx
 	movl 8(%esp),%ecx
@@ -19,4 +18,3 @@ __set_thread_area:
 	movw %cx,%gs
 1:
 	ret
-.size __set_thread_area,.-__set_thread_area

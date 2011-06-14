@@ -1,7 +1,6 @@
 /* Copyright 2011 Nicholas J. Kain, licensed GNU LGPL 2.1 or later */
 .text
 .global __uniclone
-.type   __uniclone,%function
 /* rdi = child_stack, rsi = start, rdx = pthread_struct */
 __uniclone:
         subq    $8,%rsp         /* pad parent stack to prevent branch later */
@@ -19,4 +18,3 @@ __uniclone:
         pop     %rdi            /* child stack: restore pthread_struct
                                  * parent stack: undo rsp displacement */
         ret
-.size __uniclone,.-__uniclone

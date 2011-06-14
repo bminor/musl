@@ -1,6 +1,5 @@
 .text
 .global __unmapself
-.type   __unmapself,%function
 __unmapself:
 	movl $91,%eax
 	movl 4(%esp),%ebx
@@ -9,5 +8,3 @@ __unmapself:
 	xorl %ebx,%ebx
 	movl $1,%eax
 	int $128
-
-.size __unmapself,.-__unmapself

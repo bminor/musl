@@ -1,9 +1,6 @@
 .global __setjmp
 .global _setjmp
 .global setjmp
-.type __setjmp,%function
-.type _setjmp,%function
-.type setjmp,%function
 __setjmp:
 _setjmp:
 setjmp:
@@ -18,6 +15,3 @@ setjmp:
 	mov    %ecx, 20(%eax)
 	xor    %eax, %eax
 	ret
-.size __setjmp,.-__setjmp
-.size _setjmp,.-_setjmp
-.size setjmp,.-setjmp

@@ -1,5 +1,4 @@
 .global __syscall
-.type __syscall,%function
 __syscall:
 	movq %rdi,%rax
 	movq %rsi,%rdi
@@ -10,4 +9,3 @@ __syscall:
 	movq 8(%rsp),%r9
 	syscall
 	ret
-.size __syscall,.-__syscall

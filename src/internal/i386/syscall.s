@@ -1,5 +1,4 @@
 .global __syscall
-.type __syscall,%function
 __syscall:
 	pushl %ebx
 	pushl %esi
@@ -18,4 +17,3 @@ __syscall:
 	popl %esi
 	popl %ebx
 	ret
-.size __syscall,.-__syscall

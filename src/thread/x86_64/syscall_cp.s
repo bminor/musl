@@ -1,6 +1,5 @@
 .text
 .global __syscall_cp_asm
-.type   __syscall_cp_asm,%function
 __syscall_cp_asm:
 	lea 1f(%rip),%rax
 	mov %rax,8(%rdi)

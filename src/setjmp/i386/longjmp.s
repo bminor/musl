@@ -1,7 +1,5 @@
 .global _longjmp
 .global longjmp
-.type _longjmp,%function
-.type longjmp,%function
 _longjmp:
 longjmp:
 	mov  4(%esp),%edx
@@ -18,5 +16,3 @@ longjmp:
 	mov     %ecx,%esp
 	mov 20(%edx),%ecx
 	jmp *%ecx
-.size _longjmp,.-_longjmp
-.size longjmp,.-longjmp
