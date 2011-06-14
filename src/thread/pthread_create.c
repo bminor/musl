@@ -22,9 +22,9 @@ void __pthread_unwind_next(struct __ptcb *cb)
 		longjmp((void *)cb->__next->__jb, 1);
 	}
 
-	__lock(&self->exitlock);
-
 	__pthread_tsd_run_dtors();
+
+	__lock(&self->exitlock);
 
 	/* Mark this thread dead before decrementing count */
 	self->dead = 1;
