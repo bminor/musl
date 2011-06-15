@@ -88,6 +88,7 @@ static inline long __syscall4(long __n, long __a1, long __a2, long __a3, long __
 	return __ret;
 }
 
+#if 0
 static inline long __syscall5(long __n, long __a1, long __a2, long __a3, long __a4, long __a5)
 {
 	unsigned long __ret;
@@ -95,6 +96,12 @@ static inline long __syscall5(long __n, long __a1, long __a2, long __a3, long __
 		: "=a"(__ret) : "a"(__n), "g"(__a1), "c"(__a2), "d"(__a3), "S"(__a4), "D"(__a5) : "memory");
 	return __ret;
 }
+#else
+static inline long __syscall5(long __n, long __a1, long __a2, long __a3, long __a4, long __a5)
+{
+	return (__syscall)(__n, __a1, __a2, __a3, __a4, __a5);
+}
+#endif
 
 static inline long __syscall6(long __n, long __a1, long __a2, long __a3, long __a4, long __a5, long __a6)
 {
