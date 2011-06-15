@@ -1,5 +1,6 @@
 /* Copyright 2011 Nicholas J. Kain, licensed GNU LGPL 2.1 or later */
 .global sigsetjmp
+.type sigsetjmp,@function
 sigsetjmp:
 	andl %esi,%esi
 	movq %rsi,64(%rdi)

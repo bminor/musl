@@ -1,5 +1,7 @@
 .global _longjmp
 .global longjmp
+.type _longjmp,@function
+.type longjmp,@function
 _longjmp:
 longjmp:
 	mov  4(%esp),%edx

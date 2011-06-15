@@ -1,6 +1,8 @@
 /* Copyright 2011 Nicholas J. Kain, licensed GNU LGPL 2.1 or later */
 .global _longjmp
 .global longjmp
+.type _longjmp,@function
+.type longjmp,@function
 _longjmp:
 longjmp:
 	mov %rsi,%rax           /* val will be longjmp return */

@@ -1,5 +1,6 @@
 .text
 .global __syscall_cp_asm
+.type   __syscall_cp_asm,@function
 __syscall_cp_asm:
 	pushl %ebx
 	pushl %esi

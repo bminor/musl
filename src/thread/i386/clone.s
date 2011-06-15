@@ -1,5 +1,6 @@
 .text
 .global __uniclone
+.type   __uniclone,@function
 __uniclone:
 	movl	4(%esp),%ecx
 	subl	$24,%ecx

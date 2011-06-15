@@ -1,6 +1,7 @@
 /* Copyright 2011 Nicholas J. Kain, licensed GNU LGPL 2.1 or later */
 .text
 .global __unmapself
+.type   __unmapself,@function
 __unmapself:
 	movl $11,%eax   /* SYS_munmap */
 	syscall         /* munmap(arg2,arg3) */

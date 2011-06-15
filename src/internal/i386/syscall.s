@@ -1,4 +1,5 @@
 .global __syscall
+.type __syscall,@function
 __syscall:
 	pushl %ebx
 	pushl %esi
