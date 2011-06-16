@@ -26,8 +26,10 @@ struct sockaddr
 struct sockaddr_storage
 {
 	sa_family_t ss_family;
-	long long __ss_align;
-	char __ss_padding[128 - sizeof(sa_family_t) - sizeof(long long)];
+	union {
+		long long __align;
+		char __padding[126];
+	} __padding;
 };
 
 int socket (int, int, int);

@@ -54,6 +54,7 @@ struct sigevent {
 	int sigev_notify;
 	void (*sigev_notify_function)(union sigval);
 	pthread_attr_t *sigev_notify_attributes;
+	char __pad[56-3*sizeof(long)];
 };
 
 #define SIGEV_SIGNAL 0
