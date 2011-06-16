@@ -13,7 +13,8 @@ typedef long regoff_t;
 
 typedef struct {
 	size_t re_nsub;
-	void *__opaque;
+	void *__opaque, *__padding[4];
+	size_t __nsub2;
 } regex_t;
 
 typedef struct {

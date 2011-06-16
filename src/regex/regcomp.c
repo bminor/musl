@@ -3115,7 +3115,7 @@ tre_compile(regex_t *preg, const tre_char_t *regex, size_t n, int cflags)
   errcode = tre_parse(&parse_ctx);
   if (errcode != REG_OK)
     ERROR_EXIT(errcode);
-  preg->re_nsub = parse_ctx.submatch_id - 1;
+  preg->re_nsub = preg->__nsub2 = parse_ctx.submatch_id - 1;
   tree = parse_ctx.result;
 
 #ifdef TRE_DEBUG
