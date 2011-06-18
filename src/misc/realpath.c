@@ -19,15 +19,15 @@ char *realpath(const char *filename, char *resolved)
 		return 0;
 	}
 
+	fd = open(filename, O_RDONLY|O_NONBLOCK);
+	if (fd < 0) return 0;
+	snprintf(buf, sizeof buf, "/proc/self/fd/%d", fd);
+
 	if (!resolved) {
 		alloc = 1;
 		resolved = malloc(PATH_MAX);
 		if (!resolved) return 0;
 	}
-
-	fd = open(filename, O_RDONLY|O_NONBLOCK);
-	if (fd < 0) return 0;
-	snprintf(buf, sizeof buf, "/proc/self/fd/%d", fd);
 
 	r = readlink(buf, resolved, PATH_MAX-1);
 	if (r < 0) goto err;
