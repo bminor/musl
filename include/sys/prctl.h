@@ -58,7 +58,7 @@ extern "C" {
 int prctl (int, ...);
 
 #ifdef __cplusplus
-extern "C" {
+}
 #endif
 
 #endif
