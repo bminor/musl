@@ -5,4 +5,5 @@ _start:
 	lea 8(%rsp),%rsi
 	lea _GLOBAL_OFFSET_TABLE_(%rip),%rdx
 	call __dynlink
+	xor %edx,%edx
 	jmp *%rax
