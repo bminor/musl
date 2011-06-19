@@ -35,7 +35,7 @@ struct dso
 	int refcnt;
 	size_t *dynv;
 	Sym *syms;
-	size_t *hashtab;
+	uint32_t *hashtab;
 	char *strings;
 	unsigned char *base;
 	unsigned char *map;
@@ -71,7 +71,7 @@ static uint32_t hash(const char *s)
 	return h & 0xfffffff;
 }
 
-static Sym *lookup(const char *s, uint32_t h, Sym *syms, size_t *hashtab, char *strings)
+static Sym *lookup(const char *s, uint32_t h, Sym *syms, uint32_t *hashtab, char *strings)
 {
 	size_t i;
 	for (i=hashtab[2+h%hashtab[0]]; i; i=hashtab[2+hashtab[0]+i]) {
