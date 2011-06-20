@@ -1,19 +1,19 @@
 .text
 .global _start
 _start:
-	xorl %ebp,%ebp
-	popl %ecx
-	movl %esp,%eax
-	andl $-16,%esp
-	movl %eax,%esi
-	movl %ecx,%edi
-	pushl %ebp
+	xor %ebp,%ebp
+	pop %ecx
+	mov %esp,%eax
+	and $-16,%esp
+	mov %eax,%esi
+	mov %ecx,%edi
+	push %ebp
 	call 1f
 1:	addl $_GLOBAL_OFFSET_TABLE_,(%esp)
-	pushl %eax
-	pushl %ecx
+	push %eax
+	push %ecx
 	call __dynlink
-	movl %esi,%esp
-	pushl %edi
-	xorl %edx,%edx
+	mov %esi,%esp
+	push %edi
+	xor %edx,%edx
 	jmp *%eax
