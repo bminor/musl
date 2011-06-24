@@ -107,8 +107,8 @@ $(DESTDIR)$(includedir)/%: include/%
 $(DESTDIR)/lib/ld-musl-$(ARCH).so.1: lib/ld-musl-$(ARCH).so.1
 	install -D -m 755 $< $@
 
-$(DESTDIR)$(libdir)/libc.so: $(DESTDIR)/lib/ld-musl-$(ARCH).so.1
-	echo 'GROUP ( /lib/ld-musl-$(ARCH).so.1 )' > $@
+$(DESTDIR)$(libdir)/libc.so: lib/ld-musl-$(ARCH).so.1
+	ln -sf /lib/ld-musl-$(ARCH).so.1 $@
 
 .PRECIOUS: $(CRT_LIBS:lib/%=crt/%)
 
