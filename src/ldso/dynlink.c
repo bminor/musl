@@ -48,6 +48,7 @@ struct dso
 };
 
 static struct dso *head, *tail, *libc;
+static int trust_env;
 
 #define AUX_CNT 15
 #define DYN_CNT 34
@@ -372,6 +373,11 @@ void *__dynlink(int argc, char **argv, size_t *got)
 		lib_dyn[DT_RELASZ], 3, lib.syms, lib.strings, &app);
 
 	/* At this point the standard library is fully functional */
+
+	/* Only trust user/env if kernel says we're not suid/sgid */
+	trust_env = (aux[0]&0x7800)==0x7800
+		&& aux[AT_UID]==aux[AT_EUID]
+		&& aux[AT_GID]==aux[AT_EGID];
 
 	head = tail = &app;
 	libc = &lib;
