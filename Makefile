@@ -76,7 +76,7 @@ include/bits/alltypes.h: include/bits/alltypes.h.sh
 	$(CC) $(CFLAGS) $(INC) $(PIC) -c -o $@ $<
 
 lib/ld-musl-$(ARCH).so.1: $(LOBJS)
-	$(CC) $(LDFLAGS) -o $@ $(LOBJS) -lgcc
+	$(CC) $(LDFLAGS) -Wl,-soname=libc.so.1 -o $@ $(LOBJS) -lgcc
 	$(OBJCOPY) --weaken $@
 
 lib/libc.a: $(OBJS)
