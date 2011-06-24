@@ -35,14 +35,15 @@ EMPTY_LIBS = $(EMPTY_LIB_NAMES:%=lib/lib%.a)
 CRT_LIBS = lib/crt1.o lib/crti.o lib/crtn.o
 LIBC_LIBS = lib/libc.a
 ALL_LIBS = $(LIBC_LIBS) $(CRT_LIBS) $(EMPTY_LIBS)
+ALL_LDSO = lib/ld-musl-$(ARCH).so.1
 
 ALL_TOOLS = tools/musl-gcc
 
 -include config.mak
 
-all: $(ALL_LIBS) $(ALL_TOOLS)
+all: $(ALL_LIBS) $(ALL_TOOLS) $(ALL_LDSO)
 
-install: $(ALL_LIBS:lib/%=$(DESTDIR)$(libdir)/%) $(ALL_INCLUDES:include/%=$(DESTDIR)$(includedir)/%) $(ALL_TOOLS:tools/%=$(DESTDIR)$(bindir)/%)
+install: $(ALL_LIBS:lib/%=$(DESTDIR)$(libdir)/%) $(ALL_INCLUDES:include/%=$(DESTDIR)$(includedir)/%) $(ALL_TOOLS:tools/%=$(DESTDIR)$(bindir)/%) $(ALL_LDSO:%=$(DESTDIR)/%) $(ALL_LDSO:%/ld-musl-$(ARCH).so.1=$(DESTDIR)$(libdir)/libc.so)
 
 clean:
 	rm -f crt/*.o
@@ -74,7 +75,7 @@ include/bits/alltypes.h: include/bits/alltypes.h.sh
 %.lo: %.c $(GENH)
 	$(CC) $(CFLAGS) $(INC) $(PIC) -c -o $@ $<
 
-lib/libc.so: $(LOBJS)
+lib/ld-musl-$(ARCH).so.1: $(LOBJS)
 	$(CC) $(LDFLAGS) -o $@ $(LOBJS) -lgcc
 	$(OBJCOPY) --weaken $@
 
@@ -91,14 +92,23 @@ lib/%.o: crt/%.o
 	cp $< $@
 
 tools/musl-gcc: tools/gen-musl-gcc.sh config.mak
-	sh $< "$(prefix)" > $@ || { rm -f $@ ; exit 1 ; }
+	sh $< "$(prefix)" "$(ARCH)" > $@ || { rm -f $@ ; exit 1 ; }
 	chmod +x $@
 
 $(DESTDIR)$(bindir)/%: tools/%
 	install -D $< $@
 
-$(DESTDIR)$(prefix)/%: %
+$(DESTDIR)$(libdir)/%: lib/%
 	install -D -m 644 $< $@
+
+$(DESTDIR)$(includedir)/%: include/%
+	install -D -m 644 $< $@
+
+$(DESTDIR)/lib/ld-musl-$(ARCH).so.1: lib/ld-musl-$(ARCH).so.1
+	install -D -m 755 $< $@
+
+$(DESTDIR)$(libdir)/libc.so: $(DESTDIR)/lib/ld-musl-$(ARCH).so.1
+	echo 'GROUP ( /lib/ld-musl-$(ARCH).so.1 )' > $@
 
 .PRECIOUS: $(CRT_LIBS:lib/%=crt/%)
 
