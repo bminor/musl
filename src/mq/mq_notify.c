@@ -61,7 +61,7 @@ int mq_notify(mqd_t mqd, const struct sigevent *sev)
 
 	sev2.sigev_notify = SIGEV_THREAD;
 	sev2.sigev_signo = s;
-	sev2.sigev_value.sival_ptr = &zeros;
+	sev2.sigev_value.sival_ptr = (void *)&zeros;
 
 	if (syscall(SYS_mq_notify, mqd, &sev2) < 0) {
 		pthread_cancel(td);
