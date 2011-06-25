@@ -123,7 +123,7 @@ static void do_relocs(unsigned char *base, size_t *rel, size_t rel_size, size_t 
 
 static void *map_library(int fd, size_t *lenp, unsigned char **basep, size_t *dynp)
 {
-	size_t buf[896/sizeof(size_t)];
+	Ehdr buf[(896+sizeof(Ehdr))/sizeof(Ehdr)];
 	size_t phsize;
 	size_t addr_min=SIZE_MAX, addr_max=0, map_len;
 	size_t this_min, this_max;
@@ -137,11 +137,11 @@ static void *map_library(int fd, size_t *lenp, unsigned char **basep, size_t *dy
 
 	ssize_t l = read(fd, buf, sizeof buf);
 	if (l<sizeof *eh) return 0;
-	eh = (void *)buf;
+	eh = buf;
 	phsize = eh->e_phentsize * eh->e_phnum;
 	if (phsize + sizeof *eh > l) return 0;
 	if (eh->e_phoff + phsize > l) {
-		l = pread(fd, buf+sizeof *eh, phsize, eh->e_phoff);
+		l = pread(fd, buf+1, phsize, eh->e_phoff);
 		if (l != phsize) return 0;
 		eh->e_phoff = sizeof *eh;
 	}
