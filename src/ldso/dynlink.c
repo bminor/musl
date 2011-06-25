@@ -322,6 +322,16 @@ static void reloc_all(struct dso *p)
 	}
 }
 
+static void free_all(struct dso *p)
+{
+	struct dso *n;
+	while (p) {
+		n = p->next;
+		if (p->map) free(p);
+		p = n;
+	}
+}
+
 void *__dynlink(int argc, char **argv, size_t *got)
 {
 	size_t *auxv, aux[AUX_CNT] = {0};
@@ -386,6 +396,8 @@ void *__dynlink(int argc, char **argv, size_t *got)
 	load_deps(head);
 
 	reloc_all(head);
+
+	free_all(head);
 
 	errno = 0;
 	return (void *)aux[AT_ENTRY];
