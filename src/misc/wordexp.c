@@ -136,7 +136,8 @@ static int do_wordexp(const char *s, wordexp_t *we, int flags)
 	}
 
 	we->we_wordv = wv;
-	we->we_wordc = i - we->we_offs;
+	we->we_wordc = i;
+	if (flags & WRDE_DOOFFS) we->we_wordc -= we->we_offs;
 	return err;
 }
 
