@@ -48,7 +48,7 @@ struct dso
 };
 
 static struct dso *head, *tail, *libc;
-static int trust_env;
+static char *env_path, *sys_path;
 
 #define AUX_CNT 15
 #define DYN_CNT 34
@@ -205,6 +205,20 @@ static void *map_library(int fd, size_t *lenp, unsigned char **basep, size_t *dy
 	return map;
 }
 
+static int path_open(const char *name, const char *search)
+{
+	char buf[2*NAME_MAX+2];
+	const char *s, *z;
+	int l, fd;
+	for (s=search; *s; s+=l+!!z) {
+		z = strchr(s, ':');
+		l = z ? z-s : strlen(s);
+		snprintf(buf, sizeof buf, "%.*s/%s", l, s, name);
+		if ((fd = open(buf, O_RDONLY))>=0) return fd;
+	}
+	return -1;
+}
+
 static struct dso *load_library(const char *name)
 {
 	unsigned char *base, *map;
@@ -242,14 +256,20 @@ static struct dso *load_library(const char *name)
 	if (name[0] == '/') {
 		fd = open(name, O_RDONLY);
 	} else {
-		static const char path[] = "/lib/\0/usr/local/lib/\0/usr/lib/\0";
-		const char *s;
-		char buf[NAME_MAX+32];
 		if (strlen(name) > NAME_MAX || strchr(name, '/')) return 0;
-		for (s=path; *s; s+=strlen(s)+1) {
-			strcpy(buf, s);
-			strcat(buf, name);
-			if ((fd = open(buf, O_RDONLY))>=0) break;
+		fd = -1;
+		if (env_path) fd = path_open(name, env_path);
+		if (fd < 0) {
+			if (!sys_path) {
+				FILE *f = fopen(ETC_LDSO_PATH, "r");
+				if (f) {
+					if (getline(&sys_path, (size_t[1]){0}, f) > 0)
+						sys_path[strlen(sys_path)-1]=0;
+					fclose(f);
+				}
+			}
+			if (sys_path) fd = path_open(name, sys_path);
+			else fd = path_open(name, "/lib:/usr/local/lib:/usr/lib");
 		}
 	}
 	if (fd < 0) return 0;
@@ -342,10 +362,18 @@ void *__dynlink(int argc, char **argv, size_t *got)
 	struct dso lib, app;
 
 	/* Find aux vector just past environ[] */
-	for (i=argc+1; argv[i]; i++);
+	for (i=argc+1; argv[i]; i++)
+		if (!memcmp(argv[i], "LD_LIBRARY_PATH=", 16))
+			env_path = argv[i]+16;
 	auxv = (void *)(argv+i+1);
 
 	decode_vec(auxv, aux, AUX_CNT);
+
+	/* Only trust user/env if kernel says we're not suid/sgid */
+	if ((aux[0]&0x7800)!=0x7800 || aux[AT_UID]!=aux[AT_EUID]
+	  || aux[AT_GID]!=aux[AT_EGID]) {
+		env_path = 0;
+	}
 
 	/* Relocate ldso's DYNAMIC pointer and load vector */
 	decode_vec((void *)(got[0] += aux[AT_BASE]), lib_dyn, DYN_CNT);
@@ -385,11 +413,6 @@ void *__dynlink(int argc, char **argv, size_t *got)
 
 	/* At this point the standard library is fully functional */
 
-	/* Only trust user/env if kernel says we're not suid/sgid */
-	trust_env = (aux[0]&0x7800)==0x7800
-		&& aux[AT_UID]==aux[AT_EUID]
-		&& aux[AT_GID]==aux[AT_EGID];
-
 	head = tail = &app;
 	libc = &lib;
 	app.next = 0;
@@ -398,6 +421,7 @@ void *__dynlink(int argc, char **argv, size_t *got)
 	reloc_all(head);
 
 	free_all(head);
+	free(sys_path);
 
 	errno = 0;
 	return (void *)aux[AT_ENTRY];
