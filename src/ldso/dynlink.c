@@ -208,15 +208,17 @@ static void *map_library(int fd, size_t *lenp, unsigned char **basep, size_t *dy
 static int path_open(const char *name, const char *search)
 {
 	char buf[2*NAME_MAX+2];
-	const char *s, *z;
+	const char *s=search, *z;
 	int l, fd;
-	for (s=search; *s; s+=l+!!z) {
+	for (;;) {
+		while (*s==':') s++;
+		if (!*s) return -1;
 		z = strchr(s, ':');
 		l = z ? z-s : strlen(s);
 		snprintf(buf, sizeof buf, "%.*s/%s", l, s, name);
 		if ((fd = open(buf, O_RDONLY))>=0) return fd;
+		s += l;
 	}
-	return -1;
 }
 
 static struct dso *load_library(const char *name)
