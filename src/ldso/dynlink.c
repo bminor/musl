@@ -318,6 +318,7 @@ static void reloc_all(struct dso *p)
 			2, p->syms, p->strings, p);
 		do_relocs(p->base, (void *)(p->base+dyn[DT_RELA]), dyn[DT_RELASZ],
 			3, p->syms, p->strings, p);
+		p->relocated = 1;
 	}
 }
 
