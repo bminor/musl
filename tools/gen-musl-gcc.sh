@@ -28,5 +28,5 @@ exec "$0" "$@"
 ' -std=gnu99 -nostdinc -nostdlib \
   -isystem "$libc_inc" -isystem "$gcc_inc" \
   -Wl,-xxxxxx "$@" -L"$libc_lib" -lc -L"$libgcc" -lgcc -Lxxxxxx \
-  -Wl,-dynamic-linker /lib/ld-musl-"$arch".so.1 -Wl,-nostdlib
+  -Wl,-dynamic-linker,/lib/ld-musl-"$arch".so.1 -Wl,-nostdlib
 EOF
