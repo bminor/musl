@@ -93,7 +93,7 @@ sem_t *sem_open(const char *name, int flags, ...)
 
 	for (;;) {
 		if (!(flags & O_EXCL)) {
-			fd = shm_open(name, flags&~O_CREAT, mode);
+			fd = shm_open(name, flags&~O_CREAT, 0);
 			if (fd >= 0 || errno != ENOENT) {
 				if (flags & O_CREAT) {
 					close(dir);
