@@ -13,6 +13,8 @@
 #include <limits.h>
 #include <elf.h>
 #include <setjmp.h>
+#include <pthread.h>
+#include <dlfcn.h>
 
 #include "reloc.h"
 
@@ -45,14 +47,17 @@ struct dso
 	ino_t ino;
 	int global;
 	int relocated;
+	struct dso **deps;
 	char *name;
 	char buf[];
 };
 
 static struct dso *head, *tail, *libc;
 static char *env_path, *sys_path;
+static int rtld_used;
 static int runtime;
 static jmp_buf rtld_fail;
+static pthread_rwlock_t lock;
 
 #define AUX_CNT 15
 #define DYN_CNT 34
@@ -91,8 +96,12 @@ static Sym *lookup(const char *s, uint32_t h, Sym *syms, uint32_t *hashtab, char
 static void *find_sym(struct dso *dso, const char *s, int need_def)
 {
 	uint32_t h = hash(s);
+	if (h==0x6b366be && !strcmp(s, "dlopen")) rtld_used = 1;
+	if (h==0x6b3afd && !strcmp(s, "dlsym")) rtld_used = 1;
 	for (; dso; dso=dso->next) {
-		Sym *sym = lookup(s, h, dso->syms, dso->hashtab, dso->strings);
+		Sym *sym;
+		if (!dso->global) continue;
+		sym = lookup(s, h, dso->syms, dso->hashtab, dso->strings);
 		if (sym && (!need_def || sym->st_shndx) && sym->st_value
 		 && (1<<(sym->st_info&0xf) & OK_TYPES))
 			return dso->base + sym->st_value;
@@ -264,10 +273,10 @@ static struct dso *load_library(const char *name)
 			return p;
 		}
 	}
-	if (name[0] == '/') {
+	if (strchr(name, '/')) {
 		fd = open(name, O_RDONLY);
 	} else {
-		if (strlen(name) > NAME_MAX || strchr(name, '/')) return 0;
+		if (strlen(name) > NAME_MAX) return 0;
 		fd = -1;
 		if (env_path) fd = path_open(name, env_path);
 		if (fd < 0) {
@@ -315,7 +324,6 @@ static struct dso *load_library(const char *name)
 	p->strings = (void *)(base + dyn[DT_STRTAB]);
 	p->dev = st.st_dev;
 	p->ino = st.st_ino;
-	p->global = 1;
 	p->refcnt = 1;
 	p->name = p->buf;
 	strcpy(p->name, name);
@@ -329,18 +337,32 @@ static struct dso *load_library(const char *name)
 
 static void load_deps(struct dso *p)
 {
-	size_t i;
+	size_t i, ndeps=0;
+	struct dso ***deps = &p->deps, **tmp, *dep;
 	for (; p; p=p->next) {
 		for (i=0; p->dynv[i]; i+=2) {
 			if (p->dynv[i] != DT_NEEDED) continue;
-			if (!load_library(p->strings + p->dynv[i+1])) {
+			dep = load_library(p->strings + p->dynv[i+1]);
+			if (!dep) {
 				if (runtime) longjmp(rtld_fail, 1);
 				dprintf(2, "%s: %m (needed by %s)\n",
 					p->strings + p->dynv[i+1], p->name);
 				_exit(127);
 			}
+			if (runtime) {
+				tmp = realloc(*deps, sizeof(*tmp)*(ndeps+2));
+				if (!tmp) longjmp(rtld_fail, 1);
+				tmp[ndeps++] = dep;
+				tmp[ndeps] = 0;
+				*deps = tmp;
+			}
 		}
 	}
+}
+
+static void make_global(struct dso *p)
+{
+	for (; p; p=p->next) p->global = 1;
 }
 
 static void reloc_all(struct dso *p)
@@ -411,6 +433,7 @@ void *__dynlink(int argc, char **argv, size_t *got)
 		.syms = (void *)(app_dyn[DT_SYMTAB]),
 		.dynv = (void *)(phdr->p_vaddr),
 		.name = argv[0],
+		.global = 1,
 		.next = &lib
 	};
 
@@ -421,6 +444,7 @@ void *__dynlink(int argc, char **argv, size_t *got)
 		.syms = (void *)(aux[AT_BASE]+lib_dyn[DT_SYMTAB]),
 		.dynv = (void *)(got[0]),
 		.name = "libc.so",
+		.global = 1,
 		.relocated = 1
 	};
 
@@ -437,11 +461,104 @@ void *__dynlink(int argc, char **argv, size_t *got)
 	app.next = 0;
 	load_deps(head);
 
+	make_global(head);
 	reloc_all(head);
 
-	free_all(head);
-	free(sys_path);
+	if (rtld_used) {
+		runtime = 1;
+		head->next->prev = malloc(sizeof *head);
+		*head->next->prev = *head;
+		head = head->next->prev;
+		libc->prev->next = malloc(sizeof *libc);
+		*libc->prev->next = *libc;
+		libc = libc->prev->next;
+		if (libc->next) libc->next->prev = libc;
+	} else {
+		free_all(head);
+		free(sys_path);
+	}
 
 	errno = 0;
 	return (void *)aux[AT_ENTRY];
+}
+
+void *dlopen(const char *file, int mode)
+{
+	struct dso *p, *orig_tail = tail, *next;
+	size_t i;
+
+	if (!file) return head;
+
+	pthread_rwlock_wrlock(&lock);
+
+	if (setjmp(rtld_fail)) {
+		/* Clean up anything new that was (partially) loaded */
+		for (p=orig_tail->next; p; p=next) {
+			next = p->next;
+			munmap(p->map, p->map_len);
+			free(p->deps);
+			free(p);
+		}
+		tail = orig_tail;
+		tail->next = 0;
+		pthread_rwlock_unlock(&lock);
+		return 0;
+	}
+
+	p = load_library(file);
+	if (!p) return 0;
+
+	/* First load handling */
+	if (!p->deps) {
+		load_deps(p);
+		reloc_all(p);
+	}
+
+	if (mode & RTLD_GLOBAL) {
+		for (i=0; p->deps[i]; i++)
+			p->deps[i]->global = 1;
+		p->global = 1;
+	}
+
+	pthread_rwlock_unlock(&lock);
+
+	return p;
+}
+
+static void *do_dlsym(struct dso *p, const char *s)
+{
+	size_t i;
+	uint32_t h;
+	Sym *sym;
+	if (p == head) return find_sym(head, s, 0);
+	h = hash(s);
+	sym = lookup(s, h, p->syms, p->hashtab, p->strings);
+	if (sym && sym->st_value && (1<<(sym->st_info&0xf) & OK_TYPES))
+		return p->base + sym->st_value;
+	if (p->deps) for (i=0; p->deps[i]; i++) {
+		sym = lookup(s, h, p->deps[i]->syms,
+			p->deps[i]->hashtab, p->deps[i]->strings);
+		if (sym && sym->st_value && (1<<(sym->st_info&0xf) & OK_TYPES))
+			return p->deps[i]->base + sym->st_value;
+	}
+	return 0;
+}
+
+void *dlsym(void *p, const char *s)
+{
+	void *res;
+	pthread_rwlock_rdlock(&lock);
+	res = do_dlsym(p, s);
+	pthread_rwlock_unlock(&lock);
+	return res;
+}
+
+char *dlerror()
+{
+	return "unknown error";
+}
+
+int dlclose(void *p)
+{
+	return 0;
 }
