@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <limits.h>
 #include <elf.h>
+#include <setjmp.h>
 
 #include "reloc.h"
 
@@ -44,11 +45,14 @@ struct dso
 	ino_t ino;
 	int global;
 	int relocated;
-	char name[];
+	char *name;
+	char buf[];
 };
 
 static struct dso *head, *tail, *libc;
 static char *env_path, *sys_path;
+static int runtime;
+static jmp_buf rtld_fail;
 
 #define AUX_CNT 15
 #define DYN_CNT 34
@@ -115,6 +119,11 @@ static void do_relocs(unsigned char *base, size_t *rel, size_t rel_size, size_t 
 			name = strings + sym->st_name;
 			ctx = IS_COPY(type) ? dso->next : dso;
 			sym_val = (size_t)find_sym(ctx, name, IS_PLT(type));
+			if (!sym_val && sym->st_info>>4 != STB_WEAK) {
+				if (runtime) longjmp(rtld_fail, 1);
+				dprintf(2, "%s: symbol not found\n", name);
+				_exit(127);
+			}
 			sym_size = sym->st_size;
 		}
 		do_single_reloc(reloc_addr, type, sym_val, sym_size, base, rel[2]);
@@ -308,6 +317,7 @@ static struct dso *load_library(const char *name)
 	p->ino = st.st_ino;
 	p->global = 1;
 	p->refcnt = 1;
+	p->name = p->buf;
 	strcpy(p->name, name);
 
 	tail->next = p;
@@ -323,7 +333,12 @@ static void load_deps(struct dso *p)
 	for (; p; p=p->next) {
 		for (i=0; p->dynv[i]; i+=2) {
 			if (p->dynv[i] != DT_NEEDED) continue;
-			load_library(p->strings + p->dynv[i+1]);
+			if (!load_library(p->strings + p->dynv[i+1])) {
+				if (runtime) longjmp(rtld_fail, 1);
+				dprintf(2, "%s: %m (needed by %s)\n",
+					p->strings + p->dynv[i+1], p->name);
+				_exit(127);
+			}
 		}
 	}
 }
@@ -395,6 +410,7 @@ void *__dynlink(int argc, char **argv, size_t *got)
 		.hashtab = (void *)(app_dyn[DT_HASH]),
 		.syms = (void *)(app_dyn[DT_SYMTAB]),
 		.dynv = (void *)(phdr->p_vaddr),
+		.name = argv[0],
 		.next = &lib
 	};
 
@@ -404,6 +420,7 @@ void *__dynlink(int argc, char **argv, size_t *got)
 		.hashtab = (void *)(aux[AT_BASE]+lib_dyn[DT_HASH]),
 		.syms = (void *)(aux[AT_BASE]+lib_dyn[DT_SYMTAB]),
 		.dynv = (void *)(got[0]),
+		.name = "libc.so",
 		.relocated = 1
 	};
 
