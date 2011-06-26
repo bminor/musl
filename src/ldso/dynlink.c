@@ -114,7 +114,7 @@ static void do_relocs(unsigned char *base, size_t *rel, size_t rel_size, size_t 
 			sym = syms + sym_index;
 			name = strings + sym->st_name;
 			ctx = IS_COPY(type) ? dso->next : dso;
-			sym_val = (size_t)find_sym(ctx, name, 1);
+			sym_val = (size_t)find_sym(ctx, name, IS_PLT(type));
 			sym_size = sym->st_size;
 		}
 		do_single_reloc(reloc_addr, type, sym_val, sym_size, base, rel[2]);
@@ -335,11 +335,11 @@ static void reloc_all(struct dso *p)
 		if (p->relocated) continue;
 		decode_vec(p->dynv, dyn, DYN_CNT);
 		do_relocs(p->base, (void *)(p->base+dyn[DT_JMPREL]), dyn[DT_PLTRELSZ],
-			2+(dyn[DT_PLTREL]==DT_RELA), p->syms, p->strings, p);
+			2+(dyn[DT_PLTREL]==DT_RELA), p->syms, p->strings, head);
 		do_relocs(p->base, (void *)(p->base+dyn[DT_REL]), dyn[DT_RELSZ],
-			2, p->syms, p->strings, p);
+			2, p->syms, p->strings, head);
 		do_relocs(p->base, (void *)(p->base+dyn[DT_RELA]), dyn[DT_RELASZ],
-			3, p->syms, p->strings, p);
+			3, p->syms, p->strings, head);
 		p->relocated = 1;
 	}
 }

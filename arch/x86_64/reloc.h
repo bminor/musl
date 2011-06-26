@@ -5,6 +5,7 @@
 #define ETC_LDSO_PATH "/etc/ld-musl-x86_64.path"
 
 #define IS_COPY(x) ((x)==R_X86_64_COPY)
+#define IS_PLT(x) ((x)==R_X86_64_JUMP_SLOT)
 
 static inline void do_single_reloc(size_t *reloc_addr, int type, size_t sym_val, size_t sym_size, unsigned char *base_addr, size_t addend)
 {
