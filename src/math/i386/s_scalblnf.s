@@ -1,6 +1,9 @@
 .global ldexpf
 .global scalbnf
 .global scalblnf
+.type ldexpf,@function
+.type scalbnf,@function
+.type scalblnf,@function
 ldexpf:
 scalbnf:
 scalblnf:

@@ -1,4 +1,5 @@
 .global expf
+.type expf,@function
 expf:
 	mov 4(%esp),%eax
 	flds 4(%esp)
@@ -8,6 +9,7 @@ expf:
 	jmp 0f
 
 .global exp
+.type exp,@function
 exp:
 	mov 8(%esp),%eax
 	fldl 4(%esp)
