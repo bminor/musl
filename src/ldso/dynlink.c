@@ -509,7 +509,7 @@ void *dlopen(const char *file, int mode)
 	}
 
 	p = load_library(file);
-	if (!p) return 0;
+	if (!p) goto end;
 
 	/* First load handling */
 	if (!p->deps) {
@@ -531,8 +531,8 @@ void *dlopen(const char *file, int mode)
 		p->global = 1;
 	}
 
+end:
 	pthread_rwlock_unlock(&lock);
-
 	return p;
 }
 
