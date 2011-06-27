@@ -541,7 +541,8 @@ static void *do_dlsym(struct dso *p, const char *s)
 	size_t i;
 	uint32_t h;
 	Sym *sym;
-	if (p == head) return find_sym(head, s, 0);
+	if (p == head || p == RTLD_DEFAULT)
+		return find_sym(head, s, 0);
 	h = hash(s);
 	sym = lookup(s, h, p->syms, p->hashtab, p->strings);
 	if (sym && sym->st_value && (1<<(sym->st_info&0xf) & OK_TYPES))
