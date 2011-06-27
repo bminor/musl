@@ -493,6 +493,9 @@ void *dlopen(const char *file, int mode)
 
 	if (setjmp(rtld_fail)) {
 		/* Clean up anything new that was (partially) loaded */
+		if (p->deps) for (i=0; p->deps[i]; i++)
+			if (p->deps[i]->global < 0)
+				p->deps[i]->global = 0;
 		for (p=orig_tail->next; p; p=next) {
 			next = p->next;
 			munmap(p->map, p->map_len);
@@ -511,7 +514,15 @@ void *dlopen(const char *file, int mode)
 	/* First load handling */
 	if (!p->deps) {
 		load_deps(p);
+		for (i=0; p->deps[i]; i++)
+			if (!p->deps[i]->global)
+				p->deps[i]->global = -1;
+		if (!p->global) p->global = -1;
 		reloc_all(p);
+		for (i=0; p->deps[i]; i++)
+			if (p->deps[i]->global < 0)
+				p->deps[i]->global = 0;
+		if (p->global < 0) p->global = 0;
 	}
 
 	if (mode & RTLD_GLOBAL) {
