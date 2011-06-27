@@ -473,6 +473,7 @@ void *__dynlink(int argc, char **argv, size_t *got)
 		*libc->prev->next = *libc;
 		libc = libc->prev->next;
 		if (libc->next) libc->next->prev = libc;
+		if (tail == &lib) tail = libc;
 	} else {
 		free_all(head);
 		free(sys_path);
