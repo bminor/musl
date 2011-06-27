@@ -514,19 +514,19 @@ void *dlopen(const char *file, int mode)
 	/* First load handling */
 	if (!p->deps) {
 		load_deps(p);
-		for (i=0; p->deps[i]; i++)
+		if (p->deps) for (i=0; p->deps[i]; i++)
 			if (!p->deps[i]->global)
 				p->deps[i]->global = -1;
 		if (!p->global) p->global = -1;
 		reloc_all(p);
-		for (i=0; p->deps[i]; i++)
+		if (p->deps) for (i=0; p->deps[i]; i++)
 			if (p->deps[i]->global < 0)
 				p->deps[i]->global = 0;
 		if (p->global < 0) p->global = 0;
 	}
 
 	if (mode & RTLD_GLOBAL) {
-		for (i=0; p->deps[i]; i++)
+		if (p->deps) for (i=0; p->deps[i]; i++)
 			p->deps[i]->global = 1;
 		p->global = 1;
 	}
