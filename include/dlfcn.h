@@ -1,10 +1,10 @@
 #ifndef	_DLFCN_H
 #define	_DLFCN_H
 
-#define RTLD_LAZY   0x10000
-#define RTLD_NOW    0x20000
-#define RTLD_GLOBAL 0x40000
-#define RTLD_LOCAL  0x80000
+#define RTLD_LAZY   1
+#define RTLD_NOW    2
+#define RTLD_GLOBAL 256
+#define RTLD_LOCAL  0
 
 #if 1
 #define RTLD_NEXT    ((void *) -1l)
