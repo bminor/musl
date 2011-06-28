@@ -462,6 +462,7 @@ void *__dynlink(int argc, char **argv, size_t *got)
 	load_deps(head);
 
 	make_global(head);
+	reloc_all(head->next);
 	reloc_all(head);
 
 	if (rtld_used) {
