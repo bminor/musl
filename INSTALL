@@ -18,6 +18,11 @@ where musl is the default/primary/only libc.
 The default prefix is /usr/local/musl for a reason, but some people
 may prefer /opt/musl or $HOME/musl.
 
+For shared library support, the dynamic linker pathname needs to be
+hard-coded into every program you link to musl. Ideally, you should
+leave the path ($syslibdir) set to /lib unless you are unable to
+install files to /lib, in which case you can change it.
+
 
 STEP 2: Compiling
 
@@ -56,3 +61,8 @@ Be aware that (at present) libraries linked against glibc are unlikely
 to be usable, and the musl-gcc wrapper inhibits search of the system
 library paths in any case. You'll need to compile any prerequisite
 libraries (like ncurses, glib, etc.) yourself.
+
+Note: If you want the system headers to behave something like glibc's
+and expose the kitchen sink by default, you might want to try
+CC="musl-gcc -D_GNU_SOURCE" instead of just CC=musl-gcc. This is
+needed for compiling many programs with portability issues.
