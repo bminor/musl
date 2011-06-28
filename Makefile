@@ -43,9 +43,9 @@ LDSO_PATHNAME = $(syslibdir)/ld-musl-$(ARCH).so.1
 
 -include config.mak
 
-all: $(ALL_LIBS) $(ALL_TOOLS) $(ALL_LDSO)
+all: $(ALL_LIBS) $(ALL_TOOLS)
 
-install: $(ALL_LIBS:lib/%=$(DESTDIR)$(libdir)/%) $(ALL_INCLUDES:include/%=$(DESTDIR)$(includedir)/%) $(ALL_TOOLS:tools/%=$(DESTDIR)$(bindir)/%) $(ALL_LDSO:%=$(DESTDIR)/%) $(LDSO_PATHNAME)
+install: $(ALL_LIBS:lib/%=$(DESTDIR)$(libdir)/%) $(ALL_INCLUDES:include/%=$(DESTDIR)$(includedir)/%) $(ALL_TOOLS:tools/%=$(DESTDIR)$(bindir)/%) $(DESTDIR)$(LDSO_PATHNAME)
 
 clean:
 	rm -f crt/*.o
