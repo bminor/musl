@@ -189,7 +189,7 @@ static void *map_library(int fd, size_t *lenp, unsigned char **basep, size_t *dy
 	 * the length of the file. This is okay because we will not
 	 * use the invalid part; we just need to reserve the right
 	 * amount of virtual address space to map over later. */
-	map = mmap(0, map_len, prot, MAP_PRIVATE, fd, off_start);
+	map = mmap((void *)addr_min, map_len, prot, MAP_PRIVATE, fd, off_start);
 	if (map==MAP_FAILED) return 0;
 	base = map - addr_min;
 	ph = (void *)((char *)buf + eh->e_phoff);
