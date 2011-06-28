@@ -139,6 +139,37 @@ static void do_relocs(unsigned char *base, size_t *rel, size_t rel_size, size_t 
 	}
 }
 
+/* A huge hack: to make up for the wastefulness of shared libraries
+ * needing at least a page of dirty memory even if they have no global
+ * data, we reclaim the gaps at the beginning and end of writable maps
+ * and "donate" them to the heap by setting up minimal malloc
+ * structures and then freeing them. */
+
+static void reclaim(unsigned char *base, size_t start, size_t end)
+{
+	size_t *a, *z;
+	start = start + 6*sizeof(size_t)-1 & -4*sizeof(size_t);
+	end = (end & -4*sizeof(size_t)) - 2*sizeof(size_t);
+	if (start>end || end-start < 4*sizeof(size_t)) return;
+	a = (size_t *)(base + start);
+	z = (size_t *)(base + end);
+	a[-2] = 1;
+	a[-1] = z[0] = end-start + 2*sizeof(size_t) | 1;
+	z[1] = 1;
+	free(a);
+}
+
+static void reclaim_gaps(unsigned char *base, Phdr *ph, size_t phent, size_t phcnt)
+{
+	for (; phcnt--; ph=(void *)((char *)ph+phent)) {
+		if (ph->p_type!=PT_LOAD) continue;
+		if ((ph->p_flags&(PF_R|PF_W))!=(PF_R|PF_W)) continue;
+		reclaim(base, ph->p_vaddr & -PAGE_SIZE, ph->p_vaddr);
+		reclaim(base, ph->p_vaddr+ph->p_memsz,
+			ph->p_vaddr+ph->p_memsz+PAGE_SIZE-1 & -PAGE_SIZE);
+	}
+}
+
 static void *map_library(int fd, size_t *lenp, unsigned char **basep, size_t *dynp)
 {
 	Ehdr buf[(896+sizeof(Ehdr))/sizeof(Ehdr)];
@@ -217,6 +248,8 @@ static void *map_library(int fd, size_t *lenp, unsigned char **basep, size_t *dy
 			}
 		}
 	}
+	if (!runtime) reclaim_gaps(base, (void *)((char *)buf + eh->e_phoff),
+		eh->e_phentsize, eh->e_phnum);
 	*lenp = map_len;
 	*basep = base;
 	*dynp = dyn;
@@ -398,6 +431,7 @@ void *__dynlink(int argc, char **argv, size_t *got)
 	size_t lib_dyn[DYN_CNT] = {0};
 	size_t i;
 	Phdr *phdr;
+	Ehdr *ehdr;
 	struct dso lib, app;
 
 	/* Find aux vector just past environ[] */
@@ -455,6 +489,11 @@ void *__dynlink(int argc, char **argv, size_t *got)
 		lib_dyn[DT_RELASZ], 3, lib.syms, lib.strings, &app);
 
 	/* At this point the standard library is fully functional */
+
+	reclaim_gaps(app.base, (void *)aux[AT_PHDR], aux[AT_PHENT], aux[AT_PHNUM]);
+	ehdr = (void *)lib.base;
+	reclaim_gaps(lib.base, (void *)(lib.base+ehdr->e_phoff),
+		ehdr->e_phentsize, ehdr->e_phnum);
 
 	head = tail = &app;
 	libc = &lib;
