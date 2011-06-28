@@ -8,6 +8,7 @@
 	ret
 
 .global feclearexcept
+.type feclearexcept,@function
 feclearexcept:	
 	xor %eax,%eax
 	mov 4(%esp),%ecx
@@ -17,6 +18,7 @@ feclearexcept:
 	ret
 
 .global feraiseexcept
+.type feraiseexcept,@function
 feraiseexcept:	
 	xor %eax,%eax
 	mov 4(%esp),%edx
@@ -26,6 +28,7 @@ feraiseexcept:
 	ret
 
 .global fesetround
+.type fesetround,@function
 fesetround:
 	mov 4(%esp),%ecx
 	xor %eax,%eax
@@ -38,6 +41,7 @@ fesetround:
 	ret
 
 .global fegetround
+.type fegetround,@function
 fegetround:
 	sub $28,%esp
 	fnstenv (%esp)
@@ -47,6 +51,7 @@ fegetround:
 	ret
 
 .global fegetenv
+.type fegetenv,@function
 fegetenv:
 	mov 4(%esp),%ecx
 	xor %eax,%eax
@@ -54,6 +59,7 @@ fegetenv:
 	ret
 
 .global fesetenv
+.type fesetenv,@function
 fesetenv:
 	mov 4(%esp),%ecx
 	xor %eax,%eax
@@ -73,6 +79,7 @@ fesetenv:
 	ret
 
 .global fetestexcept
+.type fetestexcept,@function
 fetestexcept:
 	mov 4(%esp),%ecx
 	fnstsw %ax
