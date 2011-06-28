@@ -1,6 +1,6 @@
 #!/bin/sh
 
-printf '#!/bin/sh\n\nlibc_prefix="%s"\narch="%s"\n' "$1" "$2"
+printf '#!/bin/sh\n\nlibc_prefix="%s"\nldso_pathname="%s"\n' "$1" "$2"
 
 cat <<"EOF"
 libc_lib=$libc_prefix/lib
@@ -28,5 +28,5 @@ exec "$0" "$@"
 ' -std=gnu99 -nostdinc -nostdlib \
   -isystem "$libc_inc" -isystem "$gcc_inc" \
   -Wl,-xxxxxx "$@" -L"$libc_lib" -lc -L"$libgcc" -lgcc -Lxxxxxx \
-  -Wl,-dynamic-linker,/lib/ld-musl-"$arch".so.1 -Wl,-nostdlib
+  -Wl,-dynamic-linker,"$ldso_pathname" -Wl,-nostdlib
 EOF

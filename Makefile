@@ -14,6 +14,7 @@ bindir = $(exec_prefix)/bin
 prefix = /usr/local/musl
 includedir = $(prefix)/include
 libdir = $(prefix)/lib
+syslibdir = /lib
 
 SRCS = $(sort $(wildcard src/*/*.c))
 OBJS = $(SRCS:.c=.o)
@@ -33,17 +34,18 @@ ALL_INCLUDES = $(sort $(wildcard include/*.h include/*/*.h) $(GENH))
 EMPTY_LIB_NAMES = m rt pthread crypt util xnet resolv dl
 EMPTY_LIBS = $(EMPTY_LIB_NAMES:%=lib/lib%.a)
 CRT_LIBS = lib/crt1.o lib/crti.o lib/crtn.o
-LIBC_LIBS = lib/libc.a
-ALL_LIBS = $(LIBC_LIBS) $(CRT_LIBS) $(EMPTY_LIBS)
-ALL_LDSO = lib/ld-musl-$(ARCH).so.1
-
+STATIC_LIBS = lib/libc.a $(EMPTY_LIBS)
+SHARED_LIBS = lib/libc.so
+ALL_LIBS = $(CRT_LIBS) $(STATIC_LIBS) $(SHARED_LIBS)
 ALL_TOOLS = tools/musl-gcc
+
+LDSO_PATHNAME = $(syslibdir)/ld-musl-$(ARCH).so.1
 
 -include config.mak
 
 all: $(ALL_LIBS) $(ALL_TOOLS) $(ALL_LDSO)
 
-install: $(ALL_LIBS:lib/%=$(DESTDIR)$(libdir)/%) $(ALL_INCLUDES:include/%=$(DESTDIR)$(includedir)/%) $(ALL_TOOLS:tools/%=$(DESTDIR)$(bindir)/%) $(ALL_LDSO:%=$(DESTDIR)/%) $(ALL_LDSO:%/ld-musl-$(ARCH).so.1=$(DESTDIR)$(libdir)/libc.so)
+install: $(ALL_LIBS:lib/%=$(DESTDIR)$(libdir)/%) $(ALL_INCLUDES:include/%=$(DESTDIR)$(includedir)/%) $(ALL_TOOLS:tools/%=$(DESTDIR)$(bindir)/%) $(ALL_LDSO:%=$(DESTDIR)/%) $(LDSO_PATHNAME)
 
 clean:
 	rm -f crt/*.o
@@ -75,8 +77,8 @@ include/bits/alltypes.h: include/bits/alltypes.h.sh
 %.lo: %.c $(GENH)
 	$(CC) $(CFLAGS) $(INC) $(PIC) -c -o $@ $<
 
-lib/ld-musl-$(ARCH).so.1: $(LOBJS)
-	$(CC) $(LDFLAGS) -Wl,-soname=libc.so.1 -o $@ $(LOBJS) -lgcc
+lib/libc.so: $(LOBJS)
+	$(CC) $(LDFLAGS) -Wl,-soname=libc.so -o $@ $(LOBJS) -lgcc
 	$(OBJCOPY) --weaken $@
 
 lib/libc.a: $(OBJS)
@@ -92,11 +94,14 @@ lib/%.o: crt/%.o
 	cp $< $@
 
 tools/musl-gcc: tools/gen-musl-gcc.sh config.mak
-	sh $< "$(prefix)" "$(ARCH)" > $@ || { rm -f $@ ; exit 1 ; }
+	sh $< "$(prefix)" "$(LDSO_PATHNAME)" > $@ || { rm -f $@ ; exit 1 ; }
 	chmod +x $@
 
 $(DESTDIR)$(bindir)/%: tools/%
 	install -D $< $@
+
+$(DESTDIR)$(libdir)/%.so: lib/%.so
+	install -D -m 755 $< $@
 
 $(DESTDIR)$(libdir)/%: lib/%
 	install -D -m 644 $< $@
@@ -104,11 +109,8 @@ $(DESTDIR)$(libdir)/%: lib/%
 $(DESTDIR)$(includedir)/%: include/%
 	install -D -m 644 $< $@
 
-$(DESTDIR)/lib/ld-musl-$(ARCH).so.1: lib/ld-musl-$(ARCH).so.1
-	install -D -m 755 $< $@
-
-$(DESTDIR)$(libdir)/libc.so: lib/ld-musl-$(ARCH).so.1
-	ln -sf /lib/ld-musl-$(ARCH).so.1 $@
+$(DESTDIR)$(LDSO_PATHNAME): lib/libc.so
+	ln -sf $(libdir)/libc.so $@ || true
 
 .PRECIOUS: $(CRT_LIBS:lib/%=crt/%)
 
