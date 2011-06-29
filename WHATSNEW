@@ -244,3 +244,25 @@ general bug fixes:
 compiler issue workarounds:
 - incorrect inlining of variadic functions on recent gcc versions
 - pcc preprocessor bug with recursive macro expansion
+
+
+
+0.7.11 release notes
+
+new features:
+- integrated dynamic linker
+- dynamic loading (dlopen/dlsym) (for dynamic-linked programs only)
+- XSI search.h API
+- POSIX message queues
+- POSIX spawn interfaces
+- BSD pseudo-random number generator API (random/srandom/initstate/etc.)
+- floating point environment (limited usefulness due to gcc bugs)
+
+general bug fixes:
+- possible crashes with wordexp due to uninitialized variable
+- race condition in pthread_kill (also present and unfixed in glibc/nptl)
+- pthread exit destructors called too late
+- dangerous unbounded vla in glob
+- brk/sbrk legacy functions mismatching legacy semantics
+- wcsncpy dest buffer overflow
+- strncat and wcsncat possible overflows due to double-termination
