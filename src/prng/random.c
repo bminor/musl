@@ -7,6 +7,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include "libc.h"
 
 /*
 this code uses the same lagged fibonacci generator as the
@@ -32,6 +33,7 @@ static int n = 31;
 static int i = 3;
 static int j = 0;
 static uint32_t *x = init+1;
+static int lock;
 
 static uint32_t lcg31(uint32_t x) {
 	return (1103515245*x + 12345) & 0x7fffffff;
@@ -53,7 +55,7 @@ static void loadstate(uint32_t *state) {
 	j = x[-1]&0xff;
 }
 
-void srandom(unsigned seed) {
+static void __srandom(unsigned seed) {
 	int k;
 	uint64_t s = seed;
 
@@ -71,11 +73,20 @@ void srandom(unsigned seed) {
 	x[0] |= 1;
 }
 
+void srandom(unsigned seed) {
+	LOCK(&lock);
+	__srandom(seed);
+	UNLOCK(&lock);
+}
+
 char *initstate(unsigned seed, char *state, size_t size) {
-	void *old = savestate();
+	void *old;
+
 	if (size < 8)
 		return 0;
-	else if (size < 32)
+	LOCK(&lock);
+	old = savestate();
+	if (size < 32)
 		n = 0;
 	else if (size < 64)
 		n = 7;
@@ -86,26 +97,36 @@ char *initstate(unsigned seed, char *state, size_t size) {
 	else
 		n = 63;
 	x = (uint32_t*)state + 1;
-	srandom(seed);
+	__srandom(seed);
+	UNLOCK(&lock);
 	return old;
 }
 
 char *setstate(char *state) {
-	void *old = savestate();
+	void *old;
+
+	LOCK(&lock);
+	old = savestate();
 	loadstate((uint32_t*)state);
+	UNLOCK(&lock);
 	return old;
 }
 
 long random(void) {
 	long k;
 
-	if (n == 0)
-		return x[0] = lcg31(x[0]);
+	LOCK(&lock);
+	if (n == 0) {
+		k = x[0] = lcg31(x[0]);
+		goto end;
+	}
 	x[i] += x[j];
 	k = x[i]>>1;
 	if (++i == n)
 		i = 0;
 	if (++j == n)
 		j = 0;
+end:
+	UNLOCK(&lock);
 	return k;
 }
