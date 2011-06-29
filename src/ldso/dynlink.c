@@ -248,6 +248,11 @@ static void *map_library(int fd, size_t *lenp, unsigned char **basep, size_t *dy
 			}
 		}
 	}
+	for (i=0; ((size_t *)(base+dyn))[i]; i+=2)
+		if (((size_t *)(base+dyn))[i]==DT_TEXTREL) {
+			mprotect(map, map_len, PROT_READ|PROT_WRITE|PROT_EXEC);
+			break;
+		}
 	if (!runtime) reclaim_gaps(base, (void *)((char *)buf + eh->e_phoff),
 		eh->e_phentsize, eh->e_phnum);
 	*lenp = map_len;
