@@ -11,7 +11,7 @@ int posix_memalign(void **res, size_t align, size_t len)
 	unsigned char *mem, *new, *end;
 	size_t header, footer;
 
-	if ((align & -align) != align) return EINVAL;
+	if ((align & -align & -sizeof(void *)) != align) return EINVAL;
 	if (len > SIZE_MAX - align) return ENOMEM;
 
 	if (align <= 4*sizeof(size_t)) {
