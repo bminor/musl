@@ -10,10 +10,12 @@ extern "C" {
 #define ucontext __ucontext
 #endif
 
-int  getcontext(ucontext_t *);
-void makecontext(ucontext_t *, void (*)(void), int, ...);
+struct __ucontext;
+
+int  getcontext(struct __ucontext *);
+void makecontext(struct __ucontext *, void (*)(void), int, ...);
 int  setcontext(const ucontext_t *);
-int  swapcontext(ucontext_t *, const ucontext_t *);
+int  swapcontext(struct __ucontext *, const struct __ucontext *);
 
 #ifdef __cplusplus
 }
