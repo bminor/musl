@@ -158,6 +158,7 @@ int asprintf(char **, const char *, ...);
 int vasprintf(char **, const char *, va_list);
 void setlinebuf(FILE *);
 void setbuffer(FILE *, char *, size_t);
+int fpurge(FILE *);
 #endif
 
 #ifdef __cplusplus
