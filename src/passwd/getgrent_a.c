@@ -37,10 +37,14 @@ struct group *__getgrent_a(FILE *f, struct group *gr, char **line, size_t *size,
 		*line = 0;
 		return 0;
 	}
-	mem[0][0] = mems;
-	for (s=mems, i=0; *s; s++)
-		if (*s==',') *s++ = 0, mem[0][++i] = s;
-	mem[0][++i] = 0;
+	if (*mems) {
+		mem[0][0] = mems;
+		for (s=mems, i=0; *s; s++)
+			if (*s==',') *s++ = 0, mem[0][++i] = s;
+		mem[0][++i] = 0;
+	} else {
+		mem[0][0] = 0;
+	}
 	gr->gr_mem = *mem;
 	return gr;
 }
