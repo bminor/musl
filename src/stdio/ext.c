@@ -14,7 +14,7 @@ int __fsetlocking(FILE *f, int type)
 
 int __fwriting(FILE *f)
 {
-	return f->wend > f->wpos;
+	return f->wend && f->wpos > f->wbase;
 }
 
 int __freading(FILE *f)
