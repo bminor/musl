@@ -53,7 +53,7 @@ struct dso
 };
 
 static struct dso *head, *tail, *libc;
-static char *env_path, *sys_path;
+static char *env_path, *sys_path, *r_path;
 static int rtld_used;
 static int runtime;
 static jmp_buf rtld_fail;
@@ -316,7 +316,8 @@ static struct dso *load_library(const char *name)
 	} else {
 		if (strlen(name) > NAME_MAX) return 0;
 		fd = -1;
-		if (env_path) fd = path_open(name, env_path);
+		if (r_path) fd = path_open(name, r_path);
+		if (fd < 0 && env_path) fd = path_open(name, env_path);
 		if (fd < 0) {
 			if (!sys_path) {
 				FILE *f = fopen(ETC_LDSO_PATH, "r");
@@ -379,6 +380,10 @@ static void load_deps(struct dso *p)
 	struct dso ***deps = &p->deps, **tmp, *dep;
 	for (; p; p=p->next) {
 		for (i=0; p->dynv[i]; i+=2) {
+			if (p->dynv[i] != DT_RPATH) continue;
+			r_path = (void *)(p->strings + p->dynv[i+1]);
+		}
+		for (i=0; p->dynv[i]; i+=2) {
 			if (p->dynv[i] != DT_NEEDED) continue;
 			dep = load_library(p->strings + p->dynv[i+1]);
 			if (!dep) {
@@ -395,6 +400,7 @@ static void load_deps(struct dso *p)
 				*deps = tmp;
 			}
 		}
+		r_path = 0;
 	}
 }
 
