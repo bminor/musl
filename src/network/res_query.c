@@ -1,5 +1,6 @@
 #include <netdb.h>
 #include "__dns.h"
+#include "libc.h"
 
 int res_query(const char *name, int class, int type, unsigned char *dest, int len)
 {
@@ -18,3 +19,5 @@ int res_query(const char *name, int class, int type, unsigned char *dest, int le
 	}
 	return 512;
 }
+
+weak_alias(res_query, res_search);
