@@ -536,7 +536,7 @@ void *__dynlink(int argc, char **argv, size_t *got)
 
 void *dlopen(const char *file, int mode)
 {
-	struct dso *p, *orig_tail = tail, *next;
+	struct dso *volatile p, *orig_tail = tail, *next;
 	size_t i;
 
 	if (!file) return head;
