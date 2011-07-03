@@ -559,9 +559,11 @@ ilseq:
 	goto end;
 toobig:
 	err = E2BIG;
+	x = -1;
 	goto end;
 starved:
 	err = EINVAL;
+	x = -1;
 end:
 	errno = err;
 	return x;
