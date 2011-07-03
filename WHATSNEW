@@ -266,3 +266,19 @@ general bug fixes:
 - brk/sbrk legacy functions mismatching legacy semantics
 - wcsncpy dest buffer overflow
 - strncat and wcsncat possible overflows due to double-termination
+
+
+
+0.7.12 release notes
+
+new features:
+- support for textrels in shared objects
+- rpath support in dynamic linker
+- stdio_ext.h functions (for better gnu software compatibility)
+
+bug fixes:
+- some compilers miscompiling dlopen due to misuse of longjmp
+- safe handling of invalid long-double bit patterns (affects printf)
+- workaround for bugs in linux mprotect syscall
+- thread-safety for random() functions
+- various minor issues
