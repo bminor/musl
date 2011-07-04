@@ -552,7 +552,7 @@ static int printf_core(FILE *f, const char *fmt, va_list *ap, union arg *nl_arg,
 			fl |= ALT_FORM;
 		case 'x': case 'X':
 			a = fmt_x(arg.i, z, t&32);
-			if (fl & ALT_FORM) prefix+=(t>>4), pl=2;
+			if (arg.i && (fl & ALT_FORM)) prefix+=(t>>4), pl=2;
 			if (0) {
 		case 'o':
 			a = fmt_o(arg.i, z);
