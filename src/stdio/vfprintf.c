@@ -570,11 +570,11 @@ static int printf_core(FILE *f, const char *fmt, va_list *ap, union arg *nl_arg,
 		case 'u':
 			a = fmt_u(arg.i, z);
 			}
+			if (p>=0) fl &= ~ZERO_PAD;
 			if (!arg.i && !p) {
 				a=z;
 				break;
 			}
-			if (p>=0) fl &= ~ZERO_PAD;
 			p = MAX(p, z-a + !arg.i);
 			break;
 		case 'c':
