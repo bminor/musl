@@ -11,6 +11,9 @@ extern "C" {
 
 #include <bits/alltypes.h>
 
+#define SFD_CLOEXEC 02000000
+#define SFD_NONBLOCK 04000
+
 int signalfd(int, const sigset_t *, int);
 
 struct signalfd_siginfo {
