@@ -15,6 +15,8 @@
 #define US_ASCII    0306
 #define WCHAR_T     0307
 #define UTF_8       0310
+#define EUC_JP      0320
+#define SHIFT_JIS   0321
 
 /* FIXME: these are not implemented yet
  * EUC:   A1-FE A1-FE
@@ -37,11 +39,17 @@ static const unsigned char charmaps[] =
 "ucs4\0ucs4be\0utf32\0utf32be\0\0\300"
 "ucs4le\0utf32le\0\0\303"
 "ascii\0usascii\0iso646\0iso646us\0\0\306"
+"eucjp\0\0\320"
+"shiftjis\0sjis\0\0\321"
 #include "codepages.h"
 ;
 
 static const unsigned short legacy_chars[] = {
 #include "legacychars.h"
+};
+
+static const unsigned short jis0208[84][94] = {
+#include "jis0208.h"
 };
 
 static int fuzzycmp(const unsigned char *a, const unsigned char *b)
@@ -181,6 +189,45 @@ size_t iconv(iconv_t cd0, char **in, size_t *inb, char **out, size_t *outb)
 				if ((unsigned)(c-0xdc00) >= 0x400) goto ilseq;
 				c = ((c-0xd800)<<10) | (d-0xdc00);
 			}
+			break;
+		case SHIFT_JIS:
+			if (c-0xa1 <= 0xdf-0xa1) {
+				c += 0xff61-0xa1;
+				break;
+			}
+			l = 2;
+			if (*inb < 2) goto starved;
+			d = *((unsigned char *)*in + 1);
+			if (c-129 <= 159-129) c -= 129;
+			else if (c-224 <= 239-224) c -= 193;
+			else goto ilseq;
+			c *= 2;
+			if (d-64 <= 158-64) {
+				if (d==127) goto ilseq;
+				if (d>127) d--;
+				d -= 64;
+			} else if (d-159 <= 252-159) {
+				c++;
+				d -= 159;
+			}
+			c = jis0208[c][d];
+			if (!c) goto ilseq;
+			break;
+		case EUC_JP:
+			l = 2;
+			if (*inb < 2) goto starved;
+			d = *((unsigned char *)*in + 1);
+			if (c==0x8e) {
+				c = d;
+				if (c-0xa1 > 0xdf-0xa1) goto ilseq;
+				c += 0xff61 - 0xa1;
+				break;
+			}
+			c -= 0xa1;
+			d -= 0xa1;
+			if (c >= 84 || d >= 94) goto ilseq;
+			c = jis0208[c][d];
+			if (!c) goto ilseq;
 			break;
 		default:
 			if (c < 128+type) break;
