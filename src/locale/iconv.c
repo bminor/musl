@@ -17,6 +17,9 @@
 #define UTF_8       0310
 #define EUC_JP      0320
 #define SHIFT_JIS   0321
+#define GB18030     0330
+#define GBK         0331
+#define GB2312      0332
 
 /* FIXME: these are not implemented yet
  * EUC:   A1-FE A1-FE
@@ -41,6 +44,9 @@ static const unsigned char charmaps[] =
 "ascii\0usascii\0iso646\0iso646us\0\0\306"
 "eucjp\0\0\320"
 "shiftjis\0sjis\0\0\321"
+"gb18030\0\0\330"
+"gbk\0\0\331"
+"gb2312\0\0\332"
 #include "codepages.h"
 ;
 
@@ -50,6 +56,10 @@ static const unsigned short legacy_chars[] = {
 
 static const unsigned short jis0208[84][94] = {
 #include "jis0208.h"
+};
+
+static const unsigned short gb18030[126][190] = {
+#include "gb18030.h"
 };
 
 static int fuzzycmp(const unsigned char *a, const unsigned char *b)
@@ -82,7 +92,9 @@ iconv_t iconv_open(const char *to, const char *from)
 {
 	size_t f, t;
 
-	if ((t = find_charmap(to))==-1 || (f = find_charmap(from))==-1) {
+	if ((t = find_charmap(to))==-1
+	 || (f = find_charmap(from))==-1
+	 || (t >= 0320)) {
 		errno = EINVAL;
 		return (iconv_t)-1;
 	}
@@ -127,7 +139,6 @@ static void put_32(unsigned char *s, unsigned c, int e)
 #define mbrtowc_utf8 mbrtowc
 #define wctomb_utf8 wctomb
 
-#include <stdio.h>
 size_t iconv(iconv_t cd0, char **in, size_t *inb, char **out, size_t *outb)
 {
 	size_t x=0;
@@ -228,6 +239,44 @@ size_t iconv(iconv_t cd0, char **in, size_t *inb, char **out, size_t *outb)
 			if (c >= 84 || d >= 94) goto ilseq;
 			c = jis0208[c][d];
 			if (!c) goto ilseq;
+			break;
+		case GB2312:
+			if (c < 0xa1) goto ilseq;
+		case GBK:
+		case GB18030:
+			c -= 0x81;
+			if (c >= 126) goto ilseq;
+			l = 2;
+			if (*inb < 2) goto starved;
+			d = *((unsigned char *)*in + 1);
+			if (d < 0xa1 && type == GB2312) goto ilseq;
+			if (d-0x40>=191 || d==127) {
+				if (d-'0'>9 || type != GB18030)
+					goto ilseq;
+				l = 4;
+				if (*inb < 4) goto starved;
+				c = (10*c + d-'0') * 1260;
+				d = *((unsigned char *)*in + 2);
+				if (d-0x81>126) goto ilseq;
+				c += 10*(d-0x81);
+				d = *((unsigned char *)*in + 3);
+				if (d-'0'>9) goto ilseq;
+				c += d-'0';
+				c += 128;
+				for (d=0; d<=c; ) {
+					k = 0;
+					for (int i=0; i<126; i++)
+						for (int j=0; j<190; j++)
+							if (gb18030[i][j]-d <= c-d)
+								k++;
+					d = c+1;
+					c += k;
+				}
+				break;
+			}
+			d -= 0x40;
+			if (d>63) d--;
+			c = gb18030[c][d];
 			break;
 		default:
 			if (c < 128+type) break;
