@@ -3,46 +3,33 @@
 #include <stdlib.h>
 #include <inttypes.h>
 #include <errno.h>
+#include "intparse.h"
 
 uintmax_t wcstoumax(const wchar_t *s, wchar_t **p, int base)
 {
-	/* Large enough for largest value in binary */
-	char buf[sizeof(uintmax_t)*8+2];
-	int sign = 0, skipped=0;
+	struct intparse ip = {0};
+	unsigned char tmp;
 
-	if (!p) p = (wchar_t **)&s;
+	if (p) *p = (wchar_t *)s;
 
-	if (base && (unsigned)base-2 > 36-2) {
-		*p = (wchar_t *)s;
+	if (base && base-2U > 34) {
 		errno = EINVAL;
 		return 0;
 	}
 
-	/* Initial whitespace */
 	for (; iswspace(*s); s++);
 
-	/* Optional sign */
-	if (*s == '-') sign = *s++;
-	else if (*s == '+') s++;
+	ip.base = base;
+	for (; *s<256 && (tmp=*s, __intparse(&ip, &tmp, 1)); s++);
 
-	/* Skip leading zeros but don't allow leading zeros before "0x". */
-	for (; s[0]=='0' && s[1]=='0'; s++) skipped=1;
-	if (skipped && (base==0 || base==16) && (s[1]|32)=='x') {
-		*p = (wchar_t *)(s+1);
-		return 0;
-	}
-
-	/* Convert to normal char string so we can use strtoumax */
-	buf[0] = sign;
-	if (wcstombs(buf+!!sign, s, sizeof buf-1) == -1) return 0;
-	buf[sizeof buf-1]=0;
-
-	/* Compute final position */
-	if (p) {
-		if ((base==0 || base==16) && s[0]=='0' && (s[1]|32)=='x' && iswxdigit(s[2])) s+=2;
-		for(;*s&&((unsigned)*s-'0'<base||((unsigned)*s|32)-'a'<base-10);s++);
+	if (p && ip.err != EINVAL)
 		*p = (wchar_t *)s;
+
+	if (ip.err) {
+		errno = ip.err;
+		if (ip.err = EINVAL) return 0;
+		return UINTMAX_MAX;
 	}
 
-	return strtoumax(buf, 0, base);
+	return ip.neg ? -ip.val : ip.val;
 }
