@@ -8,7 +8,6 @@
 uintmax_t wcstoumax(const wchar_t *s, wchar_t **p, int base)
 {
 	struct intparse ip = {0};
-	unsigned char tmp;
 
 	if (p) *p = (wchar_t *)s;
 
@@ -20,7 +19,7 @@ uintmax_t wcstoumax(const wchar_t *s, wchar_t **p, int base)
 	for (; iswspace(*s); s++);
 
 	ip.base = base;
-	for (; *s<256 && (tmp=*s, __intparse(&ip, &tmp, 1)); s++);
+	for (; __intparse(&ip, (char[]){(*s&-(*s<128U))}, 1); s++);
 
 	if (p && ip.err != EINVAL)
 		*p = (wchar_t *)s;
