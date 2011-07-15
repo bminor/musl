@@ -35,6 +35,7 @@ int __intparse(struct intparse *v, const void *buf, size_t n)
 	v->cnt += n;
 	for (; n; n--, s++) switch (v->state) {
 	case 0:
+		v->err = EINVAL;
 		v->state++;
 		if (*s=='+' || *s=='-') {
 			v->neg = *s=='-';
@@ -49,6 +50,7 @@ int __intparse(struct intparse *v, const void *buf, size_t n)
 	case 2:
 		v->state++;
 		if ((!b || b==16) && (*s|32) == 'x') {
+			v->err = 0;
 			v->base = b = 16;
 			continue;
 		}
@@ -57,10 +59,11 @@ int __intparse(struct intparse *v, const void *buf, size_t n)
 	case 3:
 	firstdigit:
 		if (digits[*s] >= b) {
-			v->err = EINVAL;
-			return 0;
+			n++;
+			goto finished;
 		}
 	seconddigit:
+		v->err = 0;
 		v->state++;
 	case 4:
 		if (b==10) {
@@ -92,11 +95,11 @@ int __intparse(struct intparse *v, const void *buf, size_t n)
 		if (n && digits[*s]<b) {
 			v->err = ERANGE;
 			v->val = UINTMAX_MAX;
-
 			n--; s++;
+			for (; n && digits[*s]<b; n--, s++);
 		}
-		for (; n && digits[*s]<b; n--, s++);
 		if (!n) return 1;
+		goto finished;
 	}
 	return 1;
 finished:

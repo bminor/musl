@@ -26,7 +26,7 @@ uintmax_t strtoumax(const char *s1, char **p, int base)
 
 	if (ip.err) {
 		errno = ip.err;
-		if (ip.err = EINVAL) return 0;
+		if (ip.err == EINVAL) return 0;
 		return UINTMAX_MAX;
 	}
 

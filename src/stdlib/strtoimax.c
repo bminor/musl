@@ -25,7 +25,7 @@ intmax_t strtoimax(const char *s1, char **p, int base)
 
 	if (ip.err) {
 		errno = ip.err;
-		if (ip.err = EINVAL) return 0;
+		if (ip.err == EINVAL) return 0;
 		return ip.neg ? INTMAX_MIN : INTMAX_MAX;
 	}
 
