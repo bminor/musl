@@ -21,14 +21,9 @@ size_t fread(void *destv, size_t size, size_t nmemb, FILE *f)
 		l -= k;
 	}
 	
-	if (!l) {
-		FUNLOCK(f);
-		return nmemb;
-	}
-
 	/* Read the remainder directly */
 	for (; l; l-=k, dest+=k) {
-		k = f->read(f, dest, l);
+		k = __toread(f) ? 0 : f->read(f, dest, l);
 		if (k+1<=1) {
 			FUNLOCK(f);
 			return (len-l)/size;
