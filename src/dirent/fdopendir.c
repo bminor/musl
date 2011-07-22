@@ -12,7 +12,10 @@ DIR *fdopendir(int fd)
 	DIR *dir;
 	struct stat st;
 
-	if (fstat(fd, &st) < 0 || !S_ISDIR(st.st_mode)) {
+	if (fstat(fd, &st) < 0) {
+		return 0;
+	}
+	if (!S_ISDIR(st.st_mode)) {
 		errno = ENOTDIR;
 		return 0;
 	}
