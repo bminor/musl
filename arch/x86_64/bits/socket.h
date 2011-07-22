@@ -102,7 +102,7 @@ struct linger
 #define AF_SECURITY     PF_SECURITY
 #define AF_KEY          PF_KEY
 #define AF_NETLINK      PF_NETLINK
-#define AF_ROUTE        AF_NETLINK
+#define AF_ROUTE        PF_ROUTE
 #define AF_PACKET       PF_PACKET
 #define AF_ASH          PF_ASH
 #define AF_ECONET       PF_ECONET
