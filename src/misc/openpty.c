@@ -12,7 +12,7 @@ int openpty(int *m, int *s, char *name, const struct termios *tio, const struct 
 	char buf[20];
 
 	*m = open("/dev/ptmx", O_RDWR|O_NOCTTY);
-	if (!*m) return -1;
+	if (*m < 0) return -1;
 
 	if (ioctl(*m, TIOCSPTLCK, &n) || ioctl (*m, TIOCGPTN, &n)) {
 		close(*m);
