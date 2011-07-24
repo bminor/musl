@@ -2,10 +2,12 @@
 #include <sys/time.h>
 #include "syscall.h"
 
+int __clock_gettime(clockid_t, struct timespec *);
+
 time_t time(time_t *t)
 {
-	struct timeval tv;
-	__syscall(SYS_gettimeofday, &tv, 0);
-	if (t) *t = tv.tv_sec;
-	return tv.tv_sec;
+	struct timespec ts;
+	__clock_gettime(CLOCK_REALTIME, &ts);
+	if (t) *t = ts.tv_sec;
+	return ts.tv_sec;
 }
