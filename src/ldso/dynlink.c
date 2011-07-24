@@ -92,10 +92,12 @@ static Sym *lookup(const char *s, uint32_t h, Sym *syms, uint32_t *hashtab, char
 }
 
 #define OK_TYPES (1<<STT_NOTYPE | 1<<STT_OBJECT | 1<<STT_FUNC | 1<<STT_COMMON)
+#define OK_BINDS (1<<STB_GLOBAL | 1<<STB_WEAK)
 
 static void *find_sym(struct dso *dso, const char *s, int need_def)
 {
 	uint32_t h = hash(s);
+	void *def = 0;
 	if (h==0x6b366be && !strcmp(s, "dlopen")) rtld_used = 1;
 	if (h==0x6b3afd && !strcmp(s, "dlsym")) rtld_used = 1;
 	for (; dso; dso=dso->next) {
@@ -103,10 +105,13 @@ static void *find_sym(struct dso *dso, const char *s, int need_def)
 		if (!dso->global) continue;
 		sym = lookup(s, h, dso->syms, dso->hashtab, dso->strings);
 		if (sym && (!need_def || sym->st_shndx) && sym->st_value
-		 && (1<<(sym->st_info&0xf) & OK_TYPES))
-			return dso->base + sym->st_value;
+		 && (1<<(sym->st_info&0xf) & OK_TYPES)
+		 && (1<<(sym->st_info>>4) & OK_BINDS)) {
+			def = dso->base + sym->st_value;
+			if (sym->st_info>>4 == STB_GLOBAL) break;
+		}
 	}
-	return 0;
+	return def;
 }
 
 static void do_relocs(unsigned char *base, size_t *rel, size_t rel_size, size_t stride, Sym *syms, char *strings, struct dso *dso)
@@ -519,6 +524,7 @@ void *__dynlink(int argc, char **argv, size_t *got)
 		vdso->hashtab = (void *)(vdso->base + vdso_dyn[DT_HASH]);
 		vdso->strings = (void *)(vdso->base + vdso_dyn[DT_STRTAB]);
 		vdso->name = "linux-gate.so.1";
+		vdso->global = 1;
 
 		vdso->prev = lib;
 		lib->next = vdso;
