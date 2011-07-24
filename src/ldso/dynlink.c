@@ -443,7 +443,9 @@ void *__dynlink(int argc, char **argv, size_t *got)
 	size_t i;
 	Phdr *phdr;
 	Ehdr *ehdr;
-	struct dso lib, app;
+	static struct dso builtin_dsos[2];
+	struct dso *const app = builtin_dsos+0;
+	struct dso *const lib = builtin_dsos+1;
 
 	/* Find aux vector just past environ[] */
 	for (i=argc+1; argv[i]; i++)
@@ -471,7 +473,7 @@ void *__dynlink(int argc, char **argv, size_t *got)
 		}
 	}
 
-	app = (struct dso){
+	*app = (struct dso){
 		.base = 0,
 		.strings = (void *)(app_dyn[DT_STRTAB]),
 		.hashtab = (void *)(app_dyn[DT_HASH]),
@@ -479,10 +481,10 @@ void *__dynlink(int argc, char **argv, size_t *got)
 		.dynv = (void *)(phdr->p_vaddr),
 		.name = argv[0],
 		.global = 1,
-		.next = &lib
+		.next = lib
 	};
 
-	lib = (struct dso){
+	*lib = (struct dso){
 		.base = (void *)aux[AT_BASE],
 		.strings = (void *)(aux[AT_BASE]+lib_dyn[DT_STRTAB]),
 		.hashtab = (void *)(aux[AT_BASE]+lib_dyn[DT_HASH]),
@@ -495,39 +497,31 @@ void *__dynlink(int argc, char **argv, size_t *got)
 
 	/* Relocate the dynamic linker/libc */
 	do_relocs((void *)aux[AT_BASE], (void *)(aux[AT_BASE]+lib_dyn[DT_REL]),
-		lib_dyn[DT_RELSZ], 2, lib.syms, lib.strings, &app);
+		lib_dyn[DT_RELSZ], 2, lib->syms, lib->strings, app);
 	do_relocs((void *)aux[AT_BASE], (void *)(aux[AT_BASE]+lib_dyn[DT_RELA]),
-		lib_dyn[DT_RELASZ], 3, lib.syms, lib.strings, &app);
+		lib_dyn[DT_RELASZ], 3, lib->syms, lib->strings, app);
 
 	/* At this point the standard library is fully functional */
 
-	reclaim_gaps(app.base, (void *)aux[AT_PHDR], aux[AT_PHENT], aux[AT_PHNUM]);
-	ehdr = (void *)lib.base;
-	reclaim_gaps(lib.base, (void *)(lib.base+ehdr->e_phoff),
+	reclaim_gaps(app->base, (void *)aux[AT_PHDR], aux[AT_PHENT], aux[AT_PHNUM]);
+	ehdr = (void *)lib->base;
+	reclaim_gaps(lib->base, (void *)(lib->base+ehdr->e_phoff),
 		ehdr->e_phentsize, ehdr->e_phnum);
 
-	head = tail = &app;
-	libc = &lib;
-	app.next = 0;
+	head = tail = app;
+	libc = lib;
+	app->next = 0;
 	load_deps(head);
 
 	make_global(head);
 	reloc_all(head->next);
 	reloc_all(head);
 
-	if (rtld_used) {
-		runtime = 1;
-		head->next->prev = malloc(sizeof *head);
-		*head->next->prev = *head;
-		head = head->next->prev;
-		libc->prev->next = malloc(sizeof *libc);
-		*libc->prev->next = *libc;
-		libc = libc->prev->next;
-		if (libc->next) libc->next->prev = libc;
-		if (tail == &lib) tail = libc;
-	} else {
+	runtime = 1;
+	if (!rtld_used) {
 		free_all(head);
 		free(sys_path);
+		reclaim((void *)builtin_dsos, 0, sizeof builtin_dsos);
 	}
 
 	errno = 0;
