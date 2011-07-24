@@ -5,7 +5,7 @@
 #include "libc.h"
 
 int __vdso_clock_gettime(clockid_t, struct timespec *) __attribute__((weak));
-static int (*cgt)(clockid_t, struct timespec *) = __vdso_clock_gettime;
+static int (*const cgt)(clockid_t, struct timespec *) = __vdso_clock_gettime;
 
 int __clock_gettime(clockid_t clk, struct timespec *ts)
 {
