@@ -298,7 +298,7 @@ static struct dso *load_library(const char *name)
 				if (!libc->prev) {
 					tail->next = libc;
 					libc->prev = tail;
-					tail = libc;
+					tail = libc->next ? libc->next : libc;
 				}
 				return libc;
 			}
@@ -440,12 +440,15 @@ void *__dynlink(int argc, char **argv, size_t *got)
 	size_t *auxv, aux[AUX_CNT] = {0};
 	size_t app_dyn[DYN_CNT] = {0};
 	size_t lib_dyn[DYN_CNT] = {0};
+	size_t vdso_dyn[DYN_CNT] = {0};
 	size_t i;
 	Phdr *phdr;
 	Ehdr *ehdr;
-	static struct dso builtin_dsos[2];
+	static struct dso builtin_dsos[3];
 	struct dso *const app = builtin_dsos+0;
 	struct dso *const lib = builtin_dsos+1;
+	struct dso *const vdso = builtin_dsos+2;
+	size_t vdso_base=0;
 
 	/* Find aux vector just past environ[] */
 	for (i=argc+1; argv[i]; i++)
@@ -454,6 +457,13 @@ void *__dynlink(int argc, char **argv, size_t *got)
 	auxv = (void *)(argv+i+1);
 
 	decode_vec(auxv, aux, AUX_CNT);
+
+	for (i=0; auxv[i]; i+=2) {
+		if (auxv[i]==AT_SYSINFO_EHDR) {
+			vdso_base = auxv[i+1];
+			break;
+		}
+	}
 
 	/* Only trust user/env if kernel says we're not suid/sgid */
 	if ((aux[0]&0x7800)!=0x7800 || aux[AT_UID]!=aux[AT_EUID]
@@ -494,6 +504,25 @@ void *__dynlink(int argc, char **argv, size_t *got)
 		.global = 1,
 		.relocated = 1
 	};
+
+	if (vdso_base) {
+		ehdr = (void *)vdso_base;
+		phdr = (void *)(vdso_base + ehdr->e_phoff);
+		for (i=ehdr->e_phnum; i; i--, phdr=(void *)((char *)phdr + ehdr->e_phentsize)) {
+			if (phdr->p_type == PT_DYNAMIC)
+				vdso->dynv = (void *)(vdso_base + phdr->p_offset);
+			if (phdr->p_type == PT_LOAD)
+				vdso->base = (void *)(vdso_base - phdr->p_vaddr + phdr->p_offset);
+		}
+		decode_vec(vdso->dynv, vdso_dyn, DYN_CNT);
+		vdso->syms = (void *)(vdso->base + vdso_dyn[DT_SYMTAB]);
+		vdso->hashtab = (void *)(vdso->base + vdso_dyn[DT_HASH]);
+		vdso->strings = (void *)(vdso->base + vdso_dyn[DT_STRTAB]);
+		vdso->name = "linux-gate.so.1";
+
+		vdso->prev = lib;
+		lib->next = vdso;
+	}
 
 	/* Relocate the dynamic linker/libc */
 	do_relocs((void *)aux[AT_BASE], (void *)(aux[AT_BASE]+lib_dyn[DT_REL]),
