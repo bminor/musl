@@ -70,6 +70,8 @@ int __intparse(struct intparse *v, const void *buf, size_t n)
 			for (; n && *s-'0'<10U && v->small<=SLIM; n--, s++)
 				v->small = v->small * 10 + (*s-'0');
 		} else if ((b&-b) == b) {
+			/* Compute bitshift for power-of-two bases
+			 * using a De Bruijn B(2,3) sequence. */
 			int bs = "\0\1\2\4\7\3\6\5"[(0x17*b)>>5&7];
 			for (; n && (d=digits[*s])<b && v->small<=SLIM; n--, s++)
 				v->small = (v->small<<bs) + d;
