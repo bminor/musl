@@ -107,6 +107,7 @@ static void *find_sym(struct dso *dso, const char *s, int need_def)
 		if (sym && (!need_def || sym->st_shndx) && sym->st_value
 		 && (1<<(sym->st_info&0xf) & OK_TYPES)
 		 && (1<<(sym->st_info>>4) & OK_BINDS)) {
+			if (def && sym->st_info>>4 == STB_WEAK) continue;
 			def = dso->base + sym->st_value;
 			if (sym->st_info>>4 == STB_GLOBAL) break;
 		}
