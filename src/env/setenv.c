@@ -9,7 +9,7 @@ int setenv(const char *var, const char *value, int overwrite)
 	char *s;
 	int l1, l2;
 
-	if (strchr(var, '=')) {
+	if (!var || !*var || strchr(var, '=')) {
 		errno = EINVAL;
 		return -1;
 	}
