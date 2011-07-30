@@ -5,23 +5,18 @@
 
 void perror(const char *msg)
 {
-#if 1
-	if (msg) fprintf(stderr, "%s: %m\n", msg, strerror(errno));
-	else fprintf(stderr, "%m\n");
-#else
 	FILE *f = stderr;
 	char *errstr = strerror(errno);
 
 	FLOCK(f);
 	
 	if (msg) {
-		__fwritex(msg, strlen(msg), f);
-		__putc_unlocked(':', f);
-		__putc_unlocked(' ', f);
+		fwrite(msg, strlen(msg), 1, f);
+		fputc(':', f);
+		fputc(' ', f);
 	}
-	__fwritex(errstr, strlen(errstr), f);
-	__putc_unlocked('\n', f);
+	fwrite(errstr, strlen(errstr), 1, f);
+	fputc('\n', f);
 
 	FUNLOCK(f);
-#endif
 }
