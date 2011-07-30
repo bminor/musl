@@ -34,7 +34,6 @@ wint_t __fgetwc_unlocked(FILE *f)
 		if (l == -1) return WEOF;
 	}
 
-	FUNLOCK(f);
 	return wc;
 }
 

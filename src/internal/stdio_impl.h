@@ -24,8 +24,8 @@
 
 #define UNGET 8
 
-#define FLOCK(f) ((libc.threads_minus_1 && (f)->lock>=0) ? (__lockfile((f)),0) : 0)
-#define FUNLOCK(f) ((f)->lockcount && (--(f)->lockcount || ((f)->lock=0)))
+#define FLOCK(f) int __need_unlock = ((f)->lock>=0 ? __lockfile((f)) : 0)
+#define FUNLOCK(f) if (__need_unlock) __unlockfile((f)); else
 
 #define F_PERM 1
 #define F_NORD 4
@@ -49,12 +49,12 @@ struct __FILE_s {
 	FILE *prev, *next;
 	int fd;
 	int pipe_pid;
-	long dummy2;
+	long lockcount;
 	short dummy3;
 	signed char mode;
 	signed char lbf;
 	int lock;
-	int lockcount;
+	int waiters;
 	void *cookie;
 	off_t off;
 	int (*flush)(FILE *);
@@ -86,7 +86,6 @@ FILE *__fdopen(int, const char *);
 
 #define OFLLOCK() LOCK(&libc.ofl_lock)
 #define OFLUNLOCK() UNLOCK(&libc.ofl_lock)
-#define ofl_head (libc.ofl_head)
 
 #define feof(f) ((f)->flags & F_EOF)
 #define ferror(f) ((f)->flags & F_ERR)

@@ -9,7 +9,7 @@ int fclose(FILE *f)
 		OFLLOCK();
 		if (f->prev) f->prev->next = f->next;
 		if (f->next) f->next->prev = f->prev;
-		if (ofl_head == f) ofl_head = f->next;
+		if (libc.ofl_head == f) libc.ofl_head = f->next;
 		OFLUNLOCK();
 	}
 

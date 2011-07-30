@@ -3,9 +3,10 @@
 int fgetc(FILE *f)
 {
 	int c;
-	FLOCK(f);
+	if (f->lock < 0 || !__lockfile(f))
+		return getc_unlocked(f);
 	c = getc_unlocked(f);
-	FUNLOCK(f);
+	__unlockfile(f);
 	return c;
 }
 

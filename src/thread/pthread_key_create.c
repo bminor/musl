@@ -14,7 +14,7 @@ int pthread_key_create(pthread_key_t *k, void (*dtor)(void *))
 	unsigned i = (uintptr_t)&k / 16 % PTHREAD_KEYS_MAX;
 	unsigned j = i;
 
-	pthread_self();
+	__pthread_self_init();
 	if (!dtor) dtor = nodtor;
 	do {
 		if (!a_cas_p(keys+j, 0, dtor)) {

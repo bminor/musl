@@ -1,20 +1,18 @@
 #include "stdio_impl.h"
 #include "pthread_impl.h"
 
-void __lockfile(FILE *f)
+int __lockfile(FILE *f)
 {
-	int spins=10000;
-	int tid;
+	int owner, tid = __pthread_self()->tid;
+	if (f->lock == tid)
+		return 0;
+	while ((owner = a_cas(&f->lock, 0, tid)))
+		__wait(&f->lock, &f->waiters, owner, 1);
+	return f->lockcount = 1;
+}
 
-	if (f->lock < 0) return;
-	tid = __pthread_self()->tid;
-	if (f->lock == tid) {
-		while (f->lockcount == INT_MAX);
-		f->lockcount++;
-		return;
-	}
-	while (a_cas(&f->lock, 0, tid))
-		if (spins) spins--, a_spin();
-		else __syscall(SYS_sched_yield);
-	f->lockcount = 1;
+void __unlockfile(FILE *f)
+{
+	a_store(&f->lock, 0);
+	if (f->waiters) __wake(&f->lock, 1, 1);
 }

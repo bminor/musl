@@ -39,11 +39,13 @@ FILE *__fdopen(int fd, const char *mode)
 	f->seek = __stdio_seek;
 	f->close = __stdio_close;
 
+	if (!libc.threaded) f->lock = -1;
+
 	/* Add new FILE to open file list */
 	OFLLOCK();
-	f->next = ofl_head;
-	if (ofl_head) ofl_head->prev = f;
-	ofl_head = f;
+	f->next = libc.ofl_head;
+	if (libc.ofl_head) libc.ofl_head->prev = f;
+	libc.ofl_head = f;
 	OFLUNLOCK();
 
 	return f;

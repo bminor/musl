@@ -87,6 +87,8 @@ struct __timer {
 #define SIGTIMER_SET ((sigset_t *)(unsigned long [1+(sizeof(long)==4)]){ \
 	 0x80000000 })
 
+pthread_t __pthread_self_init(void);
+
 int __set_thread_area(void *);
 int __libc_sigaction(int, const struct sigaction *, struct sigaction *);
 int __libc_sigprocmask(int, const sigset_t *, sigset_t *);

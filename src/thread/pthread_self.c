@@ -35,3 +35,5 @@ pthread_t pthread_self()
 	}
 	return __pthread_self();
 }
+
+weak_alias(pthread_self, __pthread_self_init);

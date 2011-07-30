@@ -3,10 +3,8 @@
 off_t __ftello_unlocked(FILE *f)
 {
 	off_t pos = f->seek(f, 0, SEEK_CUR);
-	if (pos < 0) {
-		FUNLOCK(f);
-		return pos;
-	}
+	if (pos < 0) return pos;
+
 	/* Adjust for data in buffer. */
 	return pos - (f->rend - f->rpos) + (f->wpos - f->wbase);
 }

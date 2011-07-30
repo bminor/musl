@@ -1,4 +1,5 @@
 #include "pthread_impl.h"
+#include "stdio_impl.h"
 
 static void dummy_0()
 {
@@ -60,6 +61,16 @@ int __uniclone(void *, int (*)(), void *);
 static const size_t dummy = 0;
 weak_alias(dummy, __pthread_tsd_size);
 
+static FILE *const dummy_file = 0;
+weak_alias(dummy_file, __stdin_used);
+weak_alias(dummy_file, __stdout_used);
+weak_alias(dummy_file, __stderr_used);
+
+static void init_file_lock(FILE *f)
+{
+	if (f && f->lock<0) f->lock = 0;
+}
+
 int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(void *), void *arg)
 {
 	int ret;
@@ -70,6 +81,11 @@ int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(vo
 
 	if (!self) return ENOSYS;
 	if (!libc.threaded) {
+		for (FILE *f=libc.ofl_head; f; f=f->next)
+			init_file_lock(f);
+		init_file_lock(__stdin_used);
+		init_file_lock(__stdout_used);
+		init_file_lock(__stderr_used);
 		__syscall(SYS_rt_sigprocmask, SIG_UNBLOCK, SIGPT_SET, 0, 8);
 		libc.threaded = 1;
 	}

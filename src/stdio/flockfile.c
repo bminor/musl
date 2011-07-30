@@ -3,6 +3,8 @@
 
 void flockfile(FILE *f)
 {
-	if (!libc.threaded) pthread_self();
-	__lockfile(f);
+	while (ftrylockfile(f)) {
+		int owner = f->lock;
+		if (owner) __wait(&f->lock, &f->waiters, owner, 1);
+	}
 }

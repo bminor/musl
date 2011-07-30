@@ -3,5 +3,5 @@
 
 void funlockfile(FILE *f)
 {
-	FUNLOCK(f);
+	if (!--f->lockcount) __unlockfile(f);
 }

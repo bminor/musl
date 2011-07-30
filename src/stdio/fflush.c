@@ -22,8 +22,8 @@ static int __fflush_unlocked(FILE *f)
 }
 
 /* stdout.c will override this if linked */
-static FILE *const __dummy = 0;
-weak_alias(__dummy, __stdout_to_flush);
+static FILE *const dummy = 0;
+weak_alias(dummy, __stdout_used);
 
 int fflush(FILE *f)
 {
@@ -37,13 +37,13 @@ int fflush(FILE *f)
 		return r;
 	}
 
-	r = __stdout_to_flush ? fflush(__stdout_to_flush) : 0;
+	r = __stdout_used ? fflush(__stdout_used) : 0;
 
 	OFLLOCK();
-	for (f=ofl_head; f; f=next) {
+	for (f=libc.ofl_head; f; f=next) {
 		FLOCK(f);
 		//OFLUNLOCK();
-		r |= __fflush_unlocked(f);
+		if (f->wpos > f->wbase) r |= __fflush_unlocked(f);
 		//OFLLOCK();
 		next = f->next;
 		FUNLOCK(f);

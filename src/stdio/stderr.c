@@ -10,5 +10,7 @@ static FILE f = {
 	.write = __stdio_write,
 	.seek = __stdio_seek,
 	.close = __stdio_close,
+	.lock = -1,
 };
 FILE *const stderr = &f;
+FILE *const __stderr_used = &f;

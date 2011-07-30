@@ -10,8 +10,7 @@ static FILE f = {
 	.write = __stdout_write,
 	.seek = __stdio_seek,
 	.close = __stdio_close,
+	.lock = -1,
 };
 FILE *const stdout = &f;
-
-/* overrides symbol in fflush.c, used for flushing NULL */
-FILE *const __stdout_to_flush = &f;
+FILE *const __stdout_used = &f;
