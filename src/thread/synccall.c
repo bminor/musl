@@ -54,14 +54,14 @@ void __synccall(void (*func)(void *), void *ctx)
 	struct chain *cur, *next;
 	uint64_t oldmask;
 
-	pthread_rwlock_wrlock(&lock);
-
-	__syscall(SYS_rt_sigprocmask, SIG_BLOCK, (uint64_t[]){-1}, &oldmask, 8);
-
 	if (!libc.threads_minus_1) {
 		func(ctx);
 		return;
 	}
+
+	pthread_rwlock_wrlock(&lock);
+
+	__syscall(SYS_rt_sigprocmask, SIG_BLOCK, (uint64_t[]){-1}, &oldmask, 8);
 
 	sem_init(&chaindone, 0, 0);
 	sem_init(&chainlock, 0, 1);
