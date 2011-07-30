@@ -4,5 +4,5 @@
 
 int setregid(gid_t rgid, gid_t egid)
 {
-	return __rsyscall(SYS_setregid, rgid, egid, 0, 0, 0, 0);
+	return __setxid(SYS_setregid, rgid, egid, 0);
 }

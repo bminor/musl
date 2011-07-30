@@ -42,7 +42,8 @@ void __lockfile(FILE *);
 #define LOCK(x) (libc.threads_minus_1 ? (__lock(x),1) : ((void)(x),1))
 #define UNLOCK(x) (*(volatile int *)(x)=0)
 
-int __rsyscall(int, long, long, long, long, long, long);
+void __synccall(void (*)(void *), void *);
+int __setxid(int, int, int, int);
 
 extern char **__environ;
 #define environ __environ

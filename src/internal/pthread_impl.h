@@ -80,7 +80,7 @@ struct __timer {
 
 #define SIGTIMER 32
 #define SIGCANCEL 33
-#define SIGSYSCALL 34
+#define SIGSYNCCALL 34
 
 #define SIGPT_SET ((sigset_t *)(unsigned long [1+(sizeof(long)==4)]){ \
 	[sizeof(long)==4] = 3UL<<(32*(sizeof(long)>4)) })
@@ -98,8 +98,8 @@ int __timedwait_cp(volatile int *, int, clockid_t, const struct timespec *, int)
 void __wait(volatile int *, volatile int *, int, int);
 void __wake(volatile int *, int, int);
 
-void __rsyscall_lock();
-void __rsyscall_unlock();
+void __synccall_lock();
+void __synccall_unlock();
 
 #define DEFAULT_STACK_SIZE (16384-PAGE_SIZE)
 #define DEFAULT_GUARD_SIZE PAGE_SIZE

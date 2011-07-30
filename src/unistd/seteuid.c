@@ -1,6 +1,8 @@
 #include <unistd.h>
+#include "syscall.h"
+#include "libc.h"
 
 int seteuid(uid_t euid)
 {
-	return setreuid(-1, euid);
+	return __setxid(SYS_setresuid, -1, euid, -1);
 }

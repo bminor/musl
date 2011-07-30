@@ -3,8 +3,8 @@
 static void dummy_0()
 {
 }
-weak_alias(dummy_0, __rsyscall_lock);
-weak_alias(dummy_0, __rsyscall_unlock);
+weak_alias(dummy_0, __synccall_lock);
+weak_alias(dummy_0, __synccall_unlock);
 weak_alias(dummy_0, __pthread_tsd_run_dtors);
 
 #ifdef __pthread_unwind_next
@@ -99,12 +99,12 @@ int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(vo
 	new->tlsdesc[1] = (uintptr_t)new;
 	stack = (void *)((uintptr_t)new-1 & ~(uintptr_t)15);
 
-	__rsyscall_lock();
+	__synccall_lock();
 
 	a_inc(&libc.threads_minus_1);
 	ret = __uniclone(stack, start, new);
 
-	__rsyscall_unlock();
+	__synccall_unlock();
 
 	if (ret < 0) {
 		a_dec(&libc.threads_minus_1);
