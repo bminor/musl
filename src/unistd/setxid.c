@@ -11,6 +11,8 @@ struct ctx {
 
 /* We jump through hoops to eliminate the possibility of partial failures. */
 
+int __setrlimit(int, const struct rlimit *);
+
 static void do_setxid(void *p)
 {
 	struct ctx *c = p;
@@ -18,17 +20,13 @@ static void do_setxid(void *p)
 	if (c->rlim && c->id >= 0 && c->id != getuid()) {
 		struct rlimit inf = { RLIM_INFINITY, RLIM_INFINITY }, old;
 		getrlimit(RLIMIT_NPROC, &old);
-		if (setrlimit(RLIMIT_NPROC, &inf) && libc.threads_minus_1) {
-			c->err = errno;
+		if ((c->err = -__setrlimit(RLIMIT_NPROC, &inf)) && libc.threads_minus_1)
 			return;
-		}
-		if (__syscall(c->nr, c->id, c->eid, c->sid))
-			c->err = errno;
-		setrlimit(RLIMIT_NPROC, &old);
+		c->err = -__syscall(c->nr, c->id, c->eid, c->sid);
+		__setrlimit(RLIMIT_NPROC, &old);
 		return;
 	}
-	if (__syscall(c->nr, c->id, c->eid, c->sid))
-		c->err = errno;
+	c->err = -__syscall(c->nr, c->id, c->eid, c->sid);
 }
 
 int __setxid(int nr, int id, int eid, int sid)
