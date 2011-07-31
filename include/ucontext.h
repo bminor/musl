@@ -14,7 +14,7 @@ struct __ucontext;
 
 int  getcontext(struct __ucontext *);
 void makecontext(struct __ucontext *, void (*)(void), int, ...);
-int  setcontext(const ucontext_t *);
+int  setcontext(const struct __ucontext *);
 int  swapcontext(struct __ucontext *, const struct __ucontext *);
 
 #ifdef __cplusplus
