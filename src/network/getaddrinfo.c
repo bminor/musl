@@ -76,7 +76,7 @@ int getaddrinfo(const char *host, const char *serv, const struct addrinfo *hint,
 
 	if (serv) {
 		if (!*serv) return EAI_SERVICE;
-		port = strtoul(serv, &z, 0);
+		port = strtoul(serv, &z, 10);
 		if (!*z && port > 65535) return EAI_SERVICE;
 		if (!port) {
 			if (flags & AI_NUMERICSERV) return EAI_SERVICE;
