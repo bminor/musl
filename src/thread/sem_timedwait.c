@@ -8,31 +8,21 @@ static void cleanup(void *p)
 
 int sem_timedwait(sem_t *sem, const struct timespec *at)
 {
-	int r;
-
-	if (a_fetch_add(sem->__val, -1) > 0) return 0;
-	a_inc(sem->__val);
-
-	if (at && at->tv_nsec >= 1000000000UL) {
-		errno = EINVAL;
-		return -1;
-	}
-
-	a_inc(sem->__val+1);
-	pthread_cleanup_push(cleanup, sem->__val+1)
-
-	for (;;) {
-		r = 0;
-		if (!sem_trywait(sem)) break;
-		r = __timedwait_cp(sem->__val, 0, CLOCK_REALTIME, at, 0);
+	while (sem_trywait(sem)) {
+		int r;
+		if (at && at->tv_nsec >= 1000000000UL) {
+			errno = EINVAL;
+			return -1;
+		}
+		a_inc(sem->__val+1);
+		a_cas(sem->__val, 0, -1);
+		pthread_cleanup_push(cleanup, sem->__val+1);
+		r = __timedwait_cp(sem->__val, -1, CLOCK_REALTIME, at, 0);
+		pthread_cleanup_pop(1);
 		if (r) {
 			errno = r;
-			r = -1;
-			break;
+			return -1;
 		}
 	}
-
-	pthread_cleanup_pop(1);
-
-	return r;
+	return 0;
 }

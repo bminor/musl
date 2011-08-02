@@ -3,8 +3,11 @@
 
 int sem_post(sem_t *sem)
 {
-	a_inc(sem->__val);
-	if (sem->__val[1])
-		__wake(sem->__val, 1, 0);
+	int val, waiters;
+	do {
+		val = sem->__val[0];
+		waiters = sem->__val[1];
+	} while (a_cas(sem->__val, val, val+1+(val<0)) != val);
+	if (val<0 || waiters) __wake(sem->__val, 1, 0);
 	return 0;
 }
