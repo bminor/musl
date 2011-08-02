@@ -31,6 +31,12 @@ long (__syscall_cp)(long nr, long u, long v, long w, long x, long y, long z)
 	return r;
 }
 
+static void _sigaddset(sigset_t *set, int sig)
+{
+	unsigned s = sig-1;
+	set->__bits[s/8/sizeof *set->__bits] |= 1UL<<(s&8*sizeof *set->__bits-1);
+}
+
 static void cancel_handler(int sig, siginfo_t *si, void *ctx)
 {
 	pthread_t self = __pthread_self();
@@ -40,7 +46,7 @@ static void cancel_handler(int sig, siginfo_t *si, void *ctx)
 
 	if (!self->cancel || self->canceldisable) return;
 
-	sigaddset(&uc->uc_sigmask, SIGCANCEL);
+	_sigaddset(&uc->uc_sigmask, SIGCANCEL);
 
 	if (self->cancelasync || sp == self->cp_sp && ip <= self->cp_ip) {
 		self->canceldisable = 1;
