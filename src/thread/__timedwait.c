@@ -16,7 +16,7 @@ static int do_wait(volatile int *addr, int val, clockid_t clk, const struct time
 		if (clk == CLOCK_REALTIME) flag = FUTEX_CLOCK_REALTIME;
 		if (cp) r = -__syscall_cp(SYS_futex, addr, FUTEX_WAIT_BITSET|flag, val, at, 0, -1);
 		else r = -__syscall(SYS_futex, addr, FUTEX_WAIT_BITSET|flag, val, at, 0, -1);
-		if (r != ENOSYS) goto done;
+		if (r != EINVAL) goto done;
 	}
 	if (clock_gettime(clk, &to)) return EINVAL;
 	to.tv_sec = at->tv_sec - to.tv_sec;
