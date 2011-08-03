@@ -14,3 +14,11 @@ __pthread_unregister_cancel:
 	call __pthread_unregister_cancel_3
 	popl %eax
 	ret
+
+.global __pthread_unwind_next
+.type   __pthread_unwind_next,@function
+__pthread_unwind_next:
+	pushl %eax
+	call __pthread_unwind_next_3
+	popl %eax
+	ret

@@ -8,12 +8,7 @@ weak_alias(dummy_0, __synccall_lock);
 weak_alias(dummy_0, __synccall_unlock);
 weak_alias(dummy_0, __pthread_tsd_run_dtors);
 
-#ifdef __pthread_unwind_next
-#undef __pthread_unwind_next
-#define __pthread_unwind_next __pthread_unwind_next_3
-#endif
-
-void __pthread_unwind_next(struct __ptcb *cb)
+void __pthread_do_unwind(struct __ptcb *cb)
 {
 	pthread_t self = pthread_self();
 	int n;
