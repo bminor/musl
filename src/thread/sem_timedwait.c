@@ -13,6 +13,7 @@ int sem_timedwait(sem_t *sem, const struct timespec *at)
 		a_inc(sem->__val+1);
 		a_cas(sem->__val, 0, -1);
 		r = __timedwait(sem->__val, -1, CLOCK_REALTIME, at, cleanup, sem->__val+1, 0);
+		a_dec(sem->__val+1);
 		if (r) {
 			errno = r;
 			return -1;
