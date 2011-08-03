@@ -39,6 +39,19 @@ void __pthread_do_unwind(struct __ptcb *cb)
 	__syscall(SYS_exit, 0);
 }
 
+void __pthread_do_register(struct __ptcb *cb)
+{
+	struct pthread *self = pthread_self();
+	cb->__next = self->cancelbuf;
+	self->cancelbuf = cb;
+}
+
+void __pthread_do_unregister(struct __ptcb *cb)
+{
+	struct pthread *self = __pthread_self();
+	self->cancelbuf = self->cancelbuf->__next;
+}
+
 static int start(void *p)
 {
 	struct pthread *self = p;
