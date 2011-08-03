@@ -2,15 +2,14 @@
 
 int pthread_mutex_trylock(pthread_mutex_t *m)
 {
-	int tid;
-	int own;
+	int tid, old, own;
 	pthread_t self;
 
 	if (m->_m_type == PTHREAD_MUTEX_NORMAL)
-		return a_swap(&m->_m_lock, EBUSY);
+		return a_cas(&m->_m_lock, 0, EBUSY) & EBUSY;
 
 	self = pthread_self();
-	tid = self->tid | 0x80000000;
+	tid = self->tid;
 
 	if (m->_m_type >= 4) {
 		if (!self->robust_list.off)
@@ -20,14 +19,15 @@ int pthread_mutex_trylock(pthread_mutex_t *m)
 		self->robust_list.pending = &m->_m_next;
 	}
 
-	if (m->_m_lock == tid && (m->_m_type&3) == PTHREAD_MUTEX_RECURSIVE) {
+	old = m->_m_lock;
+	own = old & 0x7fffffff;
+	if (own == tid && (m->_m_type&3) == PTHREAD_MUTEX_RECURSIVE) {
 		if ((unsigned)m->_m_count >= INT_MAX) return EAGAIN;
 		m->_m_count++;
 		return 0;
 	}
 
-	own = m->_m_lock;
-	if ((own && !(own & 0x40000000)) || a_cas(&m->_m_lock, own, tid)!=own)
+	if ((own && !(own & 0x40000000)) || a_cas(&m->_m_lock, old, tid)!=old)
 		return EBUSY;
 
 	m->_m_count = 1;

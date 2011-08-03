@@ -3,6 +3,8 @@
 int pthread_mutex_unlock(pthread_mutex_t *m)
 {
 	pthread_t self;
+	int waiters = m->_m_waiters;
+	int cont;
 
 	if (m->_m_type != PTHREAD_MUTEX_NORMAL) {
 		if (!m->_m_lock)
@@ -16,15 +18,14 @@ int pthread_mutex_unlock(pthread_mutex_t *m)
 			self->robust_list.pending = &m->_m_next;
 			*(void **)m->_m_prev = m->_m_next;
 			if (m->_m_next) ((void **)m->_m_next)[-1] = m->_m_prev;
-			a_store(&m->_m_lock, 0);
+			cont = a_swap(&m->_m_lock, 0);
 			self->robust_list.pending = 0;
-		} else {
-			a_store(&m->_m_lock, 0);
+			goto wake;
 		}
-	} else {
-		a_store(&m->_m_lock, 0);
 	}
-
-	if (m->_m_waiters) __wake(&m->_m_lock, 1, 0);
+	cont = a_swap(&m->_m_lock, 0);
+wake:
+	if (waiters || cont<0)
+		__wake(&m->_m_lock, 1, 0);
 	return 0;
 }
