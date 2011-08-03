@@ -10,6 +10,9 @@
 #define FUTEX_LOCK_PI		6
 #define FUTEX_UNLOCK_PI		7
 #define FUTEX_TRYLOCK_PI	8
+#define FUTEX_WAIT_BITSET	9
+
+#define FUTEX_CLOCK_REALTIME 256
 
 int __futex(volatile int *, int, int, void *);
 
