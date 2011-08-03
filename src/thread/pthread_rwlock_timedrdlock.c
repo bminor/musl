@@ -2,14 +2,15 @@
 
 int pthread_rwlock_timedrdlock(pthread_rwlock_t *rw, const struct timespec *at)
 {
-	int w=0;
-	while (pthread_rwlock_tryrdlock(rw)) {
-		if (!w) a_inc(&rw->_rw_waiters), w++;
-		if (__timedwait(&rw->_rw_wrlock, 1, CLOCK_REALTIME, at, 0, 0, 0)==ETIMEDOUT) {
-			if (w) a_dec(&rw->_rw_waiters);
-			return ETIMEDOUT;
-		}
+	int r, t;
+	while ((r=pthread_rwlock_tryrdlock(rw))==EBUSY) {
+		if (!(r=rw->_rw_lock) || (r&0x7fffffff)!=0x7fffffff) continue;
+		t = r | 0x80000000;
+		a_inc(&rw->_rw_waiters);
+		a_cas(&rw->_rw_lock, r, t);
+		r = __timedwait(&rw->_rw_lock, t, CLOCK_REALTIME, at, 0, 0, 0);
+		a_dec(&rw->_rw_waiters);
+		if (r && r != EINTR) return r;
 	}
-	if (w) a_dec(&rw->_rw_waiters);
-	return 0;
+	return r;
 }

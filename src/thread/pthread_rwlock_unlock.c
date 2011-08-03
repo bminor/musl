@@ -2,16 +2,17 @@
 
 int pthread_rwlock_unlock(pthread_rwlock_t *rw)
 {
-	struct pthread *self = pthread_self();
-	if (rw->_rw_owner == self->tid) {
-		rw->_rw_owner = 0;
-		a_store(&rw->_rw_wrlock, 0);
-		if (rw->_rw_waiters)
-			__wake(&rw->_rw_wrlock, -1, 0);
-		return 0;
-	}
-	a_dec(&rw->_rw_readers);
-	if (rw->_rw_waiters && !rw->_rw_readers)
-		__wake(&rw->_rw_readers, 1, 0);
+	int val, cnt, waiters, new;
+
+	do {
+		val = rw->_rw_lock;
+		cnt = val & 0x7fffffff;
+		waiters = rw->_rw_waiters;
+		new = (cnt == 0x7fffffff || cnt == 1) ? 0 : val-1;
+	} while (a_cas(&rw->_rw_lock, val, new) != val);
+
+	if (!new && (waiters || val<0))
+		__wake(&rw->_rw_lock, 1, 0);
+
 	return 0;
 }
