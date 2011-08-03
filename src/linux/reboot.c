@@ -1,8 +1,7 @@
 #include <sys/reboot.h>
-#include <errno.h>
+#include "syscall.h"
 
 int reboot(int type)
 {
-	errno = ENOSYS;
-	return -1;
+	return syscall(SYS_reboot, type);
 }
