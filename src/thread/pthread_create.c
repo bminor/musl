@@ -131,5 +131,5 @@ void pthread_exit(void *result)
 	struct pthread *self = pthread_self();
 	struct __ptcb cb = { .__next = self->cancelbuf };
 	self->result = result;
-	__pthread_unwind_next(&cb);
+	__pthread_do_unwind(&cb);
 }
