@@ -1,6 +1,8 @@
 #include "pthread_impl.h"
 
+void __testcancel(void);
+
 void pthread_testcancel()
 {
-	if (libc.testcancel) libc.testcancel();
+	__testcancel();
 }

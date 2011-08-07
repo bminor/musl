@@ -6,10 +6,8 @@
 
 struct __libc {
 	int *(*errno_location)(void);
-	void (*testcancel)(void);
 	int threaded;
 	int canceldisable;
-	void (*fork_handler)(int);
 	int (*atexit)(void (*)(void));
 	void (*fini)(void);
 	void (*ldso_fini)(void);

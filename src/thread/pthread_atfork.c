@@ -10,9 +10,10 @@ static struct atfork_funcs {
 
 static int lock;
 
-static void fork_handler(int who)
+void __fork_handler(int who)
 {
 	struct atfork_funcs *p;
+	if (!funcs) return;
 	if (who < 0) {
 		LOCK(&lock);
 		for (p=funcs; p; p = p->next) {
@@ -35,7 +36,6 @@ int pthread_atfork(void (*prepare)(void), void (*parent)(void), void (*child)(vo
 	if (!new) return -1;
 
 	LOCK(&lock);
-	libc.fork_handler = fork_handler;
 	new->next = funcs;
 	new->prev = 0;
 	new->prepare = prepare;

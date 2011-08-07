@@ -3,10 +3,16 @@
 #include "libc.h"
 #include "pthread_impl.h"
 
+static void dummy(int x)
+{
+}
+
+weak_alias(dummy, __fork_handler);
+
 pid_t fork(void)
 {
 	pid_t ret;
-	if (libc.fork_handler) libc.fork_handler(-1);
+	__fork_handler(-1);
 	ret = syscall(SYS_fork);
 	if (libc.main_thread && !ret) {
 		pthread_t self = __pthread_self();
@@ -15,6 +21,6 @@ pid_t fork(void)
 		libc.threads_minus_1 = 0;
 		libc.main_thread = self;
 	}
-	if (libc.fork_handler) libc.fork_handler(!ret);
+	__fork_handler(!ret);
 	return ret;
 }

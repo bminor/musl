@@ -58,7 +58,7 @@ static void cancel_handler(int sig, siginfo_t *si, void *ctx)
 		__syscall(SYS_tgkill, self->pid, self->tid, SIGCANCEL);
 }
 
-static void testcancel()
+void __testcancel()
 {
 	pthread_t self = __pthread_self();
 	if (self->cancel && !self->canceldisable)
@@ -73,7 +73,6 @@ static void init_cancellation()
 	};
 	sigfillset(&sa.sa_mask);
 	__libc_sigaction(SIGCANCEL, &sa, 0);
-	libc.testcancel = testcancel;
 }
 
 int pthread_cancel(pthread_t t)
