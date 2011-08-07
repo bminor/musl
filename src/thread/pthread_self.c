@@ -6,21 +6,16 @@ static struct pthread main_thread;
 static const void *dummy[1] = { 0 };
 weak_alias(dummy, __pthread_tsd_main);
 
-static int *errno_location()
-{
-	return __pthread_self()->errno_ptr;
-}
-
 static int init_main_thread()
 {
 	if (__set_thread_area(&main_thread) < 0) return -1;
 	main_thread.canceldisable = libc.canceldisable;
 	main_thread.tsd = (void **)__pthread_tsd_main;
-	main_thread.self = libc.main_thread = &main_thread;
 	main_thread.errno_ptr = __errno_location();
-	libc.errno_location = errno_location;
+	main_thread.self = &main_thread;
 	main_thread.tid = main_thread.pid = 
 		__syscall(SYS_set_tid_address, &main_thread.tid);
+	libc.main_thread = &main_thread;
 	return 0;
 }
 

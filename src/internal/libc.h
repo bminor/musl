@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 struct __libc {
-	int *(*errno_location)(void);
+	void *main_thread;
 	int threaded;
 	int canceldisable;
 	int (*atexit)(void (*)(void));
@@ -14,7 +14,6 @@ struct __libc {
 	volatile int threads_minus_1;
 	int ofl_lock;
 	FILE *ofl_head;
-	void *main_thread;
 };
 
 
