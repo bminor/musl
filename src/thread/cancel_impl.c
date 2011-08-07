@@ -27,7 +27,8 @@ long (__syscall_cp)(long nr, long u, long v, long w, long x, long y, long z)
 	r = __syscall_cp_asm(&self->cp_sp, nr, u, v, w, x, y, z);
 	self->cp_ip = old_ip;
 	self->cp_sp = old_sp;
-	if (r == -EINTR && self->cancel && !self->canceldisable) __cancel();
+	if (r==-EINTR && nr!=SYS_close && self->cancel && !self->canceldisable)
+		__cancel();
 	return r;
 }
 
