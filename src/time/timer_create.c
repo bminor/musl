@@ -80,6 +80,7 @@ int timer_create(clockid_t clk, struct sigevent *evp, timer_t *res)
 	struct start_args args;
 	struct ksigevent ksev, *ksevp=0;
 	int timerid;
+	sigset_t set;
 
 	switch (evp ? evp->sigev_notify : SIGEV_SIGNAL) {
 	case SIGEV_NONE:
@@ -104,7 +105,10 @@ int timer_create(clockid_t clk, struct sigevent *evp, timer_t *res)
 		pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 		pthread_barrier_init(&args.b, 0, 2);
 		args.sev = evp;
+		sigfillset(&set);
+		pthread_sigmask(SIG_BLOCK, &set, &set);
 		r = pthread_create(&td, &attr, start, &args);
+		pthread_sigmask(SIG_SETMASK, &set, 0);
 		if (r) {
 			errno = r;
 			return -1;
