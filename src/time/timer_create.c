@@ -40,7 +40,7 @@ static void timer_handler(int sig, siginfo_t *si, void *ctx)
 	if (!setjmp(jb) && si->si_code == SI_TIMER) {
 		pthread_cleanup_push(cleanup_fromsig, jb);
 		notify(val);
-		pthread_cleanup_pop(0);
+		pthread_cleanup_pop(1);
 	}
 }
 
