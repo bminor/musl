@@ -58,12 +58,16 @@ static void *start(void *arg)
 {
 	pthread_t self = __pthread_self();
 	struct start_args *args = arg;
+	sigset_t set;
 
 	/* Reuse no-longer-needed thread structure fields to avoid
 	 * needing the timer address in the signal handler. */
 	self->start = (void *(*)(void *))args->sev->sigev_notify_function;
 	self->start_arg = args->sev->sigev_value.sival_ptr;
 	self->result = (void *)-1;
+
+	sigfillset(&set);
+	pthread_sigmask(SIG_BLOCK, &set, 0);
 
 	pthread_barrier_wait(&args->b);
 	__wait(&self->delete_timer, 0, 0, 1);
@@ -80,7 +84,6 @@ int timer_create(clockid_t clk, struct sigevent *evp, timer_t *res)
 	struct start_args args;
 	struct ksigevent ksev, *ksevp=0;
 	int timerid;
-	sigset_t set;
 
 	switch (evp ? evp->sigev_notify : SIGEV_SIGNAL) {
 	case SIGEV_NONE:
@@ -105,10 +108,7 @@ int timer_create(clockid_t clk, struct sigevent *evp, timer_t *res)
 		pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 		pthread_barrier_init(&args.b, 0, 2);
 		args.sev = evp;
-		sigfillset(&set);
-		pthread_sigmask(SIG_BLOCK, &set, &set);
 		r = pthread_create(&td, &attr, start, &args);
-		pthread_sigmask(SIG_SETMASK, &set, 0);
 		if (r) {
 			errno = r;
 			return -1;
