@@ -4,7 +4,7 @@
 static struct chain {
 	struct chain *next;
 	sem_t sem, sem2;
-} *head;
+} *head, *cur;
 
 static void (*callback)(void *), *context;
 static int chainlen;
@@ -47,11 +47,19 @@ static void handler(int sig, siginfo_t *si, void *ctx)
 	errno = old_errno;
 }
 
+void __synccall_wait()
+{
+	struct chain *ch = cur;
+	sem_post(&ch->sem2);
+	while (sem_wait(&ch->sem));
+	sem_post(&ch->sem);
+}
+
 void __synccall(void (*func)(void *), void *ctx)
 {
 	pthread_t self;
 	struct sigaction sa;
-	struct chain *cur, *next;
+	struct chain *next;
 	uint64_t oldmask;
 
 	if (!libc.threads_minus_1) {

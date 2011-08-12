@@ -87,6 +87,7 @@ struct __timer {
 
 pthread_t __pthread_self_init(void);
 
+int __uniclone(void *, void (*)(pthread_t), void *);
 int __set_thread_area(void *);
 int __libc_sigaction(int, const struct sigaction *, struct sigaction *);
 int __libc_sigprocmask(int, const sigset_t *, sigset_t *);

@@ -52,16 +52,12 @@ void __pthread_do_unregister(struct __ptcb *cb)
 	self->cancelbuf = self->cancelbuf->__next;
 }
 
-static int start(void *p)
+static void start(pthread_t self)
 {
-	struct pthread *self = p;
 	if (self->unblock_cancel)
 		__syscall(SYS_rt_sigprocmask, SIG_UNBLOCK, SIGPT_SET, 0, 8);
 	pthread_exit(self->start(self->start_arg));
-	return 0;
 }
-
-int __uniclone(void *, int (*)(), void *);
 
 #define ROUND(x) (((x)+PAGE_SIZE-1)&-PAGE_SIZE)
 

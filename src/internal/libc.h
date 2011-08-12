@@ -41,6 +41,7 @@ void __unlockfile(FILE *);
 #define UNLOCK(x) (*(volatile int *)(x)=0)
 
 void __synccall(void (*)(void *), void *);
+void __synccall_wait(void);
 int __setxid(int, int, int, int);
 
 extern char **__environ;
