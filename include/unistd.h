@@ -147,6 +147,7 @@ int getdtablesize(void);
 #ifdef _GNU_SOURCE
 int brk(void *);
 void *sbrk(intptr_t);
+pid_t forkall(void);
 pid_t vfork(void);
 int vhangup(void);
 int chroot(const char *);
