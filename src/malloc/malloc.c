@@ -394,7 +394,7 @@ void *realloc(void *p, size_t n)
 		size_t oldlen = n0 + extra;
 		size_t newlen = n + extra;
 		/* Crash on realloc of freed chunk */
-		if ((uintptr_t)base < mal.brk) *(volatile char *)0=0;
+		if (extra & 1) *(volatile char *)0=0;
 		if (newlen < PAGE_SIZE && (new = malloc(n))) {
 			memcpy(new, p, n-OVERHEAD);
 			free(p);
@@ -457,7 +457,7 @@ void free(void *p)
 		char *base = (char *)self - extra;
 		size_t len = CHUNK_SIZE(self) + extra;
 		/* Crash on double free */
-		if ((uintptr_t)base < mal.brk) *(volatile char *)0=0;
+		if (extra & 1) *(volatile char *)0=0;
 		__munmap(base, len);
 		return;
 	}
