@@ -60,7 +60,7 @@ static int runtime;
 static jmp_buf rtld_fail;
 static pthread_rwlock_t lock;
 
-#define AUX_CNT 15
+#define AUX_CNT 24
 #define DYN_CNT 34
 
 static void decode_vec(size_t *v, size_t *a, size_t cnt)
@@ -491,7 +491,7 @@ void *__dynlink(int argc, char **argv, size_t *got)
 
 	/* Only trust user/env if kernel says we're not suid/sgid */
 	if ((aux[0]&0x7800)!=0x7800 || aux[AT_UID]!=aux[AT_EUID]
-	  || aux[AT_GID]!=aux[AT_EGID]) {
+	  || aux[AT_GID]!=aux[AT_EGID] || aux[AT_SECURE]) {
 		env_path = 0;
 		env_preload = 0;
 	}
