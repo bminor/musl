@@ -638,11 +638,16 @@ end:
 	return p;
 }
 
-static void *do_dlsym(struct dso *p, const char *s)
+static void *do_dlsym(struct dso *p, const char *s, void *ra)
 {
 	size_t i;
 	uint32_t h;
 	Sym *sym;
+	if (p == RTLD_NEXT) {
+		for (p=head; p && (unsigned char *)ra-p->map>p->map_len; p=p->next);
+		if (!p) p=head;
+		p=p->next;
+	}
 	if (p == head || p == RTLD_DEFAULT)
 		return find_sym(head, s, 0);
 	h = hash(s);
@@ -658,11 +663,11 @@ static void *do_dlsym(struct dso *p, const char *s)
 	return 0;
 }
 
-void *dlsym(void *p, const char *s)
+void *__dlsym(void *p, const char *s, void *ra)
 {
 	void *res;
 	pthread_rwlock_rdlock(&lock);
-	res = do_dlsym(p, s);
+	res = do_dlsym(p, s, ra);
 	pthread_rwlock_unlock(&lock);
 	return res;
 }
