@@ -14,6 +14,7 @@
 #include <elf.h>
 #include <setjmp.h>
 #include <pthread.h>
+#include <ctype.h>
 #include <dlfcn.h>
 
 #include "reloc.h"
@@ -410,6 +411,20 @@ static void load_deps(struct dso *p)
 	}
 }
 
+static void load_preload(char *s)
+{
+	int tmp;
+	char *z;
+	for (z=s; *z; s=z) {
+		for (   ; *s && isspace(*s); s++);
+		for (z=s; *z && !isspace(*z); z++);
+		tmp = *z;
+		*z = 0;
+		load_library(s);
+		*z = tmp;
+	}
+}
+
 static void make_global(struct dso *p)
 {
 	for (; p; p=p->next) p->global = 1;
@@ -455,11 +470,14 @@ void *__dynlink(int argc, char **argv, size_t *got)
 	struct dso *const lib = builtin_dsos+1;
 	struct dso *const vdso = builtin_dsos+2;
 	size_t vdso_base=0;
+	char *env_preload=0;
 
 	/* Find aux vector just past environ[] */
 	for (i=argc+1; argv[i]; i++)
 		if (!memcmp(argv[i], "LD_LIBRARY_PATH=", 16))
 			env_path = argv[i]+16;
+		else if (!memcmp(argv[i], "LD_PRELOAD=", 11))
+			env_preload = argv[i]+11;
 	auxv = (void *)(argv+i+1);
 
 	decode_vec(auxv, aux, AUX_CNT);
@@ -475,6 +493,7 @@ void *__dynlink(int argc, char **argv, size_t *got)
 	if ((aux[0]&0x7800)!=0x7800 || aux[AT_UID]!=aux[AT_EUID]
 	  || aux[AT_GID]!=aux[AT_EGID]) {
 		env_path = 0;
+		env_preload = 0;
 	}
 
 	/* Relocate ldso's DYNAMIC pointer and load vector */
@@ -547,6 +566,7 @@ void *__dynlink(int argc, char **argv, size_t *got)
 	head = tail = app;
 	libc = lib;
 	app->next = 0;
+	if (env_preload) load_preload(env_preload);
 	load_deps(head);
 
 	make_global(head);
