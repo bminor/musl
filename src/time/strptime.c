@@ -2,177 +2,178 @@
 #include <stdlib.h>
 #include <langinfo.h>
 #include <time.h>
-
-const char *__langinfo(nl_item);
-
-char *strptime(const char *s, const char *f, struct tm *tm)
-{
-	return NULL;
-}
-
-#if 0
+#include <ctype.h>
+#include <stddef.h>
+#include <string.h>
+#include <strings.h>
 
 char *strptime(const char *s, const char *f, struct tm *tm)
 {
-	nl_item item;
-	int *dest;
-	const char *fmt;
-	for (; *f; f++) {
-		if (isspace(*f)) goto whitespace;
-		if (*f == '%') {
-do_fmt:
-		switch (*++f) {
-		case '%':
-			goto literal;
-		case 'E':
-		case 'O':
-			goto do_fmt;
-		case 'a':
-			item = ABDAY_1 + tm->tm_wday;
-			goto nl_strcat;
-		case 'A':
-			item = DAY_1 + tm->tm_wday;
-			goto nl_strcat;
-		case 'h':
-		case 'b':
-			item = ABMON_1 + tm->tm_mon;
-			goto nl_strcat;
-		case 'B':
-			item = MON_1 + tm->tm_mon;
-			goto nl_strcat;
+	int i, w, neg, adj, min, range, *dest;
+	const char *ex;
+	size_t len;
+	while (*f) {
+		if (*f != '%') {
+			if (isspace(*f)) for (; *s && isspace(*s); s++);
+			else if (*s != *f) return 0;
+			else s++;
+			f++;
+		}
+		f++;
+		if (*f == '+') f++;
+		if (isdigit(*f)) w=strtoul(f, (void *)&f, 10);
+		else w=-1;
+		adj=0;
+		switch (*f++) {
+		case 'a': case 'A':
+			dest = &tm->tm_wday;
+			min = ABDAY_1;
+			range = 7;
+			goto symbolic_range;
+		case 'b': case 'B': case 'h':
+			dest = &tm->tm_mon;
+			min = ABMON_1;
+			range = 12;
+			goto symbolic_range;
 		case 'c':
-			item = D_T_FMT;
-			goto nl_strftime;
+			s = strptime(s, nl_langinfo(D_T_FMT), tm);
+			if (!s) return 0;
+			break;
 		case 'C':
-			val = (1900+tm->tm_year) / 100;
-			fmt = "%02d";
-			goto number;
-		case 'd':
-			val = tm->tm_mday;
-			fmt = "%02d";
-			goto number;
+		case 'd': case 'e':
+			dest = &tm->tm_mday;
+			min = 1;
+			range = 31;
+			goto numeric_range;
 		case 'D':
-			fmt = "%m/%d/%y";
-			goto recu_strftime;
-		case 'e':
-			val = tm->tm_mday;
-			fmt = "%2d";
-			goto number;
-		case 'F':
-			fmt = "%Y-%m-%d";
-			goto recu_strftime;
-		case 'g':
-			// FIXME
-			val = 0; //week_based_year(tm)%100;
-			fmt = "%02d";
-			goto number;
-		case 'G':
-			// FIXME
-			val = 0; //week_based_year(tm);
-			fmt = "%04d";
-			goto number;
+			s = strptime(s, "%m/%d/%y", tm);
+			if (!s) return 0;
+			break;
 		case 'H':
-			val = tm->tm_hour;
-			fmt = "%02d";
-			goto number;
+			dest = &tm->tm_hour;
+			min = 0;
+			range = 24;
+			goto numeric_range;
 		case 'I':
-			val = tm->tm_hour;
-			if (!val) val = 12;
-			else if (val > 12) val -= 12;
-			fmt = "%02d";
-			goto number;
+			dest = &tm->tm_hour;
+			min = 1;
+			range = 12;
+			goto numeric_range;
 		case 'j':
-			val = tm->tm_yday+1;
-			fmt = "%03d";
-			goto number;
+			dest = &tm->tm_yday;
+			min = 1;
+			range = 366;
+			goto numeric_range;
 		case 'm':
-			val = tm->tm_mon+1;
-			fmt = "%02d";
-			goto number;
+			dest = &tm->tm_mon;
+			min = 1;
+			range = 12;
+			adj = 1;
+			goto numeric_range;
 		case 'M':
-			val = tm->tm_min;
-			fmt = "%02d";
-			goto number;
-		case 'n':
-		case 't':
-			goto whitespace;
+			dest = &tm->tm_min;
+			min = 0;
+			range = 60;
+			goto numeric_range;
+		case 'n': case 't':
+			for (; *s && isspace(*s); s++);
+			break;
 		case 'p':
-			item = tm->tm_hour >= 12 ? PM_STR : AM_STR;
-			goto nl_strcat;
+			ex = nl_langinfo(AM_STR);
+			len = strlen(ex);
+			if (!strncasecmp(s, ex, len)) {
+				tm->tm_hour %= 12;
+				break;
+			}
+			ex = nl_langinfo(PM_STR);
+			len = strlen(ex);
+			if (!strncasecmp(s, ex, len)) {
+				tm->tm_hour %= 12;
+				tm->tm_hour += 12;
+				break;
+			}
+			return 0;
 		case 'r':
-			item = T_FMT_AMPM;
-			goto nl_strftime;
+			s = strptime(s, nl_langinfo(T_FMT_AMPM), tm);
+			if (!s) return 0;
+			break;
 		case 'R':
-			fmt = "%H:%M";
-			goto recu_strftime;
+			s = strptime(s, "%H:%M", tm);
+			if (!s) return 0;
+			break;
 		case 'S':
-			val = tm->tm_sec;
-			fmt = "%02d";
-			goto number;
+			dest = &tm->tm_sec;
+			min = 0;
+			range = 61;
+			goto numeric_range;
 		case 'T':
-			fmt = "%H:%M:%S";
-			goto recu_strftime;
-		case 'u':
-			val = tm->tm_wday ? tm->tm_wday : 7;
-			fmt = "%d";
-			goto number;
+			s = strptime(s, "%H:%M:%S", tm);
+			if (!s) return 0;
+			break;
 		case 'U':
-		case 'V':
 		case 'W':
-			// FIXME: week number mess..
-			continue;
+			//FIXME
+			return 0;
 		case 'w':
-			val = tm->tm_wday;
-			fmt = "%d";
-			goto number;
+			dest = &tm->tm_wday;
+			min = 0;
+			range = 7;
+			goto numeric_range;
 		case 'x':
-			item = D_FMT;
-			goto nl_strftime;
+			s = strptime(s, nl_langinfo(D_FMT), tm);
+			if (!s) return 0;
+			break;
 		case 'X':
-			item = T_FMT;
-			goto nl_strftime;
+			s = strptime(s, nl_langinfo(T_FMT), tm);
+			if (!s) return 0;
+			break;
 		case 'y':
-			val = tm->tm_year % 100;
-			fmt = "%02d";
-			goto number;
+			//FIXME
+			return 0;
 		case 'Y':
-			val = tm->tm_year + 1900;
-			fmt = "%04d";
-			goto number;
-		case 'z':
-			if (tm->tm_isdst < 0) continue;
-			val = timezone + (tm->tm_isdst) ? __dst_offset : 0;
-			l += snprintf(s+l, n-l, "%+02d%02d", val/60, abs(val%60));
-			continue;
-		case 'Z':
-			if (tm->tm_isdst < 0 || !tzname[0] || !tzname[0][0])
-				continue;
-			l += snprintf(s+l, n-l, "%s", tzname[!!tm->tm_isdst]);
-			continue;
+			dest = &tm->tm_year;
+			if (w<0) w=4;
+			adj = 1900;
+			goto numeric_digits;
+		case '%':
+			if (*s++ != '%') return 0;
+			break;
+		numeric_range:
+			if (!isdigit(*s)) return 0;
+			*dest = 0;
+			for (i=1; i<=min+range && isdigit(*s); i*=10)
+				*dest = *dest * 10 + *s++ - '0';
+			if (*dest - min >= (unsigned)range) return 0;
+			*dest -= adj;
+			switch((char *)dest - (char *)tm) {
+			case offsetof(struct tm, tm_yday):
+				;
+			}
+			goto update;
+		numeric_digits:
+			neg = 0;
+			if (*s == '+') s++;
+			else if (*s == '-') neg=1, s++;
+			if (!isdigit(*s)) return 0;
+			for (i=0; i<w && isdigit(*s); i++)
+				*dest = *dest * 10 + *s++ - '0';
+			if (neg) *dest = -*dest;
+			*dest -= adj;
+			goto update;
+		symbolic_range:
+			for (i=2*range-1; i>=0; i--) {
+				ex = nl_langinfo(min+i);
+				len = strlen(ex);
+				if (strncasecmp(s, ex, len)) continue;
+				*dest = i % range;
+				break;
+			}
+			if (i<0) return 0;
+			goto update;
+		update:
+			//FIXME
+			;
 		}
-		default:
-			return NULL;
-		}
-literal:
-		if (*s++ != *f) return NULL;
-		continue;
-whitespace:
-		while(isspace(*s)) s++;
-		continue;
-number:
-		l += snprintf(s+l, n-l, fmt, val);
-		continue;
-nl_strcat:
-		l += snprintf(s+l, n-l, "%s", __langinfo(item));
-		continue;
-nl_strftime:
-		fmt = __langinfo(item);
-recu_strftime:
-		l += strftime(s+l, n-l, fmt, tm);
 	}
-	if (l >= n) return 0;
-	s[l] = 0;
-	return l;
+	return (char *)s;
 }
-
-#endif
