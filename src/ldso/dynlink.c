@@ -482,18 +482,18 @@ void *__dynlink(int argc, char **argv, size_t *got)
 
 	decode_vec(auxv, aux, AUX_CNT);
 
-	for (i=0; auxv[i]; i+=2) {
-		if (auxv[i]==AT_SYSINFO_EHDR) {
-			vdso_base = auxv[i+1];
-			break;
-		}
-	}
-
 	/* Only trust user/env if kernel says we're not suid/sgid */
 	if ((aux[0]&0x7800)!=0x7800 || aux[AT_UID]!=aux[AT_EUID]
 	  || aux[AT_GID]!=aux[AT_EGID] || aux[AT_SECURE]) {
 		env_path = 0;
 		env_preload = 0;
+	}
+
+	for (i=0; auxv[i]; i+=2) {
+		if (auxv[i]==AT_SYSINFO_EHDR) {
+			vdso_base = auxv[i+1];
+			break;
+		}
 	}
 
 	/* Relocate ldso's DYNAMIC pointer and load vector */
