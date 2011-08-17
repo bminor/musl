@@ -18,7 +18,7 @@ long fpathconf(int fd, int name)
 		[_PC_ASYNC_IO] = 0,
 		[_PC_PRIO_IO] = 0,
 		[_PC_SOCK_MAXBUF] = -1,
-		[_PC_FILESIZEBITS] = sizeof(off_t),
+		[_PC_FILESIZEBITS] = FILESIZEBITS,
 		[_PC_REC_INCR_XFER_SIZE] = PAGE_SIZE,
 		[_PC_REC_MAX_XFER_SIZE] = PAGE_SIZE,
 		[_PC_REC_MIN_XFER_SIZE] = PAGE_SIZE,
