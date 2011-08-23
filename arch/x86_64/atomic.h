@@ -118,5 +118,10 @@ static inline void a_spin()
 	__asm__ __volatile__( "pause" : : : "memory" );
 }
 
+static inline void a_crash()
+{
+	__asm__ __volatile__( "hlt" : : : "memory" );
+}
+
 
 #endif

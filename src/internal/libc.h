@@ -7,13 +7,15 @@
 struct __libc {
 	void *main_thread;
 	int threaded;
-	int canceldisable;
+	int secure;
+	size_t *auxv;
 	int (*atexit)(void (*)(void));
 	void (*fini)(void);
 	void (*ldso_fini)(void);
 	volatile int threads_minus_1;
-	int ofl_lock;
+	int canceldisable;
 	FILE *ofl_head;
+	int ofl_lock;
 };
 
 
