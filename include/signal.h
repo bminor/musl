@@ -87,6 +87,9 @@ int sigqueue(pid_t, int, const union sigval);
 int pthread_sigmask(int, const sigset_t *, sigset_t *);
 int pthread_kill(pthread_t, int);
 
+void psiginfo(const siginfo_t *, const char *);
+void psignal(int, const char *);
+
 #endif
 
 #if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
