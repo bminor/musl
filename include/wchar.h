@@ -133,6 +133,7 @@ size_t wcsftime (wchar_t *, size_t, const wchar_t *, const struct tm *);
 
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+FILE *open_wmemstream(wchar_t **, size_t *);
 size_t mbsnrtowcs(wchar_t *, const char **, size_t, size_t, mbstate_t *);
 size_t wcsnrtombs(char *, const wchar_t **, size_t, size_t, mbstate_t *);
 #endif
