@@ -121,6 +121,7 @@ FILE *tmpfile(void);
 
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+FILE *open_memstream(char **, size_t *);
 FILE *fdopen(int, const char *);
 FILE *popen(const char *, const char *);
 int pclose(FILE *);
