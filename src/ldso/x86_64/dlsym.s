@@ -2,5 +2,5 @@
 .global dlsym
 .type dlsym,@function
 dlsym:
-	mov (%rsp),%edx
+	mov (%rsp),%rdx
 	jmp __dlsym
