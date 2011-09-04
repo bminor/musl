@@ -32,8 +32,8 @@ static size_t ms_write(FILE *f, const unsigned char *buf, size_t len)
 		f->wpos = f->wbase;
 		if (ms_write(f, f->wbase, len2) < len2) return 0;
 	}
-	if (len >= c->space - c->pos) {
-		len2 = 2*c->space+1 | c->space+len+1;
+	if (len + c->pos >= c->space) {
+		len2 = 2*c->space+1 | c->pos+len+1;
 		newbuf = realloc(c->buf, len2);
 		if (!newbuf) return 0;
 		*c->bufp = c->buf = newbuf;
