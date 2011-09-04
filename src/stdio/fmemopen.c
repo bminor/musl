@@ -1,32 +1,69 @@
-#if 0
 #include "stdio_impl.h"
 
-static ssize_t mread(FILE *f, unsigned char *buf, size_t len)
+struct cookie {
+	size_t pos, len, size;
+	unsigned char *buf;
+	int mode;
+};
+
+static off_t mseek(FILE *f, off_t off, int whence)
 {
-	size_t rem = f->memsize - f->mempos;
+	ssize_t base;
+	struct cookie *c = f->cookie;
+	if (whence>2U) {
+fail:
+		errno = EINVAL;
+		return -1;
+	}
+	base = (size_t [3]){0, c->pos, c->len}[whence];
+	if (off < -base || off > SSIZE_MAX-base) goto fail;
+	return c->pos = base+off;
+}
+
+static size_t mread(FILE *f, unsigned char *buf, size_t len)
+{
+	struct cookie *c = f->cookie;
+	size_t rem = c->size - c->pos;
 	if (len > rem) len = rem;
-	memcpy(buf, f->membuf+f->mempos, len);
-	f->mempos += len;
+	memcpy(buf, c->buf+c->pos, len);
+	c->pos += len;
+	rem -= len;
+	if (rem > f->buf_size) rem = f->buf_size;
+	f->rpos = f->buf;
+	f->rend = f->buf + rem;
+	memcpy(f->rpos, c->buf+c->pos, rem);
+	if (!len) f->flags |= F_EOF;
 	return len;
 }
 
-static ssize_t mwrite(FILE *f, const unsigned char *buf, size_t len)
+static size_t mwrite(FILE *f, const unsigned char *buf, size_t len)
 {
+	struct cookie *c = f->cookie;
 	size_t rem;
-	if (f->memmode == 'a') f->mempos = f->memsize;
-	rem = f->memlim - f->mempos;
-	if (len > rem) len = rem;
-	memcpy(f->membuf+f->mempos, buf, len);
-	f->mempos += len;
-	if (f->mempos >= f->memsize) {
-		f->memsize = f->mempos;
+	size_t len2 = f->wpos - f->wbase;
+	if (len2) {
+		f->wpos = f->wbase;
+		if (mwrite(f, f->wpos, len2) < len2) return 0;
 	}
+	if (c->mode == 'a') c->pos = c->size;
+	rem = c->size - c->pos;
+	if (len > rem) len = rem;
+	memcpy(c->buf+c->pos, buf, len);
+	c->pos += len;
+	if (c->pos >= c->len) c->len = c->pos;
+	c->buf[c->len==c->size ? c->len-1 : c->len] = 0;
 	return len;
+}
+
+static int mclose(FILE *m)
+{
+	return 0;
 }
 
 FILE *fmemopen(void *buf, size_t size, const char *mode)
 {
 	FILE *f;
+	struct cookie *c;
 	int plus = !!strchr(mode, '+');
 	
 	if (!size || !strchr("rwa", *mode)) {
@@ -39,23 +76,34 @@ FILE *fmemopen(void *buf, size_t size, const char *mode)
 		return 0;
 	}
 
-	f = calloc(sizeof(FILE) + UNGET + BUFSIZ + (buf?0:size), 1);
+	f = calloc(sizeof *f + sizeof *c + UNGET + BUFSIZ + (buf?0:size), 1);
 	if (!f) return 0;
+	f->cookie = c = (void *)(f+1);
 	f->fd = -1;
 	f->lbf = EOF;
-	f->buf = (unsigned char *)(f+1) + UNGET;
+	f->buf = (unsigned char *)(c+1) + UNGET;
 	f->buf_size = BUFSIZ;
 	if (!buf) buf = f->buf + BUFSIZ;
+
+	c->buf = buf;
+	c->size = size;
+	c->mode = *mode;
 	
 	if (!plus) f->flags = (*mode == 'r') ? F_NOWR : F_NORD;
-	if (*mode == 'a') f->mempos = strchr(buf, 0)-buf;
+	if (*mode == 'r') c->len = size;
+	else if (*mode == 'a') c->len = c->pos = strnlen(buf, size);
 
 	f->read = mread;
 	f->write = mwrite;
 	f->seek = mseek;
-	f->flush = mflush;
 	f->close = mclose;
+
+	if (!libc.threaded) {
+		f->lock = -1;
+		f->next = libc.ofl_head;
+		if (libc.ofl_head) libc.ofl_head->prev = f;
+		libc.ofl_head = f;
+	}
 
 	return f;
 }
-#endif
