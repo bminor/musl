@@ -28,7 +28,7 @@ static off_t ms_seek(FILE *f, off_t off, int whence)
 		errno = EINVAL;
 		return -1;
 	}
-	if (-off > base || off > SSIZE_MAX-base) goto fail;
+	if (off < -base || off > SSIZE_MAX-base) goto fail;
 	return c->pos = base+off;
 }
 

@@ -29,7 +29,7 @@ static off_t wms_seek(FILE *f, off_t off, int whence)
 		errno = EINVAL;
 		return -1;
 	}
-	if (-off > base || off > SSIZE_MAX/4-base) goto fail;
+	if (off < -base || off > SSIZE_MAX/4-base) goto fail;
 	memset(&c->mbs, 0, sizeof c->mbs);
 	return c->pos = base+off;
 }
