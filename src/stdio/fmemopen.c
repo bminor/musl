@@ -16,7 +16,7 @@ fail:
 		return -1;
 	}
 	base = (size_t [3]){0, c->pos, c->len}[whence];
-	if (off < -base || off > SSIZE_MAX-base) goto fail;
+	if (off < -base || off > (ssize_t)c->size-base) goto fail;
 	return c->pos = base+off;
 }
 
@@ -24,6 +24,7 @@ static size_t mread(FILE *f, unsigned char *buf, size_t len)
 {
 	struct cookie *c = f->cookie;
 	size_t rem = c->size - c->pos;
+	if (!len) return 0;
 	if (len > rem) len = rem;
 	memcpy(buf, c->buf+c->pos, len);
 	c->pos += len;
@@ -32,6 +33,7 @@ static size_t mread(FILE *f, unsigned char *buf, size_t len)
 	f->rpos = f->buf;
 	f->rend = f->buf + rem;
 	memcpy(f->rpos, c->buf+c->pos, rem);
+	c->pos += rem;
 	if (!len) f->flags |= F_EOF;
 	return len;
 }
