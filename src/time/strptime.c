@@ -155,7 +155,7 @@ char *strptime(const char *s, const char *f, struct tm *tm)
 			if (*s == '+') s++;
 			else if (*s == '-') neg=1, s++;
 			if (!isdigit(*s)) return 0;
-			for (i=0; i<w && isdigit(*s); i++)
+			for (*dest=i=0; i<w && isdigit(*s); i++)
 				*dest = *dest * 10 + *s++ - '0';
 			if (neg) *dest = -*dest;
 			*dest -= adj;
