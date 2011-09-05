@@ -23,7 +23,8 @@ fail:
 static size_t mread(FILE *f, unsigned char *buf, size_t len)
 {
 	struct cookie *c = f->cookie;
-	size_t rem = c->size - c->pos;
+	size_t rem = c->len - c->pos;
+	if (c->pos > c->len) rem = 0;
 	if (len > rem) {
 		len = rem;
 		f->flags |= F_EOF;
@@ -48,13 +49,15 @@ static size_t mwrite(FILE *f, const unsigned char *buf, size_t len)
 		f->wpos = f->wbase;
 		if (mwrite(f, f->wpos, len2) < len2) return 0;
 	}
-	if (c->mode == 'a') c->pos = c->size;
+	if (c->mode == 'a') c->pos = c->len;
 	rem = c->size - c->pos;
 	if (len > rem) len = rem;
 	memcpy(c->buf+c->pos, buf, len);
 	c->pos += len;
-	if (c->pos >= c->len) c->len = c->pos;
-	c->buf[c->len==c->size ? c->len-1 : c->len] = 0;
+	if (c->pos >= c->len) {
+		c->len = c->pos;
+		c->buf[c->len==c->size ? c->len-1 : c->len] = 0;
+	}
 	return len;
 }
 
