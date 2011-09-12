@@ -69,6 +69,7 @@ size_t strlcpy (char *, const char *, size_t);
 #endif
 
 #ifdef _GNU_SOURCE
+int strverscmp (const char *, const char *);
 int strcasecmp (const char *, const char *);
 int strncasecmp (const char *, const char *, size_t);
 char *strchrnul(const char *, int);
