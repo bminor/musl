@@ -161,6 +161,10 @@ int vasprintf(char **, const char *, va_list);
 void setlinebuf(FILE *);
 void setbuffer(FILE *, char *, size_t);
 int fpurge(FILE *);
+int fgetc_unlocked(FILE *);
+int fputc_unlocked(int, FILE *);
+char *fgets_unlocked(char *, int, FILE *);
+int fputs_unlocked(const char *, FILE *);
 #endif
 
 #ifdef __cplusplus
