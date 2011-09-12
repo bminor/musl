@@ -128,6 +128,7 @@ void lcong48 (unsigned short [7]);
 #endif
 
 #if defined(_GNU_SOURCE)
+void *alloca(size_t);
 char *mktemp (char *);
 void *valloc (size_t);
 void *memalign(size_t, size_t);
