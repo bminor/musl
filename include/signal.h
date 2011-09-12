@@ -106,6 +106,7 @@ void (*sigset(int, void (*)(int)))(int);
 #ifdef _GNU_SOURCE
 typedef void (*sighandler_t)(int);
 void (*bsd_signal(int, void (*)(int)))(int);
+int sigisemptyset(const sigset_t *);
 #define SA_NOMASK SA_NODEFER
 #endif
 
