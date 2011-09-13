@@ -18,24 +18,35 @@ under which the library as a whole is distributed.
 
 
 
-Greetings libc hackers!
+Greetings!
 
-This package is an _alpha_ release of musl, intended for the curious
-and the adventurous. While it can be used to build a complete small
-Linux system (musl is self-hosted on the system I use to develop it),
-at this point doing so requires a lot of manual effort. Nonetheless, I
-hope low-level Linux enthusiasts will try out building some compact
-static binaries with musl using the provided gcc wrapper (which allows
-you to link programs with musl on a "standard" glibc Linux system),
-find whatever embarassing bugs I've let slip through, and provide
-feedback on issues encountered building various software against musl.
+As of the 0.8.0 release, musl is in _beta_ status. While some
+interfaces remain incomplete or yet to be implemented, the ABI is
+intended to be stable at this point, and serious efforts have been
+made, using three separate test frameworks, to verify the correctness
+of the implementation. Many major system-level and user-level programs
+are known to work with musl, either out-of-the-box or with minor
+patches to address portability errors; the main remaining applications
+which definitely will not work are those which require C++ support,
+which will be addressed during the 0.8 or 0.9 development series.
 
-For bug reports, support requests, or to get involved in development,
+Included with this package is a gcc wrapper script (musl-gcc) which
+allows you to build musl-linked programs using an existing gcc 4.x
+toolchain on the host. There are also now at least two mini
+distributions (in the form of build scripts) which provide a
+self-hosting musl-based toolchain and system root: Sabotage Linux and
+Bootstrap Linux. These are much better options than the wrapper script
+if you wish to use dynamic linking or build packages with many library
+dependencies.
+
+The musl project is actively seeking contributors, mostly in the areas
+of porting, testing, and application compatibility improvement. For
+bug reports, support requests, or to get involved in development,
 please visit #musl on Freenode IRC or subscribe to the musl mailing
 list by sending a blank email to musl-subscribe AT lists DOT openwall
 DOT com.
 
-Thank you for trying out musl.
+Thank you for using musl.
 
 Cheers,
 

@@ -282,3 +282,46 @@ bug fixes:
 - workaround for bugs in linux mprotect syscall
 - thread-safety for random() functions
 - various minor issues
+
+
+
+0.8.0 release notes (in progress)
+
+new features:
+- chinese and japanese legacy charset support in iconv
+- zero-syscall clock_gettime support (dynamic-linked x86_64 only)
+- futex-based locking for stdio (previously used spinlocks)
+- LD_PRELOAD and RTLD_NEXT support in dynamic linker
+- strptime (mostly working but incomplete)
+- posix aio (mostly working but not entirely conformant)
+- memory streams (fmemopen, open_memstream, ...)
+- stub/dummy implementations for various useless legacy functions
+- if_nameindex
+
+security hardening:
+- setuid, etc. should not longer be able to "partially fail" with threads
+- ensure suid programs start with fd 0,1,2 open
+- improved openpty/forkpty failure checks
+
+threads/synchronization bug fixes:
+- dangerous spurious wakeup in pthread_join lead to early return
+- race condition enabling async cancellation (delayed/lost cancellation)
+- destruction/unmapping race conditions in semaphores, mutexes, rwlocks
+- recursive rwlock_rdlock deadlock when a writer is waiting
+- race condition in sigqueue with fork
+- timer expiration thread exit wasn't running dtors
+- timer threads weren't blocking signals
+- close was wrongly cancellable after succeeding on some devices
+- robust mutex list was not reset on fork
+
+general bug fixes:
+- incorrect logic in fread (spurious blocking; crash on write-only files)
+- many corner cases and overflow cases for strtol-family functions
+- various printf integer formatting issues with flags/width/precision
+- incorrect iconv return value on failure
+- broken FD_* macros on 64-bit targets
+- clock function returning wrong value (real time not cpu time)
+- siglongjmp signal mask clobbering (off-by-one pointer error)
+- dynamic linker weak symbol resolution issues
+- fdopendir failure to set errno
+- various minor header fixes
