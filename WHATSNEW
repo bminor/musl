@@ -285,7 +285,7 @@ bug fixes:
 
 
 
-0.8.0 release notes (in progress)
+0.8.0 release notes
 
 new features:
 - chinese and japanese legacy charset support in iconv
