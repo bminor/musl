@@ -13,7 +13,7 @@ static int init_main_thread()
 	main_thread.tsd = (void **)__pthread_tsd_main;
 	main_thread.errno_ptr = __errno_location();
 	main_thread.self = &main_thread;
-	main_thread.tid = main_thread.pid = 
+	main_thread.tid = main_thread.pid =
 		__syscall(SYS_set_tid_address, &main_thread.tid);
 	libc.main_thread = &main_thread;
 	return 0;

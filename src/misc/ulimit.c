@@ -13,7 +13,7 @@ long ulimit(int cmd, ...)
 		val = va_arg(ap, long);
 		va_end(ap);
 		rl.rlim_cur = 512ULL * val;
-		if (setrlimit(RLIMIT_FSIZE, &rl)) return -1; 
+		if (setrlimit(RLIMIT_FSIZE, &rl)) return -1;
 	}
 	return rl.rlim_cur / 512;
 }

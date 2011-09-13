@@ -35,7 +35,7 @@ int getservbyport_r(int port, const char *prots,
 	se->s_aliases[1] = 0;
 	se->s_aliases[0] = se->s_name = buf;
 
-	if (getnameinfo((void *)&sin, sizeof sin, 0, 0, buf, buflen, 
+	if (getnameinfo((void *)&sin, sizeof sin, 0, 0, buf, buflen,
 		strcmp(prots, "udp") ? 0 : NI_DGRAM) < 0) return -1;
 
 	*res = se;

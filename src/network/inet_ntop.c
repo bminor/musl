@@ -20,7 +20,7 @@ const char *inet_ntop(int af, const void *a0, char *s, socklen_t l)
 	case AF_INET6:
 		memset(buf, 'x', sizeof buf);
 		buf[sizeof buf-1]=0;
-		snprintf(buf, sizeof buf, 
+		snprintf(buf, sizeof buf,
 			"%x:%x:%x:%x:%x:%x:%x:%x",
 			256*a[0]+a[1],256*a[2]+a[3],
 			256*a[4]+a[5],256*a[6]+a[7],
