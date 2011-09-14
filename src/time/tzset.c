@@ -15,7 +15,6 @@ int   __dst_offset = 0;
 weak_alias(__timezone, timezone);
 weak_alias(__daylight, daylight);
 weak_alias(__tzname, tzname);
-weak_alias(__dst_offset, dst_offset);
 
 static char std_name[TZNAME_MAX+1];
 static char dst_name[TZNAME_MAX+1];
