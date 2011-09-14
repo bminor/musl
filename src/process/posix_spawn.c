@@ -11,7 +11,8 @@ extern char **environ;
 int __posix_spawnx(pid_t *res, const char *path,
 	int (*exec)(const char *, char *const *),
 	const posix_spawn_file_actions_t *fa,
-	const posix_spawnattr_t *attr, char **argv, char **envp)
+	const posix_spawnattr_t *attr,
+	char *const argv[], char *const envp[])
 {
 	pid_t pid;
 	sigset_t oldmask;
@@ -81,7 +82,7 @@ int __posix_spawnx(pid_t *res, const char *path,
 	sigprocmask(SIG_SETMASK, (attr->__flags & POSIX_SPAWN_SETSIGMASK)
 		? &attr->__mask : &oldmask, 0);
 
-	if (envp) environ = envp;
+	if (envp) environ = (char **)envp;
 	exec(path, argv);
 	_exit(127);
 
@@ -90,7 +91,8 @@ int __posix_spawnx(pid_t *res, const char *path,
 
 int posix_spawn(pid_t *res, const char *path,
 	const posix_spawn_file_actions_t *fa,
-	const posix_spawnattr_t *attr, char **argv, char **envp)
+	const posix_spawnattr_t *attr,
+	char *const argv[], char *const envp[])
 {
 	return __posix_spawnx(res, path, execv, fa, attr, argv, envp);
 }

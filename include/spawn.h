@@ -34,9 +34,9 @@ typedef struct {
 } posix_spawn_file_actions_t;
 
 int posix_spawn(pid_t *, const char *, const posix_spawn_file_actions_t *,
-	const posix_spawnattr_t *, char **, char **);
+	const posix_spawnattr_t *, char *const [], char *const []);
 int posix_spawnp(pid_t *, const char *, const posix_spawn_file_actions_t *,
-	const posix_spawnattr_t *, char **, char **);
+	const posix_spawnattr_t *, char *const [], char *const []);
 
 int posix_spawnattr_init(posix_spawnattr_t *);
 int posix_spawnattr_destroy(posix_spawnattr_t *);

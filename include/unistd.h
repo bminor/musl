@@ -55,8 +55,8 @@ int link(const char *, const char *);
 int linkat(int, const char *, int, const char *, int);
 int symlink(const char *, const char *);
 int symlinkat(const char *, int, const char *);
-int readlink(const char *, char *, size_t);
-int readlinkat(int, const char *, char *, size_t);
+ssize_t readlink(const char *, char *, size_t);
+ssize_t readlinkat(int, const char *, char *, size_t);
 int unlink(const char *);
 int unlinkat(int, const char *, int);
 int rmdir(const char *);
@@ -134,7 +134,7 @@ size_t confstr(int, char *, size_t);
 
 #if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
 int lockf(int, int, off_t);
-int setpgrp(void);
+pid_t setpgrp(void);
 char *crypt(const char *, const char *);
 void encrypt(char *, int);
 void swab(const void *, void *, ssize_t);

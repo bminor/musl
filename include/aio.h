@@ -43,10 +43,10 @@ struct aiocb {
 
 ssize_t aio_read(struct aiocb *);
 ssize_t aio_write(struct aiocb *);
-int aio_error(struct aiocb *);
+int aio_error(const struct aiocb *);
 ssize_t aio_return(struct aiocb *);
 int aio_cancel(int, struct aiocb *);
-int aio_suspend(struct aiocb *const [], int, const struct timespec *);
+int aio_suspend(const struct aiocb *const [], int, const struct timespec *);
 int aio_fsync(int, struct aiocb *);
 
 int lio_listio(int, struct aiocb *const [], int, struct sigevent *);

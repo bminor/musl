@@ -102,7 +102,7 @@ extern int daylight;
 extern long timezone;
 extern char *tzname[2];
 extern int getdate_err;
-extern struct tm *getdate (const char *);
+struct tm *getdate (const char *);
 #endif
 
 

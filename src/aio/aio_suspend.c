@@ -16,7 +16,7 @@ void __aio_wake(void)
 	__wake(&seq, -1, 1);
 }
 
-int aio_suspend(struct aiocb *const cbs[], int cnt, const struct timespec *ts)
+int aio_suspend(const struct aiocb *const cbs[], int cnt, const struct timespec *ts)
 {
 	int i, last, first=1, ret=0;
 	struct timespec at;
