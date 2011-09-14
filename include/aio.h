@@ -41,8 +41,8 @@ struct aiocb {
 #define LIO_WAIT 0
 #define LIO_NOWAIT 1
 
-ssize_t aio_read(struct aiocb *);
-ssize_t aio_write(struct aiocb *);
+int aio_read(struct aiocb *);
+int aio_write(struct aiocb *);
 int aio_error(const struct aiocb *);
 ssize_t aio_return(struct aiocb *);
 int aio_cancel(int, struct aiocb *);

@@ -91,13 +91,13 @@ static int new_req(struct aiocb *cb)
 	return ret;
 }
 
-ssize_t aio_read(struct aiocb *cb)
+int aio_read(struct aiocb *cb)
 {
 	cb->aio_lio_opcode = LIO_READ;
 	return new_req(cb);
 }
 
-ssize_t aio_write(struct aiocb *cb)
+int aio_write(struct aiocb *cb)
 {
 	cb->aio_lio_opcode = LIO_WRITE;
 	return new_req(cb);
