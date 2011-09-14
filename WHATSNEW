@@ -325,3 +325,12 @@ general bug fixes:
 - dynamic linker weak symbol resolution issues
 - fdopendir failure to set errno
 - various minor header fixes
+
+
+
+0.8.1 release notes
+
+bug fixes:
+- mismatching prototypes caused build failure on 64-bit
+- other minor prototype errors in the headers have been fixed
+- various other small omissions fixed
