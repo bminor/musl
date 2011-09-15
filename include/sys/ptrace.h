@@ -69,7 +69,7 @@ extern "C" {
 #define PTRACE_EVENT_VFORK_DONE 5
 #define PTRACE_EVENT_EXIT 6
 
-long int ptrace(int, ...);
+long ptrace(int, ...);
 
 #ifdef __cplusplus
 }
