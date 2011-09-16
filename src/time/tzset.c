@@ -21,8 +21,8 @@ static char dst_name[TZNAME_MAX+1];
 
 /* all elements are zero-based */
 static struct rule {
-	char month;
-	char week;
+	signed char month;
+	signed char week;
 	short day;
 	int time;
 } __dst_start, __dst_end;
