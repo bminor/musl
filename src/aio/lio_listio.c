@@ -30,7 +30,7 @@ static int lio_wait(struct lio_state *st)
 			}
 			return 0;
 		}
-		if (aio_suspend(cbs, cnt, 0))
+		if (aio_suspend((void *)cbs, cnt, 0))
 			return -1;
 	}
 }
