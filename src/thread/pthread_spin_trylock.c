@@ -2,5 +2,5 @@
 
 int pthread_spin_trylock(pthread_spinlock_t *s)
 {
-	return -a_xchg(s, 1) & EBUSY;
+	return -a_swap(s, 1) & EBUSY;
 }
