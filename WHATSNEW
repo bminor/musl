@@ -334,3 +334,14 @@ bug fixes:
 - mismatching prototypes caused build failure on 64-bit
 - other minor prototype errors in the headers have been fixed
 - various other small omissions fixed
+
+
+
+0.8.2 release notes
+
+new features:
+- ptrace syscall support
+
+bug fixes:
+- const error (only a warning with many compilers) in lio_listio
+- minor portability fixes aimed at supporting new arch targets
