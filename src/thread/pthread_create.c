@@ -52,11 +52,13 @@ void __pthread_do_unregister(struct __ptcb *cb)
 	self->cancelbuf = self->cancelbuf->__next;
 }
 
-static void start(pthread_t self)
+static int start(void *p)
 {
+	pthread_t self = p;
 	if (self->unblock_cancel)
 		__syscall(SYS_rt_sigprocmask, SIG_UNBLOCK, SIGPT_SET, 0, 8);
 	pthread_exit(self->start(self->start_arg));
+	return 0;
 }
 
 #define ROUND(x) (((x)+PAGE_SIZE-1)&-PAGE_SIZE)
@@ -115,14 +117,12 @@ int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(vo
 	new->tsd = (void *)tsd;
 	if (attr) new->detached = attr->_a_detach;
 	new->unblock_cancel = self->cancel;
-	memcpy(new->tlsdesc, self->tlsdesc, sizeof new->tlsdesc);
-	new->tlsdesc[1] = (uintptr_t)new;
-	stack = (void *)((uintptr_t)new-1 & ~(uintptr_t)15);
+	stack = (void *)new;
 
 	__synccall_lock();
 
 	a_inc(&libc.threads_minus_1);
-	ret = __uniclone(stack, start, new);
+	ret = __clone(start, stack, 0x7d8f00, new, &new->tid, new, &new->tid);
 
 	__synccall_unlock();
 

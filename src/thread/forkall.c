@@ -1,3 +1,4 @@
+#if 0
 #include "pthread_impl.h"
 #include <setjmp.h>
 
@@ -64,3 +65,4 @@ pid_t forkall()
 	__synccall(do_forkall, &c);
 	return c.pid;
 }
+#endif

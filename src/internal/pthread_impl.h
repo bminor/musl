@@ -22,7 +22,6 @@
 
 struct pthread {
 	struct pthread *self;
-	unsigned long tlsdesc[4];
 	pid_t tid, pid;
 	int tsd_used, errno_val, *errno_ptr;
 	volatile uintptr_t cp_sp, cp_ip;
@@ -87,7 +86,7 @@ struct __timer {
 
 pthread_t __pthread_self_init(void);
 
-int __uniclone(void *, void (*)(pthread_t), void *);
+int __clone(int (*)(void *), void *, int, void *, ...);
 int __set_thread_area(void *);
 int __libc_sigaction(int, const struct sigaction *, struct sigaction *);
 int __libc_sigprocmask(int, const sigset_t *, sigset_t *);
