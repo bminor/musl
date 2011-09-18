@@ -1,6 +1,8 @@
 #ifndef _SYSMACROS_H
 #define _SYSMACROS_H
 
-#include <bits/sysmacros.h>
+#define major(x) (((x) >> 8) & 0xff)
+#define minor(x) ((x) & 0xff)
+#define makedev(x,y) (((x)<<8)|((y)&0xff))
 
 #endif
