@@ -1,3 +1,4 @@
+#ifdef __PIC__
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -681,3 +682,4 @@ int dlclose(void *p)
 {
 	return 0;
 }
+#endif
