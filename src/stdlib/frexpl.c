@@ -1,5 +1,8 @@
 #include <math.h>
 #include <inttypes.h>
+#include <float.h>
+
+#if LDBL_MANT_DIG == 64 && LDBL_MAX_EXP == 16384
 
 /* This version is for 80-bit little endian long double */
 
@@ -23,3 +26,12 @@ long double frexpl(long double x, int *e)
 	y.hw[4] |= 0x3ffe;
 	return y.ld;
 }
+
+#else
+
+long double frexpl(long double x, int *e)
+{
+	return frexp(x, e);
+}
+
+#endif
