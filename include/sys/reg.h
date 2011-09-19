@@ -1,5 +1,5 @@
-#ifndef _SYS_USER_H
-#define _SYS_USER_H
+#ifndef _SYS_REG_H
+#define _SYS_REG_H
 
 #include <limits.h>
 #include <unistd.h>
