@@ -71,19 +71,14 @@ typedef unsigned long long uintmax_t;
 #define UINT_LEAST32_MAX UINT32_MAX
 #define UINT_LEAST64_MAX UINT64_MAX
 
-#undef WCHAR_MIN
-#undef WCHAR_MAX
-#undef WINT_MIN
-#undef WINT_MAX
-#define WCHAR_MIN INT32_MIN
-#define WCHAR_MAX INT32_MAX
-#define WINT_MIN INT32_MIN
-#define WINT_MAX INT32_MAX
-
 #define INTMAX_MIN  INT64_MIN
 #define INTMAX_MAX  INT64_MAX
 #define UINTMAX_MAX UINT64_MAX
 
+#define WINT_MIN INT32_MIN
+#define WINT_MAX INT32_MAX
+
+#include <bits/wchar.h>
 #include <bits/stdint.h>
 
 #endif

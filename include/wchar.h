@@ -17,6 +17,8 @@ extern "C" {
 
 #include <bits/alltypes.h>
 
+#include <bits/wchar.h>
+
 #undef NULL
 #ifdef __cplusplus
 #define NULL 0
@@ -24,14 +26,8 @@ extern "C" {
 #define NULL ((void*)0)
 #endif
 
-#undef WCHAR_MIN
-#undef WCHAR_MAX
-#define WCHAR_MIN (-1-0x7fffffff)
-#define WCHAR_MAX (0x7fffffff)
-
 #undef WEOF
 #define WEOF (-1)
-
 
 typedef struct
 {
