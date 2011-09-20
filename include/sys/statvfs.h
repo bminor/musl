@@ -6,15 +6,28 @@
 #define __NEED_fsfilcnt_t
 #include <bits/alltypes.h>
 
-#include <bits/statfs.h>
+#include <endian.h>
+
+struct statvfs {
+	unsigned long f_bsize, f_frsize;
+	fsblkcnt_t f_blocks, f_bfree, f_bavail;
+	fsfilcnt_t f_files, f_ffree, f_favail;
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+	unsigned long f_fsid;
+	unsigned :8*(2*sizeof(int)-sizeof(long));
+#else
+	unsigned :8*(2*sizeof(int)-sizeof(long));
+	unsigned long f_fsid;
+#endif
+	unsigned long f_flag, f_namemax;
+	int __reserved[6];
+};
 
 int statvfs (const char *, struct statvfs *);
 int fstatvfs (int, struct statvfs *);
 
 #define ST_RDONLY 1
 #define ST_NOSUID 2
-
-#if 0
 #define ST_NODEV  4
 #define ST_NOEXEC 8
 #define ST_SYNCHRONOUS 16
@@ -24,7 +37,6 @@ int fstatvfs (int, struct statvfs *);
 #define ST_IMMUTABLE   512
 #define ST_NOATIME     1024
 #define ST_NODIRATIME  2048
-#endif
 
 
 #endif

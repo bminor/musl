@@ -3,8 +3,13 @@
 
 #include <sys/statvfs.h>
 
-#define statfs statvfs
-#define fstatfs fstatvfs
-#define f_namelen f_namemax
+typedef struct {
+	int val[2];
+} fsid_t;
+
+#include <bits/statfs.h>
+
+int statfs (const char *, struct statfs *);
+int fstatfs (int, struct statfs *);
 
 #endif

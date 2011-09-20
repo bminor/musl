@@ -1,15 +1,7 @@
-struct statvfs {
-	unsigned long f_type;
-	unsigned long f_bsize;
-	fsblkcnt_t f_blocks;
-	fsblkcnt_t f_bfree;
-	fsblkcnt_t f_bavail;
-	fsfilcnt_t f_files;
-	fsfilcnt_t f_ffree;
-	unsigned long f_fsid;
-	unsigned long f_namemax;
-	unsigned long f_frsize;
-	fsfilcnt_t f_favail;
-	unsigned long f_flag;
-	unsigned long __reserved[3];
+struct statfs {
+	unsigned long f_type, f_bsize;
+	fsblkcnt_t f_blocks, f_bfree, f_bavail;
+	fsfilcnt_t f_files, f_ffree;
+	fsid_t f_fsid;
+	unsigned long f_namelen, f_frsize, f_flags, f_spare[4];
 };
