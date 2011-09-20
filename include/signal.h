@@ -8,6 +8,10 @@ extern "C" {
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
 
+#ifdef _GNU_SOURCE
+#define __siginfo siginfo
+#endif
+
 #define __NEED_size_t
 #define __NEED_pid_t
 #define __NEED_uid_t
@@ -95,12 +99,7 @@ union sigval {
 	void *sival_ptr;
 };
 
-#ifdef _GNU_SOURCE
-struct siginfo
-#else
-struct __siginfo
-#endif
-{
+struct __siginfo {
 	int si_signo, si_errno, si_code;
 	union {
 		char __pad[128 - 3*sizeof(int)];
