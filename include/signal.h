@@ -138,6 +138,8 @@ struct __siginfo
 #define si_fd      __si_fields.__sigpoll.si_fd
 #define si_timer1  __si_fields.__timer.si_timer1
 #define si_timer2  __si_fields.__timer.si_timer2
+#define si_ptr     __si_fields.__rt.si_sigval.sival_ptr
+#define si_int     __si_fields.__rt.si_sigval.sival_int
 
 struct sigevent {
 	union sigval sigev_value;
