@@ -22,125 +22,6 @@ typedef struct __ucontext {
 	struct __fpstate __fpregs_mem;
 } ucontext_t;
 
-#ifdef _GNU_SOURCE
-struct sigcontext {
-	unsigned long r8, r9, r10, r11, r12, r13, r14, r15;
-	unsigned long rdi, rsi, rbp, rbx, rdx, rax, rcx, rsp, rip, eflags;
-	unsigned short cs, gs, fs, __pad0;
-	unsigned long err, trapno, oldmask, cr2;
-	struct __fpstate *fpstate;
-	unsigned long __reserved1[8];
-};
-#endif
-
-struct __siginfo
-{
-	int si_signo;
-	int si_errno;
-	int si_code;
-	union
-	{
-		int __pad[(128 - 4*sizeof(int)) / sizeof(int)];
-		struct {
-			pid_t si_pid;
-			uid_t si_uid;
-		} __kill;
-		struct {
-			void *si_timerid;
-			int si_overrun;
-			char __pad[sizeof(uid_t) - sizeof(int)];
-			union sigval si_sigval;
-			int si_private;
-		} __timer;
-		struct {
-			pid_t si_pid;
-			uid_t si_uid;
-			union sigval si_sigval;
-		} __rt;
-		struct {
-			pid_t si_pid;
-			uid_t si_uid;
-			int si_status;
-			clock_t si_utime;
-			clock_t si_stime;
-		} __sigchld;
-		struct {
-			void *si_addr;
-			short addr_lsb;
-		} __sigfault;
-		struct {
-			long si_band;
-			int si_fd;
-		} __sigpoll;
-	} __si_fields;
-};
-
-#define si_pid     __si_fields.__sigchld.si_pid
-#define si_uid     __si_fields.__sigchld.si_uid
-#define si_status  __si_fields.__sigchld.si_status
-#define si_utime   __si_fields.__sigchld.si_utime
-#define si_stime   __si_fields.__sigchld.si_stime
-#define si_value   __si_fields.__rt.si_sigval
-#define si_addr    __si_fields.__sigfault.si_addr
-#define si_band    __si_fields.__sigpoll.si_band
-
-#define SI_ASYNCNL (-60)
-#define SI_TKILL (-6)
-#define SI_SIGIO (-5)
-#define SI_ASYNCIO (-4)
-#define SI_MESGQ (-3)
-#define SI_TIMER (-2)
-#define SI_QUEUE (-1)
-#define SI_USER 0
-#define SI_KERNEL 128
-
-#define FPE_INTDIV 1
-#define FPE_INTOVF 2
-#define FPE_FLTDIV 3
-#define FPE_FLTOVF 4
-#define FPE_FLTUNT 5
-#define FPE_FLTRES 6
-#define FPE_FLTINV 7
-#define FPE_FLTSUB 8
-
-#define ILL_ILLOPC 1
-#define ILL_ILLOPN 2
-#define ILL_ILLADR 3
-#define ILL_ILLTRP 4
-#define ILL_PRVOPC 5
-#define ILL_PRVREG 6
-#define ILL_COPROC 7
-#define ILL_BADSTK 8
-
-#define SEGV_MAPERR 1
-#define SEGV_ACCERR 2
-
-#define BUS_ADRALN 1
-#define BUS_ADRERR 2
-#define BUS_OBJERR 3
-
-#define CLD_EXITED 1
-#define CLD_KILLED 2
-#define CLD_DUMPED 3
-#define CLD_TRAPPED 4
-#define CLD_STOPPED 5
-#define CLD_CONTINUED 6
-
-#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
-#define TRAP_BRKPT 1
-#define TRAP_TRACE 2
-#define POLL_IN 1
-#define POLL_OUT 2
-#define POLL_MSG 3
-#define POLL_ERR 4
-#define POLL_PRI 5
-#define POLL_HUP 6
-#define SS_ONSTACK    1
-#define SS_DISABLE    2
-#define MINSIGSTKSZ 2048
-#define SIGSTKSZ 8192
-#endif
-
 #define SA_NOCLDSTOP  1
 #define SA_NOCLDWAIT  2
 #define SA_SIGINFO    4
@@ -150,20 +31,19 @@ struct __siginfo
 #define SA_RESETHAND  0x80000000
 #define SA_RESTORER   0x04000000
 
-#define SIG_BLOCK     0
-#define SIG_UNBLOCK   1
-#define SIG_SETMASK   2
-
-#endif
-
 #ifdef _GNU_SOURCE
+struct sigcontext {
+	unsigned long r8, r9, r10, r11, r12, r13, r14, r15;
+	unsigned long rdi, rsi, rbp, rbx, rdx, rax, rcx, rsp, rip, eflags;
+	unsigned short cs, gs, fs, __pad0;
+	unsigned long err, trapno, oldmask, cr2;
+	struct __fpstate *fpstate;
+	unsigned long __reserved1[8];
+};
 #define NSIG      64
 #endif
 
-#define SIG_ERR  ((void (*)(int))-1)
-#define SIG_DFL  ((void (*)(int)) 0)
-#define SIG_IGN  ((void (*)(int)) 1)
-#define SIG_HOLD ((void (*)(int)) 2)
+#endif
 
 #define SIGHUP    1
 #define SIGINT    2
