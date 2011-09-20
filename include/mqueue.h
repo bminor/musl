@@ -1,5 +1,5 @@
-#ifndef _SEMAPHORE_H
-#define _SEMAPHORE_H
+#ifndef _MQUEUE_H
+#define _MQUEUE_H
 #ifdef __cplusplus
 extern "C" {
 #endif
