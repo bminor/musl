@@ -34,7 +34,7 @@ static void fixup(struct statvfs *out, const struct statfs *in)
 	out->f_files = in->f_files;
 	out->f_ffree = in->f_ffree;
 	out->f_favail = 0;
-	out->f_fsid = in->f_fsid.val[0];
+	out->f_fsid = in->f_fsid.__val[0];
 	out->f_flag = in->f_flags;
 	out->f_namemax = in->f_namelen;
 }
