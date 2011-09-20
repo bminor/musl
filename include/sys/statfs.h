@@ -4,7 +4,7 @@
 #include <sys/statvfs.h>
 
 typedef struct {
-	int val[2];
+	int __val[2];
 } fsid_t;
 
 #include <bits/statfs.h>
