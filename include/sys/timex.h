@@ -7,7 +7,7 @@ extern "C" {
 
 #include <sys/time.h>
 
-struct npttimeval {
+struct ntptimeval {
 	struct timeval time;
 	long maxerror, esterror;
 };

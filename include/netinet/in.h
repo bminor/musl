@@ -233,7 +233,7 @@ struct in6_pktinfo
 	unsigned ipi6_ifindex;
 };
 
-struct in6_mutinfo
+struct ip6_mtuinfo
 {
 	struct sockaddr_in6 ip6m_addr;
 	uint32_t ip6m_mtu;
