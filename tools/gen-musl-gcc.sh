@@ -3,6 +3,7 @@
 printf '#!/bin/sh\n\nlibc_prefix="%s"\nldso_pathname="%s"\n' "$1" "$2"
 
 cat <<"EOF"
+gcc=gcc
 libc_lib=$libc_prefix/lib
 libc_inc=$libc_prefix/include
 libc_crt="$libc_lib/crt1.o"
@@ -10,23 +11,45 @@ libc_start="$libc_lib/crti.o"
 libc_end="$libc_lib/crtn.o"
 
 gcc_inc=$libc_inc
-libgcc="`gcc \"$@\" -print-file-name=libgcc.a`"
-libgcc=${libgcc%libgcc.a}
+libgcc="$("$gcc" -print-file-name=libgcc.a)"
+libgcc=${libgcc%/libgcc.a}
 
-gcc -wrapper sh,-c,'
-x= ; y= ; z= ; s= ; for i ; do
-  [ "$z" ] || set -- ; z=1
-  case "$i" in
-    -shared) s=1 ; set -- "$@" -shared ;;
-    -Lxxxxxx) x=1 ;;
-    -xxxxxx) x= ; [ "$s" ] || set -- "$@" "'"$libc_start"'" "'"$libc_crt"'" ;;
-    -l*) [ "$y" ] || set -- "$@" '"$libc_end"' ; set -- "$@" "$i" ; y=1 ;;
-    *) [ "$x" ] || set -- "$@" "$i" ;;
-  esac
+gccver=${libgcc##*/}
+gcctarget=${libgcc%/*}
+gcctarget=${gcctarget##*/}
+
+case "$gccver" in
+[0123].*|4.[01]*) ;;
+*) nosp=-fno-stack-protector ;;
+esac
+
+[ "x$1" = "x-V" ] && { printf "%s: -V not supported\n" "$0" ; exit 1 ; }
+
+for i ; do
+case "$skip$i" in
+-I|-L) skip=--- ; continue ;;
+-[cSE]|-M*) nolink=1 ;;
+-*) ;;
+*) havefile=1 ;;
+esac
+skip=
 done
-exec "$0" "$@"
-' -std=gnu99 -nostdinc -nostdlib \
-  -isystem "$libc_inc" -isystem "$gcc_inc" \
-  -Wl,-xxxxxx "$@" -L"$libc_lib" -lc -L"$libgcc" -lgcc -Lxxxxxx \
+
+[ "$havefile" ] || nolink=1
+
+[ "$nolink" ] || {
+tmp_specs=$HOME/.specs.tmp.$$
+printf '*link_libgcc:\n\n\n' > "$tmp_specs" || exit 1
+exec 3<"$tmp_specs"
+rm -f "$tmp_specs"
+set -- -specs=/proc/self/fd/3 "$libc_start" "$libc_crt" "$@" "$libc_end" \
+  -Wl,--start-group -lc -lgcc -lgcc_eh -Wl,--end-group \
   -Wl,-dynamic-linker,"$ldso_pathname" -Wl,-nostdlib
+}
+
+set -- -std=gnu99 -nostdinc -nostdlib $nosp \
+  -isystem "$libc_inc" -isystem "$gcc_inc" "$@" \
+  -L"$libc_lib" -L"$libgcc"
+
+exec "$gcc" "$@"
 EOF
