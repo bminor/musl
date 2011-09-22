@@ -345,3 +345,16 @@ new features:
 bug fixes:
 - const error (only a warning with many compilers) in lio_listio
 - minor portability fixes aimed at supporting new arch targets
+
+
+
+0.8.3 release notes
+
+new features:
+- arm port (experimental)
+- better musl-gcc wrapper script for building against musl
+- added clone system call
+
+bug fixes:
+- numerous header file typos, copy/paste errors, omissions
+- statfs and statvfs ABI are now LSB-conformant (and actually work)
