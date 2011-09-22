@@ -25,14 +25,11 @@ extern "C" {
 
 #include <bits/alltypes.h>
 
+#define SIG_HOLD ((void (*)(int)) 2)
+
 #define SIG_BLOCK     0
 #define SIG_UNBLOCK   1
 #define SIG_SETMASK   2
-
-#define SIG_ERR  ((void (*)(int))-1)
-#define SIG_DFL  ((void (*)(int)) 0)
-#define SIG_IGN  ((void (*)(int)) 1)
-#define SIG_HOLD ((void (*)(int)) 2)
 
 #define SI_ASYNCNL (-60)
 #define SI_TKILL (-6)
@@ -216,6 +213,10 @@ int sigisemptyset(const sigset_t *);
 #endif
 
 #include <bits/signal.h>
+
+#define SIG_ERR  ((void (*)(int))-1)
+#define SIG_DFL  ((void (*)(int)) 0)
+#define SIG_IGN  ((void (*)(int)) 1)
 
 typedef int sig_atomic_t;
 
