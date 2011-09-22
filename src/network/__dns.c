@@ -5,8 +5,7 @@
 #include <limits.h>
 #include <string.h>
 #include <sys/socket.h>
-#include <sys/select.h>
-#include <sys/time.h>
+#include <poll.h>
 #include <netinet/in.h>
 #include <time.h>
 #include <ctype.h>
@@ -16,7 +15,7 @@
 #include "stdio_impl.h"
 
 #define TIMEOUT 5
-#define RETRY 1
+#define RETRY 1000
 #define PACKET_MAX 512
 #define PTR_MAX (64 + sizeof ".in-addr.arpa")
 
@@ -40,8 +39,8 @@ int __dns_doqueries(unsigned char *dest, const char *name, int *rr, int rrcnt)
 	int got = 0, failed = 0;
 	int errcode = EAI_AGAIN;
 	int i, j;
-	struct timeval tv;
-	fd_set fds;
+	struct timespec ts;
+	struct pollfd pfd;
 	int id;
 	int cs;
 
@@ -58,8 +57,8 @@ int __dns_doqueries(unsigned char *dest, const char *name, int *rr, int rrcnt)
 	ql = i+4;
 
 	/* Make a reasonably unpredictable id */
-	gettimeofday(&tv, 0);
-	id = tv.tv_usec + tv.tv_usec/256 & 0xffff;
+	clock_gettime(CLOCK_REALTIME, &ts);
+	id = ts.tv_nsec + ts.tv_nsec/65536UL & 0xffff;
 
 	/* Get nameservers from resolv.conf, fallback to localhost */
 	f = __fopen_rb_ca("/etc/resolv.conf", &_f, _buf, sizeof _buf);
@@ -94,6 +93,9 @@ int __dns_doqueries(unsigned char *dest, const char *name, int *rr, int rrcnt)
 	/* Nonblocking to work around Linux UDP select bug */
 	fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK);
 
+	pfd.fd = fd;
+	pfd.events = POLLIN;
+
 	/* Loop until we timeout; break early on success */
 	for (; time(0)-t0 < TIMEOUT; ) {
 
@@ -106,11 +108,7 @@ int __dns_doqueries(unsigned char *dest, const char *name, int *rr, int rrcnt)
 		}
 
 		/* Wait for a response, or until time to retry */
-		FD_ZERO(&fds);
-		FD_SET(fd, &fds);
-		tv.tv_sec = RETRY;
-		tv.tv_usec = 0;
-		if (select(fd+1, &fds, 0, 0, &tv) <= 0) continue;
+		if (poll(&pfd, 1, RETRY) <= 0) continue;
 
 		/* Process any and all replies */
 		while (got+failed < rrcnt && (rlen = recvfrom(fd, r, 512, 0,
