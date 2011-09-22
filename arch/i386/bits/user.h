@@ -3,52 +3,20 @@
 
 struct user_fpregs_struct
 {
-	long int cwd;
-	long int swd;
-	long int twd;
-	long int fip;
-	long int fcs;
-	long int foo;
-	long int fos;
-	long int st_space[20];
+	long cwd, swd, twd, fip, fcs, foo, fos, st_space[20];
 };
 
 struct user_fpxregs_struct
 {
-	unsigned short int cwd;
-	unsigned short int swd;
-	unsigned short int twd;
-	unsigned short int fop;
-	long int fip;
-	long int fcs;
-	long int foo;
-	long int fos;
-	long int mxcsr;
-	long int reserved;
-	long int st_space[32];
-	long int xmm_space[32];
-	long int padding[56];
+	unsigned short cwd, swd, twd, fop;
+	long fip, fcs, foo, fos, mxcsr, reserved;
+	long st_space[32], xmm_space[32], padding[56];
 };
 
 struct user_regs_struct
 {
-	long int ebx;
-	long int ecx;
-	long int edx;
-	long int esi;
-	long int edi;
-	long int ebp;
-	long int eax;
-	long int xds;
-	long int xes;
-	long int xfs;
-	long int xgs;
-	long int orig_eax;
-	long int eip;
-	long int xcs;
-	long int eflags;
-	long int esp;
-	long int xss;
+	long ebx, ecx, edx, esi, edi, ebp, eax, xds, xes, xfs, xgs;
+	long orig_eax, eip, xcs, eflags, esp, xss;
 };
 
 struct user
@@ -56,16 +24,16 @@ struct user
 	struct user_regs_struct		regs;
 	int				u_fpvalid;
 	struct user_fpregs_struct	i387;
-	unsigned long int		u_tsize;
-	unsigned long int		u_dsize;
-	unsigned long int		u_ssize;
+	unsigned long			u_tsize;
+	unsigned long			u_dsize;
+	unsigned long			u_ssize;
 	unsigned long			start_code;
 	unsigned long			start_stack;
-	long int			signal;
+	long				signal;
 	int				reserved;
 	struct user_regs_struct		*u_ar0;
 	struct user_fpregs_struct	*u_fpstate;
-	unsigned long int		magic;
+	unsigned long			magic;
 	char				u_comm[32];
 	int				u_debugreg[8];
 };
