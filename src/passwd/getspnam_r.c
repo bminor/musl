@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <ctype.h>
+#include <pthread.h>
 #include "pwf.h"
 
 /* This implementation support Openwall-style TCB passwords in place of
@@ -16,6 +17,11 @@ static long xatol(const char *s)
 	return isdigit(*s) ? atol(s) : -1;
 }
 
+static void cleanup(void *p)
+{
+	fclose(p);
+}
+
 int getspnam_r(const char *name, struct spwd *sp, char *buf, size_t size, struct spwd **res)
 {
 	char path[20+NAME_MAX];
@@ -25,6 +31,7 @@ int getspnam_r(const char *name, struct spwd *sp, char *buf, size_t size, struct
 	size_t k, l = strlen(name);
 	char *s;
 	int skip = 0;
+	int cs;
 
 	*res = 0;
 
@@ -44,7 +51,9 @@ int getspnam_r(const char *name, struct spwd *sp, char *buf, size_t size, struct
 		struct stat st = { 0 };
 		errno = EINVAL;
 		if (fstat(fd, &st) || !S_ISREG(st.st_mode) || !(f = fdopen(fd, "rb"))) {
+			pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
 			close(fd);
+			pthread_setcancelstate(cs, 0);
 			return errno;
 		}
 	} else {
@@ -52,6 +61,7 @@ int getspnam_r(const char *name, struct spwd *sp, char *buf, size_t size, struct
 		if (!f) return errno;
 	}
 
+	pthread_cleanup_push(cleanup, f);
 	while (fgets(buf, size, f) && (k=strlen(buf))>0) {
 		if (skip || strncmp(name, buf, l)) {
 			skip = buf[k-1] != '\n';
@@ -92,6 +102,6 @@ int getspnam_r(const char *name, struct spwd *sp, char *buf, size_t size, struct
 		*res = sp;
 		break;
 	}
-	fclose(f);
+	pthread_cleanup_pop(1);
 	return rv;
 }
