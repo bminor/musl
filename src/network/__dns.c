@@ -19,6 +19,11 @@
 #define PACKET_MAX 512
 #define PTR_MAX (64 + sizeof ".in-addr.arpa")
 
+static void cleanup(void *p)
+{
+	close((intptr_t)p);
+}
+
 int __dns_doqueries(unsigned char *dest, const char *name, int *rr, int rrcnt)
 {
 	time_t t0 = time(0);
@@ -43,6 +48,8 @@ int __dns_doqueries(unsigned char *dest, const char *name, int *rr, int rrcnt)
 	struct pollfd pfd;
 	int id;
 	int cs;
+
+	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
 
 	/* Construct query template - RR and ID will be filled later */
 	if (strlen(name)-1 >= 254U) return EAI_NONAME;
@@ -81,8 +88,6 @@ int __dns_doqueries(unsigned char *dest, const char *name, int *rr, int rrcnt)
 		sl = sizeof sa.sin;
 	}
 
-	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
-
 	/* Get local address and open/bind a socket */
 	sa.sin.sin_family = family;
 	fd = socket(family, SOCK_DGRAM, 0);
@@ -95,6 +100,9 @@ int __dns_doqueries(unsigned char *dest, const char *name, int *rr, int rrcnt)
 
 	pfd.fd = fd;
 	pfd.events = POLLIN;
+
+	pthread_cleanup_push(cleanup, (void *)(intptr_t)fd);
+	pthread_setcancelstate(cs, 0);
 
 	/* Loop until we timeout; break early on success */
 	for (; time(0)-t0 < TIMEOUT; ) {
@@ -143,8 +151,7 @@ int __dns_doqueries(unsigned char *dest, const char *name, int *rr, int rrcnt)
 		if (got+failed == rrcnt) break;
 	}
 out:
-	close(fd);
-	pthread_setcancelstate(cs, 0);
+	pthread_cleanup_pop(1);
 
 	/* Return the number of results, or an error code if none */
 	if (got) return got;
