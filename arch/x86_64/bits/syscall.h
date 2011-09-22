@@ -1,4 +1,5 @@
-#define __SYSCALL_LL(x) (x)
+#define __SYSCALL_LL_E(x) (x)
+#define __SYSCALL_LL_O(x) (x)
 
 static inline long __syscall0(long __n)
 {
