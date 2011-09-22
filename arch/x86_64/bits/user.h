@@ -1,5 +1,5 @@
 #undef __WORDSIZE
-#define __WORDSIZE 32
+#define __WORDSIZE 64
 
 struct user_fpregs_struct
 {
