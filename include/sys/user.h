@@ -5,6 +5,7 @@ extern "C" {
 #endif
 
 #include <limits.h>
+#include <stdint.h>
 #include <unistd.h>
 
 #include <bits/user.h>
