@@ -66,6 +66,7 @@ struct __timer {
 #define _m_count __u.__i[5]
 #define _c_block __u.__i[0]
 #define _c_clock __u.__i[1]
+#define _c_waiters __u.__i[2]
 #define _rw_lock __u.__i[0]
 #define _rw_waiters __u.__i[1]
 #define _b_inst __u.__p[0]
