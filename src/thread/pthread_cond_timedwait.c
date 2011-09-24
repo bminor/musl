@@ -15,19 +15,22 @@ static void cleanup(void *p)
 int pthread_cond_timedwait(pthread_cond_t *c, pthread_mutex_t *m, const struct timespec *ts)
 {
 	struct cm cm = { .c=c, .m=m };
-	int r, e=0;
+	int r, e, tid;
 
 	if (ts && ts->tv_nsec >= 1000000000UL)
 		return EINVAL;
 
 	pthread_testcancel();
 
-	c->_c_block = 1;
+	a_inc(&c->_c_waiters);
+	c->_c_block = tid = pthread_self()->tid;
+
 	if ((r=pthread_mutex_unlock(m))) return r;
 
-	a_inc(&c->_c_waiters);
-	do e = __timedwait(&c->_c_block, 1, c->_c_clock, ts, cleanup, &cm, 0);
-	while (e == EINTR);
+	do e = __timedwait(&c->_c_block, tid, c->_c_clock, ts, cleanup, &cm, 0);
+	while (c->_c_block == tid && (!e || e==EINTR));
+	if (e == EINTR) e = 0;
+
 	a_dec(&c->_c_waiters);
 
 	if ((r=pthread_mutex_lock(m))) return r;
