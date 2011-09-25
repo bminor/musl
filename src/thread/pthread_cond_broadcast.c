@@ -37,10 +37,11 @@ int pthread_cond_broadcast(pthread_cond_t *c)
 		a_fetch_add(&m->_m_waiters, -w);
 	}
 
-	/* Perform the futex requeue, waking one waiter if and only if
-	 * the calling thread does not hold the mutex. */
+	/* Perform the futex requeue, waking one waiter unless we know
+	 * that the calling thread holds the mutex. */
 	__syscall(SYS_futex, &c->_c_block, FUTEX_REQUEUE,
-		m->_m_lock!=pthread_self()->tid, INT_MAX, &m->_m_lock);
+		!m->_m_type || (m->_m_lock&INT_MAX)!=pthread_self()->tid,
+		INT_MAX, &m->_m_lock);
 
 	unlock(c);
 	return 0;
