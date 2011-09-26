@@ -1,48 +1,39 @@
 #include "pthread_impl.h"
 
-static void unlock(pthread_cond_t *c)
-{
-	a_dec(&c->_c_bcast);
-	if (c->_c_leavers) __wake(&c->_c_bcast, -1, 0);
-}
-
 int pthread_cond_broadcast(pthread_cond_t *c)
 {
 	pthread_mutex_t *m;
-	int w;
 
 	if (!c->_c_waiters) return 0;
-	a_inc(&c->_c_bcast);
-	if (!c->_c_waiters) {
-		unlock(c);
+
+	a_inc(&c->_c_seq);
+
+	/* If cond var is process-shared, simply wake all waiters. */
+	if (c->_c_mutex == (void *)-1) {
+		__wake(&c->_c_seq, -1, 0);
 		return 0;
 	}
 
-	a_store(&c->_c_block, 0);
-
+	/* Block waiters from returning so we can use the mutex. */
+	while (a_swap(&c->_c_lock, 1))
+		__wait(&c->_c_lock, &c->_c_lockwait, 1, 1);
+	if (!c->_c_waiters)
+		goto out;
 	m = c->_c_mutex;
 
-	/* If mutex ptr is not available, simply wake all waiters. */
-	if (m == (void *)-1) {
-		unlock(c);
-		__wake(&c->_c_block, -1, 0);
-		return 0;
-	}
-
 	/* Move waiter count to the mutex */
-	for (;;) {
-		w = c->_c_waiters;
-		a_fetch_add(&m->_m_waiters, w);
-		if (a_cas(&c->_c_waiters, w, 0) == w) break;
-		a_fetch_add(&m->_m_waiters, -w);
-	}
+	a_fetch_add(&m->_m_waiters, c->_c_waiters);
+	a_store(&c->_c_waiters, 0);
 
 	/* Perform the futex requeue, waking one waiter unless we know
 	 * that the calling thread holds the mutex. */
-	__syscall(SYS_futex, &c->_c_block, FUTEX_REQUEUE,
+	__syscall(SYS_futex, &c->_c_seq, FUTEX_REQUEUE,
 		!m->_m_type || (m->_m_lock&INT_MAX)!=pthread_self()->tid,
 		INT_MAX, &m->_m_lock);
 
-	unlock(c);
+out:
+	a_store(&c->_c_lock, 0);
+	if (c->_c_lockwait) __wake(&c->_c_lock, 1, 0);
+
 	return 0;
 }
