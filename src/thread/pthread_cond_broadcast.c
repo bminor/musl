@@ -22,12 +22,8 @@ int pthread_cond_broadcast(pthread_cond_t *c)
 	m = c->_c_mutex;
 
 	/* Move waiter count to the mutex */
-	for (;;) {
-		int w = c->_c_waiters2;
-		a_fetch_add(&m->_m_waiters, w);
-		if (a_cas(&c->_c_waiters2, w, 0) == w) break;
-		a_fetch_add(&m->_m_waiters, -w);
-	}
+	a_fetch_add(&m->_m_waiters, c->_c_waiters2);
+	c->_c_waiters2 = 0;
 
 	/* Perform the futex requeue, waking one waiter unless we know
 	 * that the calling thread holds the mutex. */
