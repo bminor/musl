@@ -70,6 +70,7 @@ struct __timer {
 #define _c_clock __u.__i[4]
 #define _c_lock __u.__i[5]
 #define _c_lockwait __u.__i[6]
+#define _c_waiters2 __u.__i[7]
 #define _rw_lock __u.__i[0]
 #define _rw_waiters __u.__i[1]
 #define _b_inst __u.__p[0]

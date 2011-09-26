@@ -7,6 +7,8 @@ struct cm {
 
 static void unwait(pthread_cond_t *c, pthread_mutex_t *m)
 {
+	int w;
+
 	/* Removing a waiter is non-trivial if we could be using requeue
 	 * based broadcast signals, due to mutex access issues, etc. */
 
@@ -18,8 +20,10 @@ static void unwait(pthread_cond_t *c, pthread_mutex_t *m)
 	while (a_swap(&c->_c_lock, 1))
 		__wait(&c->_c_lock, &c->_c_lockwait, 1, 1);
 
-	if (c->_c_waiters) c->_c_waiters--;
-	else a_dec(&m->_m_waiters);
+	/* Atomically decrement waiters2 if positive, else mutex waiters. */
+	do w = c->_c_waiters2;
+	while (w && a_cas(&c->_c_waiters2, w, w-1)!=w);
+	if (!w) a_dec(&m->_m_waiters);
 
 	a_store(&c->_c_lock, 0);
 	if (c->_c_lockwait) __wake(&c->_c_lock, 1, 1);
@@ -42,16 +46,10 @@ int pthread_cond_timedwait(pthread_cond_t *c, pthread_mutex_t *m, const struct t
 
 	pthread_testcancel();
 
-	if (c->_c_mutex == (void *)-1) {
-		a_inc(&c->_c_waiters);
-	} else {
-		c->_c_mutex = m;
-		while (a_swap(&c->_c_lock, 1))
-			__wait(&c->_c_lock, &c->_c_lockwait, 1, 1);
-		c->_c_waiters++;
-		a_store(&c->_c_lock, 0);
-		if (c->_c_lockwait) __wake(&c->_c_lock, 1, 1);
-	}
+	if (c->_c_mutex != (void *)-1) c->_c_mutex = m;
+
+	a_inc(&c->_c_waiters);
+	a_inc(&c->_c_waiters2);
 
 	seq = c->_c_seq;
 
