@@ -1,7 +1,7 @@
-#include <stddef.h>
+#include <stdint.h>
 #include "syscall.h"
 
-void *sbrk(ptrdiff_t inc)
+void *sbrk(intptr_t inc)
 {
 	unsigned long cur = syscall(SYS_brk, 0);
 	if (inc && syscall(SYS_brk, cur+inc) != cur+inc) return (void *)-1;

@@ -3,9 +3,9 @@
 
 long __syscall_ret(unsigned long r)
 {
-	if (r >= (unsigned long)-1 - 4096) {
-		errno = -(long)r;
+	if (r > -4096UL) {
+		errno = -r;
 		return -1;
 	}
-	return (long)r;
+	return r;
 }

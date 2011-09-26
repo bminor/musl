@@ -85,7 +85,6 @@ int clock_settime (clockid_t, const struct timespec *);
 int clock_nanosleep (clockid_t, int, const struct timespec *, struct timespec *);
 int clock_getcpuclockid (pid_t, clockid_t *);
 
-/* FIXME..?? */
 struct sigevent;
 int timer_create (clockid_t, struct sigevent *, timer_t *);
 int timer_delete (timer_t);

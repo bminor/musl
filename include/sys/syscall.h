@@ -4,7 +4,7 @@
 extern "C" {
 #endif
 
-long __syscall_ret(long);
+long __syscall_ret(unsigned long);
 long __syscall(long, ...);
 long syscall(long, ...);
 

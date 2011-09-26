@@ -1,6 +1,7 @@
 #include <time.h>
 #include <stdio.h>
 #include <langinfo.h>
+#include "atomic.h"
 
 const char *__langinfo(nl_item);
 
@@ -21,7 +22,7 @@ char *__asctime(const struct tm *tm, char *buf)
 		 * application developers that they may not be so lucky
 		 * on other implementations (e.g. stack smashing..).
 		 */
-		*(volatile int*)0 = 0;
+		a_crash();
 	}
 	return buf;
 }
