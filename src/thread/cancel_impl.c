@@ -61,7 +61,7 @@ static void cancel_handler(int sig, siginfo_t *si, void *ctx)
 
 void __testcancel()
 {
-	pthread_t self = __pthread_self();
+	pthread_t self = pthread_self();
 	if (self->cancel && !self->canceldisable)
 		__cancel();
 }
