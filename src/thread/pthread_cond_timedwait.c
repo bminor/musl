@@ -37,8 +37,8 @@ int pthread_cond_timedwait(pthread_cond_t *c, pthread_mutex_t *m, const struct t
 	struct cm cm = { .c=c, .m=m };
 	int r, e=0, seq;
 
-	if ((m->_m_type&3) == PTHREAD_MUTEX_ERRORCHECK &&
-		(m->_m_lock&INT_MAX) != __pthread_self()->tid) return EPERM;
+	if (m->_m_type && (m->_m_lock&INT_MAX) != __pthread_self()->tid)
+		return EPERM;
 
 	if (ts && ts->tv_nsec >= 1000000000UL)
 		return EINVAL;
@@ -58,7 +58,7 @@ int pthread_cond_timedwait(pthread_cond_t *c, pthread_mutex_t *m, const struct t
 
 	seq = c->_c_seq;
 
-	if ((r=pthread_mutex_unlock(m))) return r;
+	pthread_mutex_unlock(m);
 
 	do e = __timedwait(&c->_c_seq, seq, c->_c_clock, ts, cleanup, &cm, 0);
 	while (c->_c_seq == seq && (!e || e==EINTR));
