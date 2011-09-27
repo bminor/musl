@@ -2,6 +2,6 @@
 
 int pthread_barrierattr_getpshared(const pthread_barrierattr_t *a, int *pshared)
 {
-	*pshared = *a;
+	*pshared = !!*a;
 	return 0;
 }
