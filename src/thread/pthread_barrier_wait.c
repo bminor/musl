@@ -54,7 +54,7 @@ static int pshared_barrier_wait(pthread_barrier_t *b)
 	
 	__vm_unlock();
 
-	return 0;
+	return ret;
 }
 
 struct instance
