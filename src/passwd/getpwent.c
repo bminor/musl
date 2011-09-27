@@ -23,17 +23,23 @@ struct passwd *getpwent()
 struct passwd *getpwuid(uid_t uid)
 {
 	struct passwd *pw;
+	int errno_saved;
 	setpwent();
 	while ((pw=getpwent()) && pw->pw_uid != uid);
+	errno_saved = errno;
 	endpwent();
+	errno = errno_saved;
 	return pw;
 }
 
 struct passwd *getpwnam(const char *name)
 {
 	struct passwd *pw;
+	int errno_saved;
 	setpwent();
 	while ((pw=getpwent()) && strcmp(pw->pw_name, name));
+	errno_saved = errno;
 	endpwent();
+	errno = errno_saved;
 	return pw;
 }
