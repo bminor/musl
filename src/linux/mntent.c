@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <mntent.h>
+#include <errno.h>
 
 FILE *setmntent(const char *name, const char *mode)
 {
@@ -22,7 +23,13 @@ struct mntent *getmntent_r(FILE *f, struct mntent *mnt, char *linebuf, int bufle
 
 	do {
 		fgets(linebuf, buflen, f);
-		if (feof(f)) return NULL;
+		if (feof(f) || ferror(f)) return 0;
+		if (!strchr(linebuf, '\n')) {
+			if (fseeko(f, -(off_t)strlen(linebuf), SEEK_CUR))
+				fscanf(f, "%*[^\n]%*[\n]");
+			errno = ERANGE;
+			return 0;
+		}
 		cnt = sscanf(linebuf, " %n%*s%n %n%*s%n %n%*s%n %n%*s%n %d %d",
 			n, n+1, n+2, n+3, n+4, n+5, n+6, n+7,
 			&mnt->mnt_freq, &mnt->mnt_passno);
@@ -50,7 +57,7 @@ struct mntent *getmntent(FILE *f)
 
 int addmntent(FILE *f, const struct mntent *mnt)
 {
-	fseek(f, 0, SEEK_END);
+	if (fseek(f, 0, SEEK_END)) return 1;
 	return fprintf(f, "%s\t%s\t%s\t%s\t%d\t%d\n",
 		mnt->mnt_fsname, mnt->mnt_dir, mnt->mnt_type, mnt->mnt_opts,
 		mnt->mnt_freq, mnt->mnt_passno) < 0;
