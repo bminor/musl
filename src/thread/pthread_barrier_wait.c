@@ -23,11 +23,12 @@ static int pshared_barrier_wait(pthread_barrier_t *b)
 	int limit = (b->_b_limit & INT_MAX) + 1;
 	int seq;
 	int ret = 0;
+	int v, w;
 
 	if (limit==1) return PTHREAD_BARRIER_SERIAL_THREAD;
 
-	while (a_swap(&b->_b_lock, 1))
-		__wait(&b->_b_lock, &b->_b_waiters, 1, 0);
+	while ((v=a_cas(&b->_b_lock, 0, limit)))
+		__wait(&b->_b_lock, &b->_b_waiters, v, 0);
 
 	seq = b->_b_seq;
 
@@ -46,12 +47,19 @@ static int pshared_barrier_wait(pthread_barrier_t *b)
 	if (a_fetch_add(&b->_b_count, -1)==1) {
 		b->_b_seq++;
 		__wake(&b->_b_seq, -1, 0);
-		a_store(&b->_b_lock, 0);
-		if (b->_b_waiters) __wake(&b->_b_lock, 1, 0);
 	} else {
 		__wait(&b->_b_seq, 0, seq+1, 0);
 	}
 	
+	/* Perform a recursive unlock suitable for self-sync'd destruction */
+	do {
+		v = b->_b_lock;
+		w = b->_b_waiters;
+	} while (a_cas(&b->_b_lock, v, v-1 & INT_MAX) != v);
+
+	if (v==INT_MIN+1 || (v==1 && w))
+		__wake(&b->_b_lock, 1, 0);
+
 	__vm_unlock();
 
 	return ret;
