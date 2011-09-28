@@ -13,9 +13,9 @@ void __vm_lock(int inc)
 
 void __vm_unlock(void)
 {
-	if (vmlock[0]>0) a_dec(vmlock);
-	else a_inc(vmlock);
-	if (vmlock[1]) __wake(vmlock, 1, 1);
+	int inc = vmlock[0]>0 ? -1 : 1;
+	if (a_fetch_add(vmlock, inc)==-inc && vmlock[1])
+		__wake(vmlock, -1, 1);
 }
 
 static int pshared_barrier_wait(pthread_barrier_t *b)
