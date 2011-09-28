@@ -24,7 +24,7 @@ static int pshared_barrier_wait(pthread_barrier_t *b)
 	int seq;
 	int ret = 0;
 
-	if (!limit) return PTHREAD_BARRIER_SERIAL_THREAD;
+	if (limit==1) return PTHREAD_BARRIER_SERIAL_THREAD;
 
 	while (a_swap(&b->_b_lock, 1))
 		__wait(&b->_b_lock, &b->_b_waiters, 1, 0);
