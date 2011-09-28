@@ -23,7 +23,7 @@ static void notify_signal(struct sigevent *sev)
 static void *io_thread(void *p)
 {
 	struct aiocb *cb = p;
-	int fd = cb->aio_filedes;
+	int fd = cb->aio_fildes;
 	void *buf = (void *)cb->aio_buf;
 	size_t len = cb->aio_nbytes;
 	off_t off = cb->aio_offset;

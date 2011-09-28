@@ -17,7 +17,7 @@ extern "C" {
 #include <bits/alltypes.h>
 
 struct aiocb {
-	int aio_filedes, aio_lio_opcode, aio_reqprio;
+	int aio_fildes, aio_lio_opcode, aio_reqprio;
 	volatile void *aio_buf;
 	size_t aio_nbytes;
 	struct sigevent aio_sigevent;
