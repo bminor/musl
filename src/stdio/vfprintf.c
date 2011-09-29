@@ -584,7 +584,7 @@ static int printf_core(FILE *f, const char *fmt, va_list *ap, union arg *nl_arg,
 		case 'm':
 			if (1) a = strerror(errno); else
 		case 's':
-			a = arg.p;
+			a = arg.p ? arg.p : "(null)";
 			z = memchr(a, 0, p);
 			if (!z) z=a+p;
 			else p=z-a;
