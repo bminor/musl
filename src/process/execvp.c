@@ -2,33 +2,41 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
-
-extern char **__environ;
+#include <limits.h>
 
 int execvp(const char *file, char *const argv[])
 {
 	const char *p, *z, *path = getenv("PATH");
-	int l;
+	size_t l, k;
+
+	errno = ENOENT;
+	if (!*file) return -1;
 
 	if (strchr(file, '/'))
-		return execve(file, argv, __environ);
+		return execv(file, argv);
 
-	/* FIXME: integer overflows */
 	if (!path) path = "/usr/local/bin:/bin:/usr/bin";
-	l = strlen(file) + strlen(path) + 2;
-
-	for(p=path; p && *p; p=z) {
-		char b[l];
-		z = strchr(p, ':');
-		if (z) {
-			memcpy(b, p, z-p);
-			b[z++-p] = 0;
-		} else strcpy(b, p);
-		strcat(b, "/");
-		strcat(b, file);
-		if (!access(b, X_OK))
-			return execve(b, argv, __environ);
+	k = strnlen(file, NAME_MAX+1);
+	if (k > NAME_MAX) {
+		errno = ENAMETOOLONG;
+		return -1;
 	}
-	errno = ENOENT;
+	l = strnlen(path, PATH_MAX-1)+1;
+
+	for(p=path; ; p=z) {
+		char b[l+k+1];
+		z = strchr(p, ':');
+		if (!z) z = p+strlen(p);
+		if (z-p >= l) {
+			if (!*z++) break;
+			continue;
+		}
+		memcpy(b, p, z-p);
+		b[z-p] = '/';
+		memcpy(b+(z-p)+(z>p), file, k+1);
+		execv(b, argv);
+		if (errno != ENOENT) return -1;
+		if (!*z++) break;
+	}
 	return -1;
 }
