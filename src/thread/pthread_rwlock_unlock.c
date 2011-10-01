@@ -12,7 +12,7 @@ int pthread_rwlock_unlock(pthread_rwlock_t *rw)
 	} while (a_cas(&rw->_rw_lock, val, new) != val);
 
 	if (!new && (waiters || val<0))
-		__wake(&rw->_rw_lock, 1, 0);
+		__wake(&rw->_rw_lock, cnt, 0);
 
 	return 0;
 }
