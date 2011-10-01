@@ -13,7 +13,7 @@ static inline void do_single_reloc(size_t *reloc_addr, int type, size_t sym_val,
 		*reloc_addr += sym_val;
 		break;
 	case R_ARM_GLOB_DAT:
-	case R_ARM_JMP_SLOT:
+	case R_ARM_JUMP_SLOT:
 		*reloc_addr = sym_val;
 		break;
 	case R_ARM_RELATIVE:
