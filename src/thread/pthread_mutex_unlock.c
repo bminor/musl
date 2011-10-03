@@ -9,7 +9,7 @@ int pthread_mutex_unlock(pthread_mutex_t *m)
 	if (m->_m_type != PTHREAD_MUTEX_NORMAL) {
 		if (!m->_m_lock)
 			return EPERM;
-		self = __pthread_self();
+		self = pthread_self();
 		if ((m->_m_lock&0x1fffffff) != self->tid)
 			return EPERM;
 		if ((m->_m_type&3) == PTHREAD_MUTEX_RECURSIVE && m->_m_count)
