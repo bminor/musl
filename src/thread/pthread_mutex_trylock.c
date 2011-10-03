@@ -30,8 +30,6 @@ int pthread_mutex_trylock(pthread_mutex_t *m)
 	if ((own && !(own & 0x40000000)) || a_cas(&m->_m_lock, old, tid)!=old)
 		return EBUSY;
 
-	m->_m_count = 1;
-
 	if (m->_m_type < 4) return 0;
 
 	if (m->_m_type >= 8) {

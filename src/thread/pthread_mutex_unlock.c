@@ -12,8 +12,8 @@ int pthread_mutex_unlock(pthread_mutex_t *m)
 		self = __pthread_self();
 		if ((m->_m_lock&0x1fffffff) != self->tid)
 			return EPERM;
-		if ((m->_m_type&3) == PTHREAD_MUTEX_RECURSIVE && --m->_m_count)
-			return 0;
+		if ((m->_m_type&3) == PTHREAD_MUTEX_RECURSIVE && m->_m_count)
+			return m->_m_count--, 0;
 		if (m->_m_type >= 4) {
 			self->robust_list.pending = &m->_m_next;
 			*(void **)m->_m_prev = m->_m_next;
