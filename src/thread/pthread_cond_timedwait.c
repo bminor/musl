@@ -12,6 +12,7 @@ static void unwait(pthread_cond_t *c, pthread_mutex_t *m)
 
 	if (c->_c_mutex == (void *)-1) {
 		a_dec(&c->_c_waiters);
+		if (c->_c_destroy) __wake(&c->_c_waiters, 1, 0);
 		return;
 	}
 
@@ -23,6 +24,9 @@ static void unwait(pthread_cond_t *c, pthread_mutex_t *m)
 
 	a_store(&c->_c_lock, 0);
 	if (c->_c_lockwait) __wake(&c->_c_lock, 1, 1);
+
+	a_dec(&c->_c_waiters);
+	if (c->_c_destroy) __wake(&c->_c_waiters, 1, 1);
 }
 
 static void cleanup(void *p)
