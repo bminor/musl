@@ -43,6 +43,7 @@ int pthread_mutex_trylock(pthread_mutex_t *m)
 	self->robust_list.head = &m->_m_next;
 	self->robust_list.pending = 0;
 	if (own) {
+		m->_m_count = 0;
 		m->_m_type += 8;
 		return EOWNERDEAD;
 	}
