@@ -85,13 +85,13 @@ typedef unsigned long long uintmax_t;
 
 #if !defined __cplusplus || defined __STDC_CONSTANT_MACROS
 
-#define INT8_C(c)  c
-#define INT16_C(c) c
+#define INT8_C(c)  ((int8_t) + (c))
+#define INT16_C(c) ((int16_t) + (c))
 #define INT32_C(c) c
 #define INT64_C(c) c ## LL
 
-#define UINT8_C(c)  c ## U
-#define UINT16_C(c) c ## U
+#define UINT8_C(c)  ((uint8_t) + (c))
+#define UINT16_C(c) ((uint16_t) + (c))
 #define UINT32_C(c) c ## U
 #define UINT64_C(c) c ## ULL
 
