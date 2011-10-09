@@ -29,7 +29,7 @@ clone:
 	mov pc,r5
 2:	mov r1,r0
 	mov r0,#1
-	svc
+	svc 0
 
 1:	blx r5
 	b 2b
