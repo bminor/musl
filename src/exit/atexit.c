@@ -1,5 +1,6 @@
 #include <stddef.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <limits.h>
 #include "libc.h"
 
@@ -9,25 +10,32 @@
 static struct fl
 {
 	struct fl *next;
-	void (*f[COUNT])(void);
+	void (*f[COUNT])(void *);
+	void *a[COUNT];
 } builtin, *head;
+
+static int lock;
 
 void __funcs_on_exit()
 {
 	int i;
+	void (*func)(void *), *arg;
+	LOCK(&lock);
 	for (; head; head=head->next) {
 		for (i=COUNT-1; i>=0 && !head->f[i]; i--);
-		for (; i>=0; i--) head->f[i]();
+		if (i<0) continue;
+		func = head->f[i];
+		arg = head->a[i];
+		head->f[i] = 0;
+		UNLOCK(&lock);
+		func(arg);
+		LOCK(&lock);
 	}
 }
 
-int atexit(void (*func)(void))
+int __cxa_atexit(void (*func)(void *), void *arg, void *dso)
 {
-	static int lock;
 	int i;
-
-	/* Hook for atexit extensions */
-	if (libc.atexit) return libc.atexit(func);
 
 	LOCK(&lock);
 
@@ -48,7 +56,18 @@ int atexit(void (*func)(void))
 	/* Append function to the list. */
 	for (i=0; i<COUNT && head->f[i]; i++);
 	head->f[i] = func;
+	head->a[i] = arg;
 
 	UNLOCK(&lock);
 	return 0;
+}
+
+static void call(void *p)
+{
+	((void (*)(void))(uintptr_t)p)();
+}
+
+int atexit(void (*func)(void))
+{
+	return __cxa_atexit(call, (void *)(uintptr_t)func, 0);
 }
