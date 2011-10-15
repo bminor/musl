@@ -33,6 +33,10 @@ void __funcs_on_exit()
 	}
 }
 
+void __cxa_finalize(void *dso)
+{
+}
+
 int __cxa_atexit(void (*func)(void *), void *arg, void *dso)
 {
 	int i;
