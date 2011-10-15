@@ -3,8 +3,11 @@
 #include <stdio.h>
 #include "libc.h"
 
-/* __overflow.c and atexit.c override these */
-static int (*const dummy)() = 0;
+static void dummy()
+{
+}
+
+/* __towrite.c and atexit.c override these */
 weak_alias(dummy, __funcs_on_exit);
 weak_alias(dummy, __fflush_on_exit);
 
@@ -16,8 +19,8 @@ void exit(int code)
 	LOCK(&lock);
 
 	/* Only do atexit & stdio flush if they were actually used */
-	if (__funcs_on_exit) __funcs_on_exit();
-	if (__fflush_on_exit) __fflush_on_exit((void *)0);
+	__funcs_on_exit();
+	__fflush_on_exit();
 
 	/* Destructor s**t is kept separate from atexit to avoid bloat */
 	if (libc.fini) libc.fini();

@@ -18,4 +18,7 @@ int __towrite(FILE *f)
 }
 
 /* Link flush-on-exit code iff any stdio write functions are linked. */
-int (*const __fflush_on_exit)(FILE *) = fflush;
+void __fflush_on_exit()
+{
+	fflush(0);
+}

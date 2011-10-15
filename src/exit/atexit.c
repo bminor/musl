@@ -12,17 +12,14 @@ static struct fl
 	void (*f[COUNT])(void);
 } builtin, *head;
 
-static int run_atexit_functions(void)
+void __funcs_on_exit()
 {
 	int i;
 	for (; head; head=head->next) {
 		for (i=COUNT-1; i>=0 && !head->f[i]; i--);
 		for (; i>=0; i--) head->f[i]();
 	}
-	return 0;
 }
-
-int (*const __funcs_on_exit)(void) = run_atexit_functions;
 
 int atexit(void (*func)(void))
 {
