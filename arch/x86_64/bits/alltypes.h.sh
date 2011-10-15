@@ -21,7 +21,9 @@ TYPEDEF long ssize_t;
 TYPEDEF long ptrdiff_t;
 TYPEDEF __builtin_va_list va_list;
 
+#ifndef __cplusplus
 TYPEDEF int wchar_t;
+#endif
 TYPEDEF int wint_t;
 TYPEDEF int wctrans_t;
 TYPEDEF int wctype_t;
