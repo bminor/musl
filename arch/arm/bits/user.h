@@ -1,4 +1,4 @@
-struct user_fpregs
+struct user_fpregs_struct
 {
 	struct fp_reg {
 		unsigned sign1:1;
@@ -15,14 +15,14 @@ struct user_fpregs
 	unsigned int init_flag;
 };
 
-struct user_regs
+struct user_regs_struct
 {
 	unsigned long uregs[18];
 };
 
 struct user
 {
-	struct user_regs		regs;
+	struct user_regs_struct		regs;
 	int				u_fpvalid;
 	unsigned long			u_tsize;
 	unsigned long			u_dsize;
@@ -31,10 +31,10 @@ struct user
 	unsigned long			start_stack;
 	long				signal;
 	int				reserved;
-	struct user_regs		*u_ar0;
+	struct user_regs_struct		*u_ar0;
 	unsigned long int		magic;
 	char				u_comm[32];
 	int				u_debugreg[8];
-	struct user_fpregs		u_fp;
-	struct user_fpregs		*u_fp0;
+	struct user_fpregs_struct	u_fp;
+	struct user_fpregs_struct	*u_fp0;
 };
