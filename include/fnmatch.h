@@ -10,7 +10,9 @@ extern "C" {
 #define	FNM_PERIOD   0x4
 
 #ifdef _GNU_SOURCE
-#define	FNM_CASEFOLD 0x10
+#define	FNM_LEADING_DIR	0x8           
+#define	FNM_CASEFOLD	0x10
+#define	FNM_FILE_NAME	FNM_PATHNAME
 #endif
 
 #define	FNM_NOMATCH 1
