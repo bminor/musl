@@ -1,6 +1,9 @@
 #ifndef	_SYS_STATVFS_H
 #define	_SYS_STATVFS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define __NEED_fsblkcnt_t
 #define __NEED_fsfilcnt_t
@@ -38,5 +41,8 @@ int fstatvfs (int, struct statvfs *);
 #define ST_NOATIME     1024
 #define ST_NODIRATIME  2048
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif

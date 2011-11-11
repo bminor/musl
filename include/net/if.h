@@ -1,6 +1,10 @@
 #ifndef _NET_IF_H
 #define _NET_IF_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define IF_NAMESIZE 16
 
 struct if_nameindex
@@ -117,6 +121,8 @@ struct ifconf {
 
 #endif
 
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif

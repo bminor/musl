@@ -1,6 +1,10 @@
 #ifndef _MATH_H
 #define _MATH_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define __NEED___uint16_t
 #define __NEED___uint32_t
 #define __NEED___uint64_t
@@ -315,6 +319,10 @@ extern int signgam;
 
 #ifdef _GNU_SOURCE
 double      scalb(double, double);
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif

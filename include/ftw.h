@@ -1,6 +1,10 @@
 #ifndef _FTW_H
 #define	_FTW_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Normally we do not nest header includes. However useless bloat
  * like ftw may be treated as a special case. Otherwise we would
  * have to deal with duplicating all the stat.h mess. */
@@ -27,5 +31,9 @@ struct FTW
 
 int ftw(const char *, int (*)(const char *, const struct stat *, int), int);
 int nftw(const char *, int (*)(const char *, const struct stat *, int, struct FTW *), int, int);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

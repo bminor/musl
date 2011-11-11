@@ -1,6 +1,10 @@
 #ifndef _ARPA_INET_H
 #define	_ARPA_INET_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <netinet/in.h>
 #include <inttypes.h>
 
@@ -29,5 +33,9 @@ int inet_aton (const char *, struct in_addr *); /* nonstandard but widely used *
 #undef INET6_ADDRSTRLEN
 #define INET_ADDRSTRLEN  16
 #define INET6_ADDRSTRLEN 46
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

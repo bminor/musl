@@ -1,6 +1,10 @@
 #ifndef	_SYS_RESOURCE_H
 #define	_SYS_RESOURCE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define __NEED_id_t
 #define __NEED_time_t
 #define __NEED_struct_timeval
@@ -75,5 +79,9 @@ int setpriority (int, id_t, int);
 
 #define RLIM_NLIMITS RLIMIT_NLIMITS
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

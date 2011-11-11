@@ -1,6 +1,10 @@
 #ifndef _SYS_SYSINFO_H
 #define _SYS_SYSINFO_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* ?? */
 #define SI_LOAD_SHIFT 16
 
@@ -25,5 +29,9 @@ int get_nprocs_conf (void);
 int get_nprocs (void);
 long long get_phys_pages (void);
 long long get_avphys_pages (void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

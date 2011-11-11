@@ -1,6 +1,10 @@
 #ifndef	_CTYPE_H
 #define	_CTYPE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int   isalnum(int);
 int   isalpha(int);
 int   isblank(int);
@@ -51,6 +55,10 @@ int   toascii(int);
 #define _tolower(a) ((a)|0x20)
 #define _toupper(a) ((a)&0x5f)
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif

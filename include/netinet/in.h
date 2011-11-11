@@ -1,6 +1,10 @@
 #ifndef	_NETINET_IN_H
 #define	_NETINET_IN_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define __NEED_in_addr_t
 #define __NEED_in_port_t
 #define __NEED_sa_family_t
@@ -299,5 +303,9 @@ struct ip6_mtuinfo
 #define IPV6_RTHDR_STRICT       1
 
 #define IPV6_RTHDR_TYPE_0       0
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

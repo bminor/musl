@@ -1,6 +1,10 @@
 #ifndef _NET_ROUTE_H
 #define _NET_ROUTE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -112,5 +116,9 @@ struct in6_rtmsg {
 #define RTMSG_CONTROL		0x40
 
 #define RTMSG_AR_FAILED		0x51
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

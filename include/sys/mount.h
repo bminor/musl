@@ -1,6 +1,10 @@
 #ifndef _SYS_MOUNT_H
 #define _SYS_MOUNT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <sys/ioctl.h>
 
 #define BLKROSET   _IO(0x12, 93)
@@ -42,5 +46,9 @@
 int mount(const char *, const char *, const char *, unsigned long, const void *);
 int umount(const char *);
 int umount2(const char *, int);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

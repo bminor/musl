@@ -1,6 +1,10 @@
 #ifndef _SYS_SHM_H
 #define _SYS_SHM_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define __NEED_time_t
 #define __NEED_size_t
 #define __NEED_pid_t
@@ -42,5 +46,9 @@ void *shmat(int, const void *, int);
 int shmctl(int, int, struct shmid_ds *);
 int shmdt(const void *);
 int shmget(key_t, size_t, int);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
