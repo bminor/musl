@@ -43,8 +43,8 @@ static struct {
 #define DONTCARE 16
 #define RECLAIM 163840
 
-#define CHUNK_SIZE(c) ((c)->csize & SIZE_MASK)
-#define CHUNK_PSIZE(c) ((c)->psize & SIZE_MASK)
+#define CHUNK_SIZE(c) ((c)->csize & -2)
+#define CHUNK_PSIZE(c) ((c)->psize & -2)
 #define PREV_CHUNK(c) ((struct chunk *)((char *)(c) - CHUNK_PSIZE(c)))
 #define NEXT_CHUNK(c) ((struct chunk *)((char *)(c) + CHUNK_SIZE(c)))
 #define MEM_TO_CHUNK(p) (struct chunk *)((char *)(p) - OVERHEAD)
@@ -52,8 +52,6 @@ static struct {
 #define BIN_TO_CHUNK(i) (MEM_TO_CHUNK(&mal.bins[i].head))
 
 #define C_INUSE  ((size_t)1)
-#define C_FLAGS  ((size_t)3)
-#define C_SIZE   SIZE_MASK
 
 #define IS_MMAPPED(c) !((c)->csize & (C_INUSE))
 
