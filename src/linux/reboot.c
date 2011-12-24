@@ -3,5 +3,5 @@
 
 int reboot(int type)
 {
-	return syscall(SYS_reboot, type);
+	return syscall(SYS_reboot, 0xfee1dead, 672274793, type);
 }
