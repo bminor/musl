@@ -73,8 +73,9 @@ static void decode_vec(size_t *v, size_t *a, size_t cnt)
 	}
 }
 
-static uint32_t hash(const char *s)
+static uint32_t hash(const char *s0)
 {
+	const unsigned char *s = (void *)s0;
 	uint_fast32_t h = 0;
 	while (*s) {
 		h = 16*h + *s++;
