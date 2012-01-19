@@ -1,5 +1,6 @@
 #include <string.h>
 #include <libgen.h>
+#include "libc.h"
 
 char *basename(char *s)
 {
@@ -10,3 +11,5 @@ char *basename(char *s)
 	for (; i&&s[i-1]!='/'; i--);
 	return s+i;
 }
+
+weak_alias(basename, __xpg_basename);
