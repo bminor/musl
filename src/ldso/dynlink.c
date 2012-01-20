@@ -467,6 +467,7 @@ void *__dynlink(int argc, char **argv, size_t *got)
 	size_t i;
 	Phdr *phdr;
 	Ehdr *ehdr;
+	size_t *lib_dynv;
 	static struct dso builtin_dsos[3];
 	struct dso *const app = builtin_dsos+0;
 	struct dso *const lib = builtin_dsos+1;
@@ -498,8 +499,16 @@ void *__dynlink(int argc, char **argv, size_t *got)
 		}
 	}
 
-	/* Relocate ldso's DYNAMIC pointer and load vector */
-	decode_vec((void *)(got[0] += aux[AT_BASE]), lib_dyn, DYN_CNT);
+	/* Find the dynamic linker's DYNAMIC section and decode it */
+	ehdr = (void *)aux[AT_BASE];
+	phdr = (void *)(aux[AT_BASE] + ehdr->e_phoff);
+	for (i=ehdr->e_phnum; i--; phdr=(void *)((char *)phdr + ehdr->e_phentsize)) {
+		if (phdr->p_type == PT_DYNAMIC) {
+			lib_dynv = (void *)(aux[AT_BASE] + phdr->p_vaddr);
+			decode_vec(lib_dynv, lib_dyn, DYN_CNT);
+			break;
+		}
+	}
 
 	/* Find the program image's DYNAMIC section and decode it */
 	phdr = (void *)aux[AT_PHDR];
@@ -526,7 +535,7 @@ void *__dynlink(int argc, char **argv, size_t *got)
 		.strings = (void *)(aux[AT_BASE]+lib_dyn[DT_STRTAB]),
 		.hashtab = (void *)(aux[AT_BASE]+lib_dyn[DT_HASH]),
 		.syms = (void *)(aux[AT_BASE]+lib_dyn[DT_SYMTAB]),
-		.dynv = (void *)(got[0]),
+		.dynv = lib_dynv,
 		.name = "libc.so",
 		.global = 1,
 		.relocated = 1
