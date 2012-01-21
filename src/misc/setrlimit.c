@@ -3,9 +3,15 @@
 #include "syscall.h"
 #include "libc.h"
 
+#define MIN(a, b) ((a)<(b) ? (a) : (b))
+
 int __setrlimit(int resource, const struct rlimit *rlim)
 {
-	long k_rlim[2] = { rlim->rlim_cur, rlim->rlim_max };
+	unsigned long k_rlim[2];
+	int ret = __syscall(SYS_prlimit64, 0, resource, rlim, 0);
+	if (ret != -ENOSYS) return ret;
+	k_rlim[0] = MIN(rlim->rlim_cur, -1UL);
+	k_rlim[1] = MIN(rlim->rlim_max, -1UL);
 	return __syscall(SYS_setrlimit, resource, k_rlim);
 }
 
