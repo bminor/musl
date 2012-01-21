@@ -9,6 +9,10 @@ extern "C" {
 #define __NEED_time_t
 #define __NEED_struct_timeval
 
+#ifdef _GNU_SOURCE
+#define __NEED_pid_t
+#endif
+
 #include <bits/alltypes.h>
 
 typedef unsigned long long rlim_t;
@@ -48,6 +52,10 @@ int getrusage (int, struct rusage *);
 
 int getpriority (int, id_t);
 int setpriority (int, id_t, int);
+
+#ifdef _GNU_SOURCE
+int prlimit(pid_t, int, const struct rlimit *, struct rlimit *);
+#endif
 
 #define PRIO_PROCESS 0
 #define PRIO_PGRP    1

@@ -470,6 +470,7 @@ static inline long __syscall6(long __n, long __a1, long __a2, long __a3, long __
 #define __NR_inotify_init1	332
 #define __NR_preadv		333
 #define __NR_pwritev		334
+#define __NR_prlimit64		340
 
 /* fixup legacy 16-bit junk */
 #undef __NR_lchown
@@ -881,6 +882,7 @@ static inline long __syscall6(long __n, long __a1, long __a2, long __a3, long __
 #define SYS_inotify_init1	332
 #define SYS_preadv		333
 #define SYS_pwritev		334
+#define SYS_prlimit64		340
 
 /* fixup legacy 16-bit junk */
 #undef SYS_lchown
