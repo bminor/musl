@@ -358,3 +358,33 @@ new features:
 bug fixes:
 - numerous header file typos, copy/paste errors, omissions
 - statfs and statvfs ABI are now LSB-conformant (and actually work)
+
+
+
+0.8.4 release notes (coming soon)
+
+new features: 
+- arm dynamic linker support
+- process-shared pthread barriers now work
+- more optional cancellation points are now cancellable
+- printf accepts null pointers with %s, prints as "(null)"
+- recursive mutexes are now fully reentrant
+- __cxa_atexit support
+- real vfork
+- dynamic linker now gold-compatible
+- prlimit syscall
+- support for large limits with setrlimit/getrlimit (even on 32-bit)
+
+bug fixes:
+- many serious issues in condition variables
+- rwlock failure-to-wake deadlock issues
+- various small header files bugs/omissions
+- wrong failure return for pthread_create
+- path handling issues on execvp
+- lock count corruption with robust recursive mutexes
+- integer overflows in atoi, etc. reading most-negative value
+- spurious mremaps on every realloc of large memory chunks
+
+security:
+- avoid fd_set overflow in dns lookups
+
