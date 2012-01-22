@@ -58,7 +58,8 @@ static int match_in_dir(const char *d, const char *p, int flags, int (*errfunc)(
 	char *p2;
 	size_t l = strlen(d);
 	int literal;
-	int fnm_flags= ((flags & GLOB_NOESCAPE) ? FNM_NOESCAPE : 0) | FNM_PERIOD;
+	int fnm_flags= ((flags & GLOB_NOESCAPE) ? FNM_NOESCAPE : 0)
+		| ((!(flags & GLOB_PERIOD)) ? FNM_PERIOD : 0);
 	int error;
 
 	if ((p2 = strchr(p, '/'))) {
