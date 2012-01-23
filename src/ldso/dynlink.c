@@ -286,12 +286,20 @@ static int path_open(const char *name, const char *search)
 	}
 }
 
+static void decode_dyn(struct dso *p)
+{
+	size_t dyn[DYN_CNT] = {0};
+	decode_vec(p->dynv, dyn, DYN_CNT);
+	p->syms = (void *)(p->base + dyn[DT_SYMTAB]);
+	p->hashtab = (void *)(p->base + dyn[DT_HASH]);
+	p->strings = (void *)(p->base + dyn[DT_STRTAB]);
+}
+
 static struct dso *load_library(const char *name)
 {
 	unsigned char *base, *map;
 	size_t dyno, map_len;
 	struct dso *p;
-	size_t dyn[DYN_CNT] = {0};
 	int fd;
 	struct stat st;
 
@@ -365,11 +373,8 @@ static struct dso *load_library(const char *name)
 	p->map_len = map_len;
 	p->base = base;
 	p->dynv = (void *)(base + dyno);
-	decode_vec(p->dynv, dyn, DYN_CNT);
+	decode_dyn(p);
 
-	p->syms = (void *)(base + dyn[DT_SYMTAB]);
-	p->hashtab = (void *)(base + dyn[DT_HASH]);
-	p->strings = (void *)(base + dyn[DT_STRTAB]);
 	p->dev = st.st_dev;
 	p->ino = st.st_ino;
 	p->refcnt = 1;
@@ -458,21 +463,24 @@ static void free_all(struct dso *p)
 	}
 }
 
-void *__dynlink(int argc, char **argv, size_t *got)
+static size_t find_dyn(Phdr *ph, size_t cnt, size_t stride)
+{
+	for (; cnt--; ph = (void *)((char *)ph + stride))
+		if (ph->p_type == PT_DYNAMIC)
+			return ph->p_vaddr;
+	return 0;
+}
+
+void *__dynlink(int argc, char **argv)
 {
 	size_t *auxv, aux[AUX_CNT] = {0};
-	size_t app_dyn[DYN_CNT] = {0};
-	size_t lib_dyn[DYN_CNT] = {0};
-	size_t vdso_dyn[DYN_CNT] = {0};
 	size_t i;
 	Phdr *phdr;
 	Ehdr *ehdr;
-	size_t *lib_dynv;
 	static struct dso builtin_dsos[3];
 	struct dso *const app = builtin_dsos+0;
 	struct dso *const lib = builtin_dsos+1;
 	struct dso *const vdso = builtin_dsos+2;
-	size_t vdso_base=0;
 	char *env_preload=0;
 
 	/* Find aux vector just past environ[] */
@@ -492,56 +500,31 @@ void *__dynlink(int argc, char **argv, size_t *got)
 		env_preload = 0;
 	}
 
+	/* The dynamic linker load address is passed by the kernel
+	 * in the AUX vector, so this is easy. */
+	lib->base = (void *)aux[AT_BASE];
+	lib->name = "libc.so";
+	lib->global = 1;
+	ehdr = (void *)lib->base;
+	lib->dynv = (void *)(lib->base + find_dyn(
+		(void *)(aux[AT_BASE]+ehdr->e_phoff),
+		ehdr->e_phnum, ehdr->e_phentsize));
+	decode_dyn(lib);
+
+	/* Assume base address of 0 for the main program. This is not
+	 * valid for PIE code; we will have to search the PHDR to get
+	 * the correct load address in the PIE case (not yet supported). */
+	app->base = 0;
+	app->name = argv[0];
+	app->global = 1;
+	app->dynv = (void *)(app->base + find_dyn(
+		(void *)aux[AT_PHDR], aux[AT_PHNUM], aux[AT_PHENT]));
+	decode_dyn(app);
+
+	/* Attach to vdso, if provided by the kernel */
 	for (i=0; auxv[i]; i+=2) {
-		if (auxv[i]==AT_SYSINFO_EHDR) {
-			vdso_base = auxv[i+1];
-			break;
-		}
-	}
-
-	/* Find the dynamic linker's DYNAMIC section and decode it */
-	ehdr = (void *)aux[AT_BASE];
-	phdr = (void *)(aux[AT_BASE] + ehdr->e_phoff);
-	for (i=ehdr->e_phnum; i--; phdr=(void *)((char *)phdr + ehdr->e_phentsize)) {
-		if (phdr->p_type == PT_DYNAMIC) {
-			lib_dynv = (void *)(aux[AT_BASE] + phdr->p_vaddr);
-			decode_vec(lib_dynv, lib_dyn, DYN_CNT);
-			break;
-		}
-	}
-
-	/* Find the program image's DYNAMIC section and decode it */
-	phdr = (void *)aux[AT_PHDR];
-	for (i=aux[AT_PHNUM]; i--; phdr=(void *)((char *)phdr + aux[AT_PHENT])) {
-		if (phdr->p_type == PT_DYNAMIC) {
-			decode_vec((void *)phdr->p_vaddr, app_dyn, DYN_CNT);
-			break;
-		}
-	}
-
-	*app = (struct dso){
-		.base = 0,
-		.strings = (void *)(app_dyn[DT_STRTAB]),
-		.hashtab = (void *)(app_dyn[DT_HASH]),
-		.syms = (void *)(app_dyn[DT_SYMTAB]),
-		.dynv = (void *)(phdr->p_vaddr),
-		.name = argv[0],
-		.global = 1,
-		.next = lib
-	};
-
-	*lib = (struct dso){
-		.base = (void *)aux[AT_BASE],
-		.strings = (void *)(aux[AT_BASE]+lib_dyn[DT_STRTAB]),
-		.hashtab = (void *)(aux[AT_BASE]+lib_dyn[DT_HASH]),
-		.syms = (void *)(aux[AT_BASE]+lib_dyn[DT_SYMTAB]),
-		.dynv = lib_dynv,
-		.name = "libc.so",
-		.global = 1,
-		.relocated = 1
-	};
-
-	if (vdso_base) {
+		size_t vdso_base = auxv[i+1];
+		if (auxv[i] != AT_SYSINFO_EHDR) continue;
 		ehdr = (void *)vdso_base;
 		phdr = (void *)(vdso_base + ehdr->e_phoff);
 		for (i=ehdr->e_phnum; i; i--, phdr=(void *)((char *)phdr + ehdr->e_phentsize)) {
@@ -550,40 +533,43 @@ void *__dynlink(int argc, char **argv, size_t *got)
 			if (phdr->p_type == PT_LOAD)
 				vdso->base = (void *)(vdso_base - phdr->p_vaddr + phdr->p_offset);
 		}
-		decode_vec(vdso->dynv, vdso_dyn, DYN_CNT);
-		vdso->syms = (void *)(vdso->base + vdso_dyn[DT_SYMTAB]);
-		vdso->hashtab = (void *)(vdso->base + vdso_dyn[DT_HASH]);
-		vdso->strings = (void *)(vdso->base + vdso_dyn[DT_STRTAB]);
 		vdso->name = "linux-gate.so.1";
 		vdso->global = 1;
-
+		decode_dyn(vdso);
 		vdso->prev = lib;
 		lib->next = vdso;
+		break;
 	}
 
-	/* Relocate the dynamic linker/libc */
-	do_relocs((void *)aux[AT_BASE], (void *)(aux[AT_BASE]+lib_dyn[DT_REL]),
-		lib_dyn[DT_RELSZ], 2, lib->syms, lib->strings, app);
-	do_relocs((void *)aux[AT_BASE], (void *)(aux[AT_BASE]+lib_dyn[DT_RELA]),
-		lib_dyn[DT_RELASZ], 3, lib->syms, lib->strings, app);
+	/* Initial dso chain consists only of the app. We temporarily
+	 * append the dynamic linker/libc so we can relocate it, then
+	 * restore the initial chain in preparation for loading third
+	 * party libraries (preload/needed). */
+	head = tail = app;
+	libc = lib;
+	app->next = lib;
+	reloc_all(lib);
+	app->next = 0;
 
-	/* At this point the standard library is fully functional */
+	/* PAST THIS POINT, ALL LIBC INTERFACES ARE FULLY USABLE. */
 
+	/* Donate unused parts of app and library mapping to malloc */
 	reclaim_gaps(app->base, (void *)aux[AT_PHDR], aux[AT_PHENT], aux[AT_PHNUM]);
 	ehdr = (void *)lib->base;
 	reclaim_gaps(lib->base, (void *)(lib->base+ehdr->e_phoff),
 		ehdr->e_phentsize, ehdr->e_phnum);
 
-	head = tail = app;
-	libc = lib;
-	app->next = 0;
+	/* Load preload/needed libraries, add their symbols to the global
+	 * namespace, and perform all remaining relocations. */
 	if (env_preload) load_preload(env_preload);
-	load_deps(head);
+	load_deps(app);
+	make_global(app);
+	reloc_all(app);
 
-	make_global(head);
-	reloc_all(head->next);
-	reloc_all(head);
-
+	/* Switch to runtime mode: any further failures in the dynamic
+	 * linker are a reportable failure rather than a fatal startup
+	 * error. If the dynamic loader (dlopen) will not be used, free
+	 * all memory used by the dynamic linker. */
 	runtime = 1;
 	if (!rtld_used) {
 		free_all(head);
