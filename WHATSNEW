@@ -361,11 +361,12 @@ bug fixes:
 
 
 
-0.8.4 release notes (coming soon)
+0.8.4 release notes
 
 new features: 
 - arm dynamic linker support
 - process-shared pthread barriers now work
+- efficient futex-requeue-based cond var broadcast
 - more optional cancellation points are now cancellable
 - printf accepts null pointers with %s, prints as "(null)"
 - recursive mutexes are now fully reentrant
@@ -374,6 +375,7 @@ new features:
 - dynamic linker now gold-compatible
 - prlimit syscall
 - support for large limits with setrlimit/getrlimit (even on 32-bit)
+- glob now supports GLOB_PERIOD option (GNU extension)
 
 bug fixes:
 - many serious issues in condition variables
@@ -381,10 +383,10 @@ bug fixes:
 - various small header files bugs/omissions
 - wrong failure return for pthread_create
 - path handling issues on execvp
-- lock count corruption with robust recursive mutexes
+- lock count corruption with robust recursive mutexes on owner death
 - integer overflows in atoi, etc. reading most-negative value
 - spurious mremaps on every realloc of large memory chunks
+- pthread cancellation failure in single-threaded programs
 
 security:
 - avoid fd_set overflow in dns lookups
-
