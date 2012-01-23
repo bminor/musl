@@ -563,10 +563,13 @@ void *__dynlink(int argc, char **argv)
 		ehdr->e_phentsize, ehdr->e_phnum);
 
 	/* Load preload/needed libraries, add their symbols to the global
-	 * namespace, and perform all remaining relocations. */
+	 * namespace, and perform all remaining relocations. The main
+	 * program must be relocated LAST since it may contain copy
+	 * relocations which depend on libraries' relocations. */
 	if (env_preload) load_preload(env_preload);
 	load_deps(app);
 	make_global(app);
+	reloc_all(app->next);
 	reloc_all(app);
 
 	/* Switch to runtime mode: any further failures in the dynamic
