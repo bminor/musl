@@ -511,10 +511,13 @@ void *__dynlink(int argc, char **argv)
 		ehdr->e_phnum, ehdr->e_phentsize));
 	decode_dyn(lib);
 
-	/* Assume base address of 0 for the main program. This is not
-	 * valid for PIE code; we will have to search the PHDR to get
-	 * the correct load address in the PIE case (not yet supported). */
+	/* Find load address of the main program, via AT_PHDR vs PT_PHDR. */
 	app->base = 0;
+	phdr = (void *)aux[AT_PHDR];
+	for (i=aux[AT_PHNUM]; i; i--, phdr=(void *)((char *)phdr + aux[AT_PHENT])) {
+		if (phdr->p_type == PT_PHDR)
+			app->base = (void *)(aux[AT_PHDR] - phdr->p_vaddr);
+	}
 	app->name = argv[0];
 	app->global = 1;
 	app->dynv = (void *)(app->base + find_dyn(
