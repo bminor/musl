@@ -117,7 +117,7 @@ static int match_in_dir(const char *d, const char *p, int flags, int (*errfunc)(
 		} else {
 			int mark = 0;
 			if (flags & GLOB_MARK) {
-				if (de->d_type)
+				if (de->d_type && !S_ISLNK(de->d_type<<12))
 					mark = S_ISDIR(de->d_type<<12);
 				else {
 					struct stat st;
