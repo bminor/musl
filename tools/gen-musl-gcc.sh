@@ -29,6 +29,7 @@ for i ; do
 case "$skip$i" in
 -I|-L) skip=--- ; continue ;;
 -[cSE]|-M*) nolink=1 ;;
+-shared) nocrt=1 ;;
 -*) ;;
 *) havefile=1 ;;
 esac
@@ -37,13 +38,17 @@ done
 
 [ "$havefile" ] || nolink=1
 
+[ "$nolink" ] && nocrt=1
+
+[ "$nocrt" ] || set -- "$libc_start" "$libc_crt" "$@" "$libc_end" \
+
 [ "$nolink" ] || {
 tmp_specs=$HOME/.specs.tmp.$$
 printf '*link_libgcc:\n\n\n' > "$tmp_specs" || exit 1
 exec 3<"$tmp_specs"
 rm -f "$tmp_specs"
-set -- -specs=/proc/self/fd/3 "$libc_start" "$libc_crt" "$@" "$libc_end" \
-  -Wl,--start-group -lc -lgcc -lgcc_eh -Wl,--end-group \
+set -- -specs=/proc/self/fd/3 "$@" \
+  -Wl,--as-needed -Wl,--start-group -lc -lgcc -lgcc_eh -Wl,--end-group \
   -Wl,-dynamic-linker,"$ldso_pathname" -Wl,-nostdlib
 }
 
