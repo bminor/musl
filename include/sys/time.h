@@ -27,6 +27,8 @@ int utimes (const char *, const struct timeval [2]);
 #endif
 
 #ifdef _GNU_SOURCE
+int futimes(int, const struct timeval [2]);
+int lutimes(const char *, const struct timeval [2]);
 int settimeofday (const struct timeval *, void *);
 int adjtime (const struct timeval *, struct timeval *);
 struct timezone {
