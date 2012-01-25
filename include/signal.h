@@ -45,7 +45,7 @@ extern "C" {
 #define FPE_INTOVF 2
 #define FPE_FLTDIV 3
 #define FPE_FLTOVF 4
-#define FPE_FLTUNT 5
+#define FPE_FLTUND 5
 #define FPE_FLTRES 6
 #define FPE_FLTINV 7
 #define FPE_FLTSUB 8
