@@ -10,7 +10,7 @@ extern "C" {
 #ifdef __GNUC__
 __attribute__((const))
 #endif
-extern int *__errno_location(void);
+int *__errno_location(void);
 #define errno (*__errno_location())
 
 #ifdef __cplusplus

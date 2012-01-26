@@ -11,7 +11,7 @@ extern "C" {
 #define LOCK_NB	4
 #define LOCK_UN	8
 
-extern int flock(int, int);
+int flock(int, int);
 
 #endif
 
