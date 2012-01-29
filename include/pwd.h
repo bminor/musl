@@ -9,6 +9,10 @@ extern "C" {
 #define __NEED_uid_t
 #define __NEED_gid_t
 
+#ifdef _GNU_SOURCE
+#define __NEED_FILE
+#endif
+
 #include <bits/alltypes.h>
 
 struct passwd
@@ -33,6 +37,7 @@ int getpwnam_r (const char *, struct passwd *, char *, size_t, struct passwd **)
 
 #ifdef _GNU_SOURCE
 char *getpass(const char *);
+struct passwd *fgetpwent(FILE *);
 #endif
 
 #ifdef __cplusplus
