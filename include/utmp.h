@@ -7,6 +7,10 @@ extern "C" {
 
 #include <utmpx.h>
 
+#define ACCOUNTING 9
+#define UT_NAMESIZE 32
+#define UT_HOSTSIZE 256
+
 #define ut_time ut_tv.tv_sec
 #define ut_name ut_user
 #define ut_exit __ut_exit
