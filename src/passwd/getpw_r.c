@@ -1,4 +1,5 @@
 #include "pwf.h"
+#include <pthread.h>
 
 #define FIX(x) (pw->pw_##x = pw->pw_##x-line+buf)
 
@@ -8,9 +9,15 @@ static int getpw_r(const char *name, uid_t uid, struct passwd *pw, char *buf, si
 	char *line = 0;
 	size_t len = 0;
 	int rv = 0;
+	int cs;
+
+	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
 
 	f = fopen("/etc/passwd", "rb");
-	if (!f) return errno;
+	if (!f) {
+		rv = errno;
+		goto done;
+	}
 
 	*res = 0;
 	while (__getpwent_a(f, pw, &line, &len)) {
@@ -32,6 +39,8 @@ static int getpw_r(const char *name, uid_t uid, struct passwd *pw, char *buf, si
 	}
  	free(line);
 	fclose(f);
+done:
+	pthread_setcancelstate(cs, 0);
 	return rv;
 }
 

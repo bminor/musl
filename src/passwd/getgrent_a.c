@@ -1,16 +1,19 @@
 #include "pwf.h"
+#include <pthread.h>
 
 struct group *__getgrent_a(FILE *f, struct group *gr, char **line, size_t *size, char ***mem, size_t *nmem)
 {
 	ssize_t l;
 	char *s, *mems;
 	size_t i;
-
+	int cs;
+	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
 	for (;;) {
 		if ((l=getline(line, size, f)) < 0) {
 			free(*line);
 			*line = 0;
-			return 0;
+			gr = 0;
+			goto end;
 		}
 		line[0][l-1] = 0;
 
@@ -46,5 +49,7 @@ struct group *__getgrent_a(FILE *f, struct group *gr, char **line, size_t *size,
 		mem[0][0] = 0;
 	}
 	gr->gr_mem = *mem;
+end:
+	pthread_setcancelstate(cs, 0);
 	return gr;
 }

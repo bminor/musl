@@ -1,4 +1,5 @@
 #include "pwf.h"
+#include <pthread.h>
 
 #define FIX(x) (gr->gr_##x = gr->gr_##x-line+buf)
 
@@ -11,9 +12,15 @@ static int getgr_r(const char *name, gid_t gid, struct group *gr, char *buf, siz
 	size_t nmem = 0;
 	int rv = 0;
 	size_t i;
+	int cs;
+
+	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
 
 	f = fopen("/etc/group", "rb");
-	if (!f) return errno;
+	if (!f) {
+		rv = errno;
+		goto done;
+	}
 
 	*res = 0;
 	while (__getgrent_a(f, gr, &line, &len, &mem, &nmem)) {
@@ -39,6 +46,8 @@ static int getgr_r(const char *name, gid_t gid, struct group *gr, char *buf, siz
  	free(mem);
  	free(line);
 	fclose(f);
+done:
+	pthread_setcancelstate(cs, 0);
 	return rv;
 }
 

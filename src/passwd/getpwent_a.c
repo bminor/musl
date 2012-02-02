@@ -1,14 +1,18 @@
 #include "pwf.h"
+#include <pthread.h>
 
 struct passwd *__getpwent_a(FILE *f, struct passwd *pw, char **line, size_t *size)
 {
 	ssize_t l;
 	char *s;
+	int cs;
+	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
 	for (;;) {
 		if ((l=getline(line, size, f)) < 0) {
 			free(*line);
 			*line = 0;
-			return 0;
+			pw = 0;
+			break;
 		}
 		line[0][l-1] = 0;
 
@@ -32,6 +36,8 @@ struct passwd *__getpwent_a(FILE *f, struct passwd *pw, char **line, size_t *siz
 		if (!(s = strchr(s, ':'))) continue;
 
 		*s++ = 0; pw->pw_shell = s;
-		return pw;
+		break;
 	}
+	pthread_setcancelstate(cs, 0);
+	return pw;
 }
