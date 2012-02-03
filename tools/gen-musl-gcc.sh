@@ -29,7 +29,7 @@ for i ; do
 case "$skip$i" in
 -I|-L) skip=--- ; continue ;;
 -[cSE]|-M*) nolink=1 ;;
--shared) nocrt=1 ;;
+-shared|-nostartfiles|-nostdlib) nocrt=1 ;;
 -*) ;;
 *) havefile=1 ;;
 esac
