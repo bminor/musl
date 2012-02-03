@@ -674,6 +674,16 @@ void *__dlsym(void *p, const char *s, void *ra)
 	pthread_rwlock_unlock(&lock);
 	return res;
 }
+#else
+void *dlopen(const char *file, int mode)
+{
+	return 0;
+}
+void *__dlsym(void *p, const char *s, void *ra)
+{
+	return 0;
+}
+#endif
 
 char *dlerror()
 {
@@ -684,4 +694,3 @@ int dlclose(void *p)
 {
 	return 0;
 }
-#endif
