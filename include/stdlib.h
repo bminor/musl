@@ -134,6 +134,9 @@ void *valloc (size_t);
 void *memalign(size_t, size_t);
 int clearenv(void);
 int ptsname_r(int, char *, size_t);
+char *ecvt(double, int, int *, int *);
+char *fcvt(double, int, int *, int *);
+char *gcvt(double, int, char *);
 #endif
 
 
