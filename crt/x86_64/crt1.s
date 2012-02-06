@@ -1,4 +1,6 @@
 /* Written 2011 Nicholas J. Kain, released as Public Domain */
+.weak _init
+.weak _fini
 .text
 .global _start
 _start:
@@ -9,8 +11,8 @@ _start:
 	andq $-16,%rsp  /* align stack pointer */
 	push %rax       /* 8th arg: glibc ABI compatible */
 	push %rsp       /* 7th arg: glibc ABI compatible */
-	xor %r8,%r8     /* 5th arg: always 0 */
-	xor %rcx,%rcx   /* 4th arg: always 0 */
+	mov $_fini,%r8  /* 5th arg: fini/dtors function */
+	mov $_init,%rcx /* 4th arg: init/ctors function */
 	mov $main,%rdi  /* 1st arg: application entry ip */
 	call __libc_start_main /* musl init will run the program */
-.L0:	jmp .L0
+1:	jmp 1b

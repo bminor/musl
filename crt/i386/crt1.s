@@ -1,3 +1,5 @@
+.weak _init
+.weak _fini
 .text
 .global _start
 _start:
@@ -8,8 +10,10 @@ _start:
 	pushl %esp
 	pushl %esp
 	pushl %edx
-	pushl %ebp
-	pushl %ebp
+	call 1f
+1:	addl $[_fini-.],(%esp)
+	call 1f
+1:	addl $[_init-.],(%esp)
 	pushl %eax
 	pushl %ecx
 	call 1f

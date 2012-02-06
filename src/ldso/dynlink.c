@@ -49,6 +49,7 @@ struct dso
 	ino_t ino;
 	int global;
 	int relocated;
+	int constructed;
 	struct dso **deps;
 	char *name;
 	char buf[];
@@ -471,6 +472,20 @@ static size_t find_dyn(Phdr *ph, size_t cnt, size_t stride)
 	return 0;
 }
 
+static void do_init_fini(struct dso *p)
+{
+	size_t dyn[DYN_CNT] = {0};
+	for (; p; p=p->prev) {
+		if (p->constructed) return;
+		decode_vec(p->dynv, dyn, DYN_CNT);
+		if (dyn[0] & (1<<DT_FINI))
+			atexit((void (*)(void))(p->base + dyn[DT_FINI]));
+		if (dyn[0] & (1<<DT_INIT))
+			((void (*)(void))(p->base + dyn[DT_INIT]))();
+		p->constructed = 1;
+	}
+}
+
 void *__dynlink(int argc, char **argv)
 {
 	size_t *auxv, aux[AUX_CNT] = {0};
@@ -520,6 +535,7 @@ void *__dynlink(int argc, char **argv)
 	}
 	app->name = argv[0];
 	app->global = 1;
+	app->constructed = 1;
 	app->dynv = (void *)(app->base + find_dyn(
 		(void *)aux[AT_PHDR], aux[AT_PHNUM], aux[AT_PHENT]));
 	decode_dyn(app);
@@ -577,6 +593,9 @@ void *__dynlink(int argc, char **argv)
 	 * error. If the dynamic loader (dlopen) will not be used, free
 	 * all memory used by the dynamic linker. */
 	runtime = 1;
+
+	do_init_fini(tail);
+
 	if (!rtld_used) {
 		free_all(head);
 		free(sys_path);
