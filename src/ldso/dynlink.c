@@ -655,6 +655,7 @@ void *dlopen(const char *file, int mode)
 		p->global = 1;
 	}
 
+	do_init_fini(tail);
 end:
 	pthread_rwlock_unlock(&lock);
 	return p;
