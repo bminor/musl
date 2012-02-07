@@ -7,6 +7,7 @@ extern "C" {
 
 
 #define __NEED_size_t
+#define __NEED_locale_t
 #include <bits/alltypes.h>
 
 
@@ -21,6 +22,9 @@ char *rindex (const char *, int);
 
 int strcasecmp (const char *, const char *);
 int strncasecmp (const char *, const char *, size_t);
+
+int strcasecmp_l (const char *, const char *, locale_t);
+int strncasecmp_l (const char *, const char *, size_t, locale_t);
 
 #ifdef __cplusplus
 }

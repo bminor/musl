@@ -13,6 +13,11 @@ extern "C" {
 #endif
 
 #define __NEED_size_t
+#if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
+ || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+#define __NEED_locale_t
+#endif
+
 #include <bits/alltypes.h>
 
 void *memcpy (void *, const void *, size_t);
@@ -57,6 +62,9 @@ size_t strnlen (const char *, size_t);
 char *strdup (const char *);
 char *strndup (const char *, size_t);
 char *strsignal(int);
+char *strerror_l (int, locale_t);
+int strcoll_l (const char *, const char *, locale_t);
+size_t strxfrm_l (char *, const char *, size_t, locale_t);
 #endif
 
 #if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)

@@ -23,6 +23,7 @@ extern "C" {
 #define __NEED_clockid_t
 #define __NEED_timer_t
 #define __NEED_pid_t
+#define __NEED_locale_t
 #endif
 
 #include <bits/alltypes.h>
@@ -57,6 +58,8 @@ char *ctime (const time_t *);
 
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+
+size_t strftime_l (char *, size_t, const char *, const struct tm *, locale_t);
 
 struct tm *gmtime_r (const time_t *, struct tm *);
 struct tm *localtime_r (const time_t *, struct tm *);
