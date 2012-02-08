@@ -610,9 +610,11 @@ void *dlopen(const char *file, int mode)
 {
 	struct dso *volatile p, *orig_tail = tail, *next;
 	size_t i;
+	int cs;
 
 	if (!file) return head;
 
+	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
 	pthread_rwlock_wrlock(&lock);
 
 	if (setjmp(rtld_fail)) {
@@ -628,8 +630,8 @@ void *dlopen(const char *file, int mode)
 		}
 		tail = orig_tail;
 		tail->next = 0;
-		pthread_rwlock_unlock(&lock);
-		return 0;
+		p = 0;
+		goto end;
 	}
 
 	p = load_library(file);
@@ -658,6 +660,7 @@ void *dlopen(const char *file, int mode)
 	do_init_fini(tail);
 end:
 	pthread_rwlock_unlock(&lock);
+	pthread_setcancelstate(cs, 0);
 	return p;
 }
 
