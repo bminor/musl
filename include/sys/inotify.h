@@ -13,7 +13,7 @@ struct inotify_event {
 	char name[];
 };
 
-#define IN_CLOEXEC 020000000
+#define IN_CLOEXEC 02000000
 #define IN_NONBLOCK 04000
 
 #define IN_ACCESS        0x00000001
