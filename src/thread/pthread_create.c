@@ -8,14 +8,18 @@ weak_alias(dummy_0, __synccall_lock);
 weak_alias(dummy_0, __synccall_unlock);
 weak_alias(dummy_0, __pthread_tsd_run_dtors);
 
-void __pthread_do_unwind(struct __ptcb *cb)
+void pthread_exit(void *result)
 {
 	pthread_t self = pthread_self();
 	int n;
 
-	if (cb->__next) {
-		self->cancelbuf = cb->__next->__next;
-		longjmp((void *)cb->__next->__jb, 1);
+	self->result = result;
+
+	while (self->cancelbuf) {
+		void (*f)(void *) = self->cancelbuf->__f;
+		void *x = self->cancelbuf->__x;
+		self->cancelbuf = self->cancelbuf->__next;
+		f(x);
 	}
 
 	__pthread_tsd_run_dtors();
@@ -39,17 +43,19 @@ void __pthread_do_unwind(struct __ptcb *cb)
 	__syscall(SYS_exit, 0);
 }
 
-void __pthread_do_register(struct __ptcb *cb)
+void __do_cleanup_push(struct __ptcb *cb, void (*f)(void *), void *x)
 {
 	struct pthread *self = pthread_self();
+	cb->__f = f;
+	cb->__x = x;
 	cb->__next = self->cancelbuf;
 	self->cancelbuf = cb;
 }
 
-void __pthread_do_unregister(struct __ptcb *cb)
+void __do_cleanup_pop(struct __ptcb *cb, int run)
 {
-	struct pthread *self = __pthread_self();
-	self->cancelbuf = self->cancelbuf->__next;
+	__pthread_self()->cancelbuf = cb->__next;
+	if (run) cb->__f(cb->__x);
 }
 
 static int start(void *p)
@@ -133,12 +139,4 @@ int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(vo
 	}
 	*res = new;
 	return 0;
-}
-
-void pthread_exit(void *result)
-{
-	struct pthread *self = pthread_self();
-	struct __ptcb cb = { .__next = self->cancelbuf };
-	self->result = result;
-	__pthread_do_unwind(&cb);
 }

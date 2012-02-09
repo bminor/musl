@@ -186,24 +186,17 @@ int pthread_atfork(void (*)(void), void (*)(void), void (*)(void));
 int pthread_getconcurrency(void);
 int pthread_setconcurrency(int);
 
-#include <bits/pthread.h>
+struct __ptcb {
+	void (*__f)(void *);
+	void *__x;
+	struct __ptcb *__next;
+};
 
-int __setjmp(void *);
-#ifndef __pthread_register_cancel
-void __pthread_register_cancel(struct __ptcb *);
-void __pthread_unregister_cancel(struct __ptcb *);
-void __pthread_unwind_next(struct __ptcb *);
-#endif
+void _pthread_cleanup_push(struct __ptcb *, void (*)(void *), void *);
+void _pthread_cleanup_pop(struct __ptcb *, int);
 
-#define pthread_cleanup_push(f, x) \
-do { struct __ptcb __cb; void (*__f)(void *) = (f); void *__x = (x); \
-if (__setjmp(__cb.__jb)) __f(__x), __pthread_unwind_next(&__cb); \
-__pthread_register_cancel(&__cb); {
-
-#define pthread_cleanup_pop(r) ; } \
-__pthread_unregister_cancel(&__cb); \
-if (r) __f(__x); } while (0)
-
+#define pthread_cleanup_push(f, x) do { struct __ptcb __cb; _pthread_cleanup_push(&__cb, f, x);
+#define pthread_cleanup_pop(r) _pthread_cleanup_pop(&__cb, (r)); } while(0)
 
 #ifdef __cplusplus
 }

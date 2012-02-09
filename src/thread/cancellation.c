@@ -1,23 +1,20 @@
 #include "pthread_impl.h"
 
-static void dummy(struct __ptcb *cb)
-{
-}
-weak_alias(dummy, __pthread_do_unwind);
-weak_alias(dummy, __pthread_do_register);
-weak_alias(dummy, __pthread_do_unregister);
+void __do_cleanup_push();
+void __do_cleanup_pop();
 
-void __pthread_unwind_next(struct __ptcb *cb)
+void _pthread_cleanup_push(struct __ptcb *cb, void (*f)(void *), void *x)
 {
-	__pthread_do_unwind(cb);
+	__do_cleanup_push(cb, f, x);
 }
 
-void __pthread_register_cancel(struct __ptcb *cb)
+void _pthread_cleanup_pop(struct __ptcb *cb, int run)
 {
-	__pthread_do_register(cb);
+	__do_cleanup_pop(cb, run);
 }
 
-void __pthread_unregister_cancel(struct __ptcb *cb)
+static void dummy()
 {
-	__pthread_do_unregister(cb);
 }
+weak_alias(dummy, __do_cleanup_push);
+weak_alias(dummy, __do_cleanup_pop);
