@@ -55,7 +55,6 @@ void __do_cleanup_push(struct __ptcb *cb, void (*f)(void *), void *x)
 void __do_cleanup_pop(struct __ptcb *cb, int run)
 {
 	__pthread_self()->cancelbuf = cb->__next;
-	if (run) cb->__f(cb->__x);
 }
 
 static int start(void *p)
