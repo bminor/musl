@@ -82,8 +82,9 @@ int __dns_doqueries(unsigned char *dest, const char *name, int *rr, int rrcnt)
 	}
 	if (f) __fclose_ca(f);
 	if (!nns) {
-		ns[0].sin.sin_family = AF_INET;
+		ns[0].sin.sin_family = family = AF_INET;
 		ns[0].sin.sin_port = htons(53);
+		ns[0].sin.sin_addr.s_addr = htonl(0x7f000001);
 		nns=1;
 		sl = sizeof sa.sin;
 	}
