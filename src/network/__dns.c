@@ -88,6 +88,9 @@ int __dns_doqueries(unsigned char *dest, const char *name, int *rr, int rrcnt)
 		sl = sizeof sa.sin;
 	}
 
+	pthread_cleanup_push(cleanup, (void *)(intptr_t)fd);
+	pthread_setcancelstate(cs, 0);
+
 	/* Get local address and open/bind a socket */
 	sa.sin.sin_family = family;
 	fd = socket(family, SOCK_DGRAM, 0);
@@ -100,9 +103,6 @@ int __dns_doqueries(unsigned char *dest, const char *name, int *rr, int rrcnt)
 
 	pfd.fd = fd;
 	pfd.events = POLLIN;
-
-	pthread_cleanup_push(cleanup, (void *)(intptr_t)fd);
-	pthread_setcancelstate(cs, 0);
 
 	/* Loop until we timeout; break early on success */
 	for (; time(0)-t0 < TIMEOUT; ) {
