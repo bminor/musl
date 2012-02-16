@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#define __NEED_float_t
+#define __NEED_double_t
 #define __NEED___uint16_t
 #define __NEED___uint32_t
 #define __NEED___uint64_t

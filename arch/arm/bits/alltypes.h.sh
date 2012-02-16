@@ -56,6 +56,9 @@ TYPEDEF uint64_t           uint_fast64_t;
 TYPEDEF long          intptr_t;
 TYPEDEF unsigned long uintptr_t;
 
+TYPEDEF float float_t;
+TYPEDEF double double_t;
+
 TYPEDEF long time_t;
 TYPEDEF int suseconds_t;
 STRUCT timeval { time_t tv_sec; int tv_usec; };
