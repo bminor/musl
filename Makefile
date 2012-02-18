@@ -45,7 +45,7 @@ LDSO_PATHNAME = $(syslibdir)/ld-musl-$(ARCH).so.1
 
 all: $(ALL_LIBS) $(ALL_TOOLS)
 
-install: $(ALL_LIBS:lib/%=$(DESTDIR)$(libdir)/%) $(ALL_INCLUDES:include/%=$(DESTDIR)$(includedir)/%) $(ALL_TOOLS:tools/%=$(DESTDIR)$(bindir)/%) $(DESTDIR)$(LDSO_PATHNAME)
+install: $(ALL_LIBS:lib/%=$(DESTDIR)$(libdir)/%) $(ALL_INCLUDES:include/%=$(DESTDIR)$(includedir)/%) $(ALL_TOOLS:tools/%=$(DESTDIR)$(bindir)/%) $(if $(SHARED_LIBS),$(DESTDIR)$(LDSO_PATHNAME),)
 
 clean:
 	rm -f crt/*.o
@@ -110,6 +110,7 @@ $(DESTDIR)$(includedir)/%: include/%
 	install -D -m 644 $< $@
 
 $(DESTDIR)$(LDSO_PATHNAME): lib/libc.so
+	install -d -m 755 $(DESTDIR)$(syslibdir)
 	ln -sf $(libdir)/libc.so $@ || true
 
 .PRECIOUS: $(CRT_LIBS:lib/%=crt/%)
