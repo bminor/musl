@@ -52,7 +52,7 @@ set -- -specs=/proc/self/fd/3 "$@" \
   -Wl,-dynamic-linker,"$ldso_pathname" -Wl,-nostdlib
 }
 
-set -- -std=gnu99 -nostdinc -nostdlib $nosp \
+set -- -nostdinc -nostdlib $nosp \
   -isystem "$libc_inc" -isystem "$gcc_inc" "$@" \
   -L"$libc_lib" -L"$libgcc"
 
