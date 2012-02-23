@@ -17,9 +17,9 @@ long ptrace(int req, ...)
 	addr2 = va_arg(ap, void *);
 	va_end(ap);
 
-	if (req<4U) data = &result;
+	if (req-1U < 3) data = &result;
 	ret = syscall(SYS_ptrace, req, pid, addr, data, addr2);
 
-	if (ret<0 || req>=4U) return ret;
+	if (ret < 0 || req-1U >= 3) return ret;
 	return result;
 }
