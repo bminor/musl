@@ -89,12 +89,13 @@ int __dns_doqueries(unsigned char *dest, const char *name, int *rr, int rrcnt)
 		sl = sizeof sa.sin;
 	}
 
-	pthread_cleanup_push(cleanup, (void *)(intptr_t)fd);
-	pthread_setcancelstate(cs, 0);
-
 	/* Get local address and open/bind a socket */
 	sa.sin.sin_family = family;
 	fd = socket(family, SOCK_DGRAM, 0);
+
+	pthread_cleanup_push(cleanup, (void *)(intptr_t)fd);
+	pthread_setcancelstate(cs, 0);
+
 	if (bind(fd, (void *)&sa, sl) < 0) {
 		errcode = EAI_SYSTEM;
 		goto out;
