@@ -6,11 +6,9 @@
 
 #define bittab __fsmu8
 
-#if 100*__GNUC__+__GNUC_MINOR__ >= 303 || defined(__PCC__) || defined(__TINYC__)
-extern const uint32_t bittab[] __attribute__((visibility("hidden")));
-#else
-extern const uint32_t bittab[];
-#endif
+#include "libc.h"
+
+extern const uint32_t bittab[] ATTR_LIBC_VISIBILITY;
 
 /* Upper 6 state bits are a negative integer offset to bound-check next byte */
 /*    equivalent to: ( (b-0x80) | (b+offset) ) & ~0x3f      */

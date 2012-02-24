@@ -19,16 +19,21 @@ struct __libc {
 };
 
 
-#if 100*__GNUC__+__GNUC_MINOR__ >= 303 || defined(__PCC__) || defined(__TINYC__)
-extern struct __libc __libc __attribute__((visibility("hidden")));
-#define libc __libc
+#if !defined(__PIC__) || 100*__GNUC__+__GNUC_MINOR__ >= 303 || defined(__PCC__) || defined(__TINYC__)
 
-#elif !defined(__PIC__)
-extern struct __libc __libc;
+#ifdef __PIC__
+#define ATTR_LIBC_VISIBILITY __attribute__((visibility("hidden"))) 
+#else
+#define ATTR_LIBC_VISIBILITY
+#endif
+
+extern struct __libc __libc ATTR_LIBC_VISIBILITY;
 #define libc __libc
 
 #else
+
 #define USE_LIBC_ACCESSOR
+#define ATTR_LIBC_VISIBILITY
 extern struct __libc *__libc_loc(void) __attribute__((const));
 #define libc (*__libc_loc())
 
