@@ -7,5 +7,5 @@ struct __libc *__libc_loc()
 	return &__libc;
 }
 #else
-struct __libc __libc ATTR_LIBC_VISIBILITY;
+struct __libc __libc;
 #endif
