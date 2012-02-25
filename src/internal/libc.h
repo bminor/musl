@@ -22,6 +22,9 @@ struct __libc {
 #if !defined(__PIC__) || 100*__GNUC__+__GNUC_MINOR__ >= 303 || defined(__PCC__) || defined(__TINYC__)
 
 #ifdef __PIC__
+#if __GNUC__ < 4
+#define BROKEN_VISIBILITY 1
+#endif
 #define ATTR_LIBC_VISIBILITY __attribute__((visibility("hidden"))) 
 #else
 #define ATTR_LIBC_VISIBILITY

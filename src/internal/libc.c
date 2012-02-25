@@ -9,3 +9,7 @@ struct __libc *__libc_loc()
 #else
 struct __libc __libc;
 #endif
+
+#ifdef BROKEN_VISIBILITY
+__asm__(".hidden __libc");
+#endif
