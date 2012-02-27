@@ -3,8 +3,12 @@
 #include <errno.h>
 #include "syscall.h"
 #include "pthread_impl.h"
+#include "libc.h"
 
 void __restore(), __restore_rt();
+
+static pthread_t dummy(void) { return 0; }
+weak_alias(dummy, __pthread_self_def);
 
 int __libc_sigaction(int sig, const struct sigaction *sa, struct sigaction *old)
 {
@@ -23,6 +27,7 @@ int __libc_sigaction(int sig, const struct sigaction *sa, struct sigaction *old)
 		pksa = (long)&ksa;
 	}
 	if (old) pkold = (long)&kold;
+	__pthread_self_def();
 	if (syscall(SYS_rt_sigaction, sig, pksa, pkold, 8))
 		return -1;
 	if (old) {

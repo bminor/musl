@@ -19,7 +19,7 @@ static int init_main_thread()
 	return 0;
 }
 
-pthread_t pthread_self()
+pthread_t __pthread_self_def()
 {
 	static int init, failed;
 	if (!init) {
@@ -31,4 +31,5 @@ pthread_t pthread_self()
 	return __pthread_self();
 }
 
-weak_alias(pthread_self, __pthread_self_init);
+weak_alias(__pthread_self_def, pthread_self);
+weak_alias(__pthread_self_def, __pthread_self_init);
