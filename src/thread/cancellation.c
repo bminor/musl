@@ -5,6 +5,8 @@ void __do_cleanup_pop();
 
 void _pthread_cleanup_push(struct __ptcb *cb, void (*f)(void *), void *x)
 {
+	cb->__f = f;
+	cb->__x = x;
 	__do_cleanup_push(cb, f, x);
 }
 

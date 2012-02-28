@@ -46,8 +46,6 @@ void pthread_exit(void *result)
 void __do_cleanup_push(struct __ptcb *cb, void (*f)(void *), void *x)
 {
 	struct pthread *self = pthread_self();
-	cb->__f = f;
-	cb->__x = x;
 	cb->__next = self->cancelbuf;
 	self->cancelbuf = cb;
 }
