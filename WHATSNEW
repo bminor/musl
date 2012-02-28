@@ -390,3 +390,38 @@ bug fixes:
 
 security:
 - avoid fd_set overflow in dns lookups
+
+
+
+0.8.5 release notes
+
+new features:
+- stdio operations are now cancellable (only when low-level io happens)
+- global ctor/dtor support in main program start code and shared libs
+- dynamic linker support for PIE executables (but missing startup code)
+- vfork support on x86_64
+- complete set of locale_t functions (all ignore the locale argument)
+- provide define float_t and double_t in math.h
+- lighter/faster cancellation cleanup handler register/unregister
+
+bug fixes:
+- gcc wrapper now supports -shared, -nostdlib, -nostartfiles
+- removed one wrongly-classified character from iswspace set (zwsp)
+- fixed crashes in dns lookup on some errors, e.g. resolv.conf missing
+- "make install" no longer tries to build shared libc if disabled
+- ptrace argument handling bugs fixed
+- work around visibility-hidden bugs in gcc 3.x
+- fix thread-pointer-loss issue when it's initialized in signal handlers
+- various minor typo/misc fixes in headers
+
+compatibility:
+- glob behaves more like traditional implementations w.r.t. GLOB_MARK
+- added legacy futimes, lutimes functions
+- more compatibility macros in sys/param.h (nonstandard header)
+- setfs[ug]id syscall wrappers (linux specific)
+- fgetpwent function (nonstandard)
+- utmp.h matches traditional version more closely
+- caddr_t now matches glibc type (void * instead of long)
+- dummy (always-fail) dlopen and dlsym functions for static linked programs
+- [efg]cvt functions (previously posix, removed from standard)
+- get_current_dir_name function (nonstandard)
