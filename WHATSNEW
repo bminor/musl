@@ -425,3 +425,10 @@ compatibility:
 - dummy (always-fail) dlopen and dlsym functions for static linked programs
 - [efg]cvt functions (previously posix, removed from standard)
 - get_current_dir_name function (nonstandard)
+
+
+
+0.8.6 release notes
+
+bug fixes:
+- fix crash in dns lookups for all static-linked, non-threaded programs
