@@ -23,7 +23,7 @@ GENH = include/bits/alltypes.h
 
 CFLAGS  = -Os -nostdinc -ffreestanding -std=c99 -D_XOPEN_SOURCE=700 -pipe
 LDFLAGS = -nostdlib -shared -fPIC -Wl,-e,_start -Wl,-Bsymbolic-functions
-INC     = -I./include -I./src/internal -I./arch/$(ARCH)
+INC     = -I./src/internal -I./include -I./arch/$(ARCH)
 PIC     = -fPIC -O3
 AR      = $(CROSS_COMPILE)ar
 RANLIB  = $(CROSS_COMPILE)ranlib
