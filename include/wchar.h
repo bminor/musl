@@ -11,6 +11,11 @@ extern "C" {
 #define __NEED_wchar_t
 #define __NEED_wint_t
 
+#if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
+ || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+#define __NEED_locale_t
+#endif
+
 #if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
 #define __NEED_wctype_t
 #endif
@@ -132,6 +137,16 @@ size_t wcsftime (wchar_t *, size_t, const wchar_t *, const struct tm *);
 FILE *open_wmemstream(wchar_t **, size_t *);
 size_t mbsnrtowcs(wchar_t *, const char **, size_t, size_t, mbstate_t *);
 size_t wcsnrtombs(char *, const wchar_t **, size_t, size_t, mbstate_t *);
+wchar_t *wcsdup(const wchar_t *);
+size_t wcsnlen (const wchar_t *, size_t);
+wchar_t *wcpcpy (wchar_t *, const wchar_t *);
+wchar_t *wcpncpy (wchar_t *, const wchar_t *, size_t);
+int wcscasecmp(const wchar_t *, const wchar_t *);
+int wcscasecmp_l(const wchar_t *, const wchar_t *, locale_t);
+int wcsncasecmp(const wchar_t *, const wchar_t *, size_t);
+int wcsncasecmp_l(const wchar_t *, const wchar_t *, size_t, locale_t);
+int wcscoll_l(const wchar_t *, const wchar_t *, locale_t);
+size_t wcsxfrm_l(wchar_t *, const wchar_t *, size_t n, locale_t);
 #endif
 
 #if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
