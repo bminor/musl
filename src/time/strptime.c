@@ -18,6 +18,7 @@ char *strptime(const char *s, const char *f, struct tm *tm)
 			else if (*s != *f) return 0;
 			else s++;
 			f++;
+			continue;
 		}
 		f++;
 		if (*f == '+') f++;
@@ -165,6 +166,7 @@ char *strptime(const char *s, const char *f, struct tm *tm)
 				ex = nl_langinfo(min+i);
 				len = strlen(ex);
 				if (strncasecmp(s, ex, len)) continue;
+				s += len;
 				*dest = i % range;
 				break;
 			}
