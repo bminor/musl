@@ -53,7 +53,7 @@ int __fpclassifyl(long double);
 #define isunordered(x,y) (isnan((x)) ? ((y),1) : isnan((y)))
 
 static
-#if __STDC_VERSION >= 199901L
+#if __STDC_VERSION__ >= 199901L
 inline
 #endif
 int __isrel(long double __x, long double __y, int __rel)
