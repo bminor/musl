@@ -87,7 +87,7 @@ int __intparse(struct intparse *v, const void *buf, size_t n)
 			v->val = v->val * b + d;
 		if (!n) return 1;
 		if (d >= b) goto finished;
-		if (v->val < (UINTMAX_MAX-d)/b)
+		if (v->val <= (UINTMAX_MAX-d)/b)
 			v->val = v->val * b + d;
 		else
 			v->err = ERANGE;
