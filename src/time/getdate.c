@@ -31,8 +31,6 @@ struct tm *getdate(const char *s)
 
 	while (fgets(fmt, sizeof fmt, f)) {
 		p = strptime(s, fmt, &tmbuf);
-dprintf(2, "%s %s\n", s, fmt);
-dprintf(2, "%p %d\n", p, p?*p:0);
 		if (p && !*p) {
 			ret = &tmbuf;
 			goto out;
