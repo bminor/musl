@@ -52,7 +52,11 @@ int __fpclassifyl(long double);
 
 #define isunordered(x,y) (isnan((x)) ? ((y),1) : isnan((y)))
 
-static inline int __isrel(long double __x, long double __y, int __rel)
+static
+#if __STDC_VERSION >= 199901L
+inline
+#endif
+int __isrel(long double __x, long double __y, int __rel)
 {
 	if (isunordered(__x, __y)) return 0;
 	if (__rel==-2) return __x < __y;
