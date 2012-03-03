@@ -12,16 +12,17 @@ extern "C" {
 #define __NEED___uint64_t
 #include <bits/alltypes.h>
 
-#define __MAKE_FLOAT(i) (((union { int __i; float __f; }){ .__i = i }).__f)
-
-#define NAN       __MAKE_FLOAT(0x7fc00000)
-#define INFINITY  __MAKE_FLOAT(0x7f800000)
+#if 100*__GNUC__+__GNUC_MINOR__ >= 303
+#define NAN       __builtin_nanf("")
+#define INFINITY  __builtin_inff()
+#else
+#define NAN       (0.0f/0.0f)
+#define INFINITY  1e40f
+#endif
 
 #define HUGE_VALF INFINITY
 #define HUGE_VAL  ((double)INFINITY)
 #define HUGE_VALL ((long double)INFINITY)
-
-#define MAXFLOAT  __MAKE_FLOAT(0x7f7fffff)
 
 #define MATH_ERRNO  1
 #define MATH_EXCEPT 2
@@ -301,6 +302,7 @@ float       truncf(float);
 long double truncl(long double);
 
 #if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+#define MAXFLOAT        3.40282347e+38F
 #define M_E             2.7182818284590452354   /* e */
 #define M_LOG2E         1.4426950408889634074   /* log_2 e */
 #define M_LOG10E        0.43429448190325182765  /* log_10 e */
