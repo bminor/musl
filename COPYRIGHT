@@ -9,11 +9,15 @@ under the terms of the GNU LGPL version 2.1 or later. The included
 version was heavily modified in Spring 2006 by Rich Felker in the
 interests of size, simplicity, and namespace cleanliness.
 
-Most of the math library code (src/math/*) is Copyright © 1993 Sun
-Microsystems, Inc. Some files are Copyright © 2003 Steven G. Kargl and
-labelled as such. All have been licensed under extremely permissive
-terms which are compatible with the GNU LGPL. See the comments in the
-individual files for details.
+Most of the math library code (src/math/* and src/complex/*) is
+Copyright © 1993,2004 Sun Microsystems or
+Copyright © 2003-2011 David Schultz or
+Copyright © 2003-2009 Steven G. Kargl or
+Copyright © 2003-2009 Bruce D. Evans or
+Copyright © 2008 Stephen L. Moshier
+and labelled as such. All have been licensed under extremely
+permissive terms which are compatible with the GNU LGPL. See the
+comments in the individual files for details.
 
 The implementation of DES for crypt (src/misc/crypt.c) is Copyright ©
 1994 David Burren. It is licensed under a BSD license compatible with
