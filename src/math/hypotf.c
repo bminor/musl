@@ -40,7 +40,7 @@ float hypotf(float x, float y)
 	if (ha > 0x58800000) {    /* a > 2**50 */
 		if(ha >= 0x7f800000) {  /* Inf or NaN */
 			/* Use original arg order iff result is NaN; quieten sNaNs. */
-			w = fabsf(x+0.0F) - fabsf(y+0.0F);
+			w = fabsf(x+0.0f) - fabsf(y+0.0f);
 			if (ha == 0x7f800000) w = a;
 			if (hb == 0x7f800000) w = b;
 			return w;
