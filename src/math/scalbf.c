@@ -13,7 +13,7 @@
  * ====================================================
  */
 
-#include "libm.h"
+#include <math.h>
 
 float scalbf(float x, float fn)
 {

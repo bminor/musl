@@ -1,5 +1,5 @@
 #include <fenv.h>
-#include "libm.h"
+#include <math.h>
 
 float nearbyintf(float x) {
 	fenv_t e;
