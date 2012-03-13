@@ -40,7 +40,7 @@ float sinhf(float x)
 				return x;
 		t = expm1f(fabsf(x));
 		if (ix < 0x3f800000)
-			return h*((float)2.0*t - t*t/(t+one));
+			return h*(2.0f*t - t*t/(t+one));
 		return h*(t + t/(t+one));
 	}
 

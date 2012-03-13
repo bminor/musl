@@ -69,18 +69,18 @@ float atanf(float x)
 		if (ix < 0x3f980000) {  /* |x| < 1.1875 */
 			if (ix < 0x3f300000) {  /*  7/16 <= |x| < 11/16 */
 				id = 0;
-				x = ((float)2.0*x-one)/((float)2.0+x);
+				x = (2.0f*x - one)/(2.0f + x);
 			} else {                /* 11/16 <= |x| < 19/16 */
 				id = 1;
-				x = (x-one)/(x+one);
+				x = (x - one)/(x + one);
 			}
 		} else {
 			if (ix < 0x401c0000) {  /* |x| < 2.4375 */
 				id = 2;
-				x = (x-(float)1.5)/(one+(float)1.5*x);
+				x = (x - 1.5f)/(one + 1.5f*x);
 			} else {                /* 2.4375 <= |x| < 2**26 */
 				id = 3;
-				x = -(float)1.0/x;
+				x = -1.0f/x;
 			}
 		}
 	}

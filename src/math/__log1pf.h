@@ -24,12 +24,12 @@ static inline float __log1pf(float f)
 {
 	float hfsq,s,z,R,w,t1,t2;
 
-	s = f/((float)2.0+f);
+	s = f/(2.0f + f);
 	z = s*s;
 	w = z*z;
 	t1 = w*(Lg2+w*Lg4);
 	t2 = z*(Lg1+w*Lg3);
 	R = t2+t1;
-	hfsq = (float)0.5*f*f;
+	hfsq = 0.5f * f * f;
 	return s*(hfsq+R);
 }

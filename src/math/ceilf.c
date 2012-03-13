@@ -27,7 +27,7 @@ float ceilf(float x)
 	if (j0 < 23) {
 		if (j0 < 0) {
 			/* raise inexact if x != 0 */
-			if (huge+x > (float)0.0) {
+			if (huge+x > 0.0f) {
 				/* return 0*sign(x) if |x|<1 */
 				if (i0 < 0)
 					i0 = 0x80000000;
@@ -39,7 +39,7 @@ float ceilf(float x)
 			if ((i0&i) == 0)
 				return x; /* x is integral */
 			/* raise inexact flag */
-			if (huge+x > (float)0.0) {
+			if (huge+x > 0.0f) {
 				if (i0 > 0)
 					i0 += 0x00800000>>j0;
 				i0 &= ~i;

@@ -145,7 +145,7 @@ float powf(float x, float y)
 		/* now |1-x| is tiny <= 2**-20, suffice to compute
 		   log(x) by x-x^2/2+x^3/3-x^4/4 */
 		t = ax - 1;     /* t has 20 trailing zeros */
-		w = (t*t)*((float)0.5-t*((float)0.333333333333-t*(float)0.25));
+		w = (t*t)*(0.5f - t*(0.333333333333f - t*0.25f));
 		u = ivln2_h*t;  /* ivln2_h has 16 sig. bits */
 		v = t*ivln2_l - w*ivln2;
 		t1 = u + v;
@@ -193,10 +193,10 @@ float powf(float x, float y)
 		r = s2*s2*(L1+s2*(L2+s2*(L3+s2*(L4+s2*(L5+s2*L6)))));
 		r += s_l*(s_h+s);
 		s2 = s_h*s_h;
-		t_h = (float)3.0 + s2 + r;
+		t_h = 3.0f + s2 + r;
 		GET_FLOAT_WORD(is, t_h);
 		SET_FLOAT_WORD(t_h, is & 0xfffff000);
-		t_l = r - ((t_h - (float)3.0) - s2);
+		t_l = r - ((t_h - 3.0f) - s2);
 		/* u+v = s*(1+...) */
 		u = s_h*t_h;
 		v = s_l*t_h + t_l*s;

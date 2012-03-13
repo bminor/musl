@@ -74,16 +74,16 @@ float j0f(float x)
 		if (huge+x > one) {
 			if (ix < 0x32000000)  /* |x| < 2**-27 */
 				return one;
-			return one - (float)0.25*x*x;
+			return one - 0.25f*x*x;
 		}
 	}
 	z = x*x;
 	r =  z*(R02+z*(R03+z*(R04+z*R05)));
 	s =  one+z*(S01+z*(S02+z*(S03+z*S04)));
 	if(ix < 0x3F800000) {   /* |x| < 1.00 */
-		return one + z*((float)-0.25+(r/s));
+		return one + z*(-0.25f + (r/s));
 	} else {
-		u = (float)0.5*x;
+		u = 0.5f*x;
 		return (one+u)*(one-u) + z*(r/s);
 	}
 }
@@ -343,5 +343,5 @@ static float qzerof(float x)
 	z = one/(x*x);
 	r = p[0]+z*(p[1]+z*(p[2]+z*(p[3]+z*(p[4]+z*p[5]))));
 	s = one+z*(q[0]+z*(q[1]+z*(q[2]+z*(q[3]+z*(q[4]+z*q[5])))));
-	return (-(float).125 + r/s)/x;
+	return (-.125f + r/s)/x;
 }

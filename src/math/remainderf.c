@@ -49,7 +49,7 @@ float remainderf(float x, float p)
 				x -= p;
 		}
 	} else {
-		p_half = (float)0.5*p;
+		p_half = 0.5f*p;
 		if (x > p_half) {
 			x -= p;
 			if (x >= p_half)

@@ -106,7 +106,7 @@ float erff(float x)
 		if (ix < 0x31800000) {  /* |x| < 2**-28 */
 			if (ix < 0x04000000)
 				/*avoid underflow */
-				return (float)0.125*((float)8.0*x+efx8*x);
+				return 0.125f*(8.0f*x + efx8*x);
 			return x + efx*x;
 		}
 		z = x*x;
@@ -143,7 +143,7 @@ float erff(float x)
 	}
 	GET_FLOAT_WORD(ix, x);
 	SET_FLOAT_WORD(z, ix&0xfffff000);
-	r = expf(-z*z - (float)0.5625) * expf((z-x)*(z+x) + R/S);
+	r = expf(-z*z - 0.5625f) * expf((z-x)*(z+x) + R/S);
 	if (hx >= 0)
 		return one - r/x;
 	return  r/x - one;
@@ -206,7 +206,7 @@ float erfcf(float x)
 		}
 		GET_FLOAT_WORD(ix, x);
 		SET_FLOAT_WORD(z, ix&0xfffff000);
-		r = expf(-z*z - (float)0.5625) * expf((z-x)*(z+x) + R/S);
+		r = expf(-z*z - 0.5625f) * expf((z-x)*(z+x) + R/S);
 		if (hx > 0)
 			return r/x;
 		return two - r/x;
