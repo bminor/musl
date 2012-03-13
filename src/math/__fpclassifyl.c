@@ -1,16 +1,27 @@
-#include <stdint.h>
-#include <math.h>
+#include "libm.h"
 
-/* FIXME: move this to arch-specific file */
-int __fpclassifyl(long double __x)
+#if LDBL_MANT_DIG == 53 && LDBL_MAX_EXP == 1024
+
+#elif LDBL_MANT_DIG == 64 && LDBL_MAX_EXP == 16384
+int __fpclassifyl(long double x)
 {
-	union {
-		long double __ld;
-		__uint16_t __hw[5];
-		int64_t __m;
-	} __y = { __x };
-	int __ee = __y.__hw[4]&0x7fff;
-	if (!__ee) return __y.__m ? FP_SUBNORMAL : FP_ZERO;
-	if (__ee==0x7fff) return __y.__m ? FP_NAN : FP_INFINITE;
-	return __y.__m < 0 ? FP_NORMAL : FP_NAN;
+	union ldshape u = { x };
+	int e = u.bits.exp;
+	if (!e)
+		return u.bits.m ? FP_SUBNORMAL : FP_ZERO;
+	if (e == 0x7fff)
+		return u.bits.m & (uint64_t)-1>>1 ? FP_NAN : FP_INFINITE;
+	return u.bits.m & (uint64_t)1<<63 ? FP_NORMAL : FP_NAN;
 }
+#elif LDBL_MANT_DIG == 113 && LDBL_MAX_EXP == 16384
+int __fpclassifyl(long double x)
+{
+	union ldshape u = { x };
+	int e = u.bits.exp;
+	if (!e)
+		return u.bits.mlo | u.bits.mhi ? FP_SUBNORMAL : FP_ZERO;
+	if (e == 0x7fff)
+		return u.bits.mlo | u.bits.mhi ? FP_NAN : FP_INFINITE;
+	return FP_NORMAL;
+}
+#endif

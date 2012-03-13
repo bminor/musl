@@ -37,27 +37,53 @@ extern "C" {
 #define FP_SUBNORMAL 3
 #define FP_NORMAL    4
 
-int __fpclassifyf(float);
 int __fpclassify(double);
+int __fpclassifyf(float);
 int __fpclassifyl(long double);
+
+#define __FLOAT_BITS(f) (((union { float __f; __uint32_t __i; }){ (f) }).__i)
+#define __DOUBLE_BITS(f) (((union { double __f; __uint64_t __i; }){ (f) }).__i)
 
 #define fpclassify(x) ( \
 	sizeof(x) == sizeof(float) ? __fpclassifyf(x) : \
 	sizeof(x) == sizeof(double) ? __fpclassify(x) : \
 	__fpclassifyl(x) )
 
-#define isinf(x)    (fpclassify(x) == FP_INFINITE)
-#define isnan(x)    (fpclassify(x) == FP_NAN)
-#define isnormal(x) (fpclassify(x) == FP_NORMAL)
-#define isfinite(x) (fpclassify(x) > FP_INFINITE)
+#define isinf(x) ( \
+	sizeof(x) == sizeof(float) ? (__FLOAT_BITS(x) & 0x7fffffff) == 0x7f800000 : \
+	sizeof(x) == sizeof(double) ? (__DOUBLE_BITS(x) & (__uint64_t)-1>>1) == (__uint64_t)0x7ff<<52 : \
+	__fpclassifyl(x) == FP_INFINITE)
 
-#define isunordered(x,y) (isnan((x)) ? ((y),1) : isnan((y)))
+#define isnan(x) ( \
+	sizeof(x) == sizeof(float) ? (__FLOAT_BITS(x) & 0x7fffffff) > 0x7f800000 : \
+	sizeof(x) == sizeof(double) ? (__DOUBLE_BITS(x) & (__uint64_t)-1>>1) > (__uint64_t)0x7ff<<52 : \
+	__fpclassifyl(x) == FP_NAN)
 
-static
+#define isnormal(x) ( \
+	sizeof(x) == sizeof(float) ? ((__FLOAT_BITS(x)+0x00800000) & 0x7fffffff) >= 0x01000000 : \
+	sizeof(x) == sizeof(double) ? ((__DOUBLE_BITS(x)+((__uint64_t)1<<52)) & (__uint64_t)-1>>1) >= (__uint64_t)1<<53 : \
+	__fpclassifyl(x) == FP_NORMAL)
+
+#define isfinite(x) ( \
+	sizeof(x) == sizeof(float) ? (__FLOAT_BITS(x) & 0x7fffffff) < 0x7f800000 : \
+	sizeof(x) == sizeof(double) ? (__DOUBLE_BITS(x) & (__uint64_t)-1>>1) < (__uint64_t)0x7ff<<52 : \
+	__fpclassifyl(x) > FP_INFINITE)
+
+int __signbit(double);
+int __signbitf(float);
+int __signbitl(long double);
+
+#define signbit(x) ( \
+	sizeof(x) == sizeof(float) ? !!(__FLOAT_BITS(x) & 0x80000000) : \
+	sizeof(x) == sizeof(double) ? !!(__DOUBLE_BITS(x) & (__uint64_t)1<<63) : \
+	__signbitl(x) )
+
+#define isunordered(x,y) (isnan((x)) ? ((void)(y),1) : isnan((y)))
+
 #if __STDC_VERSION__ >= 199901L
 inline
 #endif
-int __isrel(long double __x, long double __y, int __rel)
+static int __isrel(long double __x, long double __y, int __rel)
 {
 	if (isunordered(__x, __y)) return 0;
 	if (__rel==-2) return __x < __y;
@@ -316,17 +342,46 @@ long double truncl(long double);
 #define M_2_SQRTPI      1.12837916709551257390  /* 2/sqrt(pi) */
 #define M_SQRT2         1.41421356237309504880  /* sqrt(2) */
 #define M_SQRT1_2       0.70710678118654752440  /* 1/sqrt(2) */
-double      j0(double);
-double      j1(double);
-double      jn(int, double);
-double      y0(double);
-double      y1(double);
-double      yn(int, double);
+
 extern int signgam;
+
+double      gamma(double);
+float       gammaf(float);
+long double gammal(long double);
+
+double      lgamma_r(double, int*);
+float       lgammaf_r(float, int*);
+long double lgammal_r(long double, int*);
+
+double      j0(double);
+float       j0f(float);
+long double j0l(long double);
+
+double      j1(double);
+float       j1f(float);
+long double j1l(long double);
+
+double      jn(int, double);
+float       jnf(int, float);
+long double jnl(int, long double);
+
+double      y0(double);
+float       y0f(float);
+long double y0l(long double);
+
+double      y1(double);
+float       y1f(float);
+long double y1l(long double);
+
+double      yn(int, double);
+float       ynf(int, float);
+long double ynl(int, long double);
 #endif
 
 #ifdef _GNU_SOURCE
 double      scalb(double, double);
+float       scalbf(float, float);
+long double scalbl(long double, long double);
 #endif
 
 #ifdef __cplusplus
