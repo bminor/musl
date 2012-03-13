@@ -319,34 +319,29 @@ int __scanf(rctx_t *r, const wchar_t *fmt, va_list ap)
 					unread(r);
 					break;
 				}
+				m = 1;
 				if (((c=read(r))|0x20) != 'x') {
-					if (t == 'i') {
-						t = 'o';
-						/* lone 0 is valid octal */
-						if ((unsigned)(c-'0') >= 8) {
-							m = 1;
-							goto int_finish;
-						}
-					}
+					if (t == 'i') t = 'o';
 					unread(r);
 					break;
 				}
 				t = 'x';
+				m = 0;
 			}
 		}
 		
 		switch (t) {
 		case 'd':
 		case 'u':
-			for (m=0; isdigit(c=read(r)); m=1)
+			for (; isdigit(c=read(r)); m=1)
 				i = 10*i + c-'0';
 			goto int_finish;
 		case 'o':
-			for (m=0; (unsigned)(c=read(r))-'0' < 8; m=1)
+			for (; (unsigned)(c=read(r))-'0' < 8; m=1)
 				i = (i<<3) + c-'0';
 			goto int_finish;
 		case 'x':
-			for (m=0; ; m=1) {
+			for (; ; m=1) {
 				if (isdigit(c=read(r))) {
 					i = (i<<4) + c-'0';
 				} else if ((unsigned)(c|0x20)-'a' < 6) {
