@@ -10,10 +10,9 @@ sqrt:	fldl 4(%esp)
 	and $0x7ff,%ecx
 	cmp $0x400,%ecx
 	jnz 1f
-	mov 8(%esp),%ecx
-	or $0xffff8000,%ecx
-	inc %ecx
-	jz 1f
+	mov 8(%esp),%cx
+	inc %cx
+	jo 1f
 	and $0x200,%eax
 	sub $0x100,%eax
 	sub %eax,(%esp)
