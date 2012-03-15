@@ -382,6 +382,10 @@ long double ynl(int, long double);
 double      scalb(double, double);
 float       scalbf(float, float);
 long double scalbl(long double, long double);
+
+void        sincos(double, double*, double*);
+void        sincosf(float, float*, float*);
+void        sincosl(long double, long double*, long double*);
 #endif
 
 #ifdef __cplusplus
