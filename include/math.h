@@ -349,33 +349,13 @@ double      gamma(double);
 float       gammaf(float);
 long double gammal(long double);
 
-double      lgamma_r(double, int*);
-float       lgammaf_r(float, int*);
-long double lgammal_r(long double, int*);
-
 double      j0(double);
-float       j0f(float);
-long double j0l(long double);
-
 double      j1(double);
-float       j1f(float);
-long double j1l(long double);
-
 double      jn(int, double);
-float       jnf(int, float);
-long double jnl(int, long double);
 
 double      y0(double);
-float       y0f(float);
-long double y0l(long double);
-
 double      y1(double);
-float       y1f(float);
-long double y1l(long double);
-
 double      yn(int, double);
-float       ynf(int, float);
-long double ynl(int, long double);
 #endif
 
 #ifdef _GNU_SOURCE
@@ -386,6 +366,24 @@ long double scalbl(long double, long double);
 void        sincos(double, double*, double*);
 void        sincosf(float, float*, float*);
 void        sincosl(long double, long double*, long double*);
+
+double      lgamma_r(double, int*);
+float       lgammaf_r(float, int*);
+long double lgammal_r(long double, int*);
+
+float       j0f(float);
+long double j0l(long double);
+float       j1f(float);
+long double j1l(long double);
+float       jnf(int, float);
+long double jnl(int, long double);
+
+float       y0f(float);
+long double y0l(long double);
+float       y1f(float);
+long double y1l(long double);
+float       ynf(int, float);
+long double ynl(int, long double);
 #endif
 
 #ifdef __cplusplus
