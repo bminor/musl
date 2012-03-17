@@ -1,30 +1,34 @@
-2:	not %ecx
-	sub $32,%esp
-	fnstenv (%esp)
-	and %ecx,4(%esp)
-	or %edx,4(%esp)
-	fldenv (%esp)
-	add $32,%esp
-	ret
-
 .global feclearexcept
 .type feclearexcept,@function
 feclearexcept:	
-	xor %eax,%eax
 	mov 4(%esp),%ecx
-	xor %edx,%edx
-	test %ecx,%ecx
-	jnz 2b
+	not %ecx
+	test $0x3f,%ecx
+	jnz 2f
+1:	fnclex
+	xor %eax,%eax
+	ret
+2:	fnstsw %ax
+	and %ecx,%eax
+	jz 1b
+	sub $32,%esp
+	fnstenv (%esp)
+	mov %al,4(%esp)
+	fldenv (%esp)
+	add $32,%esp
+	xor %eax,%eax
 	ret
 
 .global feraiseexcept
 .type feraiseexcept,@function
 feraiseexcept:	
+	mov 4(%esp),%eax
+	sub $32,%esp
+	fnstenv (%esp)
+	or %al,4(%esp)
+	fldenv (%esp)
+	add $32,%esp
 	xor %eax,%eax
-	mov 4(%esp),%edx
-	xor %ecx,%ecx
-	test %edx,%edx
-	jnz 2b
 	ret
 
 .global fesetround
