@@ -58,7 +58,9 @@ dtype fn(type x)
 		x = roundit(x);
 		return (dtype)x;
 	} else {
+#ifdef FE_INVALID
 		feraiseexcept(FE_INVALID);
+#endif
 		return DTYPE_MAX;
 	}
 }
