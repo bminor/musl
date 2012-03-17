@@ -54,7 +54,9 @@ float fmaf(float x, float y, float z)
 	 * If result is inexact, and exactly halfway between two float values,
 	 * we need to adjust the low-order bit in the direction of the error.
 	 */
+#ifdef FE_TOWARDZERO
 	fesetround(FE_TOWARDZERO);
+#endif
 	volatile double vxy = xy;  /* XXX work around gcc CSE bug */
 	double adjusted_result = vxy + z;
 	fesetround(FE_TONEAREST);

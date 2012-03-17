@@ -49,8 +49,10 @@ dtype fn(type x)
 
 	feholdexcept(&env);
 	d = (dtype)roundit(x);
+#if defined(FE_INVALID) && defined(FE_INEXACT)
 	if (fetestexcept(FE_INVALID))
 		feclearexcept(FE_INEXACT);
+#endif
 	feupdateenv(&env);
 	return d;
 }
