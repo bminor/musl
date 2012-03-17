@@ -88,15 +88,10 @@
 #define _GNU_SOURCE
 #include "libm.h"
 
-long double lgammal(long double x)
-{
-	return lgammal_r(x, &signgam);
-}
-
 #if LDBL_MANT_DIG == 53 && LDBL_MAX_EXP == 1024
-long double lgammal_r(long double x, int *sg)
+long double __lgammal_r(long double x, int *sg)
 {
-	return lgamma_r(x, sg);
+	return __lgamma_r(x, sg);
 }
 #elif LDBL_MANT_DIG == 64 && LDBL_MAX_EXP == 16384
 static const long double
@@ -266,7 +261,7 @@ static long double sin_pi(long double x)
 	return -y;
 }
 
-long double lgammal_r(long double x, int *sg) {
+long double __lgammal_r(long double x, int *sg) {
 	long double t, y, z, nadj, p, p1, p2, q, r, w;
 	int i, ix;
 	uint32_t se, i0, i1;
@@ -392,3 +387,10 @@ long double lgammal_r(long double x, int *sg) {
 	return r;
 }
 #endif
+
+long double lgammal(long double x)
+{
+	return __lgammal_r(x, &signgam);
+}
+
+weak_alias(__lgammal_r, lgammal_r);

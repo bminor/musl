@@ -20,6 +20,8 @@
 
 #include "longdbl.h"
 
+#include "libc.h"
+
 union fshape {
 	float value;
 	uint32_t bits;

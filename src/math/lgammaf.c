@@ -1,9 +1,10 @@
-#define _GNU_SOURCE
 #include "libm.h"
+
+float __lgammaf_r(float, int *);
 
 float lgammaf(float x)
 {
-	return lgamma_r(x, &signgam);
+	return __lgammaf_r(x, &signgam);
 }
 
 // FIXME
