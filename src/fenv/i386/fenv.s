@@ -32,22 +32,22 @@ feraiseexcept:
 fesetround:
 	mov 4(%esp),%ecx
 	xor %eax,%eax
-	sub $32,%esp
-	fnstenv (%esp)
+	sub $4,%esp
+	fnstcw (%esp)
 	andb $0xf3,1(%esp)
-	or %ecx,(%esp)
-	fldenv (%esp)
-	add $32,%esp
+	or %cx,(%esp)
+	fldcw (%esp)
+	add $4,%esp
 	ret
 
 .global fegetround
 .type fegetround,@function
 fegetround:
-	sub $28,%esp
-	fnstenv (%esp)
-	mov 4(%esp),%eax
-	add $28,%esp
-	and $0xc,%ah
+	sub $4,%esp
+	fnstcw (%esp)
+	mov (%esp),%ax
+	add $4,%esp
+	and $0xc00,%eax
 	ret
 
 .global fegetenv
