@@ -32,18 +32,19 @@ feraiseexcept:
 .global fesetround
 .type fesetround,@function
 fesetround:
+	push %rax
 	xor %eax,%eax
-	sub $32,%rsp
-	fnstenv (%rsp)
+	mov %edi,%ecx
+	fnstcw (%rsp)
 	andb $0xf3,1(%rsp)
-	or %edi,(%rsp)
-	fldenv (%rsp)
+	or %ch,1(%rsp)
+	fldcw (%rsp)
 	stmxcsr (%rsp)
-	shl $3,%edi
+	shl $3,%ch
 	andb $0x9f,1(%rsp)
-	or %edi,(%rsp)
+	or %ch,1(%rsp)
 	ldmxcsr (%rsp)
-	add $32,%rsp
+	pop %rcx
 	ret
 
 .global fegetround
@@ -53,7 +54,7 @@ fegetround:
 	stmxcsr (%rsp)
 	pop %rax
 	shr $3,%eax
-	and $0xc,%ah
+	and $0xc00,%eax
 	ret
 
 .global fegetenv
