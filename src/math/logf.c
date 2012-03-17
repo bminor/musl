@@ -52,7 +52,7 @@ float logf(float x)
 	i = (ix + (0x95f64<<3)) & 0x800000;
 	SET_FLOAT_WORD(x, ix|(i^0x3f800000));  /* normalize x or x/2 */
 	k += i>>23;
-	f = x - (float)1.0;
+	f = x - 1.0f;
 	if ((0x007fffff & (0x8000 + ix)) < 0xc000) {  /* -2**-9 <= f < 2**-9 */
 		if (f == zero) {
 			if (k == 0)
@@ -60,13 +60,13 @@ float logf(float x)
 			dk = (float)k;
 			return dk*ln2_hi + dk*ln2_lo;
 		}
-		R = f*f*((float)0.5 - (float)0.33333333333333333*f);
+		R = f*f*(0.5f - 0.33333333333333333f*f);
 		if (k == 0)
 			return f-R;
 		dk = (float)k;
 		return dk*ln2_hi - ((R-dk*ln2_lo)-f);
 	}
-	s = f/((float)2.0+f);
+	s = f/(2.0f + f);
 	dk = (float)k;
 	z = s*s;
 	i = ix-(0x6147a<<3);
@@ -77,7 +77,7 @@ float logf(float x)
 	i |= j;
 	R = t2 + t1;
 	if (i > 0) {
-		hfsq = (float)0.5*f*f;
+		hfsq = 0.5f * f * f;
 		if (k == 0)
 			return f - (hfsq-s*(hfsq+R));
 		return dk*ln2_hi - ((hfsq-(s*(hfsq+R)+dk*ln2_lo))-f);

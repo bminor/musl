@@ -75,13 +75,13 @@ float j1f(float x)
 	if (ix < 0x32000000) {  /* |x| < 2**-27 */
 		/* raise inexact if x!=0 */
 		if (huge+x > one)
-			return (float)0.5*x;
+			return 0.5f*x;
 	}
 	z = x*x;
 	r = z*(r00+z*(r01+z*(r02+z*r03)));
 	s = one+z*(s01+z*(s02+z*(s03+z*(s04+z*s05))));
 	r *= x;
-	return x*(float)0.5 + r/s;
+	return 0.5f*x + r/s;
 }
 
 static const float U0[5] = {
@@ -338,5 +338,5 @@ static float qonef(float x)
 	z = one/(x*x);
 	r = p[0]+z*(p[1]+z*(p[2]+z*(p[3]+z*(p[4]+z*p[5]))));
 	s = one+z*(q[0]+z*(q[1]+z*(q[2]+z*(q[3]+z*(q[4]+z*q[5])))));
-	return ((float).375 + r/s)/x;
+	return (.375f + r/s)/x;
 }

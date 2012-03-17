@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include "libm.h"
 
 float lgammaf(float x)

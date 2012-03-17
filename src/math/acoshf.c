@@ -35,9 +35,9 @@ float acoshf(float x)
 		return 0.0;  /* acosh(1) = 0 */
 	} else if (hx > 0x40000000) {  /* 2**28 > x > 2 */
 		t = x*x;
-		return logf((float)2.0*x - one/(x+sqrtf(t-one)));
+		return logf(2.0f*x - one/(x+sqrtf(t-one)));
 	} else {                /* 1 < x < 2 */
 		t = x-one;
-		return log1pf(t + sqrtf((float)2.0*t+t*t));
+		return log1pf(t + sqrtf(2.0f*t+t*t));
 	}
 }

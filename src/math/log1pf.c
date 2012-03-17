@@ -40,7 +40,7 @@ float log1pf(float x)
 	k = 1;
 	if (hx < 0x3ed413d0) {  /* 1+x < sqrt(2)+  */
 		if (ax >= 0x3f800000) {  /* x <= -1.0 */
-			if (x == (float)-1.0)
+			if (x == -1.0f)
 				return -two25/zero; /* log1p(-1)=+inf */
 			return (x-x)/(x-x);         /* log1p(x<-1)=NaN */
 		}
@@ -48,7 +48,7 @@ float log1pf(float x)
 			/* raise inexact */
 			if (two25 + x > zero && ax < 0x33800000)  /* |x| < 2**-24 */
 				return x;
-			return x - x*x*(float)0.5;
+			return x - x*x*0.5f;
 		}
 		if (hx > 0 || hx <= (int32_t)0xbe95f619) { /* sqrt(2)/2- <= 1+x < sqrt(2)+ */
 			k = 0;
@@ -60,11 +60,11 @@ float log1pf(float x)
 		return x+x;
 	if (k != 0) {
 		if (hx < 0x5a000000) {
-			STRICT_ASSIGN(float, u, (float)1.0 + x);
+			STRICT_ASSIGN(float, u, 1.0f + x);
 			GET_FLOAT_WORD(hu, u);
 			k = (hu>>23) - 127;
 			/* correction term */
-			c = k > 0 ? (float)1.0-(u-x) : x-(u-(float)1.0);
+			c = k > 0 ? 1.0f-(u-x) : x-(u-1.0f);
 			c /= u;
 		} else {
 			u = x;
@@ -87,9 +87,9 @@ float log1pf(float x)
 			SET_FLOAT_WORD(u, hu|0x3f000000);  /* normalize u/2 */
 			hu = (0x00800000-hu)>>2;
 		}
-		f = u - (float)1.0;
+		f = u - 1.0f;
 	}
-	hfsq = (float)0.5*f*f;
+	hfsq = 0.5f * f * f;
 	if (hu == 0) {  /* |f| < 2**-20 */
 		if (f == zero) {
 			if (k == 0)
@@ -97,12 +97,12 @@ float log1pf(float x)
 			c += k*ln2_lo;
 			return k*ln2_hi+c;
 		}
-		R = hfsq*((float)1.0-(float)0.66666666666666666*f);
+		R = hfsq*(1.0f - 0.66666666666666666f * f);
 		if (k == 0)
 			return f - R;
 		return k*ln2_hi - ((R-(k*ln2_lo+c))-f);
 	}
-	s = f/((float)2.0+f);
+	s = f/(2.0f + f);
 	z = s*s;
 	R = z*(Lp1+z*(Lp2+z*(Lp3+z*(Lp4+z*(Lp5+z*(Lp6+z*Lp7))))));
 	if (k == 0)

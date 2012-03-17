@@ -20,7 +20,7 @@
 
 #include "libm.h"
 
-static const float huge = 1.0e30F;
+static const float huge = 1.0e30f;
 
 float truncf(float x)
 {
@@ -32,14 +32,14 @@ float truncf(float x)
 	if (j0 < 23) {
 		if (j0 < 0) {  /* |x|<1, return 0*sign(x) */
 			/* raise inexact if x != 0 */
-			if (huge+x > 0.0F)
+			if (huge+x > 0.0f)
 				i0 &= 0x80000000;
 		} else {
 			i = 0x007fffff>>j0;
 			if ((i0&i) == 0)
 				return x; /* x is integral */
 			/* raise inexact */
-			if (huge+x > 0.0F)
+			if (huge+x > 0.0f)
 				i0 &= ~i;
 		}
 	} else {

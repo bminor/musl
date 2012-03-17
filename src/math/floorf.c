@@ -36,7 +36,7 @@ float floorf(float x)
 	if (j0 < 23) {
 		if (j0 < 0) {  /* |x| < 1 */
 			/* raise inexact if x != 0 */
-			if (huge+x > (float)0.0) {
+			if (huge+x > 0.0f) {
 				if (i0 >= 0)  /* x >= 0 */
 					i0 = 0;
 				else if ((i0&0x7fffffff) != 0)
@@ -47,7 +47,7 @@ float floorf(float x)
 			if ((i0&i) == 0)
 				return x; /* x is integral */
 			/* raise inexact flag */
-			if (huge+x > (float)0.0) {
+			if (huge+x > 0.0f) {
 				if (i0 < 0)
 					i0 += 0x00800000>>j0;
 				i0 &= ~i;

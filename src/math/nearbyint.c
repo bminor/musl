@@ -1,5 +1,5 @@
 #include <fenv.h>
-#include "libm.h"
+#include <math.h>
 
 /*
 rint may raise inexact (and it should not alter the fenv otherwise)

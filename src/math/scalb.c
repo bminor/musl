@@ -15,7 +15,7 @@
  * should use scalbn() instead.
  */
 
-#include "libm.h"
+#include <math.h>
 
 double scalb(double x, double fn)
 {

@@ -58,8 +58,8 @@ float atan2f(float y, float x)
 			switch (m) {
 			case 0: return  pi_o_4+tiny; /* atan(+INF,+INF) */
 			case 1: return -pi_o_4-tiny; /* atan(-INF,+INF) */
-			case 2: return (float)3.0*pi_o_4+tiny;  /*atan(+INF,-INF)*/
-			case 3: return (float)-3.0*pi_o_4-tiny; /*atan(-INF,-INF)*/
+			case 2: return 3.0f*pi_o_4+tiny;  /*atan(+INF,-INF)*/
+			case 3: return -3.0f*pi_o_4-tiny; /*atan(-INF,-INF)*/
 			}
 		} else {
 			switch (m) {
@@ -77,7 +77,7 @@ float atan2f(float y, float x)
 	/* compute y/x */
 	k = (iy-ix)>>23;
 	if (k > 26) {                  /* |y/x| >  2**26 */
-		z = pi_o_2+(float)0.5*pi_lo;
+		z = pi_o_2 + 0.5f*pi_lo;
 		m &= 1;
 	} else if (k < -26 && hx < 0)  /* 0 > |y|/x > -2**-26 */
 		z = 0.0;

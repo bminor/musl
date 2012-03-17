@@ -52,7 +52,7 @@ float asinf(float x)
 	}
 	/* 1 > |x| >= 0.5 */
 	w = one - fabsf(x);
-	t = w*(float)0.5;
+	t = w*0.5f;
 	p = t*(pS0+t*(pS1+t*pS2));
 	q = one+t*qS1;
 	s = sqrt(t);

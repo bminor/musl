@@ -25,7 +25,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "libm.h"
+#include <math.h>
+#include <float.h>
+
 #if LDBL_MANT_DIG == 53 && LDBL_MAX_EXP == 1024
 long double roundl(long double x)
 {

@@ -11,7 +11,6 @@ int ilogb(double x)
 		if (u.bits == 0)
 			return FP_ILOGB0;
 		/* subnormal x */
-		// FIXME: scale up subnormals with a *0x1p53 or find top set bit with a better method
 		for (e = -0x3ff; u.bits < (uint64_t)1<<63; e--, u.bits<<=1);
 		return e;
 	}

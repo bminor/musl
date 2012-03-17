@@ -104,9 +104,9 @@ static float sin_pif(float x)
 	 */
 	z = floorf(y);
 	if (z != y) {   /* inexact anyway */
-		y *= (float)0.5;
-		y  = (float)2.0*(y - floorf(y));   /* y = |x| mod 2.0 */
-		n  = (int) (y*(float)4.0);
+		y *= 0.5f;
+		y  = 2.0f*(y - floorf(y));   /* y = |x| mod 2.0 */
+		n  = (int)(y*4.0f);
 	} else {
 		if (ix >= 0x4b800000) {
 			y = zero;  /* y must be even */
@@ -123,12 +123,12 @@ static float sin_pif(float x)
 	switch (n) {
 	case 0:  y =  __sindf(pi*y); break;
 	case 1:
-	case 2:  y =  __cosdf(pi*((float)0.5-y)); break;
+	case 2:  y =  __cosdf(pi*(0.5f - y)); break;
 	case 3:
-	case 4:  y =  __sindf(pi*(one-y)); break;
+	case 4:  y =  __sindf(pi*(one - y)); break;
 	case 5:
-	case 6:  y = -__cosdf(pi*(y-(float)1.5)); break;
-	default: y =  __sindf(pi*(y-(float)2.0)); break;
+	case 6:  y = -__cosdf(pi*(y - 1.5f)); break;
+	default: y =  __sindf(pi*(y - 2.0f)); break;
 	}
 	return -y;
 }
@@ -188,7 +188,7 @@ float lgammaf_r(float x, int *signgamp)
 		} else {
 			r = zero;
 			if (ix >= 0x3fdda618) {  /* [1.7316,2] */
-				y = (float)2.0 - x;
+				y = 2.0f - x;
 				i = 0;
 			} else if (ix >= 0x3F9da620) {  /* [1.23,1.73] */
 				y = x - tc;
@@ -204,7 +204,7 @@ float lgammaf_r(float x, int *signgamp)
 			p1 = a0+z*(a2+z*(a4+z*(a6+z*(a8+z*a10))));
 			p2 = z*(a1+z*(a3+z*(a5+z*(a7+z*(a9+z*a11)))));
 			p = y*p1+p2;
-			r += (p-(float)0.5*y);
+			r += p - 0.5f*y;
 			break;
 		case 1:
 			z = y*y;
@@ -218,21 +218,21 @@ float lgammaf_r(float x, int *signgamp)
 		case 2:
 			p1 = y*(u0+y*(u1+y*(u2+y*(u3+y*(u4+y*u5)))));
 			p2 = one+y*(v1+y*(v2+y*(v3+y*(v4+y*v5))));
-			r += (-(float)0.5*y + p1/p2);
+			r += -0.5f*y + p1/p2;
 		}
 	} else if (ix < 0x41000000) {  /* x < 8.0 */
 		i = (int)x;
-		y = x-(float)i;
+		y = x - (float)i;
 		p = y*(s0+y*(s1+y*(s2+y*(s3+y*(s4+y*(s5+y*s6))))));
 		q = one+y*(r1+y*(r2+y*(r3+y*(r4+y*(r5+y*r6)))));
 		r = half*y+p/q;
 		z = one;    /* lgamma(1+s) = log(s) + lgamma(s) */
 		switch (i) {
-		case 7: z *= y + (float)6.0;  /* FALLTHRU */
-		case 6: z *= y + (float)5.0;  /* FALLTHRU */
-		case 5: z *= y + (float)4.0;  /* FALLTHRU */
-		case 4: z *= y + (float)3.0;  /* FALLTHRU */
-		case 3: z *= y + (float)2.0;  /* FALLTHRU */
+		case 7: z *= y + 6.0f;  /* FALLTHRU */
+		case 6: z *= y + 5.0f;  /* FALLTHRU */
+		case 5: z *= y + 4.0f;  /* FALLTHRU */
+		case 4: z *= y + 3.0f;  /* FALLTHRU */
+		case 3: z *= y + 2.0f;  /* FALLTHRU */
 			r += logf(z);
 			break;
 		}

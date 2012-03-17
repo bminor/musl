@@ -1,4 +1,6 @@
-#include "libm.h"
+#include <math.h>
+#include <float.h>
+
 #if LDBL_MANT_DIG == 53 && LDBL_MAX_EXP == 1024
 long long llroundl(long double x)
 {

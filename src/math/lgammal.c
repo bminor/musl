@@ -85,6 +85,7 @@
  *
  */
 
+#define _GNU_SOURCE
 #include "libm.h"
 
 long double lgammal(long double x)

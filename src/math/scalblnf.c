@@ -1,5 +1,5 @@
 #include <limits.h>
-#include "libm.h"
+#include <math.h>
 
 float scalblnf(float x, long n)
 {

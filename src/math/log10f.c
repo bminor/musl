@@ -53,8 +53,8 @@ float log10f(float x)
 	SET_FLOAT_WORD(x, hx|(i^0x3f800000));  /* normalize x or x/2 */
 	k += i>>23;
 	y = (float)k;
-	f = x - (float)1.0;
-	hfsq = (float)0.5*f*f;
+	f = x - 1.0f;
+	hfsq = 0.5f * f * f;
 	r = __log1pf(f);
 
 // FIXME

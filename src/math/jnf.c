@@ -64,7 +64,7 @@ float jnf(int n, float x)
 			if (n > 33)  /* underflow */
 				b = zero;
 			else {
-				temp = x*(float)0.5;
+				temp = 0.5f * x;
 				b = temp;
 				for (a=one,i=2; i<=n; i++) {
 					a *= (float)i;    /* a = n! */
@@ -106,13 +106,13 @@ float jnf(int n, float x)
 			float q0,q1,h,tmp;
 			int32_t k,m;
 
-			w = (n+n)/(float)x;
-			h = (float)2.0/(float)x;
+			w = (n+n)/x;
+			h = 2.0f/x;
 			z = w+h;
 			q0 = w;
-			q1 = w*z - (float)1.0;
+			q1 = w*z - 1.0f;
 			k = 1;
-			while (q1 < (float)1.0e9) {
+			while (q1 < 1.0e9f) {
 				k += 1;
 				z += h;
 				tmp = z*q1 - q0;
@@ -135,7 +135,7 @@ float jnf(int n, float x)
 			tmp = n;
 			v = two/x;
 			tmp = tmp*logf(fabsf(v*tmp));
-			if (tmp < (float)8.8721679688e+01) {
+			if (tmp < 88.721679688f) {
 				for (i=n-1,di=(float)(i+i); i>0; i--) {
 					temp = b;
 					b *= di;
@@ -151,7 +151,7 @@ float jnf(int n, float x)
 					a = temp;
 					di -= two;
 					/* scale b to avoid spurious overflow */
-					if (b > (float)1e10) {
+					if (b > 1e10f) {
 						a /= b;
 						t /= b;
 						b = one;

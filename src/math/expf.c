@@ -85,11 +85,11 @@ float expf(float x)
 		SET_FLOAT_WORD(twopk, 0x3f800000+((k+100)<<23));
 	c  = x - t*(P1+t*P2);
 	if (k == 0)
-		return one - ((x*c)/(c-(float)2.0)-x);
-	y = one - ((lo-(x*c)/((float)2.0-c))-hi);
+		return one - ((x*c)/(c - 2.0f) - x);
+	y = one - ((lo - (x*c)/(2.0f - c)) - hi);
 	if (k < -125)
 		return y*twopk*twom100;
 	if (k == 128)
-		return y*2.0F*0x1p127F;
+		return y*2.0f*0x1p127f;
 	return y*twopk;
 }
