@@ -345,10 +345,6 @@ long double truncl(long double);
 
 extern int signgam;
 
-double      gamma(double);
-float       gammaf(float);
-long double gammal(long double);
-
 double      j0(double);
 double      j1(double);
 double      jn(int, double);
@@ -366,6 +362,10 @@ long double scalbl(long double, long double);
 void        sincos(double, double*, double*);
 void        sincosf(float, float*, float*);
 void        sincosl(long double, long double*, long double*);
+
+double      gamma(double);
+float       gammaf(float);
+long double gammal(long double);
 
 double      lgamma_r(double, int*);
 float       lgammaf_r(float, int*);
