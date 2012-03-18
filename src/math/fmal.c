@@ -173,14 +173,14 @@ long double fmal(long double x, long double y, long double z)
 	 * return values here are crucial in handling special cases involving
 	 * infinities, NaNs, overflows, and signed zeroes correctly.
 	 */
-	if (x == 0.0 || y == 0.0)
-		return (x * y + z);
-	if (z == 0.0)
-		return (x * y);
 	if (!isfinite(x) || !isfinite(y))
 		return (x * y + z);
 	if (!isfinite(z))
 		return (z);
+	if (x == 0.0 || y == 0.0)
+		return (x * y + z);
+	if (z == 0.0)
+		return (x * y);
 
 	xs = frexpl(x, &ex);
 	ys = frexpl(y, &ey);
