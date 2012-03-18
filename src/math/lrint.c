@@ -1,58 +1,45 @@
-/* origin: FreeBSD /usr/src/lib/msun/src/s_lrint.c */
-/*-
- * Copyright (c) 2005 David Schultz <das@FreeBSD.ORG>
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- */
-
+#include <limits.h>
 #include <fenv.h>
 #include "libm.h"
 
-#ifndef type
-#define type            double
-#define roundit         rint
-#define dtype           long
-#define fn              lrint
-#endif
-
 /*
- * C99 says we should not raise a spurious inexact exception when an
- * invalid exception is raised.  Unfortunately, the set of inputs
- * that overflows depends on the rounding mode when 'dtype' has more
- * significant bits than 'type'.  Hence, we bend over backwards for the
- * sake of correctness; an MD implementation could be more efficient.
- */
-dtype fn(type x)
-{
-	fenv_t env;
-	dtype d;
+If the result cannot be represented (overflow, nan), then
+lrint raises the invalid exception.
 
-	feholdexcept(&env);
-	d = (dtype)roundit(x);
-#if defined(FE_INVALID) && defined(FE_INEXACT)
-	if (fetestexcept(FE_INVALID))
+Otherwise if the input was not an integer then the inexact
+exception is raised.
+
+C99 is a bit vague about whether inexact exception is
+allowed to be raised when invalid is raised.
+(F.9 explicitly allows spurious inexact exceptions, F.9.6.5
+does not make it clear if that rule applies to lrint, but
+IEEE 754r 7.8 seems to forbid spurious inexact exception in
+the ineger conversion functions)
+
+So we try to make sure that no spurious inexact exception is
+raised in case of an overflow.
+
+If the bit size of long > precision of double, then there
+cannot be inexact rounding in case the result overflows,
+otherwise LONG_MAX and LONG_MIN can be represented exactly
+as a double.
+*/
+
+#if LONG_MAX < 1U<<53
+long lrint(double x)
+{
+	int e;
+
+	e = fetestexcept(FE_INEXACT);
+	x = rint(x);
+	if (!e && (x > LONG_MAX || x < LONG_MIN))
 		feclearexcept(FE_INEXACT);
-#endif
-	feupdateenv(&env);
-	return d;
+	/* conversion */
+	return x;
 }
+#else
+long lrint(double x)
+{
+	return rint(x);
+}
+#endif

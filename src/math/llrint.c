@@ -1,8 +1,8 @@
-#define type            double
-#define roundit         rint
-#define dtype           long long
-#define fn              llrint
+#include <math.h>
 
-#include "lrint.c"
+/* assumes LLONG_MAX > 2^53, see comments in lrint.c */
 
-
+long long llrint(double x)
+{
+	return rint(x);
+}

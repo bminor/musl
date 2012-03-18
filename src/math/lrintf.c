@@ -1,6 +1,8 @@
-#define type            float
-#define roundit         rintf
-#define dtype           long
-#define fn              lrintf
+#include <math.h>
 
-#include "lrint.c"
+/* assumes LONG_MAX > 2^24, see comments in lrint.c */
+
+long lrintf(float x)
+{
+	return rintf(x);
+}
