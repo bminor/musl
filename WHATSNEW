@@ -432,3 +432,27 @@ compatibility:
 
 bug fixes:
 - fix crash in dns lookups for all static-linked, non-threaded programs
+
+
+
+0.8.7 release notes
+
+new features:
+- c++ support with g++'s libstdc++
+- c99 math library (float, long double, complex, etc.)
+- numerous wchar_t functions
+- a64l, l64a functions
+- getdate function
+
+compatibility:
+- c89 compatibility in math.h
+- syscall.h alias for sys/syscall.h
+- memory.h alias for string.h
+- getcwd supports null buffer argument (auto-allocation)
+
+bug fixes:
+- major fenv (floating point environment) fixes and optimizations
+- strptime mishandling of day/month names
+- strtoull wrongly rejecting the highest 16 possible values as overflow
+- math.h constant expression fixes for INFINITY/NAN/etc.
+- scanf mishandling of "0" with "%x"
