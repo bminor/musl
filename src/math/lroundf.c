@@ -1,8 +1,6 @@
-#define type            float
-#define roundit         roundf
-#define dtype           long
-#define DTYPE_MIN       LONG_MIN
-#define DTYPE_MAX       LONG_MAX
-#define fn              lroundf
+#include <math.h>
 
-#include "lround.c"
+long lroundf(float x)
+{
+	return roundf(x);
+}

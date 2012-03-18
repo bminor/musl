@@ -1,10 +1,6 @@
-#define type            double
-#define roundit         round
-#define dtype           long long
-#define DTYPE_MIN       LLONG_MIN
-#define DTYPE_MAX       LLONG_MAX
-#define fn              llround
+#include <math.h>
 
-#include "lround.c"
-
-
+long long llround(double x)
+{
+	return round(x);
+}
