@@ -15,14 +15,14 @@
 
 #include "libm.h"
 
-static volatile float
+static const volatile float
 tiny = 1.0e-30;
 static const float
 zero = 0.0,
 pi_o_4 = 7.8539818525e-01, /* 0x3f490fdb */
 pi_o_2 = 1.5707963705e+00, /* 0x3fc90fdb */
 pi     = 3.1415927410e+00; /* 0x40490fdb */
-static volatile float
+static const volatile float
 pi_lo  = -8.7422776573e-08; /* 0xb3bbbd2e */
 
 float atan2f(float y, float x)

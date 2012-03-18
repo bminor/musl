@@ -19,7 +19,7 @@ static const float
 one = 1.0000000000e+00, /* 0x3F800000 */
 pi  = 3.1415925026e+00, /* 0x40490fda */
 pio2_hi = 1.5707962513e+00; /* 0x3fc90fda */
-static volatile float
+static const volatile float
 pio2_lo = 7.5497894159e-08; /* 0x33a22168 */
 static const float
 pS0 =  1.6666586697e-01,

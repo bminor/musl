@@ -42,7 +42,7 @@ long double exp2l(long double x)
 
 static const long double huge = 0x1p10000L;
 /* XXX Prevent gcc from erroneously constant folding this. */
-static volatile long double twom10000 = 0x1p-10000L;
+static const volatile long double twom10000 = 0x1p-10000L;
 
 static const double
 redux = 0x1.8p63 / TBLSIZE,

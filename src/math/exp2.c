@@ -39,7 +39,7 @@ P3    = 0x1.c6b08d704a0a6p-5,
 P4    = 0x1.3b2ab88f70400p-7,
 P5    = 0x1.5d88003875c74p-10;
 
-static volatile double twom1000 = 0x1p-1000;
+static const volatile double twom1000 = 0x1p-1000;
 
 static const double tbl[TBLSIZE * 2] = {
 /*  exp2(z + eps)          eps     */

@@ -24,12 +24,12 @@ long double atan2l(long double y, long double x)
 }
 #elif (LDBL_MANT_DIG == 64 || LDBL_MANT_DIG == 113) && LDBL_MAX_EXP == 16384
 #include "__invtrigl.h"
-static volatile long double
+static const volatile long double
 tiny = 1.0e-300;
 static const long double
 zero = 0.0;
 /* XXX Work around the fact that gcc truncates long double constants on i386 */
-static volatile double
+static const volatile double
 pi1 = 3.14159265358979311600e+00, /* 0x1.921fb54442d18p+1  */
 pi2 = 1.22514845490862001043e-16; /* 0x1.1a80000000000p-53 */
 #define pi ((long double)pi1 + pi2)

@@ -39,7 +39,7 @@ static const double
 one =  1.00000000000000000000e+00, /* 0x3FF00000, 0x00000000 */
 pi  =  3.14159265358979311600e+00, /* 0x400921FB, 0x54442D18 */
 pio2_hi = 1.57079632679489655800e+00; /* 0x3FF921FB, 0x54442D18 */
-static volatile double
+static const volatile double
 pio2_lo = 6.12323399573676603587e-17; /* 0x3C91A626, 0x33145C07 */
 static const double
 pS0 =  1.66666666666666657415e-01, /* 0x3FC55555, 0x55555555 */

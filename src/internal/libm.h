@@ -140,8 +140,8 @@ long double __cosl(long double, long double);
 long double __tanl(long double, long double, int);
 
 /* polynomial evaluation */
-long double __polevll(long double, long double *, int);
-long double __p1evll(long double, long double *, int);
+long double __polevll(long double, const long double *, int);
+long double __p1evll(long double, const long double *, int);
 
 // FIXME: not needed when -fexcess-precision=standard is supported (>=gcc4.5)
 /*
