@@ -8,7 +8,7 @@ long lrintl(long double x)
 {
 	return lrint(x);
 }
-#else
+#elif defined(FE_INEXACT)
 /*
 see comments in lrint.c
 
@@ -26,5 +26,10 @@ long lrintl(long double x)
 		feclearexcept(FE_INEXACT);
 	/* conversion */
 	return x;
+}
+#else
+long lrintl(long double x)
+{
+	return rintl(x);
 }
 #endif

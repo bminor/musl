@@ -25,7 +25,7 @@ otherwise LONG_MAX and LONG_MIN can be represented exactly
 as a double.
 */
 
-#if LONG_MAX < 1U<<53
+#if LONG_MAX < 1U<<53 && defined(FE_INEXACT)
 long lrint(double x)
 {
 	int e;
