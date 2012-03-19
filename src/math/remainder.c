@@ -20,8 +20,6 @@
 
 #include "libm.h"
 
-static const double zero = 0.0;
-
 double remainder(double x, double p)
 {
 	int32_t hx,hp;
@@ -35,17 +33,15 @@ double remainder(double x, double p)
 	hx &= 0x7fffffff;
 
 	/* purge off exception values */
-	if ((hp|lp) == 0)  /* p = 0 */
-		return (x*p)/(x*p);
-	if (hx >= 0x7ff00000 ||                              /* x not finite */
+	if ((hp|lp) == 0 ||                                  /* p = 0 */
+	    hx >= 0x7ff00000 ||                              /* x not finite */
 	    (hp >= 0x7ff00000 && (hp-0x7ff00000 | lp) != 0)) /* p is NaN */
-		// FIXME: why long double?
-		return ((long double)x*p)/((long double)x*p);
+		return (x*p)/(x*p);
 
 	if (hp <= 0x7fdfffff)
 		x = fmod(x, p+p);  /* now x < 2p */
 	if (((hx-hp)|(lx-lp)) == 0)
-		return zero*x;
+		return 0.0*x;
 	x = fabs(x);
 	p = fabs(p);
 	if (hp < 0x00200000) {

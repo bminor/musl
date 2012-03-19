@@ -15,8 +15,6 @@
 
 #include "libm.h"
 
-static const float zero = 0.0;
-
 float remainderf(float x, float p)
 {
 	int32_t hx,hp;
@@ -30,16 +28,13 @@ float remainderf(float x, float p)
 	hx &= 0x7fffffff;
 
 	/* purge off exception values */
-	if (hp == 0)  /* p = 0 */
+	if (hp == 0 || hx >= 0x7f800000 || hp > 0x7f800000)  /* p = 0, x not finite, p is NaN */
 		return (x*p)/(x*p);
-	if (hx >= 0x7f800000 || hp > 0x7f800000)  /* x not finite, p is NaN */
-		// FIXME: why long double?
-		return ((long double)x*p)/((long double)x*p);
 
 	if (hp <= 0x7effffff)
 		x = fmodf(x, p + p);  /* now x < 2p */
 	if (hx - hp == 0)
-		return zero*x;
+		return 0.0f*x;
 	x = fabsf(x);
 	p = fabsf(p);
 	if (hp < 0x01000000) {
