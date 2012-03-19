@@ -135,6 +135,7 @@ float  __tandf(double,int);
 float  __expo2f(float);
 float complex __ldexp_cexpf(float complex,int);
 
+int __rem_pio2l(long double, long double *);
 long double __sinl(long double, long double, int);
 long double __cosl(long double, long double);
 long double __tanl(long double, long double, int);
