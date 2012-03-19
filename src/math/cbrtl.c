@@ -118,11 +118,7 @@ long double cbrtl(long double x)
 	 * Round it away from zero to 32 bits (32 so that t*t is exact, and
 	 * away from zero for technical reasons).
 	 */
-	volatile double vd2 = 0x1.0p32;
-	volatile double vd1 = 0x1.0p-31;
-	#define vd ((long double)vd2 + vd1)
-
-	t = dt + vd - 0x1.0p32;
+	t = dt + (0x1.0p32L + 0x1.0p-32L) - 0x1.0p32;
 #elif LDBL_MANT_DIG == 113
 	/*
 	 * Round dt away from zero to 47 bits.  Since we don't trust the 47,
