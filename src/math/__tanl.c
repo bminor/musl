@@ -51,8 +51,7 @@ long double __tanl(long double x, long double y, int iy) {
 	int i;
 
 	iy = iy == 1 ? -1 : 1;        /* XXX recover original interface */
-	// FIXME: this is wrong, use copysign, signbit or union bithack
-	osign = x >= 0 ? 1.0 : -1.0;  /* XXX slow, probably wrong for -0 */
+	osign = copysignl(1.0, x);
 	if (fabsl(x) >= 0.67434) {
 		if (x < 0) {
 			x = -x;
