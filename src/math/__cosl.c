@@ -43,17 +43,8 @@
  */
 static const double one = 1.0;
 
-// FIXME
-/* Long double constants are slow on these arches, and broken on i386. */
-static const volatile double
-C1hi = 0.041666666666666664,            /*  0x15555555555555.0p-57 */
-C1lo = 2.2598839032744733e-18;          /*  0x14d80000000000.0p-111 */
-#define C1      ((long double)C1hi + C1lo)
-
-#if 0
 static const long double
 C1 =  0.0416666666666666666136L;        /*  0xaaaaaaaaaaaaaa9b.0p-68 */
-#endif
 
 static const double
 C2 = -0.0013888888888888874,            /* -0x16c16c16c16c10.0p-62 */

@@ -23,32 +23,12 @@
  * See __cosl.c for more details about the polynomial.
  */
 
-/* Long double constants are slow on these arches, and broken on i386. */
-static const volatile double
-T3hi =  0.33333333333333331,            /*  0x15555555555555.0p-54 */
-T3lo =  1.8350121769317163e-17,         /*  0x15280000000000.0p-108 */
-T5hi =  0.13333333333333336,            /*  0x11111111111112.0p-55 */
-T5lo =  1.3051083651294260e-17,         /*  0x1e180000000000.0p-109 */
-T7hi =  0.053968253968250494,           /*  0x1ba1ba1ba1b827.0p-57 */
-T7lo =  3.1509625637859973e-18,         /*  0x1d100000000000.0p-111 */
-pio4_hi   =  0.78539816339744828,       /*  0x1921fb54442d18.0p-53 */
-pio4_lo   =  3.0628711372715500e-17,    /*  0x11a80000000000.0p-107 */
-pio4lo_hi = -1.2541394031670831e-20,    /* -0x1d9cceba3f91f2.0p-119 */
-pio4lo_lo =  6.1493048227390915e-37;    /*  0x1a280000000000.0p-173 */
-#define T3      ((long double)T3hi + T3lo)
-#define T5      ((long double)T5hi + T5lo)
-#define T7      ((long double)T7hi + T7lo)
-#define pio4    ((long double)pio4_hi + pio4_lo)
-#define pio4lo  ((long double)pio4lo_hi + pio4lo_lo)
-
-#if 0
 static const long double
 T3 =  0.333333333333333333180L,         /*  0xaaaaaaaaaaaaaaa5.0p-65 */
 T5 =  0.133333333333333372290L,         /*  0x88888888888893c3.0p-66 */
 T7 =  0.0539682539682504975744L,        /*  0xdd0dd0dd0dc13ba2.0p-68 */
 pio4   =  0.785398163397448309628L,     /*  0xc90fdaa22168c235.0p-64 */
 pio4lo = -1.25413940316708300586e-20L;  /* -0xece675d1fc8f8cbb.0p-130 */
-#endif
 
 static const double
 T9  =  0.021869488536312216,            /*  0x1664f4882cc1c2.0p-58 */

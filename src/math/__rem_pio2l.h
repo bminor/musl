@@ -38,30 +38,11 @@ pio2_1 =  1.57079632679597125389e+00, /* 0x3FF921FB, 0x54444000 */
 pio2_2 = -1.07463465549783099519e-12, /* -0x12e7b967674000.0p-92 */
 pio2_3 =  6.36831716351370313614e-25; /*  0x18a2e037074000.0p-133 */
 
-// FIXME: this should be verified (maybe old gcc specific hack)
-//#if defined(__amd64__) || defined(__i386__)
-/* Long double constants are slow on these arches, and broken on i386. */
-static const volatile double
-invpio2hi =  6.3661977236758138e-01,    /*  0x145f306dc9c883.0p-53 */
-invpio2lo = -3.9356538861223811e-17,    /* -0x16b00000000000.0p-107 */
-pio2_1thi = -1.0746346554971943e-12,    /* -0x12e7b9676733af.0p-92 */
-pio2_1tlo =  8.8451028997905949e-29,    /*  0x1c080000000000.0p-146 */
-pio2_2thi =  6.3683171635109499e-25,    /*  0x18a2e03707344a.0p-133 */
-pio2_2tlo =  2.3183081793789774e-41,    /*  0x10280000000000.0p-187 */
-pio2_3thi = -2.7529965190440717e-37,    /* -0x176b7ed8fbbacc.0p-174 */
-pio2_3tlo = -4.2006647512740502e-54;    /* -0x19c00000000000.0p-230 */
-#define invpio2 ((long double)invpio2hi + invpio2lo)
-#define pio2_1t ((long double)pio2_1thi + pio2_1tlo)
-#define pio2_2t ((long double)pio2_2thi + pio2_2tlo)
-#define pio2_3t ((long double)pio2_3thi + pio2_3tlo)
-//#else
-#if 0
 static const long double
 invpio2 =  6.36619772367581343076e-01L, /*  0xa2f9836e4e44152a.0p-64 */
 pio2_1t = -1.07463465549719416346e-12L, /* -0x973dcb3b399d747f.0p-103 */
 pio2_2t =  6.36831716351095013979e-25L, /*  0xc51701b839a25205.0p-144 */
 pio2_3t = -2.75299651904407171810e-37L; /* -0xbb5bf6c7ddd660ce.0p-185 */
-#endif
 
 static inline int __rem_pio2l(long double x, long double *y)
 {
