@@ -20,7 +20,7 @@
 
 #include "libm.h"
 
-static const float one = 1.0, Zero[] = {0.0, -0.0,};
+static const float Zero[] = {0.0, -0.0,};
 
 float fmodf(float x, float y)
 {
@@ -99,7 +99,6 @@ float fmodf(float x, float y)
 		n = -126 - iy;
 		hx >>= n;
 		SET_FLOAT_WORD(x, hx|sx);
-		x *= one;          /* create necessary signal */
 	}
 	return x;  /* exact output */
 }
