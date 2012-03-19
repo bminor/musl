@@ -14,12 +14,23 @@ expm1l:
 .type expm1,@function
 expm1:
 	fldl 4(%esp)
+1:	fxam
+	fnstsw %ax
+	sahf
+	jnp 1f
+	jnc 1f
+	fstps 4(%esp)
+	mov $0xfe,%al
+	and %al,7(%esp)
+	flds 4(%esp)
 1:	fldl2e
 	fmulp
 	fld %st(0)
 	frndint
 	fldz
-	fcompi
+	fcomp
+	fnstsw %ax
+	sahf
 	jnz 1f
 	fstp %st(0)
 	f2xm1
