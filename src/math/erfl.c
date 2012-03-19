@@ -103,7 +103,7 @@
 #if LDBL_MANT_DIG == 53 && LDBL_MAX_EXP == 1024
 long double erfl(long double x)
 {
-	return erfl(x);
+	return erf(x);
 }
 #elif LDBL_MANT_DIG == 64 && LDBL_MAX_EXP == 16384
 static const long double
