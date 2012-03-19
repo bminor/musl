@@ -16,7 +16,6 @@
 #include "libm.h"
 
 static const float
-one =  1.0000000000e+00, /* 0x3F800000 */
 huge = 1.000e+30,
 /* coefficients for R(x^2) */
 pS0 =  1.6666586697e-01,
@@ -41,20 +40,20 @@ float asinf(float x)
 		return (x-x)/(x-x);  /* asin(|x|>1) is NaN */
 	} else if (ix < 0x3f000000) {  /* |x|<0.5 */
 		if (ix < 0x39800000) {  /* |x| < 2**-12 */
-			if (huge+x > one)
+			if (huge+x > 1.0f)
 				return x; /* return x with inexact if x!=0 */
 		}
 		t = x*x;
 		p = t*(pS0+t*(pS1+t*pS2));
-		q = one+t*qS1;
+		q = 1.0f+t*qS1;
 		w = p/q;
 		return x + x*w;
 	}
 	/* 1 > |x| >= 0.5 */
-	w = one - fabsf(x);
+	w = 1.0f - fabsf(x);
 	t = w*0.5f;
 	p = t*(pS0+t*(pS1+t*pS2));
-	q = one+t*qS1;
+	q = 1.0f+t*qS1;
 	s = sqrt(t);
 	w = p/q;
 	t = pio2-2.0*(s+s*w);

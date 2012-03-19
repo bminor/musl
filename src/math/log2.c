@@ -27,8 +27,6 @@ two54   = 1.80143985094819840000e+16, /* 0x43500000, 0x00000000 */
 ivln2hi = 1.44269504072144627571e+00, /* 0x3ff71547, 0x65200000 */
 ivln2lo = 1.67517131648865118353e-10; /* 0x3de705fc, 0x2eefa200 */
 
-static const double zero = 0.0;
-
 double log2(double x)
 {
 	double f,hfsq,hi,lo,r,val_hi,val_lo,w,y;
@@ -40,9 +38,9 @@ double log2(double x)
 	k = 0;
 	if (hx < 0x00100000) {  /* x < 2**-1022  */
 		if (((hx&0x7fffffff)|lx) == 0)
-			return -two54/zero;  /* log(+-0)=-inf */
+			return -two54/0.0;  /* log(+-0)=-inf */
 		if (hx < 0)
-			return (x-x)/zero;   /* log(-#) = NaN */
+			return (x-x)/0.0;   /* log(-#) = NaN */
 		/* subnormal number, scale up x */
 		k -= 54;
 		x *= two54;
@@ -51,7 +49,7 @@ double log2(double x)
 	if (hx >= 0x7ff00000)
 		return x+x;
 	if (hx == 0x3ff00000 && lx == 0)
-		return zero;  /* log(1) = +0 */
+		return 0.0;  /* log(1) = +0 */
 	k += (hx>>20) - 1023;
 	hx &= 0x000fffff;
 	i = (hx+0x95f64) & 0x100000;

@@ -16,7 +16,6 @@
 #include "libm.h"
 
 static const float
-one         = 1.0,
 huge        = 1.0e+30,
 tiny        = 1.0e-30,
 o_threshold = 8.8721679688e+01, /* 0x42b17180 */
@@ -54,7 +53,7 @@ float expm1f(float x)
 		if (xsb != 0) {  /* x < -27*ln2 */
 			/* raise inexact */
 			if (x+tiny < 0.0f)
-				return tiny-one;  /* return -1 */
+				return tiny-1.0f;  /* return -1 */
 		}
 	}
 
@@ -87,7 +86,7 @@ float expm1f(float x)
 	/* x is now in primary range */
 	hfx = 0.5f*x;
 	hxs = x*hfx;
-	r1 = one+hxs*(Q1+hxs*Q2);
+	r1 = 1.0f+hxs*(Q1+hxs*Q2);
 	t  = 3.0f - r1*hfx;
 	e  = hxs*((r1-t)/(6.0f - x*t));
 	if (k == 0)  /* c is 0 */
@@ -100,17 +99,17 @@ float expm1f(float x)
 	if (k == 1) {
 		if (x < -0.25f)
 			return -2.0f*(e-(x+0.5f));
-		return one + 2.0f*(x-e);
+		return 1.0f + 2.0f*(x-e);
 	}
 	if (k <= -2 || k > 56) {   /* suffice to return exp(x)-1 */
-		y = one - (e - x);
+		y = 1.0f - (e - x);
 		if (k == 128)
 			y = y*2.0f*0x1p127f;
 		else
 			y = y*twopk;
-		return y - one;
+		return y - 1.0f;
 	}
-	t = one;
+	t = 1.0f;
 	if (k < 23) {
 		SET_FLOAT_WORD(t, 0x3f800000 - (0x1000000>>k)); /* t=1-2^-k */
 		y = t - (e - x);
@@ -118,7 +117,7 @@ float expm1f(float x)
 	} else {
 		SET_FLOAT_WORD(t, (0x7f-k)<<23);  /* 2^-k */
 		y = x - (e + t);
-		y += one;
+		y += 1.0f;
 		y = y*twopk;
 	}
 	return y;

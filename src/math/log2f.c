@@ -21,8 +21,6 @@ two25   =  3.3554432000e+07, /* 0x4c000000 */
 ivln2hi =  1.4428710938e+00, /* 0x3fb8b000 */
 ivln2lo = -1.7605285393e-04; /* 0xb9389ad4 */
 
-static const float zero = 0.0;
-
 float log2f(float x)
 {
 	float f,hfsq,hi,lo,r,y;
@@ -33,9 +31,9 @@ float log2f(float x)
 	k = 0;
 	if (hx < 0x00800000) {  /* x < 2**-126  */
 		if ((hx&0x7fffffff) == 0)
-			return -two25/zero;  /* log(+-0)=-inf */
+			return -two25/0.0f;  /* log(+-0)=-inf */
 		if (hx < 0)
-			return (x-x)/zero;   /* log(-#) = NaN */
+			return (x-x)/0.0f;   /* log(-#) = NaN */
 		/* subnormal number, scale up x */
 		k -= 25;
 		x *= two25;
@@ -44,7 +42,7 @@ float log2f(float x)
 	if (hx >= 0x7f800000)
 		return x+x;
 	if (hx == 0x3f800000)
-		return zero;  /* log(1) = +0 */
+		return 0.0f;  /* log(1) = +0 */
 	k += (hx>>23) - 127;
 	hx &= 0x007fffff;
 	i = (hx+(0x4afb0d))&0x800000;

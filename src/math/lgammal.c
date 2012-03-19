@@ -95,8 +95,6 @@ long double __lgammal_r(long double x, int *sg)
 }
 #elif LDBL_MANT_DIG == 64 && LDBL_MAX_EXP == 16384
 static const long double
-half = 0.5L,
-one = 1.0L,
 pi = 3.14159265358979323846264L,
 two63 = 9.223372036854775808e18L,
 
@@ -200,8 +198,6 @@ w5 =  8.412723297322498080632E-4L,
 w6 = -1.880801938119376907179E-3L,
 w7 =  4.885026142432270781165E-3L;
 
-static const long double zero = 0.0L;
-
 static long double sin_pi(long double x)
 {
 	long double y, z;
@@ -226,7 +222,7 @@ static long double sin_pi(long double x)
 		n = (int) (y*4.0);
 	} else {
 		if (ix >= 0x403f8000) {  /* 2^64 */
-			y = zero;  /* y must be even */
+			y = 0.0;  /* y must be even */
 			n = 0;
 		} else {
 			if (ix < 0x403e8000)  /* 2^63 */
@@ -244,11 +240,11 @@ static long double sin_pi(long double x)
 		break;
 	case 1:
 	case 2:
-		y = cosl(pi * (half - y));
+		y = cosl(pi * (0.5 - y));
 		break;
 	case 3:
 	case 4:
-		y = sinl(pi * (one - y));
+		y = sinl(pi * (1.0 - y));
 		break;
 	case 5:
 	case 6:
@@ -273,7 +269,7 @@ long double __lgammal_r(long double x, int *sg) {
 	if ((ix | i0 | i1) == 0) {
 		if (se & 0x8000)
 			*sg = -1;
-		return one / fabsl(x);
+		return 1.0 / fabsl(x);
 	}
 
 	ix = (ix << 16) | (i0 >> 16);
@@ -291,10 +287,10 @@ long double __lgammal_r(long double x, int *sg) {
 	}
 	if (se & 0x8000) {
 		t = sin_pi (x);
-		if (t == zero)
-			return one / fabsl(t); /* -integer */
+		if (t == 0.0)
+			return 1.0 / fabsl(t); /* -integer */
 		nadj = logl(pi / fabsl(t * x));
-		if (t < zero)
+		if (t < 0.0)
 			*sg = -1;
 		x = -x;
 	}
@@ -306,19 +302,19 @@ long double __lgammal_r(long double x, int *sg) {
 	else if (ix < 0x40008000) {  /* x < 2.0 */
 		if (ix <= 0x3ffee666) {  /* 8.99993896484375e-1 */
 			/* lgamma(x) = lgamma(x+1) - log(x) */
-			r = -logl (x);
+			r = -logl(x);
 			if (ix >= 0x3ffebb4a) {  /* 7.31597900390625e-1 */
-				y = x - one;
+				y = x - 1.0;
 				i = 0;
 			} else if (ix >= 0x3ffced33) {  /* 2.31639862060546875e-1 */
-				y = x - (tc - one);
+				y = x - (tc - 1.0);
 				i = 1;
 			} else { /* x < 0.23 */
 				y = x;
 				i = 2;
 			}
 		} else {
-			r = zero;
+			r = 0.0;
 			if (ix >= 0x3fffdda6) {  /* 1.73162841796875 */
 				/* [1.7316,2] */
 				y = x - 2.0;
@@ -329,7 +325,7 @@ long double __lgammal_r(long double x, int *sg) {
 				i = 1;
 			} else {
 				/* [0.9, 1.23] */
-				y = x - one;
+				y = x - 1.0;
 				i = 2;
 			}
 		}
@@ -337,7 +333,7 @@ long double __lgammal_r(long double x, int *sg) {
 		case 0:
 			p1 = a0 + y * (a1 + y * (a2 + y * (a3 + y * (a4 + y * a5))));
 			p2 = b0 + y * (b1 + y * (b2 + y * (b3 + y * (b4 + y))));
-			r += half * y + y * p1/p2;
+			r += 0.5 * y + y * p1/p2;
 			break;
 		case 1:
 			p1 = g0 + y * (g1 + y * (g2 + y * (g3 + y * (g4 + y * (g5 + y * g6)))));
@@ -348,17 +344,17 @@ long double __lgammal_r(long double x, int *sg) {
 		case 2:
 			p1 = y * (u0 + y * (u1 + y * (u2 + y * (u3 + y * (u4 + y * (u5 + y * u6))))));
 			p2 = v0 + y * (v1 + y * (v2 + y * (v3 + y * (v4 + y * (v5 + y)))));
-			r += (-half * y + p1 / p2);
+			r += (-0.5 * y + p1 / p2);
 		}
 	} else if (ix < 0x40028000) {  /* 8.0 */
 		/* x < 8.0 */
 		i = (int)x;
-		t = zero;
+		t = 0.0;
 		y = x - (double)i;
 		p = y * (s0 + y * (s1 + y * (s2 + y * (s3 + y * (s4 + y * (s5 + y * s6))))));
 		q = r0 + y * (r1 + y * (r2 + y * (r3 + y * (r4 + y * (r5 + y * (r6 + y))))));
-		r = half * y + p / q;
-		z = one;/* lgamma(1+s) = log(s) + lgamma(s) */
+		r = 0.5 * y + p / q;
+		z = 1.0;/* lgamma(1+s) = log(s) + lgamma(s) */
 		switch (i) {
 		case 7:
 			z *= (y + 6.0); /* FALLTHRU */
@@ -370,18 +366,18 @@ long double __lgammal_r(long double x, int *sg) {
 			z *= (y + 3.0); /* FALLTHRU */
 		case 3:
 			z *= (y + 2.0); /* FALLTHRU */
-			r += logl (z);
+			r += logl(z);
 			break;
 		}
 	} else if (ix < 0x40418000) {  /* 2^66 */
 		/* 8.0 <= x < 2**66 */
-		t = logl (x);
-		z = one / x;
+		t = logl(x);
+		z = 1.0 / x;
 		y = z * z;
 		w = w0 + z * (w1 + y * (w2 + y * (w3 + y * (w4 + y * (w5 + y * (w6 + y * w7))))));
-		r = (x - half) * (t - one) + w;
+		r = (x - 0.5) * (t - 1.0) + w;
 	} else /* 2**66 <= x <= inf */
-		r = x * (logl (x) - one);
+		r = x * (logl(x) - 1.0);
 	if (se & 0x8000)
 		r = nadj - r;
 	return r;

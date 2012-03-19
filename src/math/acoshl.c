@@ -32,7 +32,6 @@ long double acoshl(long double x)
 }
 #elif LDBL_MANT_DIG == 64 && LDBL_MAX_EXP == 16384
 static const long double
-one = 1.0,
 ln2 = 6.931471805599453094287e-01L; /* 0x3FFE, 0xB17217F7, 0xD1CF79AC */
 
 long double acoshl(long double x)
@@ -51,10 +50,10 @@ long double acoshl(long double x)
 		return 0.0;            /* acosh(1) = 0 */
 	} else if (se > 0x4000) {  /* x > 2 */
 		t = x*x;
-		return logl(2.0*x - one/(x + sqrtl(t - one)));
+		return logl(2.0*x - 1.0/(x + sqrtl(t - 1.0)));
 	}
 	/* 1 < x <= 2 */
-	t = x - one;
+	t = x - 1.0;
 	return log1pl(t + sqrtl(2.0*t + t*t));
 }
 #endif

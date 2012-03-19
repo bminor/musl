@@ -88,8 +88,6 @@ Lp5 = 1.818357216161805012e-01,  /* 3FC74664 96CB03DE */
 Lp6 = 1.531383769920937332e-01,  /* 3FC39A09 D078C69F */
 Lp7 = 1.479819860511658591e-01;  /* 3FC2F112 DF3E5244 */
 
-static const double zero = 0.0;
-
 double log1p(double x)
 {
 	double hfsq,f,c,s,z,R,u;
@@ -102,12 +100,12 @@ double log1p(double x)
 	if (hx < 0x3FDA827A) {  /* 1+x < sqrt(2)+ */
 		if (ax >= 0x3ff00000) {  /* x <= -1.0 */
 			if (x == -1.0)
-				return -two54/zero; /* log1p(-1)=+inf */
+				return -two54/0.0; /* log1p(-1)=+inf */
 			return (x-x)/(x-x);         /* log1p(x<-1)=NaN */
 		}
 		if (ax < 0x3e200000) {   /* |x| < 2**-29 */
 			/* raise inexact */
-			if (two54 + x > zero && ax < 0x3c900000)  /* |x| < 2**-54 */
+			if (two54 + x > 0.0 && ax < 0x3c900000)  /* |x| < 2**-54 */
 				return x;
 			return x - x*x*0.5;
 		}
@@ -151,9 +149,9 @@ double log1p(double x)
 	}
 	hfsq = 0.5*f*f;
 	if (hu == 0) {   /* |f| < 2**-20 */
-		if (f == zero) {
+		if (f == 0.0) {
 			if(k == 0)
-				return zero;
+				return 0.0;
 			c += k*ln2_lo;
 			return k*ln2_hi + c;
 		}

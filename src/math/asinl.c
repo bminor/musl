@@ -23,9 +23,7 @@ long double asinl(long double x)
 }
 #elif (LDBL_MANT_DIG == 64 || LDBL_MANT_DIG == 113) && LDBL_MAX_EXP == 16384
 #include "__invtrigl.h"
-static const long double
-one = 1.00000000000000000000e+00,
-huge = 1.000e+300;
+static const long double huge = 1.000e+300;
 
 long double asinl(long double x)
 {
@@ -45,7 +43,7 @@ long double asinl(long double x)
 	} else if (expt < BIAS-1) {  /* |x|<0.5 */
 		if (expt < ASIN_LINEAR) {  /* if |x| is small, asinl(x)=x */
 			/* return x with inexact if x!=0 */
-			if (huge+x > one)
+			if (huge+x > 1.0)
 				return x;
 		}
 		t = x*x;
@@ -55,7 +53,7 @@ long double asinl(long double x)
 		return x + x*w;
 	}
 	/* 1 > |x| >= 0.5 */
-	w = one - fabsl(x);
+	w = 1.0 - fabsl(x);
 	t = w*0.5;
 	p = P(t);
 	q = Q(t);

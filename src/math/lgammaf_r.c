@@ -17,8 +17,6 @@
 
 static const float
 two23= 8.3886080000e+06, /* 0x4b000000 */
-half=  5.0000000000e-01, /* 0x3f000000 */
-one =  1.0000000000e+00, /* 0x3f800000 */
 pi  =  3.1415927410e+00, /* 0x40490fdb */
 a0  =  7.7215664089e-02, /* 0x3d9e233f */
 a1  =  3.2246702909e-01, /* 0x3ea51a66 */
@@ -83,8 +81,6 @@ w4  = -5.9518753551e-04, /* 0xba1c065c */
 w5  =  8.3633989561e-04, /* 0x3a5b3dd2 */
 w6  = -1.6309292987e-03; /* 0xbad5c4e8 */
 
-static const float zero = 0.0000000000e+00;
-
 static float sin_pif(float x)
 {
 	float y,z;
@@ -109,7 +105,7 @@ static float sin_pif(float x)
 		n  = (int)(y*4.0f);
 	} else {
 		if (ix >= 0x4b800000) {
-			y = zero;  /* y must be even */
+			y = 0.0f;  /* y must be even */
 			n = 0;
 		} else {
 			if (ix < 0x4b000000)
@@ -125,7 +121,7 @@ static float sin_pif(float x)
 	case 1:
 	case 2:  y =  __cosdf(pi*(0.5f - y)); break;
 	case 3:
-	case 4:  y =  __sindf(pi*(one - y)); break;
+	case 4:  y =  __sindf(pi*(1.0f - y)); break;
 	case 5:
 	case 6:  y = -__cosdf(pi*(y - 1.5f)); break;
 	default: y =  __sindf(pi*(y - 2.0f)); break;
@@ -148,7 +144,7 @@ float __lgammaf_r(float x, int *signgamp)
 	if (ix >= 0x7f800000)
 		return x*x;
 	if (ix == 0)
-		return one/zero;
+		return 1.0f/0.0f;
 	if (ix < 0x35000000) {  /* |x| < 2**-21, return -log(|x|) */
 		if (hx < 0) {
 			*signgamp = -1;
@@ -158,12 +154,12 @@ float __lgammaf_r(float x, int *signgamp)
 	}
 	if (hx < 0) {
 		if (ix >= 0x4b000000)  /* |x| >= 2**23, must be -integer */
-			return one/zero;
+			return 1.0f/0.0f;
 		t = sin_pif(x);
-		if (t == zero) /* -integer */
-			return one/zero;
+		if (t == 0.0f) /* -integer */
+			return 1.0f/0.0f;
 		nadj = logf(pi/fabsf(t*x));
-		if (t < zero)
+		if (t < 0.0f)
 			*signgamp = -1;
 		x = -x;
 	}
@@ -176,17 +172,17 @@ float __lgammaf_r(float x, int *signgamp)
 		if (ix <= 0x3f666666) {  /* lgamma(x) = lgamma(x+1)-log(x) */
 			r = -logf(x);
 			if (ix >= 0x3f3b4a20) {
-				y = one - x;
+				y = 1.0f - x;
 				i = 0;
 			} else if (ix >= 0x3e6d3308) {
-				y = x - (tc-one);
+				y = x - (tc-1.0f);
 				i = 1;
 			} else {
 				y = x;
 				i = 2;
 			}
 		} else {
-			r = zero;
+			r = 0.0f;
 			if (ix >= 0x3fdda618) {  /* [1.7316,2] */
 				y = 2.0f - x;
 				i = 0;
@@ -194,7 +190,7 @@ float __lgammaf_r(float x, int *signgamp)
 				y = x - tc;
 				i = 1;
 			} else {
-				y = x - one;
+				y = x - 1.0f;
 				i = 2;
 			}
 		}
@@ -217,16 +213,16 @@ float __lgammaf_r(float x, int *signgamp)
 			break;
 		case 2:
 			p1 = y*(u0+y*(u1+y*(u2+y*(u3+y*(u4+y*u5)))));
-			p2 = one+y*(v1+y*(v2+y*(v3+y*(v4+y*v5))));
+			p2 = 1.0f+y*(v1+y*(v2+y*(v3+y*(v4+y*v5))));
 			r += -0.5f*y + p1/p2;
 		}
 	} else if (ix < 0x41000000) {  /* x < 8.0 */
 		i = (int)x;
 		y = x - (float)i;
 		p = y*(s0+y*(s1+y*(s2+y*(s3+y*(s4+y*(s5+y*s6))))));
-		q = one+y*(r1+y*(r2+y*(r3+y*(r4+y*(r5+y*r6)))));
-		r = half*y+p/q;
-		z = one;    /* lgamma(1+s) = log(s) + lgamma(s) */
+		q = 1.0f+y*(r1+y*(r2+y*(r3+y*(r4+y*(r5+y*r6)))));
+		r = 0.5f*y+p/q;
+		z = 1.0f;    /* lgamma(1+s) = log(s) + lgamma(s) */
 		switch (i) {
 		case 7: z *= y + 6.0f;  /* FALLTHRU */
 		case 6: z *= y + 5.0f;  /* FALLTHRU */
@@ -238,12 +234,12 @@ float __lgammaf_r(float x, int *signgamp)
 		}
 	} else if (ix < 0x5c800000) {  /* 8.0 <= x < 2**58 */
 		t = logf(x);
-		z = one/x;
+		z = 1.0f/x;
 		y = z*z;
 		w = w0+z*(w1+y*(w2+y*(w3+y*(w4+y*(w5+y*w6)))));
-		r = (x-half)*(t-one)+w;
+		r = (x-0.5f)*(t-1.0f)+w;
 	} else                         /* 2**58 <= x <= inf */
-		r =  x*(logf(x)-one);
+		r =  x*(logf(x)-1.0f);
 	if (hx < 0)
 		r = nadj - r;
 	return r;

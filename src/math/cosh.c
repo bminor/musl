@@ -32,7 +32,7 @@
 
 #include "libm.h"
 
-static const double one = 1.0, half = 0.5, huge = 1.0e300;
+static const double huge = 1.0e300;
 
 double cosh(double x)
 {
@@ -49,21 +49,21 @@ double cosh(double x)
 	/* |x| in [0,0.5*ln2], return 1+expm1(|x|)^2/(2*exp(|x|)) */
 	if (ix < 0x3fd62e43) {
 		t = expm1(fabs(x));
-		w = one+t;
+		w = 1.0+t;
 		if (ix < 0x3c800000)
 			return w;  /* cosh(tiny) = 1 */
-		return one + (t*t)/(w+w);
+		return 1.0 + (t*t)/(w+w);
 	}
 
 	/* |x| in [0.5*ln2,22], return (exp(|x|)+1/exp(|x|))/2; */
 	if (ix < 0x40360000) {
 		t = exp(fabs(x));
-		return half*t + half/t;
+		return 0.5*t + 0.5/t;
 	}
 
-	/* |x| in [22, log(maxdouble)] return half*exp(|x|) */
+	/* |x| in [22, log(maxdouble)] return 0.5*exp(|x|) */
 	if (ix < 0x40862E42)
-		return half*exp(fabs(x));
+		return 0.5*exp(fabs(x));
 
 	/* |x| in [log(maxdouble), overflowthresold] */
 	if (ix <= 0x408633CE)

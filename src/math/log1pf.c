@@ -27,8 +27,6 @@ Lp5 = 1.8183572590e-01, /* 3E3A3325 */
 Lp6 = 1.5313838422e-01, /* 3E1CD04F */
 Lp7 = 1.4798198640e-01; /* 3E178897 */
 
-static const float zero = 0.0;
-
 float log1pf(float x)
 {
 	float hfsq,f,c,s,z,R,u;
@@ -41,12 +39,12 @@ float log1pf(float x)
 	if (hx < 0x3ed413d0) {  /* 1+x < sqrt(2)+  */
 		if (ax >= 0x3f800000) {  /* x <= -1.0 */
 			if (x == -1.0f)
-				return -two25/zero; /* log1p(-1)=+inf */
+				return -two25/0.0f; /* log1p(-1)=+inf */
 			return (x-x)/(x-x);         /* log1p(x<-1)=NaN */
 		}
 		if (ax < 0x38000000) {   /* |x| < 2**-15 */
 			/* raise inexact */
-			if (two25 + x > zero && ax < 0x33800000)  /* |x| < 2**-24 */
+			if (two25 + x > 0.0f && ax < 0x33800000)  /* |x| < 2**-24 */
 				return x;
 			return x - x*x*0.5f;
 		}
@@ -91,9 +89,9 @@ float log1pf(float x)
 	}
 	hfsq = 0.5f * f * f;
 	if (hu == 0) {  /* |f| < 2**-20 */
-		if (f == zero) {
+		if (f == 0.0f) {
 			if (k == 0)
-				return zero;
+				return 0.0f;
 			c += k*ln2_lo;
 			return k*ln2_hi+c;
 		}

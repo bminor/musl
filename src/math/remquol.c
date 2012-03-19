@@ -48,7 +48,7 @@ typedef uint32_t manh_t;
 
 #define MANL_SHIFT      (LDBL_MANL_SIZE - 1)
 
-static const long double Zero[] = {0.0L, -0.0L};
+static const long double Zero[] = {0.0, -0.0};
 
 /*
  * Return the IEEE remainder and set *quo to the last n bits of the

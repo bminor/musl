@@ -42,7 +42,6 @@
 #include "libm.h"
 
 static const double
-one =  1.00000000000000000000e+00, /* 0x3FF00000, 0x00000000 */
 huge = 1.000e+300,
 pio2_hi = 1.57079632679489655800e+00, /* 0x3FF921FB, 0x54442D18 */
 pio2_lo = 6.12323399573676603587e-17, /* 0x3C91A626, 0x33145C07 */
@@ -76,20 +75,20 @@ double asin(double x)
 		return (x-x)/(x-x);  /* asin(|x|>1) is NaN */
 	} else if (ix < 0x3fe00000) {  /* |x|<0.5 */
 		if (ix < 0x3e500000) {  /* if |x| < 2**-26 */
-			if (huge+x > one)
+			if (huge+x > 1.0)
 				return x; /* return x with inexact if x!=0*/
 		}
 		t = x*x;
 		p = t*(pS0+t*(pS1+t*(pS2+t*(pS3+t*(pS4+t*pS5)))));
-		q = one+t*(qS1+t*(qS2+t*(qS3+t*qS4)));
+		q = 1.0+t*(qS1+t*(qS2+t*(qS3+t*qS4)));
 		w = p/q;
 		return x + x*w;
 	}
 	/* 1 > |x| >= 0.5 */
-	w = one - fabs(x);
+	w = 1.0 - fabs(x);
 	t = w*0.5;
 	p = t*(pS0+t*(pS1+t*(pS2+t*(pS3+t*(pS4+t*pS5)))));
-	q = one+t*(qS1+t*(qS2+t*(qS3+t*qS4)));
+	q = 1.0+t*(qS1+t*(qS2+t*(qS3+t*qS4)));
 	s = sqrt(t);
 	if (ix >= 0x3FEF3333) {  /* if |x| > 0.975 */
 		w = p/q;

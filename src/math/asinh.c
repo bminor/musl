@@ -23,7 +23,6 @@
 #include "libm.h"
 
 static const double
-one = 1.00000000000000000000e+00, /* 0x3FF00000, 0x00000000 */
 ln2 = 6.93147180559945286227e-01, /* 0x3FE62E42, 0xFEFA39EF */
 huge= 1.00000000000000000000e+300;
 
@@ -38,17 +37,17 @@ double asinh(double x)
 		return x+x;
 	if (ix < 0x3e300000) {  /* |x| < 2**-28 */
 		/* return x inexact except 0 */
-		if (huge+x > one)
+		if (huge+x > 1.0)
 			return x;
 	}
 	if (ix > 0x41b00000) {  /* |x| > 2**28 */
 		w = log(fabs(x)) + ln2;
 	} else if (ix > 0x40000000) {  /* 2**28 > |x| > 2.0 */
 		t = fabs(x);
-		w = log(2.0*t + one/(sqrt(x*x+one)+t));
+		w = log(2.0*t + 1.0/(sqrt(x*x+1.0)+t));
 	} else {                /* 2.0 > |x| > 2**-28 */
 		t = x*x;
-		w =log1p(fabs(x) + t/(one+sqrt(one+t)));
+		w =log1p(fabs(x) + t/(1.0+sqrt(1.0+t)));
 	}
 	if (hx > 0)
 		return w;

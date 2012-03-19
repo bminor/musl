@@ -51,7 +51,6 @@
 #include "libm.h"
 
 static const double
-one =  1.00000000000000000000e+00, /* 0x3FF00000, 0x00000000 */
 C1  =  4.16666666666666019037e-02, /* 0x3FA55555, 0x5555554C */
 C2  = -1.38888888888741095749e-03, /* 0xBF56C16C, 0x16C15177 */
 C3  =  2.48015872894767294178e-05, /* 0x3EFA01A0, 0x19CB1590 */
@@ -67,6 +66,6 @@ double __cos(double x, double y)
 	w  = z*z;
 	r  = z*(C1+z*(C2+z*C3)) + w*w*(C4+z*(C5+z*C6));
 	hz = 0.5*z;
-	w  = one-hz;
-	return w + (((one-w)-hz) + (z*r-x*y));
+	w  = 1.0-hz;
+	return w + (((1.0-w)-hz) + (z*r-x*y));
 }

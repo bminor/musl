@@ -60,7 +60,6 @@ static double pone(double), qone(double);
 
 static const double
 huge      = 1e300,
-one       = 1.0,
 invsqrtpi = 5.64189583547756279280e-01, /* 0x3FE20DD7, 0x50429B6D */
 tpi       = 6.36619772367581382433e-01, /* 0x3FE45F30, 0x6DC9C883 */
 /* R0/S0 on [0,2] */
@@ -74,8 +73,6 @@ s03 =  1.17718464042623683263e-06, /* 0x3EB3BFF8, 0x333F8498 */
 s04 =  5.04636257076217042715e-09, /* 0x3E35AC88, 0xC97DFF2C */
 s05 =  1.23542274426137913908e-11; /* 0x3DAB2ACF, 0xCFB97ED8 */
 
-static const double zero = 0.0;
-
 double j1(double x)
 {
 	double z,s,c,ss,cc,r,u,v,y;
@@ -84,7 +81,7 @@ double j1(double x)
 	GET_HIGH_WORD(hx, x);
 	ix = hx & 0x7fffffff;
 	if (ix >= 0x7ff00000)
-		return one/x;
+		return 1.0/x;
 	y = fabs(x);
 	if (ix >= 0x40000000) {  /* |x| >= 2.0 */
 		s = sin(y);
@@ -93,7 +90,7 @@ double j1(double x)
 		cc = s-c;
 		if (ix < 0x7fe00000) {  /* make sure y+y not overflow */
 			z = cos(y+y);
-			if (s*c > zero)
+			if (s*c > 0.0)
 				cc = z/ss;
 			else
 				ss = z/cc;
@@ -116,12 +113,12 @@ double j1(double x)
 	}
 	if (ix < 0x3e400000) {  /* |x| < 2**-27 */
 		/* raise inexact if x!=0 */
-		if (huge+x > one)
+		if (huge+x > 1.0)
 			return 0.5*x;
 	}
 	z = x*x;
 	r = z*(r00+z*(r01+z*(r02+z*r03)));
-	s = one+z*(s01+z*(s02+z*(s03+z*(s04+z*s05))));
+	s = 1.0+z*(s01+z*(s02+z*(s03+z*(s04+z*s05))));
 	r *= x;
 	return x*0.5 + r/s;
 }
@@ -151,11 +148,11 @@ double y1(double x)
 	ix = 0x7fffffff & hx;
 	/* if Y1(NaN) is NaN, Y1(-inf) is NaN, Y1(inf) is 0 */
 	if (ix >= 0x7ff00000)
-		return one/(x+x*x);
+		return 1.0/(x+x*x);
 	if ((ix|lx) == 0)
-		return -one/zero;
+		return -1.0/0.0;
 	if (hx < 0)
-		return zero/zero;
+		return 0.0/0.0;
 	if (ix >= 0x40000000) {  /* |x| >= 2.0 */
 		s = sin(x);
 		c = cos(x);
@@ -163,7 +160,7 @@ double y1(double x)
 		cc = s-c;
 		if (ix < 0x7fe00000) {  /* make sure x+x not overflow */
 			z = cos(x+x);
-			if (s*c > zero)
+			if (s*c > 0.0)
 				cc = z/ss;
 			else
 				ss = z/cc;
@@ -192,8 +189,8 @@ double y1(double x)
 		return -tpi/x;
 	z = x*x;
 	u = U0[0]+z*(U0[1]+z*(U0[2]+z*(U0[3]+z*U0[4])));
-	v = one+z*(V0[0]+z*(V0[1]+z*(V0[2]+z*(V0[3]+z*V0[4]))));
-	return x*(u/v) + tpi*(j1(x)*log(x)-one/x);
+	v = 1.0+z*(V0[0]+z*(V0[1]+z*(V0[2]+z*(V0[3]+z*V0[4]))));
+	return x*(u/v) + tpi*(j1(x)*log(x)-1.0/x);
 }
 
 /* For x >= 8, the asymptotic expansions of pone is
@@ -282,10 +279,10 @@ static double pone(double x)
 	else if (ix >= 0x40122E8B){p = pr5; q = ps5;}
 	else if (ix >= 0x4006DB6D){p = pr3; q = ps3;}
 	else if (ix >= 0x40000000){p = pr2; q = ps2;}
-	z = one/(x*x);
+	z = 1.0/(x*x);
 	r = p[0]+z*(p[1]+z*(p[2]+z*(p[3]+z*(p[4]+z*p[5]))));
-	s = one+z*(q[0]+z*(q[1]+z*(q[2]+z*(q[3]+z*q[4]))));
-	return one+ r/s;
+	s = 1.0+z*(q[0]+z*(q[1]+z*(q[2]+z*(q[3]+z*q[4]))));
+	return 1.0+ r/s;
 }
 
 /* For x >= 8, the asymptotic expansions of qone is
@@ -378,8 +375,8 @@ static double qone(double x)
 	else if (ix >= 0x40122E8B){p = qr5; q = qs5;}
 	else if (ix >= 0x4006DB6D){p = qr3; q = qs3;}
 	else if (ix >= 0x40000000){p = qr2; q = qs2;}
-	z = one/(x*x);
+	z = 1.0/(x*x);
 	r = p[0]+z*(p[1]+z*(p[2]+z*(p[3]+z*(p[4]+z*p[5]))));
-	s = one+z*(q[0]+z*(q[1]+z*(q[2]+z*(q[3]+z*(q[4]+z*q[5])))));
+	s = 1.0+z*(q[0]+z*(q[1]+z*(q[2]+z*(q[3]+z*(q[4]+z*q[5])))));
 	return (.375 + r/s)/x;
 }

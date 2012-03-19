@@ -107,7 +107,6 @@
 #include "libm.h"
 
 static const double
-one         = 1.0,
 huge        = 1.0e+300,
 tiny        = 1.0e-300,
 o_threshold = 7.09782712893383973096e+02, /* 0x40862E42, 0xFEFA39EF */
@@ -148,7 +147,7 @@ double expm1(double x)
 		if (xsb != 0) { /* x < -56*ln2, return -1.0 with inexact */
 			/* raise inexact */
 			if(x+tiny<0.0)
-				return tiny-one;  /* return -1 */
+				return tiny-1.0;  /* return -1 */
 		}
 	}
 
@@ -182,7 +181,7 @@ double expm1(double x)
 	/* x is now in primary range */
 	hfx = 0.5*x;
 	hxs = x*hfx;
-	r1 = one+hxs*(Q1+hxs*(Q2+hxs*(Q3+hxs*(Q4+hxs*Q5))));
+	r1 = 1.0+hxs*(Q1+hxs*(Q2+hxs*(Q3+hxs*(Q4+hxs*Q5))));
 	t  = 3.0-r1*hfx;
 	e  = hxs*((r1-t)/(6.0 - x*t));
 	if (k == 0)   /* c is 0 */
@@ -195,17 +194,17 @@ double expm1(double x)
 	if (k == 1) {
 		if (x < -0.25)
 			return -2.0*(e-(x+0.5));
-		return one+2.0*(x-e);
+		return 1.0+2.0*(x-e);
 	}
 	if (k <= -2 || k > 56) {  /* suffice to return exp(x)-1 */
-		y = one - (e-x);
+		y = 1.0 - (e-x);
 		if (k == 1024)
 			y = y*2.0*0x1p1023;
 		else
 			y = y*twopk;
-		return y - one;
+		return y - 1.0;
 	}
-	t = one;
+	t = 1.0;
 	if (k < 20) {
 		SET_HIGH_WORD(t, 0x3ff00000 - (0x200000>>k));  /* t=1-2^-k */
 		y = t-(e-x);
@@ -213,7 +212,7 @@ double expm1(double x)
 	} else {
 		SET_HIGH_WORD(t, ((0x3ff-k)<<20));  /* 2^-k */
 		y = x-(e+t);
-		y += one;
+		y += 1.0;
 		y = y*twopk;
 	}
 	return y;

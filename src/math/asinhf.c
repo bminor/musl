@@ -16,7 +16,6 @@
 #include "libm.h"
 
 static const float
-one = 1.0000000000e+00, /* 0x3F800000 */
 ln2 = 6.9314718246e-01, /* 0x3f317218 */
 huge= 1.0000000000e+30;
 
@@ -31,17 +30,17 @@ float asinhf(float x)
 		return x+x;
 	if (ix < 0x31800000) {  /* |x| < 2**-28 */
 		/* return x inexact except 0 */
-		if (huge+x > one)
+		if (huge+x > 1.0f)
 			return x;
 	}
 	if (ix > 0x4d800000) {  /* |x| > 2**28 */
 		w = logf(fabsf(x)) + ln2;
 	} else if (ix > 0x40000000) {  /* 2**28 > |x| > 2.0 */
 		t = fabsf(x);
-		w = logf(2.0f*t + one/(sqrtf(x*x+one)+t));
+		w = logf(2.0f*t + 1.0f/(sqrtf(x*x+1.0f)+t));
 	} else {                /* 2.0 > |x| > 2**-28 */
 		t = x*x;
-		w =log1pf(fabsf(x) + t/(one+sqrtf(one+t)));
+		w =log1pf(fabsf(x) + t/(1.0f+sqrtf(1.0f+t)));
 	}
 	if (hx > 0)
 		return w;

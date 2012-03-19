@@ -271,8 +271,6 @@ static const double PIo2[] = {
 };
 
 static const double
-zero   = 0.0,
-one    = 1.0,
 two24  = 1.67772160000000000000e+07, /* 0x41700000, 0x00000000 */
 twon24 = 5.96046447753906250000e-08; /* 0x3E700000, 0x00000000 */
 
@@ -293,7 +291,7 @@ int __rem_pio2_large(double *x, double *y, int e0, int nx, int prec)
 	/* set up f[0] to f[jx+jk] where f[jx+jk] = ipio2[jv+jk] */
 	j = jv-jx; m = jx+jk;
 	for (i=0; i<=m; i++,j++)
-		f[i] = j<0 ? zero : (double)ipio2[j];
+		f[i] = j<0 ? 0.0 : (double)ipio2[j];
 
 	/* compute q[0],q[1],...q[jk] */
 	for (i=0; i<=jk; i++) {
@@ -346,14 +344,14 @@ recompute:
 			}
 		}
 		if (ih == 2) {
-			z = one - z;
+			z = 1.0 - z;
 			if (carry != 0)
-				z -= scalbn(one,q0);
+				z -= scalbn(1.0,q0);
 		}
 	}
 
 	/* check if recomputation is needed */
-	if (z == zero) {
+	if (z == 0.0) {
 		j = 0;
 		for (i=jz-1; i>=jk; i--) j |= iq[i];
 		if (j == 0) {  /* need recomputation */
@@ -391,7 +389,7 @@ recompute:
 	}
 
 	/* convert integer "bit" chunk to floating-point value */
-	fw = scalbn(one,q0);
+	fw = scalbn(1.0,q0);
 	for (i=jz; i>=0; i--) {
 		q[i] = fw*(double)iq[i];
 		fw *= twon24;

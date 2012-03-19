@@ -41,8 +41,6 @@
  * almost for free from the complications needed to search for the best
  * higher coefficients.
  */
-static const double one = 1.0;
-
 static const long double
 C1 =  0.0416666666666666666136L;        /*  0xaaaaaaaaaaaaaa9b.0p-68 */
 
@@ -61,7 +59,7 @@ long double __cosl(long double x, long double y)
 	z  = x*x;
 	r  = z*(C1+z*(C2+z*(C3+z*(C4+z*(C5+z*(C6+z*C7))))));
 	hz = 0.5*z;
-	w  = one-hz;
-	return w + (((one-w)-hz) + (z*r-x*y));
+	w  = 1.0-hz;
+	return w + (((1.0-w)-hz) + (z*r-x*y));
 }
 #endif

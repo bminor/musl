@@ -41,7 +41,7 @@ long double tanhl(long double x)
 	return tanh(x);
 }
 #elif LDBL_MANT_DIG == 64 && LDBL_MAX_EXP == 16384
-static const long double one=1.0, two=2.0, tiny = 1.0e-4900L;
+static const long double tiny = 1.0e-4900L;
 
 long double tanhl(long double x)
 {
@@ -57,8 +57,8 @@ long double tanhl(long double x)
 	if (ix == 0x7fff) {
 		/* for NaN it's not important which branch: tanhl(NaN) = NaN */
 		if (se & 0x8000)
-			return one/x-one;  /* tanhl(-inf)= -1; */
-		return one/x+one;          /* tanhl(+inf)= +1 */
+			return 1.0/x-1.0;  /* tanhl(-inf)= -1; */
+		return 1.0/x+1.0;          /* tanhl(+inf)= +1 */
 	}
 
 	/* |x| < 23 */
@@ -66,17 +66,17 @@ long double tanhl(long double x)
 		if ((ix|jj0|jj1) == 0) /* x == +- 0 */
 			return x;
 		if (ix < 0x3fc8)       /* |x| < 2**-55 */
-			return x*(one+tiny);  /* tanh(small) = small */
+			return x*(1.0+tiny);  /* tanh(small) = small */
 		if (ix >= 0x3fff) {    /* |x| >= 1  */
-			t = expm1l(two*fabsl(x));
-			z = one - two/(t+two);
+			t = expm1l(2.0*fabsl(x));
+			z = 1.0 - 2.0/(t+2.0);
 		} else {
-			t = expm1l(-two*fabsl(x));
-			z = -t/(t+two);
+			t = expm1l(-2.0*fabsl(x));
+			z = -t/(t+2.0);
 		}
 	/* |x| > 23, return +-1 */
 	} else {
-		z = one - tiny;  /* raise inexact flag */
+		z = 1.0 - tiny;  /* raise inexact flag */
 	}
 	return se & 0x8000 ? -z : z;
 }

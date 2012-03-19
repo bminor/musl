@@ -29,7 +29,6 @@
  * pio2_3t:  pi/2 - (pio2_1+pio2_2+pio2_3)
  */
 static const double
-zero    = 0.00000000000000000000e+00, /* 0x00000000, 0x00000000 */
 two24   = 1.67772160000000000000e+07, /* 0x41700000, 0x00000000 */
 invpio2 = 6.36619772367581382433e-01, /* 0x3FE45F30, 0x6DC9C883 */
 pio2_1  = 1.57079632673412561417e+00, /* 0x3FF921FB, 0x54400000 */
@@ -163,7 +162,7 @@ medium:
 	}
 	tx[2] = z;
 	nx = 3;
-	while (tx[nx-1] == zero) nx--;  /* skip zero term */
+	while (tx[nx-1] == 0.0) nx--;  /* skip zero term */
 	n = __rem_pio2_large(tx,ty,e0,nx,1);
 	if (hx < 0) {
 		y[0] = -ty[0];

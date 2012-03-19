@@ -29,7 +29,7 @@ long double scalbnl(long double x, int n)
 				return x * 0x1p-16382L;
 		}
 	}
-	scale.e = 1.0L;
+	scale.e = 1.0;
 	scale.bits.exp = 0x3fff + n;
 	return x * scale.e;
 }

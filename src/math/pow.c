@@ -59,9 +59,6 @@ static const double
 bp[]   = {1.0, 1.5,},
 dp_h[] = { 0.0, 5.84962487220764160156e-01,}, /* 0x3FE2B803, 0x40000000 */
 dp_l[] = { 0.0, 1.35003920212974897128e-08,}, /* 0x3E4CFDEB, 0x43CFD006 */
-zero   =  0.0,
-one    =  1.0,
-two    =  2.0,
 two53  =  9007199254740992.0, /* 0x43400000, 0x00000000 */
 huge   =  1.0e300,
 tiny   =  1.0e-300,
@@ -101,15 +98,15 @@ double pow(double x, double y)
 	ix = hx & 0x7fffffff;
 	iy = hy & 0x7fffffff;
 
-	/* y == zero: x**0 = 1 */
+	/* y == 0.0: x**0 = 1 */
 	if ((iy|ly) == 0)
-		return one;
+		return 1.0;
 
 	/* x == 1: 1**y = 1, even if y is NaN */
 	if (hx == 0x3ff00000 && lx == 0)
-		return one;
+		return 1.0;
 
-	/* y != zero: result is NaN if either arg is NaN */
+	/* y != 0.0: result is NaN if either arg is NaN */
 	if (ix > 0x7ff00000 || (ix == 0x7ff00000 && lx != 0) ||
 	    iy > 0x7ff00000 || (iy == 0x7ff00000 && ly != 0))
 		return (x+0.0) + (y+0.0);
@@ -141,15 +138,15 @@ double pow(double x, double y)
 	if (ly == 0) {
 		if (iy == 0x7ff00000) {  /* y is +-inf */
 			if (((ix-0x3ff00000)|lx) == 0)  /* (-1)**+-inf is 1 */
-				return one;
+				return 1.0;
 			else if (ix >= 0x3ff00000) /* (|x|>1)**+-inf = inf,0 */
-				return hy >= 0 ? y : zero;
+				return hy >= 0 ? y : 0.0;
 			else                       /* (|x|<1)**+-inf = 0,inf */
-				return hy < 0 ? -y : zero;
+				return hy < 0 ? -y : 0.0;
 		}
 		if (iy == 0x3ff00000) {  /* y is +-1 */
 			if (hy < 0)
-				return one/x;
+				return 1.0/x;
 			return x;
 		}
 		if (hy == 0x40000000)    /* y is 2 */
@@ -166,7 +163,7 @@ double pow(double x, double y)
 		if (ix == 0x7ff00000 || ix == 0 || ix == 0x3ff00000) { /* x is +-0,+-inf,+-1 */
 			z = ax;
 			if (hy < 0)   /* z = (1/|x|) */
-				z = one/z;
+				z = 1.0/z;
 			if (hx < 0) {
 				if (((ix-0x3ff00000)|yisint) == 0) {
 					z = (z-z)/(z-z); /* (-1)**non-int is NaN */
@@ -187,9 +184,9 @@ double pow(double x, double y)
 	if ((n|yisint) == 0)
 		return (x-x)/(x-x);
 
-	s = one; /* s (sign of result -ve**odd) = -1 else = 1 */
+	s = 1.0; /* s (sign of result -ve**odd) = -1 else = 1 */
 	if ((n|(yisint-1)) == 0)
-		s = -one;/* (-ve)**(odd int) */
+		s = -1.0;/* (-ve)**(odd int) */
 
 	/* |y| is huge */
 	if (iy > 0x41e00000) { /* if |y| > 2**31 */
@@ -206,7 +203,7 @@ double pow(double x, double y)
 			return hy > 0 ? s*huge*huge : s*tiny*tiny;
 		/* now |1-x| is tiny <= 2**-20, suffice to compute
 		   log(x) by x-x^2/2+x^3/3-x^4/4 */
-		t = ax - one;       /* t has 20 trailing zeros */
+		t = ax - 1.0;       /* t has 20 trailing zeros */
 		w = (t*t)*(0.5 - t*(0.3333333333333333333333-t*0.25));
 		u = ivln2_h*t;      /* ivln2_h has 21 sig. bits */
 		v = t*ivln2_l - w*ivln2;
@@ -239,12 +236,12 @@ double pow(double x, double y)
 
 		/* compute ss = s_h+s_l = (x-1)/(x+1) or (x-1.5)/(x+1.5) */
 		u = ax - bp[k];        /* bp[0]=1.0, bp[1]=1.5 */
-		v = one/(ax+bp[k]);
+		v = 1.0/(ax+bp[k]);
 		ss = u*v;
 		s_h = ss;
 		SET_LOW_WORD(s_h, 0);
 		/* t_h=ax+bp[k] High */
-		t_h = zero;
+		t_h = 0.0;
 		SET_HIGH_WORD(t_h, ((ix>>1)|0x20000000) + 0x00080000 + (k<<18));
 		t_l = ax - (t_h-bp[k]);
 		s_l = v*((u-s_h*t_h)-s_h*t_l);
@@ -299,7 +296,7 @@ double pow(double x, double y)
 	if (i > 0x3fe00000) {  /* if |z| > 0.5, set n = [z+0.5] */
 		n = j + (0x00100000>>(k+1));
 		k = ((n&0x7fffffff)>>20) - 0x3ff;  /* new k for n */
-		t = zero;
+		t = 0.0;
 		SET_HIGH_WORD(t, n & ~(0x000fffff>>k));
 		n = ((n&0x000fffff)|0x00100000)>>(20-k);
 		if (j < 0)
@@ -314,8 +311,8 @@ double pow(double x, double y)
 	w = v - (z-u);
 	t = z*z;
 	t1 = z - t*(P1+t*(P2+t*(P3+t*(P4+t*P5))));
-	r = (z*t1)/(t1-two) - (w + z*w);
-	z = one - (r-z);
+	r = (z*t1)/(t1-2.0) - (w + z*w);
+	z = 1.0 - (r-z);
 	GET_HIGH_WORD(j, z);
 	j += n<<20;
 	if ((j>>20) <= 0)  /* subnormal output */

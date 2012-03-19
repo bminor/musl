@@ -34,7 +34,7 @@ long double atanhl(long double x)
 	return atanh(x);
 }
 #elif LDBL_MANT_DIG == 64 && LDBL_MAX_EXP == 16384
-static const long double zero = 0.0, one = 1.0, huge = 1e4900L;
+static const long double huge = 1e4900L;
 
 long double atanhl(long double x)
 {
@@ -48,15 +48,15 @@ long double atanhl(long double x)
 		/* |x| > 1 */
 		return (x-x)/(x-x);
 	if (ix == 0x3fff)
-		return x/zero;
-	if (ix < 0x3fe3 && huge+x > zero)  /* x < 2**-28 */
+		return x/0.0;
+	if (ix < 0x3fe3 && huge+x > 0.0)  /* x < 2**-28 */
 		return x;
 	SET_LDOUBLE_EXP(x, ix);
 	if (ix < 0x3ffe) {  /* x < 0.5 */
 		t = x + x;
-		t = 0.5*log1pl(t + t*x/(one-x));
+		t = 0.5*log1pl(t + t*x/(1.0 - x));
 	} else
-		t = 0.5*log1pl((x + x)/(one - x));
+		t = 0.5*log1pl((x + x)/(1.0 - x));
 	if (se <= 0x7fff)
 		return t;
 	return -t;

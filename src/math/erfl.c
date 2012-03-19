@@ -108,9 +108,6 @@ long double erfl(long double x)
 #elif LDBL_MANT_DIG == 64 && LDBL_MAX_EXP == 16384
 static const long double
 tiny = 1e-4931L,
-half = 0.5L,
-one = 1.0L,
-two = 2.0L,
 /* c = (float)0.84506291151 */
 erx = 0.845062911510467529296875L,
 
@@ -248,12 +245,12 @@ long double erfl(long double x)
 	int32_t ix, i;
 	uint32_t se, i0, i1;
 
-	GET_LDOUBLE_WORDS (se, i0, i1, x);
+	GET_LDOUBLE_WORDS(se, i0, i1, x);
 	ix = se & 0x7fff;
 
 	if (ix >= 0x7fff) {  /* erf(nan)=nan */
 		i = ((se & 0xffff) >> 15) << 1;
-		return (long double)(1 - i) + one / x;  /* erf(+-inf)=+-1 */
+		return (long double)(1 - i) + 1.0 / x;  /* erf(+-inf)=+-1 */
 	}
 
 	ix = (ix << 16) | (i0 >> 16);
@@ -272,7 +269,7 @@ long double erfl(long double x)
 		return x + x * y;
 	}
 	if (ix < 0x3fffa000) {  /* 0.84375 <= |x| < 1.25 */
-		s = fabsl (x) - one;
+		s = fabsl(x) - 1.0;
 		P = pa[0] + s * (pa[1] + s * (pa[2] +
 		     s * (pa[3] + s * (pa[4] + s * (pa[5] + s * (pa[6] + s * pa[7]))))));
 		Q = qa[0] + s * (qa[1] + s * (qa[2] +
@@ -283,11 +280,11 @@ long double erfl(long double x)
 	}
 	if (ix >= 0x4001d555) {  /* inf > |x| >= 6.6666259765625 */
 		if ((se & 0x8000) == 0)
-			return one - tiny;
-		return tiny - one;
+			return 1.0 - tiny;
+		return tiny - 1.0;
 	}
 	x = fabsl (x);
-	s = one / (x * x);
+	s = 1.0 / (x * x);
 	if (ix < 0x4000b6db) {  /* 1.25 <= |x| < 2.85711669921875 ~ 1/.35 */
 		R = ra[0] + s * (ra[1] + s * (ra[2] + s * (ra[3] + s * (ra[4] +
 		     s * (ra[5] + s * (ra[6] + s * (ra[7] + s * ra[8])))))));
@@ -305,8 +302,8 @@ long double erfl(long double x)
 	SET_LDOUBLE_WORDS(z, i, i0, i1);
 	r = expl(-z * z - 0.5625) * expl((z - x) * (z + x) + R / S);
 	if ((se & 0x8000) == 0)
-		return one - r / x;
-	return r / x - one;
+		return 1.0 - r / x;
+	return r / x - 1.0;
 }
 
 long double erfcl(long double x)
@@ -315,16 +312,16 @@ long double erfcl(long double x)
 	long double R, S, P, Q, s, y, z, r;
 	uint32_t se, i0, i1;
 
-	GET_LDOUBLE_WORDS (se, i0, i1, x);
+	GET_LDOUBLE_WORDS(se, i0, i1, x);
 	ix = se & 0x7fff;
 	if (ix >= 0x7fff) {  /* erfc(nan) = nan, erfc(+-inf) = 0,2 */
-		return (long double)(((se & 0xffff) >> 15) << 1) + one / x;
+		return (long double)(((se & 0xffff) >> 15) << 1) + 1.0 / x;
 	}
 
 	ix = (ix << 16) | (i0 >> 16);
 	if (ix < 0x3ffed800) {  /* |x| < 0.84375 */
 		if (ix < 0x3fbe0000)  /* |x| < 2**-65 */
-			return one - x;
+			return 1.0 - x;
 		z = x * x;
 		r = pp[0] + z * (pp[1] +
 		     z * (pp[2] + z * (pp[3] + z * (pp[4] + z * pp[5]))));
@@ -332,27 +329,27 @@ long double erfcl(long double x)
 		     z * (qq[2] + z * (qq[3] + z * (qq[4] + z * (qq[5] + z)))));
 		y = r / s;
 		if (ix < 0x3ffd8000) /* x < 1/4 */
-			return one - (x + x * y);
+			return 1.0 - (x + x * y);
 		r = x * y;
-		r += x - half;
-		return half - r;
+		r += x - 0.5L;
+		return 0.5L - r;
 	}
 	if (ix < 0x3fffa000) {  /* 0.84375 <= |x| < 1.25 */
-		s = fabsl (x) - one;
+		s = fabsl(x) - 1.0;
 		P = pa[0] + s * (pa[1] + s * (pa[2] +
 		     s * (pa[3] + s * (pa[4] + s * (pa[5] + s * (pa[6] + s * pa[7]))))));
 		Q = qa[0] + s * (qa[1] + s * (qa[2] +
 		     s * (qa[3] + s * (qa[4] + s * (qa[5] + s * (qa[6] + s))))));
 		if ((se & 0x8000) == 0) {
-			z = one - erx;
+			z = 1.0 - erx;
 			return z - P / Q;
 		}
 		z = erx + P / Q;
-		return one + z;
+		return 1.0 + z;
 	}
 	if (ix < 0x4005d600) {  /* |x| < 107 */
-		x = fabsl (x);
-		s = one / (x * x);
+		x = fabsl(x);
+		s = 1.0 / (x * x);
 		if (ix < 0x4000b6db) {  /* 1.25 <= |x| < 2.85711669921875 ~ 1/.35 */
 			R = ra[0] + s * (ra[1] + s * (ra[2] + s * (ra[3] + s * (ra[4] +
 			     s * (ra[5] + s * (ra[6] + s * (ra[7] + s * ra[8])))))));
@@ -365,26 +362,25 @@ long double erfcl(long double x)
 			     s * (sb[5] + s * (sb[6] + s))))));
 		} else { /* 107 > |x| >= 6.666 */
 			if (se & 0x8000)
-				return two - tiny;/* x < -6.666 */
+				return 2.0 - tiny;/* x < -6.666 */
 			R = rc[0] + s * (rc[1] + s * (rc[2] + s * (rc[3] +
 			     s * (rc[4] + s * rc[5]))));
 			S = sc[0] + s * (sc[1] + s * (sc[2] + s * (sc[3] +
 			     s * (sc[4] + s))));
 		}
 		z = x;
-		GET_LDOUBLE_WORDS (hx, i0, i1, z);
+		GET_LDOUBLE_WORDS(hx, i0, i1, z);
 		i1 = 0;
 		i0 &= 0xffffff00;
-		SET_LDOUBLE_WORDS (z, hx, i0, i1);
-		r = expl (-z * z - 0.5625) *
-		expl ((z - x) * (z + x) + R / S);
+		SET_LDOUBLE_WORDS(z, hx, i0, i1);
+		r = expl(-z * z - 0.5625) * expl((z - x) * (z + x) + R / S);
 		if ((se & 0x8000) == 0)
 			return r / x;
-		return two - r / x;
+		return 2.0 - r / x;
 	}
 
 	if ((se & 0x8000) == 0)
 		return tiny * tiny;
-	return two - tiny;
+	return 2.0 - tiny;
 }
 #endif

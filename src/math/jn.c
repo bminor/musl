@@ -37,12 +37,7 @@
 
 #include "libm.h"
 
-static const double
-invsqrtpi = 5.64189583547756279280e-01, /* 0x3FE20DD7, 0x50429B6D */
-two       = 2.00000000000000000000e+00, /* 0x40000000, 0x00000000 */
-one       = 1.00000000000000000000e+00; /* 0x3FF00000, 0x00000000 */
-
-static const double zero = 0.00000000000000000000e+00;
+static const double invsqrtpi = 5.64189583547756279280e-01; /* 0x3FE20DD7, 0x50429B6D */
 
 double jn(int n, double x)
 {
@@ -69,7 +64,7 @@ double jn(int n, double x)
 	sgn = (n&1)&(hx>>31);  /* even n -- 0, odd n -- sign(x) */
 	x = fabs(x);
 	if ((ix|lx) == 0 || ix >= 0x7ff00000)  /* if x is 0 or inf */
-		b = zero;
+		b = 0.0;
 	else if ((double)n <= x) {
 		/* Safe to use J(n+1,x)=2n/x *J(n,x)-J(n-1,x) */
 		if (ix >= 0x52D00000) { /* x > 2**302 */
@@ -108,11 +103,11 @@ double jn(int n, double x)
 			 * J(n,x) = 1/n!*(x/2)^n  - ...
 			 */
 			if (n > 33)  /* underflow */
-				b = zero;
+				b = 0.0;
 			else {
 				temp = x*0.5;
 				b = temp;
-				for (a=one,i=2; i<=n; i++) {
+				for (a=1.0,i=2; i<=n; i++) {
 					a *= (double)i; /* a = n! */
 					b *= temp;      /* b = (x/2)^n */
 				}
@@ -165,10 +160,10 @@ double jn(int n, double x)
 				q1 = tmp;
 			}
 			m = n+n;
-			for (t=zero, i = 2*(n+k); i>=m; i -= 2)
-				t = one/(i/x-t);
+			for (t=0.0, i = 2*(n+k); i>=m; i -= 2)
+				t = 1.0/(i/x-t);
 			a = t;
-			b = one;
+			b = 1.0;
 			/*  estimate log((2/x)^n*n!) = n*log(2/x)+n*ln(n)
 			 *  Hence, if n*(log(2n/x)) > ...
 			 *  single 8.8722839355e+01
@@ -178,7 +173,7 @@ double jn(int n, double x)
 			 *  likely underflow to zero
 			 */
 			tmp = n;
-			v = two/x;
+			v = 2.0/x;
 			tmp = tmp*log(fabs(v*tmp));
 			if (tmp < 7.09782712893383973096e+02) {
 				for (i=n-1,di=(double)(i+i); i>0; i--) {
@@ -186,7 +181,7 @@ double jn(int n, double x)
 					b *= di;
 					b = b/x - a;
 					a = temp;
-					di -= two;
+					di -= 2.0;
 				}
 			} else {
 				for (i=n-1,di=(double)(i+i); i>0; i--) {
@@ -194,12 +189,12 @@ double jn(int n, double x)
 					b *= di;
 					b = b/x - a;
 					a = temp;
-					di -= two;
+					di -= 2.0;
 					/* scale b to avoid spurious overflow */
 					if (b > 1e100) {
 						a /= b;
 						t /= b;
-						b  = one;
+						b  = 1.0;
 					}
 				}
 			}
@@ -229,9 +224,9 @@ double yn(int n, double x)
 	if ((ix|((uint32_t)(lx|-lx))>>31) > 0x7ff00000)
 		return x+x;
 	if ((ix|lx) == 0)
-		return -one/zero;
+		return -1.0/0.0;
 	if (hx < 0)
-		return zero/zero;
+		return 0.0/0.0;
 	sign = 1;
 	if (n < 0) {
 		n = -n;
@@ -242,7 +237,7 @@ double yn(int n, double x)
 	if (n == 1)
 		return sign*y1(x);
 	if (ix == 0x7ff00000)
-		return zero;
+		return 0.0;
 	if (ix >= 0x52D00000) { /* x > 2**302 */
 		/* (x >> n**2)
 		 *      Jn(x) = cos(x-(2n+1)*pi/4)*sqrt(2/x*pi)

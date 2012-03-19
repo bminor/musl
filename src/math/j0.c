@@ -60,7 +60,6 @@ static double pzero(double), qzero(double);
 
 static const double
 huge      = 1e300,
-one       = 1.0,
 invsqrtpi = 5.64189583547756279280e-01, /* 0x3FE20DD7, 0x50429B6D */
 tpi       = 6.36619772367581382433e-01, /* 0x3FE45F30, 0x6DC9C883 */
 /* R0/S0 on [0, 2.00] */
@@ -73,8 +72,6 @@ S02 =  1.16926784663337450260e-04, /* 0x3F1EA6D2, 0xDD57DBF4 */
 S03 =  5.13546550207318111446e-07, /* 0x3EA13B54, 0xCE84D5A9 */
 S04 =  1.16614003333790000205e-09; /* 0x3E1408BC, 0xF4745D8F */
 
-static const double zero = 0.0;
-
 double j0(double x)
 {
 	double z, s,c,ss,cc,r,u,v;
@@ -83,7 +80,7 @@ double j0(double x)
 	GET_HIGH_WORD(hx, x);
 	ix = hx & 0x7fffffff;
 	if (ix >= 0x7ff00000)
-		return one/(x*x);
+		return 1.0/(x*x);
 	x = fabs(x);
 	if (ix >= 0x40000000) {  /* |x| >= 2.0 */
 		s = sin(x);
@@ -92,7 +89,7 @@ double j0(double x)
 		cc = s+c;
 		if (ix < 0x7fe00000) {  /* make sure x+x does not overflow */
 			z = -cos(x+x);
-			if ((s*c) < zero)
+			if (s*c < 0.0)
 				cc = z/ss;
 			else
 				ss = z/cc;
@@ -112,20 +109,20 @@ double j0(double x)
 	}
 	if (ix < 0x3f200000) {  /* |x| < 2**-13 */
 		/* raise inexact if x != 0 */
-		if (huge+x > one) {
+		if (huge+x > 1.0) {
 			if (ix < 0x3e400000)  /* |x| < 2**-27 */
-				return one;
-			return one - 0.25*x*x;
+				return 1.0;
+			return 1.0 - 0.25*x*x;
 		}
 	}
 	z = x*x;
 	r = z*(R02+z*(R03+z*(R04+z*R05)));
-	s = one+z*(S01+z*(S02+z*(S03+z*S04)));
+	s = 1.0+z*(S01+z*(S02+z*(S03+z*S04)));
 	if (ix < 0x3FF00000) {   /* |x| < 1.00 */
-		return one + z*(-0.25+(r/s));
+		return 1.0 + z*(-0.25+(r/s));
 	} else {
 		u = 0.5*x;
-		return (one+u)*(one-u) + z*(r/s);
+		return (1.0+u)*(1.0-u) + z*(r/s);
 	}
 }
 
@@ -151,11 +148,11 @@ double y0(double x)
 	ix = 0x7fffffff & hx;
 	/* Y0(NaN) is NaN, y0(-inf) is Nan, y0(inf) is 0  */
 	if (ix >= 0x7ff00000)
-		return one/(x+x*x);
+		return 1.0/(x+x*x);
 	if ((ix|lx) == 0)
-		return -one/zero;
+		return -1.0/0.0;
 	if (hx < 0)
-		return zero/zero;
+		return 0.0/0.0;
 	if (ix >= 0x40000000) {  /* |x| >= 2.0 */
 		/* y0(x) = sqrt(2/(pi*x))*(p0(x)*sin(x0)+q0(x)*cos(x0))
 		 * where x0 = x-pi/4
@@ -178,7 +175,7 @@ double y0(double x)
 		 */
 		if (ix < 0x7fe00000) {  /* make sure x+x does not overflow */
 			z = -cos(x+x);
-			if (s*c < zero)
+			if (s*c < 0.0)
 				cc = z/ss;
 			else
 				ss = z/cc;
@@ -197,7 +194,7 @@ double y0(double x)
 	}
 	z = x*x;
 	u = u00+z*(u01+z*(u02+z*(u03+z*(u04+z*(u05+z*u06)))));
-	v = one+z*(v01+z*(v02+z*(v03+z*v04)));
+	v = 1.0+z*(v01+z*(v02+z*(v03+z*v04)));
 	return u/v + tpi*(j0(x)*log(x));
 }
 
@@ -286,10 +283,10 @@ static double pzero(double x)
 	else if (ix >= 0x40122E8B){p = pR5; q = pS5;}
 	else if (ix >= 0x4006DB6D){p = pR3; q = pS3;}
 	else if (ix >= 0x40000000){p = pR2; q = pS2;}
-	z = one/(x*x);
+	z = 1.0/(x*x);
 	r = p[0]+z*(p[1]+z*(p[2]+z*(p[3]+z*(p[4]+z*p[5]))));
-	s = one+z*(q[0]+z*(q[1]+z*(q[2]+z*(q[3]+z*q[4]))));
-	return one + r/s;
+	s = 1.0+z*(q[0]+z*(q[1]+z*(q[2]+z*(q[3]+z*q[4]))));
+	return 1.0 + r/s;
 }
 
 
@@ -382,8 +379,8 @@ static double qzero(double x)
 	else if (ix >= 0x40122E8B){p = qR5; q = qS5;}
 	else if (ix >= 0x4006DB6D){p = qR3; q = qS3;}
 	else if (ix >= 0x40000000){p = qR2; q = qS2;}
-	z = one/(x*x);
+	z = 1.0/(x*x);
 	r = p[0]+z*(p[1]+z*(p[2]+z*(p[3]+z*(p[4]+z*p[5]))));
-	s = one+z*(q[0]+z*(q[1]+z*(q[2]+z*(q[3]+z*(q[4]+z*q[5])))));
+	s = 1.0+z*(q[0]+z*(q[1]+z*(q[2]+z*(q[3]+z*(q[4]+z*q[5])))));
 	return (-.125 + r/s)/x;
 }

@@ -16,8 +16,7 @@
 #include "libm.h"
 
 static const float
-one = 1.0000000000e+00, /* 0x3F800000 */
-pi  = 3.1415925026e+00, /* 0x40490fda */
+pi      = 3.1415925026e+00, /* 0x40490fda */
 pio2_hi = 1.5707962513e+00; /* 0x3fc90fda */
 static const volatile float
 pio2_lo = 7.5497894159e-08; /* 0x33a22168 */
@@ -46,13 +45,13 @@ float acosf(float x)
 			return pio2_hi + pio2_lo;
 		z = x*x;
 		p = z*(pS0+z*(pS1+z*pS2));
-		q = one+z*qS1;
+		q = 1.0f+z*qS1;
 		r = p/q;
 		return pio2_hi - (x - (pio2_lo-x*r));
 	} else if (hx < 0) {     /* x < -0.5 */
-		z = (one+x)*0.5f;
+		z = (1.0f+x)*0.5f;
 		p = z*(pS0+z*(pS1+z*pS2));
-		q = one+z*qS1;
+		q = 1.0f+z*qS1;
 		s = sqrtf(z);
 		r = p/q;
 		w = r*s-pio2_lo;
@@ -60,14 +59,14 @@ float acosf(float x)
 	} else {                 /* x > 0.5 */
 		int32_t idf;
 
-		z = (one-x)*0.5f;
+		z = (1.0f-x)*0.5f;
 		s = sqrtf(z);
 		df = s;
 		GET_FLOAT_WORD(idf,df);
 		SET_FLOAT_WORD(df,idf&0xfffff000);
 		c  = (z-df*df)/(s+df);
 		p = z*(pS0+z*(pS1+z*pS2));
-		q = one+z*qS1;
+		q = 1.0f+z*qS1;
 		r = p/q;
 		w = r*s+c;
 		return 2.0f*(df+w);

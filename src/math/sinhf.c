@@ -15,7 +15,7 @@
 
 #include "libm.h"
 
-static const float one = 1.0, huge = 1.0e37;
+static const float huge = 1.0e37;
 
 float sinhf(float x)
 {
@@ -36,12 +36,12 @@ float sinhf(float x)
 	if (ix < 0x41100000) {   /* |x|<9 */
 		if (ix < 0x39800000)  /* |x|<2**-12 */
 			/* raise inexact, return x */
-			if (huge+x > one)
+			if (huge+x > 1.0f)
 				return x;
 		t = expm1f(fabsf(x));
 		if (ix < 0x3f800000)
-			return h*(2.0f*t - t*t/(t+one));
-		return h*(t + t/(t+one));
+			return h*(2.0f*t - t*t/(t+1.0f));
+		return h*(t + t/(t+1.0f));
 	}
 
 	/* |x| in [9, logf(maxfloat)] return 0.5*exp(|x|) */

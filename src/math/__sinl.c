@@ -24,8 +24,6 @@
  * See __cosl.c for more details about the polynomial.
  */
 
-static const double half = 0.5;
-
 static const long double
 S1 = -0.166666666666666666671L;   /* -0xaaaaaaaaaaaaaaab.0p-66 */
 
@@ -47,6 +45,6 @@ long double __sinl(long double x, long double y, int iy)
 	r = S2+z*(S3+z*(S4+z*(S5+z*(S6+z*(S7+z*S8)))));
 	if (iy == 0)
 		return x+v*(S1+z*r);
-	return x-((z*(half*y-v*r)-y)-v*S1);
+	return x-((z*(0.5*y-v*r)-y)-v*S1);
 }
 #endif

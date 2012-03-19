@@ -78,7 +78,7 @@
 
 #include "libm.h"
 
-static const double one = 1.0, tiny = 1.0e-300;
+static const double tiny = 1.0e-300;
 
 double sqrt(double x)
 {
@@ -161,13 +161,13 @@ double sqrt(double x)
 
 	/* use floating add to find out rounding direction */
 	if ((ix0|ix1) != 0) {
-		z = one - tiny; /* raise inexact flag */
-		if (z >= one) {
-			z = one + tiny;
+		z = 1.0 - tiny; /* raise inexact flag */
+		if (z >= 1.0) {
+			z = 1.0 + tiny;
 			if (q1 == (uint32_t)0xffffffff) {
 				q1 = 0;
 				q++;
-			} else if (z > one) {
+			} else if (z > 1.0) {
 				if (q1 == (uint32_t)0xfffffffe)
 					q++;
 				q1 += 2;

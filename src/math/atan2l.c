@@ -27,7 +27,6 @@ long double atan2l(long double y, long double x)
 static const volatile long double
 tiny = 1.0e-300;
 static const long double
-zero = 0.0,
 pi = 3.14159265358979323846264338327950280e+00L;
 
 long double atan2l(long double y, long double x)
@@ -75,8 +74,8 @@ long double atan2l(long double y, long double x)
 			}
 		} else {
 			switch(m) {
-			case 0: return  zero;    /* atan(+...,+INF) */
-			case 1: return -zero;    /* atan(-...,+INF) */
+			case 0: return  0.0;     /* atan(+...,+INF) */
+			case 1: return -0.0;     /* atan(-...,+INF) */
 			case 2: return  pi+tiny; /* atan(+...,-INF) */
 			case 3: return -pi-tiny; /* atan(-...,-INF) */
 			}

@@ -19,7 +19,6 @@ static float pzerof(float), qzerof(float);
 
 static const float
 huge      = 1e30,
-one       = 1.0,
 invsqrtpi = 5.6418961287e-01, /* 0x3f106ebb */
 tpi       = 6.3661974669e-01, /* 0x3f22f983 */
 /* R0/S0 on [0, 2.00] */
@@ -32,8 +31,6 @@ S02 =  1.1692678527e-04, /* 0x38f53697 */
 S03 =  5.1354652442e-07, /* 0x3509daa6 */
 S04 =  1.1661400734e-09; /* 0x30a045e8 */
 
-static const float zero = 0.0;
-
 float j0f(float x)
 {
 	float z, s,c,ss,cc,r,u,v;
@@ -42,7 +39,7 @@ float j0f(float x)
 	GET_FLOAT_WORD(hx, x);
 	ix = hx & 0x7fffffff;
 	if (ix >= 0x7f800000)
-		return one/(x*x);
+		return 1.0f/(x*x);
 	x = fabsf(x);
 	if (ix >= 0x40000000) {  /* |x| >= 2.0 */
 		s = sinf(x);
@@ -51,7 +48,7 @@ float j0f(float x)
 		cc = s+c;
 		if (ix < 0x7f000000) {  /* make sure x+x does not overflow */
 			z = -cosf(x+x);
-			if (s*c < zero)
+			if (s*c < 0.0f)
 				cc = z/ss;
 			else
 				ss = z/cc;
@@ -71,20 +68,20 @@ float j0f(float x)
 	}
 	if (ix < 0x39000000) {  /* |x| < 2**-13 */
 		/* raise inexact if x != 0 */
-		if (huge+x > one) {
+		if (huge+x > 1.0f) {
 			if (ix < 0x32000000)  /* |x| < 2**-27 */
-				return one;
-			return one - 0.25f*x*x;
+				return 1.0f;
+			return 1.0f - 0.25f*x*x;
 		}
 	}
 	z = x*x;
 	r =  z*(R02+z*(R03+z*(R04+z*R05)));
-	s =  one+z*(S01+z*(S02+z*(S03+z*S04)));
+	s =  1.0f+z*(S01+z*(S02+z*(S03+z*S04)));
 	if(ix < 0x3F800000) {   /* |x| < 1.00 */
-		return one + z*(-0.25f + (r/s));
+		return 1.0f + z*(-0.25f + (r/s));
 	} else {
 		u = 0.5f*x;
-		return (one+u)*(one-u) + z*(r/s);
+		return (1.0f+u)*(1.0f-u) + z*(r/s);
 	}
 }
 
@@ -110,11 +107,11 @@ float y0f(float x)
 	ix = 0x7fffffff & hx;
 	/* Y0(NaN) is NaN, y0(-inf) is Nan, y0(inf) is 0  */
 	if (ix >= 0x7f800000)
-		return one/(x+x*x);
+		return 1.0f/(x+x*x);
 	if (ix == 0)
-		return -one/zero;
+		return -1.0f/0.0f;
 	if (hx < 0)
-		return zero/zero;
+		return 0.0f/0.0f;
 	if (ix >= 0x40000000) {  /* |x| >= 2.0 */
 		/* y0(x) = sqrt(2/(pi*x))*(p0(x)*sin(x0)+q0(x)*cos(x0))
 		 * where x0 = x-pi/4
@@ -137,7 +134,7 @@ float y0f(float x)
 		 */
 		if (ix < 0x7f000000) {  /* make sure x+x not overflow */
 			z = -cosf(x+x);
-			if (s*c < zero)
+			if (s*c < 0.0f)
 				cc = z/ss;
 			else
 				ss = z/cc;
@@ -156,7 +153,7 @@ float y0f(float x)
 	}
 	z = x*x;
 	u = u00+z*(u01+z*(u02+z*(u03+z*(u04+z*(u05+z*u06)))));
-	v = one+z*(v01+z*(v02+z*(v03+z*v04)));
+	v = 1.0f+z*(v01+z*(v02+z*(v03+z*v04)));
 	return u/v + tpi*(j0f(x)*logf(x));
 }
 
@@ -244,10 +241,10 @@ static float pzerof(float x)
 	else if (ix >= 0x40f71c58){p = pR5; q = pS5;}
 	else if (ix >= 0x4036db68){p = pR3; q = pS3;}
 	else if (ix >= 0x40000000){p = pR2; q = pS2;}
-	z = one/(x*x);
+	z = 1.0f/(x*x);
 	r = p[0]+z*(p[1]+z*(p[2]+z*(p[3]+z*(p[4]+z*p[5]))));
-	s = one+z*(q[0]+z*(q[1]+z*(q[2]+z*(q[3]+z*q[4]))));
-	return one + r/s;
+	s = 1.0f+z*(q[0]+z*(q[1]+z*(q[2]+z*(q[3]+z*q[4]))));
+	return 1.0f + r/s;
 }
 
 
@@ -340,8 +337,8 @@ static float qzerof(float x)
 	else if (ix >= 0x40f71c58){p = qR5; q = qS5;}
 	else if (ix >= 0x4036db68){p = qR3; q = qS3;}
 	else if (ix >= 0x40000000){p = qR2; q = qS2;}
-	z = one/(x*x);
+	z = 1.0f/(x*x);
 	r = p[0]+z*(p[1]+z*(p[2]+z*(p[3]+z*(p[4]+z*p[5]))));
-	s = one+z*(q[0]+z*(q[1]+z*(q[2]+z*(q[3]+z*(q[4]+z*q[5])))));
+	s = 1.0f+z*(q[0]+z*(q[1]+z*(q[2]+z*(q[3]+z*(q[4]+z*q[5])))));
 	return (-.125f + r/s)/x;
 }

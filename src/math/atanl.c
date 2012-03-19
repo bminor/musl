@@ -23,9 +23,7 @@ long double atanl(long double x)
 }
 #elif (LDBL_MANT_DIG == 64 || LDBL_MANT_DIG == 113) && LDBL_MAX_EXP == 16384
 #include "__invtrigl.h"
-static const long double
-one = 1.0,
-huge = 1.0e300;
+static const long double huge = 1.0e300;
 
 long double atanl(long double x)
 {
@@ -53,7 +51,7 @@ long double atanl(long double x)
 	if (expman < ((BIAS - 2) << 8) + 0xc0) {  /* |x| < 0.4375 */
 		if (expt < ATAN_LINEAR) {   /* if |x| is small, atanl(x)~=x */
 			/* raise inexact */
-			if (huge+x > one)
+			if (huge+x > 1.0)
 				return x;
 		}
 		id = -1;
@@ -62,15 +60,15 @@ long double atanl(long double x)
 		if (expman < (BIAS << 8) + 0x30) {  /* |x| < 1.1875 */
 			if (expman < ((BIAS - 1) << 8) + 0x60) { /*  7/16 <= |x| < 11/16 */
 				id = 0;
-				x = (2.0*x-one)/(2.0+x);
+				x = (2.0*x-1.0)/(2.0+x);
 			} else {                                 /* 11/16 <= |x| < 19/16 */
 				id = 1;
-				x = (x-one)/(x+one);
+				x = (x-1.0)/(x+1.0);
 			}
 		} else {
 			if (expman < ((BIAS + 1) << 8) + 0x38) { /* |x| < 2.4375 */
 				id = 2;
-				x = (x-1.5)/(one+1.5*x);
+				x = (x-1.5)/(1.0+1.5*x);
 			} else {                                 /* 2.4375 <= |x| < 2^ATAN_CONST */
 				id = 3;
 				x = -1.0/x;
