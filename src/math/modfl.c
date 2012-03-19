@@ -54,7 +54,7 @@ long double modfl(long double x, long double *iptr)
 /* The number of fraction bits in manh, not counting the integer bit */
 #define HIBITS  (LDBL_MANT_DIG - LDBL_MANL_SIZE)
 
-static const long double zero[] = { 0.0L, -0.0L };
+static const long double zero[] = { 0.0, -0.0 };
 
 long double modfl(long double x, long double *iptr)
 {
@@ -81,7 +81,7 @@ long double modfl(long double x, long double *iptr)
 		return x - ux.e;
 	} else if (e >= LDBL_MANT_DIG - 1) {    /* x has no fraction part. */
 		*iptr = x;
-		if (x != x)                     /* Handle NaNs. */
+		if (e == LDBL_MAX_EXP && (ux.bits.manh|ux.bits.manl)) /* nan */
 			return x;
 		return zero[ux.bits.sign];
 	} else {                                /* Fraction part is in manl. */
