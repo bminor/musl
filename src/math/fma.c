@@ -23,10 +23,6 @@ static void add(long double *hi, long double *lo, long double x, long double y)
 	*lo = y - r;
 }
 
-/*
-TODO(nsz): probably simpler mul is enough if we assume x and y are doubles
-so last 11bits are all zeros, no subnormals etc
-*/
 /* exact mul, assumes no over/underflow */
 static void mul(long double *hi, long double *lo, long double x, long double y)
 {
@@ -115,7 +111,7 @@ double fma(double x, double y, double z)
 		add(&hi, &lo2, xy, z);
 		if (hi == 0) {
 			fesetround(round);
-			/* TODO: verify that the sign of 0 is always correct */
+			/* make sure that the sign of 0 is correct */
 			return (xy + z) + lo1;
 		}
 	} else {
