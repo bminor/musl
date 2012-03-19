@@ -247,7 +247,7 @@ static inline double add_and_denormalize(double a, double b, int scale)
 			INSERT_WORD64(sum.hi, hibits);
 		}
 	}
-	return (ldexp(sum.hi, scale));
+	return scalbn(sum.hi, scale);
 }
 
 /*
@@ -364,7 +364,7 @@ double fma(double x, double y, double z)
 		}
 	}
 	if (spread <= DBL_MANT_DIG * 2)
-		zs = ldexp(zs, -spread);
+		zs = scalbn(zs, -spread);
 	else
 		zs = copysign(DBL_MIN, zs);
 
@@ -390,7 +390,7 @@ double fma(double x, double y, double z)
 		 */
 		fesetround(oround);
 		volatile double vzs = zs; /* XXX gcc CSE bug workaround */
-		return (xy.hi + vzs + ldexp(xy.lo, spread));
+		return xy.hi + vzs + scalbn(xy.lo, spread);
 	}
 
 	if (oround != FE_TONEAREST) {
@@ -400,13 +400,13 @@ double fma(double x, double y, double z)
 		 */
 		fesetround(oround);
 		adj = r.lo + xy.lo;
-		return (ldexp(r.hi + adj, spread));
+		return scalbn(r.hi + adj, spread);
 	}
 
 	adj = add_adjusted(r.lo, xy.lo);
 	if (spread + ilogb(r.hi) > -1023)
-		return (ldexp(r.hi + adj, spread));
+		return scalbn(r.hi + adj, spread);
 	else
-		return (add_and_denormalize(r.hi, adj, spread));
+		return add_and_denormalize(r.hi, adj, spread);
 }
 #endif
