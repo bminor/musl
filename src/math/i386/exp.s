@@ -34,6 +34,15 @@ exp:
 .type exp2,@function
 exp2:
 	fldl 4(%esp)
+1:	fxam
+	fnstsw %ax
+	sahf
+	jnp 1f
+	jnc 1f
+	fstps 4(%esp)
+	mov $0xfe,%al
+	and %al,7(%esp)
+	flds 4(%esp)
 1:	fld %st(0)
 	frndint
 	fxch %st(1)
