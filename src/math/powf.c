@@ -57,17 +57,15 @@ float powf(float x, float y)
 	ix = hx & 0x7fffffff;
 	iy = hy & 0x7fffffff;
 
-	/* y == 0: x**0 = 1 */
+	/* x**0 = 1, even if x is NaN */
 	if (iy == 0)
 		return 1.0f;
-
-	/* x == 1: 1**y = 1, even if y is NaN */
+	/* 1**y = 1, even if y is NaN */
 	if (hx == 0x3f800000)
 		return 1.0f;
-
-	/* y != 0: result is NaN if either arg is NaN */
+	/* NaN if either arg is NaN */
 	if (ix > 0x7f800000 || iy > 0x7f800000)
-		return (x+0.0f) + (y+0.0f);
+		return x + y;
 
 	/* determine if y is an odd int when x < 0
 	 * yisint = 0       ... y is not an integer
@@ -93,13 +91,10 @@ float powf(float x, float y)
 		else if (ix > 0x3f800000)  /* (|x|>1)**+-inf = inf,0 */
 			return hy >= 0 ? y : 0.0f;
 		else                       /* (|x|<1)**+-inf = 0,inf */
-			return hy < 0 ? -y : 0.0f;
+			return hy >= 0 ? 0.0f: -y;
 	}
-	if (iy == 0x3f800000) {  /* y is +-1 */
-		if (hy < 0)
-			return 1.0f/x;
-		return x;
-	}
+	if (iy == 0x3f800000)    /* y is +-1 */
+		return hy >= 0 ? x : 1.0f/x;
 	if (hy == 0x40000000)    /* y is 2 */
 		return x*x;
 	if (hy == 0x3f000000) {  /* y is  0.5 */
@@ -122,15 +117,13 @@ float powf(float x, float y)
 		return z;
 	}
 
-	n = ((uint32_t)hx>>31) - 1;
-
-	/* (x<0)**(non-int) is NaN */
-	if ((n|yisint) == 0)
-		return (x-x)/(x-x);
-
-	sn = 1.0f; /* s (sign of result -ve**odd) = -1 else = 1 */
-	if ((n|(yisint-1)) == 0)  /* (-ve)**(odd int) */
-		sn = -1.0f;
+	sn = 1.0f; /* sign of result */
+	if (hx < 0) {
+		if (yisint == 0) /* (x<0)**(non-int) is NaN */
+			return (x-x)/(x-x);
+		if (yisint == 1) /* (x<0)**(odd int) */
+			sn = -1.0f;
+	}
 
 	/* |y| is huge */
 	if (iy > 0x4d000000) { /* if |y| > 2**27 */

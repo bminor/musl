@@ -10,11 +10,16 @@ long double nearbyintl(long double x)
 #include <fenv.h>
 long double nearbyintl(long double x)
 {
-	fenv_t e;
+#ifdef FE_INEXACT
+	int e;
 
-	fegetenv(&e);
+	e = fetestexcept(FE_INEXACT);
+#endif
 	x = rintl(x);
-	fesetenv(&e);
+#ifdef FE_INEXACT
+	if (!e)
+		feclearexcept(FE_INEXACT);
+#endif
 	return x;
 }
 #endif

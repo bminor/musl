@@ -78,8 +78,6 @@ long double powl(long double x, long double y)
 
 /* Table size */
 #define NXT 32
-/* log2(Table size) */
-#define LNXT 5
 
 /* log(1+x) =  x - .5x^2 + x^3 *  P(z)/Q(z)
  * on the domain  2^(-1/32) - 1  <=  x  <=  2^(1/32) - 1
@@ -203,38 +201,35 @@ long double powl(long double x, long double y)
 	volatile long double z=0;
 	long double w=0, W=0, Wa=0, Wb=0, ya=0, yb=0, u=0;
 
-	if (y == 0.0)
-		return 1.0;
-	if (isnan(x))
+	/* make sure no invalid exception is raised by nan comparision */
+	if (isnan(x)) {
+		if (!isnan(y) && y == 0.0)
+			return 1.0;
 		return x;
-	if (isnan(y))
+	}
+	if (isnan(y)) {
+		if (x == 1.0)
+			return 1.0;
 		return y;
+	}
+	if (x == 1.0)
+		return 1.0; /* 1**y = 1, even if y is nan */
+	if (x == -1.0 && !isfinite(y))
+		return 1.0; /* -1**inf = 1 */
+	if (y == 0.0)
+		return 1.0; /* x**0 = 1, even if x is nan */
 	if (y == 1.0)
 		return x;
-
-	// FIXME: this is wrong, see pow special cases in c99 F.9.4.4
-	if (!isfinite(y) && (x == -1.0 || x == 1.0) )
-		return y - y;   /* +-1**inf is NaN */
-	if (x == 1.0)
-		return 1.0;
 	if (y >= LDBL_MAX) {
-		if (x > 1.0)
+		if (x > 1.0 || x < -1.0)
 			return INFINITY;
-		if (x > 0.0 && x < 1.0)
-			return 0.0;
-		if (x < -1.0)
-			return INFINITY;
-		if (x > -1.0 && x < 0.0)
+		if (x != 0.0)
 			return 0.0;
 	}
 	if (y <= -LDBL_MAX) {
-		if (x > 1.0)
+		if (x > 1.0 || x < -1.0)
 			return 0.0;
-		if (x > 0.0 && x < 1.0)
-			return INFINITY;
-		if (x < -1.0)
-			return 0.0;
-		if (x > -1.0 && x < 0.0)
+		if (x != 0.0)
 			return INFINITY;
 	}
 	if (x >= LDBL_MAX) {
@@ -244,6 +239,7 @@ long double powl(long double x, long double y)
 	}
 
 	w = floorl(y);
+
 	/* Set iyflg to 1 if y is an integer. */
 	iyflg = 0;
 	if (w == y)
@@ -271,42 +267,32 @@ long double powl(long double x, long double y)
 			return 0.0;
 		}
 	}
-
-
-	nflg = 0;       /* flag = 1 if x<0 raised to integer power */
+	nflg = 0; /* (x<0)**(odd int) */
 	if (x <= 0.0) {
 		if (x == 0.0) {
 			if (y < 0.0) {
 				if (signbit(x) && yoddint)
-					return -INFINITY;
-				return INFINITY;
+					/* (-0.0)**(-odd int) = -inf, divbyzero */
+					return -1.0/0.0;
+				/* (+-0.0)**(negative) = inf, divbyzero */
+				return 1.0/0.0;
 			}
-			if (y > 0.0) {
-				if (signbit(x) && yoddint)
-					return -0.0;
-				return 0.0;
-			}
-			if (y == 0.0)
-				return 1.0;  /*   0**0   */
-			return 0.0;  /*   0**y   */
+			if (signbit(x) && yoddint)
+				return -0.0;
+			return 0.0;
 		}
 		if (iyflg == 0)
 			return (x - x) / (x - x); /* (x<0)**(non-int) is NaN */
-		nflg = 1;
+		/* (x<0)**(integer) */
+		if (yoddint)
+			nflg = 1; /* negate result */
+		x = -x;
 	}
-
-	/* Integer power of an integer.  */
-	if (iyflg) {
-		i = w;
-		w = floorl(x);
-		if (w == x && fabsl(y) < 32768.0) {
-			w = powil(x, (int)y);
-			return w;
-		}
+	/* (+integer)**(integer)  */
+	if (iyflg && floorl(x) == x && fabsl(y) < 32768.0) {
+		w = powil(x, (int)y);
+		return nflg ? -w : w;
 	}
-
-	if (nflg)
-		x = fabsl(x);
 
 	/* separate significand from exponent */
 	x = frexpl(x, &i);
@@ -354,9 +340,7 @@ long double powl(long double x, long double y)
 	z += x;
 
 	/* Compute exponent term of the base 2 logarithm. */
-	w = -i;
-	// TODO: use w * 0x1p-5;
-	w = scalbnl(w, -LNXT); /* divide by NXT */
+	w = -i / NXT;
 	w += e;
 	/* Now base 2 log of x is w + z. */
 
@@ -381,7 +365,7 @@ long double powl(long double x, long double y)
 
 	H = Fb + Gb;
 	Ha = reducl(H);
-	w = scalbnl( Ga+Ha, LNXT );
+	w = (Ga + Ha) * NXT;
 
 	/* Test the power of 2 for overflow */
 	if (w > MEXP)
@@ -418,18 +402,8 @@ long double powl(long double x, long double y)
 	z = z + w;
 	z = scalbnl(z, i);  /* multiply by integer power of 2 */
 
-	if (nflg) {
-		/* For negative x,
-		 * find out if the integer exponent
-		 * is odd or even.
-		 */
-		w = 0.5*y;
-		w = floorl(w);
-		w = 2.0*w;
-		if (w != y)
-			z = -z;  /* odd exponent */
-	}
-
+	if (nflg)
+		z = -z;
 	return z;
 }
 
@@ -439,15 +413,14 @@ static long double reducl(long double x)
 {
 	long double t;
 
-	t = scalbnl(x, LNXT);
+	t = x * NXT;
 	t = floorl(t);
-	t = scalbnl(t, -LNXT);
+	t = t / NXT;
 	return t;
 }
 
-/*                                                      powil.c
- *
- *      Real raised to integer power, long double precision
+/*
+ *      Positive real raised to integer power, long double precision
  *
  *
  * SYNOPSIS:
@@ -460,7 +433,7 @@ static long double reducl(long double x)
  *
  * DESCRIPTION:
  *
- * Returns argument x raised to the nth power.
+ * Returns argument x>0 raised to the nth power.
  * The routine efficiently decomposes n as a sum of powers of
  * two. The desired power is a product of two-to-the-kth
  * powers of x.  Thus to compute the 32767 power of x requires
@@ -482,24 +455,10 @@ static long double powil(long double x, int nn)
 {
 	long double ww, y;
 	long double s;
-	int n, e, sign, asign, lx;
-
-	if (x == 0.0) {
-		if (nn == 0)
-			return 1.0;
-		else if (nn < 0)
-			return LDBL_MAX;
-		return 0.0;
-	}
+	int n, e, sign, lx;
 
 	if (nn == 0)
 		return 1.0;
-
-	if (x < 0.0) {
-		asign = -1;
-		x = -x;
-	} else
-		asign = 0;
 
 	if (nn < 0) {
 		sign = -1;
@@ -539,10 +498,8 @@ static long double powil(long double x, int nn)
 	/* First bit of the power */
 	if (n & 1)
 		y = x;
-	else {
+	else
 		y = 1.0;
-		asign = 0;
-	}
 
 	ww = x;
 	n >>= 1;
@@ -553,8 +510,6 @@ static long double powil(long double x, int nn)
 		n >>= 1;
 	}
 
-	if (asign)
-		y = -y;  /* odd power of negative number */
 	if (sign < 0)
 		y = 1.0/y;
 	return y;

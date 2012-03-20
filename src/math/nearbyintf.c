@@ -1,11 +1,17 @@
 #include <fenv.h>
 #include <math.h>
 
-float nearbyintf(float x) {
-	fenv_t e;
+float nearbyintf(float x)
+{
+#ifdef FE_INEXACT
+	int e;
 
-	fegetenv(&e);
+	e = fetestexcept(FE_INEXACT);
+#endif
 	x = rintf(x);
-	fesetenv(&e);
+#ifdef FE_INEXACT
+	if (!e)
+		feclearexcept(FE_INEXACT);
+#endif
 	return x;
 }

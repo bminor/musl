@@ -23,9 +23,9 @@ long double cbrtl(long double x)
 	return cbrt(x);
 }
 #elif (LDBL_MANT_DIG == 64 || LDBL_MANT_DIG == 113) && LDBL_MAX_EXP == 16384
-#define BIAS    (LDBL_MAX_EXP - 1)
-static const unsigned
-B1 = 709958130; /* B1 = (127-127.0/3-0.03306235651)*2**23 */
+
+#define BIAS (LDBL_MAX_EXP - 1)
+static const unsigned B1 = 709958130; /* B1 = (127-127.0/3-0.03306235651)*2**23 */
 
 long double cbrtl(long double x)
 {
@@ -48,25 +48,10 @@ long double cbrtl(long double x)
 	if (k == BIAS + LDBL_MAX_EXP)
 		return x + x;
 
-// FIXME: extended precision is default on linux..
-#undef __i386__
-#ifdef __i386__
-	fp_prec_t oprec;
-
-	oprec = fpgetprec();
-	if (oprec != FP_PE)
-		fpsetprec(FP_PE);
-#endif
-
 	if (k == 0) {
 		/* If x = +-0, then cbrt(x) = +-0. */
-		if ((u.bits.manh | u.bits.manl) == 0) {
-#ifdef __i386__
-			if (oprec != FP_PE)
-				fpsetprec(oprec);
-#endif
-			return (x);
-		}
+		if ((u.bits.manh | u.bits.manl) == 0)
+			return x;
 		/* Adjust subnormal numbers. */
 		u.e *= 0x1.0p514;
 		k = u.bits.exp;
@@ -118,7 +103,7 @@ long double cbrtl(long double x)
 	 * Round it away from zero to 32 bits (32 so that t*t is exact, and
 	 * away from zero for technical reasons).
 	 */
-	t = dt + (0x1.0p32L + 0x1.0p-32L) - 0x1.0p32;
+	t = dt + (0x1.0p32L + 0x1.0p-31L) - 0x1.0p32;
 #elif LDBL_MANT_DIG == 113
 	/*
 	 * Round dt away from zero to 47 bits.  Since we don't trust the 47,
@@ -129,8 +114,6 @@ long double cbrtl(long double x)
 	 * dt is much more accurate than needed.
 	 */
 	t = dt + 0x2.0p-46 + 0x1.0p60L - 0x1.0p60;
-#else
-#error "Unsupported long double format"
 #endif
 
 	/*
@@ -144,10 +127,6 @@ long double cbrtl(long double x)
 	t = t+t*r;       /* error <= 0.5 + 0.5/3 + epsilon */
 
 	t *= v.e;
-#ifdef __i386__
-	if (oprec != FP_PE)
-		fpsetprec(oprec);
-#endif
 	return t;
 }
 #endif

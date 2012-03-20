@@ -1,20 +1,19 @@
 #include <fenv.h>
 #include <math.h>
 
-/*
-rint may raise inexact (and it should not alter the fenv otherwise)
-nearbyint must not raise inexact
+/* nearbyint is the same as rint, but it must not raise the inexact exception */
 
-(according to ieee754r section 7.9 both functions should raise invalid
-when the input is signaling nan, but c99 does not define snan so saving
-and restoring the entire fenv should be fine)
-*/
+double nearbyint(double x)
+{
+#ifdef FE_INEXACT
+	int e;
 
-double nearbyint(double x) {
-	fenv_t e;
-
-	fegetenv(&e);
+	e = fetestexcept(FE_INEXACT);
+#endif
 	x = rint(x);
-	fesetenv(&e);
+#ifdef FE_INEXACT
+	if (!e)
+		feclearexcept(FE_INEXACT);
+#endif
 	return x;
 }

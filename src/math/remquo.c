@@ -35,7 +35,6 @@ double remquo(double x, double y, int *quo)
 	hy &= 0x7fffffff;       /* |y| */
 
 	/* purge off exception values */
-	// FIXME: signed shift
 	if ((hy|ly) == 0 || hx >= 0x7ff00000 ||  /* y = 0, or x not finite */
 	    (hy|((ly|-ly)>>31)) > 0x7ff00000)    /* or y is NaN */
 		return (x*y)/(x*y);
