@@ -14,11 +14,19 @@ acosl:
 .type acos,@function
 acos:
 	fldl 4(%esp)
-1:	fld %st(0)
-	fmul %st(0)
+1:	fld1
+	fld %st(1)
 	fld1
-	fsubp %st(1)
+	fsubp
+	fxch %st(2)
+	faddp
+	fdivp
 	fsqrt
+	fld1
 	fxch %st(1)
 	fpatan
+	fld1
+	fld1
+	faddp
+	fmulp
 	ret
