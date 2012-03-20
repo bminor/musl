@@ -21,24 +21,28 @@
  *
  * Special cases:
  *      1.  (anything) ** 0  is 1
- *      2.  (anything) ** 1  is itself
- *      3.  (anything except 1) ** NAN is NAN,  1 ** NAN is 1
+ *      2.  1 ** (anything)  is 1
+ *      3.  (anything except 1) ** NAN is NAN
  *      4.  NAN ** (anything except 0) is NAN
  *      5.  +-(|x| > 1) **  +INF is +INF
  *      6.  +-(|x| > 1) **  -INF is +0
  *      7.  +-(|x| < 1) **  +INF is +0
  *      8.  +-(|x| < 1) **  -INF is +INF
- *      9.  +-1         ** +-INF is 1
+ *      9.  -1          ** +-INF is 1
  *      10. +0 ** (+anything except 0, NAN)               is +0
  *      11. -0 ** (+anything except 0, NAN, odd integer)  is +0
- *      12. +0 ** (-anything except 0, NAN)               is +INF
- *      13. -0 ** (-anything except 0, NAN, odd integer)  is +INF
- *      14. -0 ** (odd integer) = -( +0 ** (odd integer) )
- *      15. +INF ** (+anything except 0,NAN) is +INF
- *      16. +INF ** (-anything except 0,NAN) is +0
- *      17. -INF ** (anything)  = -0 ** (-anything)
- *      18. (-anything) ** (integer) is (-1)**(integer)*(+anything**integer)
- *      19. (-anything except 0 and inf) ** (non-integer) is NAN
+ *      12. +0 ** (-anything except 0, NAN)               is +INF, raise divbyzero
+ *      13. -0 ** (-anything except 0, NAN, odd integer)  is +INF, raise divbyzero
+ *      14. -0 ** (+odd integer) is -0
+ *      15. -0 ** (-odd integer) is -INF, raise divbyzero
+ *      16. +INF ** (+anything except 0,NAN) is +INF
+ *      17. +INF ** (-anything except 0,NAN) is +0
+ *      18. -INF ** (+odd integer) is -INF
+ *      19. -INF ** (anything) = -0 ** (-anything), (anything except odd integer)
+ *      20. (anything) ** 1 is (anything)
+ *      21. (anything) ** -1 is 1/(anything)
+ *      22. (-anything) ** (integer) is (-1)**(integer)*(+anything**integer)
+ *      23. (-anything except 0 and inf) ** (non-integer) is NAN
  *
  * Accuracy:
  *      pow(x,y) returns x**y nearly rounded. In particular
@@ -98,18 +102,16 @@ double pow(double x, double y)
 	ix = hx & 0x7fffffff;
 	iy = hy & 0x7fffffff;
 
-	/* y == 0.0: x**0 = 1 */
+	/* x**0 = 1, even if x is NaN */
 	if ((iy|ly) == 0)
 		return 1.0;
-
-	/* x == 1: 1**y = 1, even if y is NaN */
+	/* 1**y = 1, even if y is NaN */
 	if (hx == 0x3ff00000 && lx == 0)
 		return 1.0;
-
-	/* y != 0.0: result is NaN if either arg is NaN */
+	/* NaN if either arg is NaN */
 	if (ix > 0x7ff00000 || (ix == 0x7ff00000 && lx != 0) ||
 	    iy > 0x7ff00000 || (iy == 0x7ff00000 && ly != 0))
-		return (x+0.0) + (y+0.0);
+		return x + y;
 
 	/* determine if y is an odd int when x < 0
 	 * yisint = 0       ... y is not an integer
@@ -142,13 +144,10 @@ double pow(double x, double y)
 			else if (ix >= 0x3ff00000) /* (|x|>1)**+-inf = inf,0 */
 				return hy >= 0 ? y : 0.0;
 			else                       /* (|x|<1)**+-inf = 0,inf */
-				return hy < 0 ? -y : 0.0;
+				return hy >= 0 ? 0.0 : -y;
 		}
-		if (iy == 0x3ff00000) {  /* y is +-1 */
-			if (hy < 0)
-				return 1.0/x;
-			return x;
-		}
+		if (iy == 0x3ff00000)    /* y is +-1 */
+			return hy >= 0 ? x : 1.0/x;
 		if (hy == 0x40000000)    /* y is 2 */
 			return x*x;
 		if (hy == 0x3fe00000) {  /* y is 0.5 */
@@ -174,19 +173,13 @@ double pow(double x, double y)
 		}
 	}
 
-	/* CYGNUS LOCAL + fdlibm-5.3 fix: This used to be
-	n = (hx>>31)+1;
-	   but ANSI C says a right shift of a signed negative quantity is
-	   implementation defined.  */
-	n = ((uint32_t)hx>>31) - 1;
-
-	/* (x<0)**(non-int) is NaN */
-	if ((n|yisint) == 0)
-		return (x-x)/(x-x);
-
-	s = 1.0; /* s (sign of result -ve**odd) = -1 else = 1 */
-	if ((n|(yisint-1)) == 0)
-		s = -1.0;/* (-ve)**(odd int) */
+	s = 1.0; /* sign of result */
+	if (hx < 0) {
+		if (yisint == 0) /* (x<0)**(non-int) is NaN */
+			return (x-x)/(x-x);
+		if (yisint == 1) /* (x<0)**(odd int) */
+			s = -1.0;
+	}
 
 	/* |y| is huge */
 	if (iy > 0x41e00000) { /* if |y| > 2**31 */
