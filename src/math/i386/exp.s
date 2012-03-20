@@ -68,21 +68,19 @@ exp:
 .type exp2,@function
 exp2:
 	fldl 4(%esp)
-1:	mov $0x47000000,%eax
-	push %eax
+1:	pushl $0x467ff000
 	flds (%esp)
-	shl $7,%eax
-	push %eax
-	add %eax,%eax
+	xorl %eax,%eax
+	pushl $0x80000000
 	push %eax
 	fld %st(1)
 	fabs
 	fucom %st(1)
 	fnstsw
+	fstp %st(0)
+	fstp %st(0)
 	sahf
 	ja 2f
-	fstp %st(0)
-	fstp %st(0)
 	fld %st(0)
 	fistpl 8(%esp)
 	fildl 8(%esp)
@@ -99,22 +97,23 @@ exp2:
 	add $12,%esp
 	ret
 
-2:	fstp %st(0)
+2:	fld %st(0)
+	fstpt (%esp)
+	mov 9(%esp),%ah
+	and $0x7f,%ah
+	cmp $0x7f,%ah
+	jne 1f
+	decb 9(%esp)
 	fstp %st(0)
-	fsts 8(%esp)
-	mov 8(%esp),%eax
-	lea (%eax,%eax),%ecx
-	cmp $0xff000000,%ecx
-	ja 2f
-	fstp %st(0)
-	xor %ecx,%ecx
-	inc %ecx
-	add %eax,%eax
-	jc 1f
-	mov $0x7ffe,%ecx
-1:	mov %ecx,8(%esp)
 	fldt (%esp)
-	fld %st(0)
-	fmulp
-2:	add $12,%esp
+1:	fld %st(0)
+	frndint
+	fxch %st(1)
+	fsub %st(1)
+	f2xm1
+	fld1
+	faddp
+	fscale
+	fstp %st(1)
+	add $12,%esp
 	ret
