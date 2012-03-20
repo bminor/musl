@@ -82,8 +82,6 @@
 
 static const double
 two52= 4.50359962737049600000e+15, /* 0x43300000, 0x00000000 */
-half=  5.00000000000000000000e-01, /* 0x3FE00000, 0x00000000 */
-one =  1.00000000000000000000e+00, /* 0x3FF00000, 0x00000000 */
 pi  =  3.14159265358979311600e+00, /* 0x400921FB, 0x54442D18 */
 a0  =  7.72156649015328655494e-02, /* 0x3FB3C467, 0xE37DB0C8 */
 a1  =  3.22467033424113591611e-01, /* 0x3FD4A34C, 0xC4A60FAD */
@@ -148,8 +146,6 @@ w4  = -5.95187557450339963135e-04, /* 0xBF4380CB, 0x8C0FE741 */
 w5  =  8.36339918996282139126e-04, /* 0x3F4B67BA, 0x4CDAD5D1 */
 w6  = -1.63092934096575273989e-03; /* 0xBF5AB89D, 0x0B9E43E4 */
 
-static const double zero = 0.00000000000000000000e+00;
-
 static double sin_pi(double x)
 {
 	double y,z;
@@ -159,7 +155,7 @@ static double sin_pi(double x)
 	ix &= 0x7fffffff;
 
 	if (ix < 0x3fd00000)
-		return __sin(pi*x, zero, 0);
+		return __sin(pi*x, 0.0, 0);
 
 	y = -x;  /* negative x is assumed */
 
@@ -174,7 +170,7 @@ static double sin_pi(double x)
 		n  = (int)(y*4.0);
 	} else {
 		if (ix >= 0x43400000) {
-			y = zero;    /* y must be even */
+			y = 0.0;    /* y must be even */
 			n = 0;
 		} else {
 			if (ix < 0x43300000)
@@ -186,14 +182,14 @@ static double sin_pi(double x)
 		}
 	}
 	switch (n) {
-	case 0:  y =  __sin(pi*y, zero, 0); break;
+	case 0:  y =  __sin(pi*y, 0.0, 0); break;
 	case 1:
-	case 2:  y =  __cos(pi*(0.5-y), zero); break;
+	case 2:  y =  __cos(pi*(0.5-y), 0.0); break;
 	case 3:
-	case 4:  y =  __sin(pi*(one-y), zero, 0); break;
+	case 4:  y =  __sin(pi*(1.0-y), 0.0, 0); break;
 	case 5:
-	case 6:  y = -__cos(pi*(y-1.5), zero); break;
-	default: y =  __sin(pi*(y-2.0), zero, 0); break;
+	case 6:  y = -__cos(pi*(y-1.5), 0.0); break;
+	default: y =  __sin(pi*(y-2.0), 0.0, 0); break;
 	}
 	return -y;
 }
@@ -213,7 +209,7 @@ double __lgamma_r(double x, int *signgamp)
 	if (ix >= 0x7ff00000)
 		return x*x;
 	if ((ix|lx) == 0)
-		return one/zero;
+		return 1.0/0.0;
 	if (ix < 0x3b900000) {  /* |x|<2**-70, return -log(|x|) */
 		if(hx < 0) {
 			*signgamp = -1;
@@ -223,12 +219,12 @@ double __lgamma_r(double x, int *signgamp)
 	}
 	if (hx < 0) {
 		if (ix >= 0x43300000)  /* |x|>=2**52, must be -integer */
-			return one/zero;
+			return 1.0/0.0;
 		t = sin_pi(x);
-		if (t == zero) /* -integer */
-			return one/zero;
+		if (t == 0.0) /* -integer */
+			return 1.0/0.0;
 		nadj = log(pi/fabs(t*x));
-		if (t < zero)
+		if (t < 0.0)
 			*signgamp = -1;
 		x = -x;
 	}
@@ -241,17 +237,17 @@ double __lgamma_r(double x, int *signgamp)
 		if (ix <= 0x3feccccc) {   /* lgamma(x) = lgamma(x+1)-log(x) */
 			r = -log(x);
 			if (ix >= 0x3FE76944) {
-				y = one - x;
+				y = 1.0 - x;
 				i = 0;
 			} else if (ix >= 0x3FCDA661) {
-				y = x - (tc-one);
+				y = x - (tc-1.0);
 				i = 1;
 			} else {
 				y = x;
 				i = 2;
 			}
 		} else {
-			r = zero;
+			r = 0.0;
 			if (ix >= 0x3FFBB4C3) {  /* [1.7316,2] */
 				y = 2.0 - x;
 				i = 0;
@@ -259,7 +255,7 @@ double __lgamma_r(double x, int *signgamp)
 				y = x - tc;
 				i = 1;
 			} else {
-				y = x - one;
+				y = x - 1.0;
 				i = 2;
 			}
 		}
@@ -282,16 +278,16 @@ double __lgamma_r(double x, int *signgamp)
 			break;
 		case 2:
 			p1 = y*(u0+y*(u1+y*(u2+y*(u3+y*(u4+y*u5)))));
-			p2 = one+y*(v1+y*(v2+y*(v3+y*(v4+y*v5))));
+			p2 = 1.0+y*(v1+y*(v2+y*(v3+y*(v4+y*v5))));
 			r += -0.5*y + p1/p2;
 		}
 	} else if (ix < 0x40200000) {  /* x < 8.0 */
 		i = (int)x;
 		y = x - (double)i;
 		p = y*(s0+y*(s1+y*(s2+y*(s3+y*(s4+y*(s5+y*s6))))));
-		q = one+y*(r1+y*(r2+y*(r3+y*(r4+y*(r5+y*r6)))));
-		r = half*y+p/q;
-		z = one;    /* lgamma(1+s) = log(s) + lgamma(s) */
+		q = 1.0+y*(r1+y*(r2+y*(r3+y*(r4+y*(r5+y*r6)))));
+		r = 0.5*y+p/q;
+		z = 1.0;    /* lgamma(1+s) = log(s) + lgamma(s) */
 		switch (i) {
 		case 7: z *= y + 6.0;  /* FALLTHRU */
 		case 6: z *= y + 5.0;  /* FALLTHRU */
@@ -303,12 +299,12 @@ double __lgamma_r(double x, int *signgamp)
 		}
 	} else if (ix < 0x43900000) {  /* 8.0 <= x < 2**58 */
 		t = log(x);
-		z = one/x;
+		z = 1.0/x;
 		y = z*z;
 		w = w0+z*(w1+y*(w2+y*(w3+y*(w4+y*(w5+y*w6)))));
-		r = (x-half)*(t-one)+w;
+		r = (x-0.5)*(t-1.0)+w;
 	} else                         /* 2**58 <= x <= inf */
-		r =  x*(log(x)-one);
+		r =  x*(log(x)-1.0);
 	if (hx < 0)
 		r = nadj - r;
 	return r;

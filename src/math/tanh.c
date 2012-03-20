@@ -35,7 +35,7 @@
 
 #include "libm.h"
 
-static const double one = 1.0, two = 2.0, tiny = 1.0e-300, huge = 1.0e300;
+static const double tiny = 1.0e-300, huge = 1.0e300;
 
 double tanh(double x)
 {
@@ -48,26 +48,26 @@ double tanh(double x)
 	/* x is INF or NaN */
 	if (ix >= 0x7ff00000) {
 		if (jx >= 0)
-			return one/x + one;  /* tanh(+-inf)=+-1 */
+			return 1.0f/x + 1.0f;  /* tanh(+-inf)=+-1 */
 		else
-			return one/x - one;  /* tanh(NaN) = NaN */
+			return 1.0f/x - 1.0f;  /* tanh(NaN) = NaN */
 	}
 
 	if (ix < 0x40360000) {  /* |x| < 22 */
 		if (ix < 0x3e300000) {  /* |x| < 2**-28 */
 			/* tanh(tiny) = tiny with inexact */
-			if (huge+x > one)
+			if (huge+x > 1.0f)
 				return x;
 		}
 		if (ix >= 0x3ff00000) {  /* |x| >= 1  */
-			t = expm1(two*fabs(x));
-			z = one - two/(t+two);
+			t = expm1(2.0f*fabs(x));
+			z = 1.0f - 2.0f/(t+2.0f);
 		} else {
-			t = expm1(-two*fabs(x));
-			z= -t/(t+two);
+			t = expm1(-2.0f*fabs(x));
+			z= -t/(t+2.0f);
 		}
 	} else {  /* |x| >= 22, return +-1 */
-		z = one - tiny;  /* raise inexact */
+		z = 1.0f - tiny;  /* raise inexact */
 	}
 	return jx >= 0 ? z : -z;
 }

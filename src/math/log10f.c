@@ -23,8 +23,6 @@ ivln10lo  = -3.1689971365e-05, /* 0xb804ead9 */
 log10_2hi =  3.0102920532e-01, /* 0x3e9a2080 */
 log10_2lo =  7.9034151668e-07; /* 0x355427db */
 
-static const float zero = 0.0;
-
 float log10f(float x)
 {
 	float f,hfsq,hi,lo,r,y;
@@ -35,9 +33,9 @@ float log10f(float x)
 	k = 0;
 	if (hx < 0x00800000) {  /* x < 2**-126  */
 		if ((hx&0x7fffffff) == 0)
-			return -two25/zero;  /* log(+-0)=-inf */
+			return -two25/0.0f;  /* log(+-0)=-inf */
 		if (hx < 0)
-			return (x-x)/zero;   /* log(-#) = NaN */
+			return (x-x)/0.0f;   /* log(-#) = NaN */
 		/* subnormal number, scale up x */
 		k -= 25;
 		x *= two25;
@@ -46,7 +44,7 @@ float log10f(float x)
 	if (hx >= 0x7f800000)
 		return x+x;
 	if (hx == 0x3f800000)
-		return zero;  /* log(1) = +0 */
+		return 0.0f;  /* log(1) = +0 */
 	k += (hx>>23) - 127;
 	hx &= 0x007fffff;
 	i = (hx+(0x4afb0d))&0x800000;

@@ -16,7 +16,6 @@
 #include "libm.h"
 
 static const float
-one     = 1.0,
 halF[2] = {0.5,-0.5,},
 huge    = 1.0e+30,
 o_threshold =  8.8721679688e+01,  /* 0x42b17180 */
@@ -72,8 +71,8 @@ float expf(float x)
 		STRICT_ASSIGN(float, x, hi - lo);
 	} else if(hx < 0x39000000)  {  /* |x|<2**-14 */
 		/* raise inexact */
-		if (huge+x > one)
-			return one + x;
+		if (huge+x > 1.0f)
+			return 1.0f + x;
 	} else
 		k = 0;
 
@@ -85,8 +84,8 @@ float expf(float x)
 		SET_FLOAT_WORD(twopk, 0x3f800000+((k+100)<<23));
 	c  = x - t*(P1+t*P2);
 	if (k == 0)
-		return one - ((x*c)/(c - 2.0f) - x);
-	y = one - ((lo - (x*c)/(2.0f - c)) - hi);
+		return 1.0f - ((x*c)/(c - 2.0f) - x);
+	y = 1.0f - ((lo - (x*c)/(2.0f - c)) - hi);
 	if (k < -125)
 		return y*twopk*twom100;
 	if (k == 128)

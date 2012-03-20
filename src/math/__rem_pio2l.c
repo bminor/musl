@@ -32,7 +32,6 @@
  * pio2_3t:  pi/2 - (pio2_1+pio2_2+pio2_3)
  */
 static const double
-zero   =  0.00000000000000000000e+00, /* 0x00000000, 0x00000000 */
 two24  =  1.67772160000000000000e+07, /* 0x41700000, 0x00000000 */
 pio2_1 =  1.57079632679597125389e+00, /* 0x3FF921FB, 0x54444000 */
 pio2_2 = -1.07463465549783099519e-12, /* -0x12e7b967674000.0p-92 */
@@ -44,7 +43,7 @@ pio2_1t = -1.07463465549719416346e-12L, /* -0x973dcb3b399d747f.0p-103 */
 pio2_2t =  6.36831716351095013979e-25L, /*  0xc51701b839a25205.0p-144 */
 pio2_3t = -2.75299651904407171810e-37L; /* -0xbb5bf6c7ddd660ce.0p-185 */
 
-static inline int __rem_pio2l(long double x, long double *y)
+int __rem_pio2l(long double x, long double *y)
 {
 	union IEEEl2bits u,u1;
 	long double z,w,t,r,fn;
@@ -114,7 +113,7 @@ static inline int __rem_pio2l(long double x, long double *y)
 	}
 	tx[2] = z;
 	nx = 3;
-	while (tx[nx-1] == zero)
+	while (tx[nx-1] == 0.0)
 		nx--;     /* skip zero term */
 	n = __rem_pio2_large(tx,ty,e0,nx,2);
 	r = (long double)ty[0] + ty[1];

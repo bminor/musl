@@ -15,8 +15,7 @@
 
 #include "libm.h"
 
-static const float one = 1.0, huge = 1e30;
-static const float zero = 0.0;
+static const float huge = 1e30;
 
 float atanhf(float x)
 {
@@ -28,15 +27,15 @@ float atanhf(float x)
 	if (ix > 0x3f800000)                   /* |x| > 1 */
 		return (x-x)/(x-x);
 	if (ix == 0x3f800000)
-		return x/zero;
-	if (ix < 0x31800000 && huge+x > zero)  /* x < 2**-28 */
+		return x/0.0f;
+	if (ix < 0x31800000 && huge+x > 0.0f)  /* x < 2**-28 */
 		return x;
 	SET_FLOAT_WORD(x, ix);
 	if (ix < 0x3f000000) {                 /* x < 0.5 */
 		t = x+x;
-		t = 0.5f*log1pf(t + t*x/(one-x));
+		t = 0.5f*log1pf(t + t*x/(1.0f-x));
 	} else
-		t = 0.5f*log1pf((x+x)/(one-x));
+		t = 0.5f*log1pf((x+x)/(1.0f-x));
 	if (hx >= 0)
 		return t;
 	return -t;

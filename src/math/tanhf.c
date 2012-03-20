@@ -15,7 +15,9 @@
 
 #include "libm.h"
 
-static const float one = 1.0, two = 2.0, tiny = 1.0e-30, huge = 1.0e30;
+static const float
+tiny = 1.0e-30,
+huge = 1.0e30;
 
 float tanhf(float x)
 {
@@ -28,26 +30,26 @@ float tanhf(float x)
 	/* x is INF or NaN */
 	if(ix >= 0x7f800000) {
 		if (jx >= 0)
-			return one/x + one;  /* tanh(+-inf)=+-1 */
+			return 1.0f/x + 1.0f;  /* tanh(+-inf)=+-1 */
 		else
-			return one/x - one;  /* tanh(NaN) = NaN */
+			return 1.0f/x - 1.0f;  /* tanh(NaN) = NaN */
 	}
 
 	if (ix < 0x41100000) {  /* |x| < 9 */
 		if (ix < 0x39800000) {  /* |x| < 2**-12 */
 			/* tanh(tiny) = tiny with inexact */
-			if (huge+x > one)
+			if (huge+x > 1.0f)
 				return x;
 		}
 		if (ix >= 0x3f800000) {  /* |x|>=1  */
-			t = expm1f(two*fabsf(x));
-			z = one - two/(t+two);
+			t = expm1f(2.0f*fabsf(x));
+			z = 1.0f - 2.0f/(t+2.0f);
 		} else {
-			t = expm1f(-two*fabsf(x));
-			z = -t/(t+two);
+			t = expm1f(-2.0f*fabsf(x));
+			z = -t/(t+2.0f);
 		}
 	} else {  /* |x| >= 9, return +-1 */
-		z = one - tiny;  /* raise inexact */
+		z = 1.0f - tiny;  /* raise inexact */
 	}
 	return jx >= 0 ? z : -z;
 }

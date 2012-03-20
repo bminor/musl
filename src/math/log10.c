@@ -27,8 +27,6 @@ ivln10lo  = 2.50829467116452752298e-11, /* 0x3dbb9438, 0xca9aadd5 */
 log10_2hi = 3.01029995663611771306e-01, /* 0x3FD34413, 0x509F6000 */
 log10_2lo = 3.69423907715893078616e-13; /* 0x3D59FEF3, 0x11F12B36 */
 
-static const double zero = 0.0;
-
 double log10(double x)
 {
 	double f,hfsq,hi,lo,r,val_hi,val_lo,w,y,y2;
@@ -40,9 +38,9 @@ double log10(double x)
 	k = 0;
 	if (hx < 0x00100000) {  /* x < 2**-1022  */
 		if (((hx&0x7fffffff)|lx) == 0)
-			return -two54/zero;  /* log(+-0)=-inf */
+			return -two54/0.0;  /* log(+-0)=-inf */
 		if (hx<0)
-			return (x-x)/zero;   /* log(-#) = NaN */
+			return (x-x)/0.0;   /* log(-#) = NaN */
 		/* subnormal number, scale up x */
 		k -= 54;
 		x *= two54;
@@ -51,7 +49,7 @@ double log10(double x)
 	if (hx >= 0x7ff00000)
 		return x+x;
 	if (hx == 0x3ff00000 && lx == 0)
-		return zero;  /* log(1) = +0 */
+		return 0.0;  /* log(1) = +0 */
 	k += (hx>>20) - 1023;
 	hx &= 0x000fffff;
 	i = (hx+0x95f64)&0x100000;

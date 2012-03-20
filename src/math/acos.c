@@ -36,8 +36,7 @@
 #include "libm.h"
 
 static const double
-one =  1.00000000000000000000e+00, /* 0x3FF00000, 0x00000000 */
-pi  =  3.14159265358979311600e+00, /* 0x400921FB, 0x54442D18 */
+pi      = 3.14159265358979311600e+00, /* 0x400921FB, 0x54442D18 */
 pio2_hi = 1.57079632679489655800e+00; /* 0x3FF921FB, 0x54442D18 */
 static const volatile double
 pio2_lo = 6.12323399573676603587e-17; /* 0x3C91A626, 0x33145C07 */
@@ -75,25 +74,25 @@ double acos(double x)
 			return pio2_hi + pio2_lo;
 		z = x*x;
 		p = z*(pS0+z*(pS1+z*(pS2+z*(pS3+z*(pS4+z*pS5)))));
-		q = one+z*(qS1+z*(qS2+z*(qS3+z*qS4)));
+		q = 1.0+z*(qS1+z*(qS2+z*(qS3+z*qS4)));
 		r = p/q;
 		return pio2_hi - (x - (pio2_lo-x*r));
 	} else if (hx < 0) {     /* x < -0.5 */
-		z = (one+x)*0.5;
+		z = (1.0+x)*0.5;
 		p = z*(pS0+z*(pS1+z*(pS2+z*(pS3+z*(pS4+z*pS5)))));
-		q = one+z*(qS1+z*(qS2+z*(qS3+z*qS4)));
+		q = 1.0+z*(qS1+z*(qS2+z*(qS3+z*qS4)));
 		s = sqrt(z);
 		r = p/q;
 		w = r*s-pio2_lo;
 		return pi - 2.0*(s+w);
 	} else {                 /* x > 0.5 */
-		z = (one-x)*0.5;
+		z = (1.0-x)*0.5;
 		s = sqrt(z);
 		df = s;
 		SET_LOW_WORD(df,0);
 		c  = (z-df*df)/(s+df);
 		p = z*(pS0+z*(pS1+z*(pS2+z*(pS3+z*(pS4+z*pS5)))));
-		q = one+z*(qS1+z*(qS2+z*(qS3+z*qS4)));
+		q = 1.0+z*(qS1+z*(qS2+z*(qS3+z*qS4)));
 		r = p/q;
 		w = r*s+c;
 		return 2.0*(df+w);

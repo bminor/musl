@@ -17,7 +17,7 @@
 
 #include "libm.h"
 
-static const double one = 1.0, Zero[] = {0.0, -0.0,};
+static const double Zero[] = {0.0, -0.0,};
 
 double fmod(double x, double y)
 {
@@ -140,7 +140,6 @@ double fmod(double x, double y)
 			lx = hx>>(n-32); hx = sx;
 		}
 		INSERT_WORDS(x, hx|sx, lx);
-		x *= one;  /* create necessary signal */
 	}
 	return x;  /* exact output */
 }

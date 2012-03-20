@@ -38,7 +38,7 @@ long double coshl(long double x)
 	return cosh(x);
 }
 #elif LDBL_MANT_DIG == 64 && LDBL_MAX_EXP == 16384
-static const long double one = 1.0, half = 0.5, huge = 1.0e4900L;
+static const long double huge = 1.0e4900L;
 
 long double coshl(long double x)
 {
@@ -56,27 +56,27 @@ long double coshl(long double x)
 	/* |x| in [0,0.5*ln2], return 1+expm1l(|x|)^2/(2*expl(|x|)) */
 	if (ex < 0x3ffd || (ex == 0x3ffd && mx < 0xb17217f7u)) {
 		t = expm1l(fabsl(x));
-		w = one + t;
+		w = 1.0 + t;
 		if (ex < 0x3fbc) return w;    /* cosh(tiny) = 1 */
-		return one+(t*t)/(w+w);
+		return 1.0+(t*t)/(w+w);
 	}
 
 	/* |x| in [0.5*ln2,22], return (exp(|x|)+1/exp(|x|)/2; */
 	if (ex < 0x4003 || (ex == 0x4003 && mx < 0xb0000000u)) {
 		t = expl(fabsl(x));
-		return half*t + half/t;
+		return 0.5*t + 0.5/t;
 	}
 
-	/* |x| in [22, ln(maxdouble)] return half*exp(|x|) */
+	/* |x| in [22, ln(maxdouble)] return 0.5*exp(|x|) */
 	if (ex < 0x400c || (ex == 0x400c && mx < 0xb1700000u))
-		return half*expl(fabsl(x));
+		return 0.5*expl(fabsl(x));
 
 	/* |x| in [log(maxdouble), log(2*maxdouble)) */
 	if (ex == 0x400c && (mx < 0xb174ddc0u ||
 	     (mx == 0xb174ddc0u && lx < 0x31aec0ebu)))
 	{
-		w = expl(half*fabsl(x));
-		t = half*w;
+		w = expl(0.5*fabsl(x));
+		t = 0.5*w;
 		return t*w;
 	}
 

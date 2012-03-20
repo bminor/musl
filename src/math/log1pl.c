@@ -118,11 +118,11 @@ long double log1pl(long double xm1)
 	if (xm1 == 0.0)
 		return xm1;
 
-	x = xm1 + 1.0L;
+	x = xm1 + 1.0;
 
 	/* Test for domain errors.  */
-	if (x <= 0.0L) {
-		if (x == 0.0L)
+	if (x <= 0.0) {
+		if (x == 0.0)
 			return -INFINITY;
 		return NAN;
 	}
@@ -136,12 +136,12 @@ long double log1pl(long double xm1)
 	if (e > 2 || e < -2) {
 		if (x < SQRTH) { /* 2(2x-1)/(2x+1) */
 			e -= 1;
-			z = x - 0.5L;
-			y = 0.5L * z + 0.5L;
+			z = x - 0.5;
+			y = 0.5 * z + 0.5;
 		} else { /*  2 (x-1)/(x+1)   */
-			z = x - 0.5L;
-			z -= 0.5L;
-			y = 0.5L * x  + 0.5L;
+			z = x - 0.5;
+			z -= 0.5;
+			y = 0.5 * x  + 0.5;
 		}
 		x = z / y;
 		z = x*x;
@@ -156,12 +156,12 @@ long double log1pl(long double xm1)
 	if (x < SQRTH) {
 		e -= 1;
 		if (e != 0)
-			x = 2.0 * x - 1.0L;
+			x = 2.0 * x - 1.0;
 		else
 			x = xm1;
 	} else {
 		if (e != 0)
-			x = x - 1.0L;
+			x = x - 1.0;
 		else
 			x = xm1;
 	}

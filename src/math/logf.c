@@ -25,8 +25,6 @@ Lg2 = 0xccce13.0p-25, /* 0.40000972152 */
 Lg3 = 0x91e9ee.0p-25, /* 0.28498786688 */
 Lg4 = 0xf89e26.0p-26; /* 0.24279078841 */
 
-static const float zero = 0.0;
-
 float logf(float x)
 {
 	float hfsq,f,s,z,R,w,t1,t2,dk;
@@ -37,9 +35,9 @@ float logf(float x)
 	k = 0;
 	if (ix < 0x00800000) {  /* x < 2**-126  */
 		if ((ix & 0x7fffffff) == 0)
-			return -two25/zero;  /* log(+-0)=-inf */
+			return -two25/0.0f;  /* log(+-0)=-inf */
 		if (ix < 0)
-			return (x-x)/zero;   /* log(-#) = NaN */
+			return (x-x)/0.0f;   /* log(-#) = NaN */
 		/* subnormal number, scale up x */
 		k -= 25;
 		x *= two25;
@@ -54,9 +52,9 @@ float logf(float x)
 	k += i>>23;
 	f = x - 1.0f;
 	if ((0x007fffff & (0x8000 + ix)) < 0xc000) {  /* -2**-9 <= f < 2**-9 */
-		if (f == zero) {
+		if (f == 0.0f) {
 			if (k == 0)
-				return zero;
+				return 0.0f;
 			dk = (float)k;
 			return dk*ln2_hi + dk*ln2_lo;
 		}

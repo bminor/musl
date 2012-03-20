@@ -203,44 +203,44 @@ long double powl(long double x, long double y)
 	volatile long double z=0;
 	long double w=0, W=0, Wa=0, Wb=0, ya=0, yb=0, u=0;
 
-	if (y == 0.0L)
-		return 1.0L;
+	if (y == 0.0)
+		return 1.0;
 	if (isnan(x))
 		return x;
 	if (isnan(y))
 		return y;
-	if (y == 1.0L)
+	if (y == 1.0)
 		return x;
 
 	// FIXME: this is wrong, see pow special cases in c99 F.9.4.4
-	if (!isfinite(y) && (x == -1.0L || x == 1.0L) )
+	if (!isfinite(y) && (x == -1.0 || x == 1.0) )
 		return y - y;   /* +-1**inf is NaN */
-	if (x == 1.0L)
-		return 1.0L;
+	if (x == 1.0)
+		return 1.0;
 	if (y >= LDBL_MAX) {
-		if (x > 1.0L)
+		if (x > 1.0)
 			return INFINITY;
-		if (x > 0.0L && x < 1.0L)
-			return 0.0L;
-		if (x < -1.0L)
+		if (x > 0.0 && x < 1.0)
+			return 0.0;
+		if (x < -1.0)
 			return INFINITY;
-		if (x > -1.0L && x < 0.0L)
-			return 0.0L;
+		if (x > -1.0 && x < 0.0)
+			return 0.0;
 	}
 	if (y <= -LDBL_MAX) {
-		if (x > 1.0L)
-			return 0.0L;
-		if (x > 0.0L && x < 1.0L)
+		if (x > 1.0)
+			return 0.0;
+		if (x > 0.0 && x < 1.0)
 			return INFINITY;
-		if (x < -1.0L)
-			return 0.0L;
-		if (x > -1.0L && x < 0.0L)
+		if (x < -1.0)
+			return 0.0;
+		if (x > -1.0 && x < 0.0)
 			return INFINITY;
 	}
 	if (x >= LDBL_MAX) {
-		if (y > 0.0L)
+		if (y > 0.0)
 			return INFINITY;
-		return 0.0L;
+		return 0.0;
 	}
 
 	w = floorl(y);
@@ -253,29 +253,29 @@ long double powl(long double x, long double y)
 	yoddint = 0;
 	if (iyflg) {
 		ya = fabsl(y);
-		ya = floorl(0.5L * ya);
-		yb = 0.5L * fabsl(w);
+		ya = floorl(0.5 * ya);
+		yb = 0.5 * fabsl(w);
 		if( ya != yb )
 			yoddint = 1;
 	}
 
 	if (x <= -LDBL_MAX) {
-		if (y > 0.0L) {
+		if (y > 0.0) {
 			if (yoddint)
 				return -INFINITY;
 			return INFINITY;
 		}
-		if (y < 0.0L) {
+		if (y < 0.0) {
 			if (yoddint)
-				return -0.0L;
+				return -0.0;
 			return 0.0;
 		}
 	}
 
 
 	nflg = 0;       /* flag = 1 if x<0 raised to integer power */
-	if (x <= 0.0L) {
-		if (x == 0.0L) {
+	if (x <= 0.0) {
+		if (x == 0.0) {
 			if (y < 0.0) {
 				if (signbit(x) && yoddint)
 					return -INFINITY;
@@ -283,12 +283,12 @@ long double powl(long double x, long double y)
 			}
 			if (y > 0.0) {
 				if (signbit(x) && yoddint)
-					return -0.0L;
+					return -0.0;
 				return 0.0;
 			}
-			if (y == 0.0L)
-				return 1.0L;  /*   0**0   */
-			return 0.0L;  /*   0**y   */
+			if (y == 0.0)
+				return 1.0;  /*   0**0   */
+			return 0.0;  /*   0**y   */
 		}
 		if (iyflg == 0)
 			return (x - x) / (x - x); /* (x<0)**(non-int) is NaN */
@@ -343,7 +343,7 @@ long double powl(long double x, long double y)
 	 */
 	z = x*x;
 	w = x * (z * __polevll(x, P, 3) / __p1evll(x, Q, 3));
-	w = w - ldexpl(z, -1);  /*  w - 0.5 * z  */
+	w = w - 0.5*z;
 
 	/* Convert to base 2 logarithm:
 	 * multiply by log2(e) = 1 + LOG2EA
@@ -355,7 +355,8 @@ long double powl(long double x, long double y)
 
 	/* Compute exponent term of the base 2 logarithm. */
 	w = -i;
-	w = ldexpl(w, -LNXT); /* divide by NXT */
+	// TODO: use w * 0x1p-5;
+	w = scalbnl(w, -LNXT); /* divide by NXT */
 	w += e;
 	/* Now base 2 log of x is w + z. */
 
@@ -380,7 +381,7 @@ long double powl(long double x, long double y)
 
 	H = Fb + Gb;
 	Ha = reducl(H);
-	w = ldexpl( Ga+Ha, LNXT );
+	w = scalbnl( Ga+Ha, LNXT );
 
 	/* Test the power of 2 for overflow */
 	if (w > MEXP)
@@ -391,9 +392,9 @@ long double powl(long double x, long double y)
 	e = w;
 	Hb = H - Ha;
 
-	if (Hb > 0.0L) {
+	if (Hb > 0.0) {
 		e += 1;
-		Hb -= 1.0L/NXT;  /*0.0625L;*/
+		Hb -= 1.0/NXT;  /*0.0625L;*/
 	}
 
 	/* Now the product y * log2(x)  =  Hb + e/NXT.
@@ -415,16 +416,16 @@ long double powl(long double x, long double y)
 	w = douba(e);
 	z = w * z;  /*  2**-e * ( 1 + (2**Hb-1) )  */
 	z = z + w;
-	z = ldexpl(z, i);  /* multiply by integer power of 2 */
+	z = scalbnl(z, i);  /* multiply by integer power of 2 */
 
 	if (nflg) {
 		/* For negative x,
 		 * find out if the integer exponent
 		 * is odd or even.
 		 */
-		w = ldexpl(y, -1);
+		w = 0.5*y;
 		w = floorl(w);
-		w = ldexpl(w, 1);
+		w = 2.0*w;
 		if (w != y)
 			z = -z;  /* odd exponent */
 	}
@@ -438,9 +439,9 @@ static long double reducl(long double x)
 {
 	long double t;
 
-	t = ldexpl(x, LNXT);
+	t = scalbnl(x, LNXT);
 	t = floorl(t);
-	t = ldexpl(t, -LNXT);
+	t = scalbnl(t, -LNXT);
 	return t;
 }
 
@@ -483,18 +484,18 @@ static long double powil(long double x, int nn)
 	long double s;
 	int n, e, sign, asign, lx;
 
-	if (x == 0.0L) {
+	if (x == 0.0) {
 		if (nn == 0)
-			return 1.0L;
+			return 1.0;
 		else if (nn < 0)
 			return LDBL_MAX;
-		return 0.0L;
+		return 0.0;
 	}
 
 	if (nn == 0)
-		return 1.0L;
+		return 1.0;
 
-	if (x < 0.0L) {
+	if (x < 0.0) {
 		asign = -1;
 		x = -x;
 	} else
@@ -516,7 +517,7 @@ static long double powil(long double x, int nn)
 	e = (lx - 1)*n;
 	if ((e == 0) || (e > 64) || (e < -64)) {
 		s = (s - 7.0710678118654752e-1L) / (s +  7.0710678118654752e-1L);
-		s = (2.9142135623730950L * s - 0.5L + lx) * nn * LOGE2L;
+		s = (2.9142135623730950L * s - 0.5 + lx) * nn * LOGE2L;
 	} else {
 		s = LOGE2L * e;
 	}
@@ -530,8 +531,8 @@ static long double powil(long double x, int nn)
 	 * since roundoff error in 1.0/x will be amplified.
 	 * The precise demarcation should be the gradual underflow threshold.
 	 */
-	if (s < -MAXLOGL+2.0L) {
-		x = 1.0L/x;
+	if (s < -MAXLOGL+2.0) {
+		x = 1.0/x;
 		sign = -sign;
 	}
 
@@ -539,7 +540,7 @@ static long double powil(long double x, int nn)
 	if (n & 1)
 		y = x;
 	else {
-		y = 1.0L;
+		y = 1.0;
 		asign = 0;
 	}
 
@@ -555,7 +556,7 @@ static long double powil(long double x, int nn)
 	if (asign)
 		y = -y;  /* odd power of negative number */
 	if (sign < 0)
-		y = 1.0L/y;
+		y = 1.0/y;
 	return y;
 }
 

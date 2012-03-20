@@ -97,11 +97,11 @@ long double expm1l(long double x)
 		return x;
 	/* Minimum value.*/
 	if (x < minarg)
-		return -1.0L;
+		return -1.0;
 
 	xx = C1 + C2;
 	/* Express x = ln 2 (k + remainder), remainder not exceeding 1/2. */
-	px = floorl (0.5 + x / xx);
+	px = floorl(0.5 + x / xx);
 	k = px;
 	/* remainder times ln 2 */
 	x -= px * C1;
@@ -116,7 +116,7 @@ long double expm1l(long double x)
 	/* exp(x) = exp(k ln 2) exp(remainder ln 2) = 2^k exp(remainder ln 2).
 	 We have qx = exp(remainder ln 2) - 1, so
 	 exp(x) - 1  =  2^k (qx + 1) - 1  =  2^k qx + 2^k - 1.  */
-	px = ldexpl(1.0L, k);
+	px = scalbnl(1.0, k);
 	x = px * qx + (px - 1.0);
 	return x;
 }

@@ -9,8 +9,6 @@ void sincosl(long double x, long double *sin, long double *cos)
 	*cos = c;
 }
 #elif (LDBL_MANT_DIG == 64 || LDBL_MANT_DIG == 113) && LDBL_MAX_EXP == 16384
-#include "__rem_pio2l.h"
-
 void sincosl(long double x, long double *sin, long double *cos)
 {
 	union IEEEl2bits u;

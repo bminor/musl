@@ -29,7 +29,6 @@ long double asinhl(long double x)
 }
 #elif LDBL_MANT_DIG == 64 && LDBL_MAX_EXP == 16384
 static const long double
-one  = 1.000000000000000000000e+00L, /* 0x3FFF, 0x00000000, 0x00000000 */
 ln2  = 6.931471805599453094287e-01L, /* 0x3FFE, 0xB17217F7, 0xD1CF79AC */
 huge = 1.000000000000000000e+4900L;
 
@@ -44,17 +43,17 @@ long double asinhl(long double x)
 		return x + x;   /* x is inf or NaN */
 	if (ix < 0x3fde) {      /* |x| < 2**-34 */
 		/* return x, raise inexact if x != 0 */
-		if (huge+x > one)
+		if (huge+x > 1.0)
 			return x;
 	}
 	if (ix > 0x4020) {      /* |x| > 2**34 */
 		w = logl(fabsl(x)) + ln2;
 	} else if (ix > 0x4000) { /* 2**34 > |x| > 2.0 */
 		t = fabsl(x);
-		w = logl(2.0*t + one/(sqrtl(x*x + one) + t));
+		w = logl(2.0*t + 1.0/(sqrtl(x*x + 1.0) + t));
 	} else {                /* 2.0 > |x| > 2**-28 */
 		t = x*x;
-		w =log1pl(fabsl(x) + t/(one + sqrtl(one + t)));
+		w =log1pl(fabsl(x) + t/(1.0 + sqrtl(1.0 + t)));
 	}
 	if (hx & 0x8000)
 		return -w;

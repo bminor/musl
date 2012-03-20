@@ -102,13 +102,13 @@ long double expl(long double x)
 	if (x > MAXLOGL)
 		return INFINITY;
 	if (x < MINLOGL)
-		return 0.0L;
+		return 0.0;
 
 	/* Express e**x = e**g 2**n
 	 *   = e**g e**(n loge(2))
 	 *   = e**(g + n loge(2))
 	 */
-	px = floorl(LOG2EL * x + 0.5L); /* floor() truncates toward -infinity. */
+	px = floorl(LOG2EL * x + 0.5); /* floor() truncates toward -infinity. */
 	n = px;
 	x -= px * C1;
 	x -= px * C2;
@@ -120,8 +120,8 @@ long double expl(long double x)
 	xx = x * x;
 	px = x * __polevll(xx, P, 2);
 	x =  px/(__polevll(xx, Q, 3) - px);
-	x = 1.0L + ldexpl(x, 1);
-	x = ldexpl(x, n);
+	x = 1.0 + 2.0 * x;
+	x = scalbnl(x, n);
 	return x;
 }
 #endif

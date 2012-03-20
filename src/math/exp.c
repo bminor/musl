@@ -74,7 +74,6 @@
 #include "libm.h"
 
 static const double
-one     = 1.0,
 halF[2] = {0.5,-0.5,},
 huge    = 1.0e+300,
 o_threshold =  7.09782712893383973096e+02, /* 0x40862E42, 0xFEFA39EF */
@@ -134,8 +133,8 @@ double exp(double x)
 		STRICT_ASSIGN(double, x, hi - lo);
 	} else if(hx < 0x3e300000)  {  /* |x| < 2**-28 */
 		/* raise inexact */
-		if (huge+x > one)
-			return one+x;
+		if (huge+x > 1.0)
+			return 1.0+x;
 	} else
 		k = 0;
 
@@ -147,8 +146,8 @@ double exp(double x)
 		INSERT_WORDS(twopk, 0x3ff00000+((k+1000)<<20), 0);
 	c  = x - t*(P1+t*(P2+t*(P3+t*(P4+t*P5))));
 	if (k == 0)
-		return one - ((x*c)/(c-2.0) - x);
-	y = one-((lo-(x*c)/(2.0-c))-hi);
+		return 1.0 - ((x*c)/(c-2.0) - x);
+	y = 1.0-((lo-(x*c)/(2.0-c))-hi);
 	if (k < -1021)
 		return y*twopk*twom1000;
 	if (k == 1024)

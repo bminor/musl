@@ -29,7 +29,7 @@
 
 #include "libm.h"
 
-static const double one = 1.0, huge = 1.0e307;
+static const double huge = 1.0e307;
 
 double sinh(double x)
 {
@@ -50,12 +50,12 @@ double sinh(double x)
 	if (ix < 0x40360000) {  /* |x|<22 */
 		if (ix < 0x3e300000)  /* |x|<2**-28 */
 			/* raise inexact, return x */
-			if (huge+x > one)
+			if (huge+x > 1.0)
 				return x;
 		t = expm1(fabs(x));
 		if (ix < 0x3ff00000)
-			return h*(2.0*t - t*t/(t+one));
-		return h*(t + t/(t+one));
+			return h*(2.0*t - t*t/(t+1.0));
+		return h*(t + t/(t+1.0));
 	}
 
 	/* |x| in [22, log(maxdouble)] return 0.5*exp(|x|) */

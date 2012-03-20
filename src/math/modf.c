@@ -21,8 +21,6 @@
 
 #include "libm.h"
 
-static const double one = 1.0;
-
 double modf(double x, double *iptr)
 {
 	int32_t i0,i1,j0;
@@ -51,7 +49,7 @@ double modf(double x, double *iptr)
 			*iptr = x;
 			return 0.0 / x;
 		}
-		*iptr = x*one;
+		*iptr = x;
 		GET_HIGH_WORD(high, x);
 		INSERT_WORDS(x, high & 0x80000000, 0);  /* return +-0 */
 		return x;

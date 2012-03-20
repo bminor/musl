@@ -115,7 +115,7 @@ static inline long double add_and_denormalize(long double a, long double b, int 
 		if (bits_lost != 1 ^ (int)(u.bits.manl & 1))
 			sum.hi = nextafterl(sum.hi, INFINITY * sum.lo);
 	}
-	return (ldexp(sum.hi, scale));
+	return scalbnl(sum.hi, scale);
 }
 
 /*
@@ -228,7 +228,7 @@ long double fmal(long double x, long double y, long double z)
 		}
 	}
 	if (spread <= LDBL_MANT_DIG * 2)
-		zs = ldexpl(zs, -spread);
+		zs = scalbnl(zs, -spread);
 	else
 		zs = copysignl(LDBL_MIN, zs);
 
@@ -254,7 +254,7 @@ long double fmal(long double x, long double y, long double z)
 		 */
 		fesetround(oround);
 		volatile long double vzs = zs; /* XXX gcc CSE bug workaround */
-		return (xy.hi + vzs + ldexpl(xy.lo, spread));
+		return xy.hi + vzs + scalbnl(xy.lo, spread);
 	}
 
 	if (oround != FE_TONEAREST) {
@@ -264,13 +264,13 @@ long double fmal(long double x, long double y, long double z)
 		 */
 		fesetround(oround);
 		adj = r.lo + xy.lo;
-		return (ldexpl(r.hi + adj, spread));
+		return scalbnl(r.hi + adj, spread);
 	}
 
 	adj = add_adjusted(r.lo, xy.lo);
 	if (spread + ilogbl(r.hi) > -16383)
-		return (ldexpl(r.hi + adj, spread));
+		return scalbnl(r.hi + adj, spread);
 	else
-		return (add_and_denormalize(r.hi, adj, spread));
+		return add_and_denormalize(r.hi, adj, spread);
 }
 #endif

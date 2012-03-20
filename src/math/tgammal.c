@@ -183,18 +183,18 @@ static long double stirf(long double x)
 {
 	long double y, w, v;
 
-	w = 1.0L/x;
+	w = 1.0/x;
 	/* For large x, use rational coefficients from the analytical expansion.  */
-	if (x > 1024.0L)
+	if (x > 1024.0)
 		w = (((((6.97281375836585777429E-5L * w
 		 + 7.84039221720066627474E-4L) * w
 		 - 2.29472093621399176955E-4L) * w
 		 - 2.68132716049382716049E-3L) * w
 		 + 3.47222222222222222222E-3L) * w
 		 + 8.33333333333333333333E-2L) * w
-		 + 1.0L;
+		 + 1.0;
 	else
-		w = 1.0L + w * __polevll(w, STIR, 8);
+		w = 1.0 + w * __polevll(w, STIR, 8);
 	y = expl(x);
 	if (x > MAXSTIR) { /* Avoid overflow in pow() */
 		v = powl(x, 0.5L * x - 0.25L);
@@ -219,10 +219,10 @@ long double tgammal(long double x)
 	if (x == -INFINITY)
 		return x - x;
 	q = fabsl(x);
-	if (q > 13.0L) {
+	if (q > 13.0) {
 		if (q > MAXGAML)
 			goto goverf;
-		if (x < 0.0L) {
+		if (x < 0.0) {
 			p = floorl(q);
 			if (p == q)
 				return (x - x) / (x - x);
@@ -231,7 +231,7 @@ long double tgammal(long double x)
 				signgam = -1;
 			z = q - p;
 			if (z > 0.5L) {
-				p += 1.0L;
+				p += 1.0;
 				z = q - p;
 			}
 			z = q * sinl(PIL * z);
@@ -247,25 +247,25 @@ goverf:
 		return signgam * z;
 	}
 
-	z = 1.0L;
-	while (x >= 3.0L) {
-		x -= 1.0L;
+	z = 1.0;
+	while (x >= 3.0) {
+		x -= 1.0;
 		z *= x;
 	}
 	while (x < -0.03125L) {
 		z /= x;
-		x += 1.0L;
+		x += 1.0;
 	}
 	if (x <= 0.03125L)
 		goto small;
-	while (x < 2.0L) {
+	while (x < 2.0) {
 		z /= x;
-		x += 1.0L;
+		x += 1.0;
 	}
-	if (x == 2.0L)
+	if (x == 2.0)
 		return z;
 
-	x -= 2.0L;
+	x -= 2.0;
 	p = __polevll(x, P, 7);
 	q = __polevll(x, Q, 8);
 	z = z * p / q;
@@ -274,9 +274,9 @@ goverf:
 	return z;
 
 small:
-	if (x == 0.0L)
+	if (x == 0.0)
 		return (x - x) / (x - x);
-	if (x < 0.0L) {
+	if (x < 0.0) {
 		x = -x;
 		q = z / (x * __polevll(x, SN, 8));
 		signgam = -1;

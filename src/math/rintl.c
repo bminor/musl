@@ -79,7 +79,7 @@ long double rintl(long double x)
 	 * If the result is +-0, then it must have the same sign as x, but
 	 * the above calculation doesn't always give this.  Fix up the sign.
 	 */
-	if (ex < BIAS && x == 0.0L)
+	if (ex < BIAS && x == 0.0)
 		return zero[sign];
 
 	return x;

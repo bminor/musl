@@ -38,8 +38,6 @@ long double tanl(long double x)
 	return tan(x);
 }
 #elif (LDBL_MANT_DIG == 64 || LDBL_MANT_DIG == 113) && LDBL_MAX_EXP == 16384
-#include "__rem_pio2l.h"
-
 long double tanl(long double x)
 {
 	union IEEEl2bits z;

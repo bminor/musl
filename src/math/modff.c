@@ -1,51 +1,33 @@
-/* origin: FreeBSD /usr/src/lib/msun/src/s_modff.c */
-/*
- * Conversion to float by Ian Lance Taylor, Cygnus Support, ian@cygnus.com.
- */
-/*
- * ====================================================
- * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
- *
- * Developed at SunPro, a Sun Microsystems, Inc. business.
- * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice
- * is preserved.
- * ====================================================
- */
-
 #include "libm.h"
-
-static const float one = 1.0;
 
 float modff(float x, float *iptr)
 {
-	int32_t i0,j0;
-	uint32_t i;
+	uint32_t u, mask;
+	int e;
 
-	GET_FLOAT_WORD(i0, x);
-	j0 = ((i0>>23) & 0xff) - 0x7f;  /* exponent of x */
-	if (j0 < 23) {  /* integer part in x */
-		if (j0 < 0) {  /* |x| < 1 */
-			SET_FLOAT_WORD(*iptr, i0 & 0x80000000);  /* *iptr = +-0 */
+	GET_FLOAT_WORD(u, x);
+	e = (int)(u>>23 & 0xff) - 0x7f;
+
+	/* no fractional part */
+	if (e >= 23) {
+		*iptr = x;
+		if (e == 0x80 && u<<9 != 0) /* nan */
 			return x;
-		}
-		i = 0x007fffff >> j0;
-		if ((i0&i) == 0) {  /* x is integral */
-			uint32_t ix;
-			*iptr = x;
-			GET_FLOAT_WORD(ix, x);
-			SET_FLOAT_WORD(x, ix & 0x80000000);  /* return +-0 */
-			return x;
-		}
-		SET_FLOAT_WORD(*iptr, i0&~i);
-		return x - *iptr;
-	} else {        /* no fraction part */
-		uint32_t ix;
-		*iptr = x*one;
-		if (x != x)  /* NaN */
-			return x;
-		GET_FLOAT_WORD(ix, x);
-		SET_FLOAT_WORD(x, ix & 0x80000000);  /* return +-0 */
+		SET_FLOAT_WORD(x, u & 0x80000000);
 		return x;
 	}
+	/* no integral part */
+	if (e < 0) {
+		SET_FLOAT_WORD(*iptr, u & 0x80000000);
+		return x;
+	}
+
+	mask = 0x007fffff>>e;
+	if ((u & mask) == 0) {
+		*iptr = x;
+		SET_FLOAT_WORD(x, u & 0x80000000);
+		return x;
+	}
+	SET_FLOAT_WORD(*iptr, u & ~mask);
+	return x - *iptr;
 }

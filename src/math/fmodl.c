@@ -48,7 +48,7 @@ typedef uint32_t manh_t;
 
 #define MANL_SHIFT      (LDBL_MANL_SIZE - 1)
 
-static const long double one = 1.0, Zero[] = {0.0, -0.0,};
+static const long double Zero[] = {0.0, -0.0,};
 
 /*
  * fmodl(x,y)
@@ -153,7 +153,6 @@ long double fmodl(long double x, long double y)
 	} else {
 		ux.bits.exp = iy + BIAS;
 	}
-	x = ux.e * one;   /* create necessary signal */
-	return x;         /* exact output */
+	return ux.e;       /* exact output */
 }
 #endif

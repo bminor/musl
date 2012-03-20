@@ -121,8 +121,8 @@ long double log2l(long double x)
 		return x;
 	if (x == INFINITY)
 		return x;
-	if (x <= 0.0L) {
-		if (x == 0.0L)
+	if (x <= 0.0) {
+		if (x == 0.0)
 			return -INFINITY;
 		return NAN;
 	}
@@ -139,12 +139,12 @@ long double log2l(long double x)
 	if (e > 2 || e < -2) {
 		if (x < SQRTH) {  /* 2(2x-1)/(2x+1) */
 			e -= 1;
-			z = x - 0.5L;
-			y = 0.5L * z + 0.5L;
+			z = x - 0.5;
+			y = 0.5 * z + 0.5;
 		} else {  /*  2 (x-1)/(x+1)   */
-			z = x - 0.5L;
-			z -= 0.5L;
-			y = 0.5L * x  + 0.5L;
+			z = x - 0.5;
+			z -= 0.5;
+			y = 0.5 * x + 0.5;
 		}
 		x = z / y;
 		z = x*x;
@@ -155,13 +155,13 @@ long double log2l(long double x)
 	/* logarithm using log(1+x) = x - .5x**2 + x**3 P(x)/Q(x) */
 	if (x < SQRTH) {
 		e -= 1;
-		x = ldexpl(x, 1) - 1.0L; /*  2x - 1  */
+		x = 2.0*x - 1.0;
 	} else {
-		x = x - 1.0L;
+		x = x - 1.0;
 	}
 	z = x*x;
 	y = x * (z * __polevll(x, P, 6) / __p1evll(x, Q, 7));
-	y = y - ldexpl(z, -1);   /* -0.5x^2 + ... */
+	y = y - 0.5*z;
 
 done:
 	/* Multiply log of fraction by log2(e)

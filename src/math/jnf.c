@@ -16,12 +16,6 @@
 #define _GNU_SOURCE
 #include "libm.h"
 
-static const float
-two = 2.0000000000e+00, /* 0x40000000 */
-one = 1.0000000000e+00; /* 0x3F800000 */
-
-static const float zero = 0.0000000000e+00;
-
 float jnf(int n, float x)
 {
 	int32_t i,hx,ix, sgn;
@@ -47,7 +41,7 @@ float jnf(int n, float x)
 	sgn = (n&1)&(hx>>31);  /* even n -- 0, odd n -- sign(x) */
 	x = fabsf(x);
 	if (ix == 0 || ix >= 0x7f800000)  /* if x is 0 or inf */
-		b = zero;
+		b = 0.0f;
 	else if((float)n <= x) {
 		/* Safe to use J(n+1,x)=2n/x *J(n,x)-J(n-1,x) */
 		a = j0f(x);
@@ -63,11 +57,11 @@ float jnf(int n, float x)
 			 * J(n,x) = 1/n!*(x/2)^n  - ...
 			 */
 			if (n > 33)  /* underflow */
-				b = zero;
+				b = 0.0f;
 			else {
 				temp = 0.5f * x;
 				b = temp;
-				for (a=one,i=2; i<=n; i++) {
+				for (a=1.0f,i=2; i<=n; i++) {
 					a *= (float)i;    /* a = n! */
 					b *= temp;        /* b = (x/2)^n */
 				}
@@ -121,10 +115,10 @@ float jnf(int n, float x)
 				q1 = tmp;
 			}
 			m = n+n;
-			for (t=zero, i = 2*(n+k); i>=m; i -= 2)
-				t = one/(i/x-t);
+			for (t=0.0f, i = 2*(n+k); i>=m; i -= 2)
+				t = 1.0f/(i/x-t);
 			a = t;
-			b = one;
+			b = 1.0f;
 			/*  estimate log((2/x)^n*n!) = n*log(2/x)+n*ln(n)
 			 *  Hence, if n*(log(2n/x)) > ...
 			 *  single 8.8722839355e+01
@@ -134,7 +128,7 @@ float jnf(int n, float x)
 			 *  likely underflow to zero
 			 */
 			tmp = n;
-			v = two/x;
+			v = 2.0f/x;
 			tmp = tmp*logf(fabsf(v*tmp));
 			if (tmp < 88.721679688f) {
 				for (i=n-1,di=(float)(i+i); i>0; i--) {
@@ -142,7 +136,7 @@ float jnf(int n, float x)
 					b *= di;
 					b = b/x - a;
 					a = temp;
-					di -= two;
+					di -= 2.0f;
 				}
 			} else {
 				for (i=n-1,di=(float)(i+i); i>0; i--){
@@ -150,12 +144,12 @@ float jnf(int n, float x)
 					b *= di;
 					b = b/x - a;
 					a = temp;
-					di -= two;
+					di -= 2.0f;
 					/* scale b to avoid spurious overflow */
 					if (b > 1e10f) {
 						a /= b;
 						t /= b;
-						b = one;
+						b = 1.0f;
 					}
 				}
 			}
@@ -183,9 +177,9 @@ float ynf(int n, float x)
 	if (ix > 0x7f800000)
 		return x+x;
 	if (ix == 0)
-		return -one/zero;
+		return -1.0f/0.0f;
 	if (hx < 0)
-		return zero/zero;
+		return 0.0f/0.0f;
 	sign = 1;
 	if (n < 0) {
 		n = -n;
@@ -196,7 +190,7 @@ float ynf(int n, float x)
 	if (n == 1)
 		return sign*y1f(x);
 	if (ix == 0x7f800000)
-		return zero;
+		return 0.0f;
 
 	a = y0f(x);
 	b = y1f(x);

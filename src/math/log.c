@@ -74,8 +74,6 @@ Lg5 = 1.818357216161805012e-01,  /* 3FC74664 96CB03DE */
 Lg6 = 1.531383769920937332e-01,  /* 3FC39A09 D078C69F */
 Lg7 = 1.479819860511658591e-01;  /* 3FC2F112 DF3E5244 */
 
-static const double zero = 0.0;
-
 double log(double x)
 {
 	double hfsq,f,s,z,R,w,t1,t2,dk;
@@ -87,9 +85,9 @@ double log(double x)
 	k = 0;
 	if (hx < 0x00100000) {  /* x < 2**-1022  */
 		if (((hx&0x7fffffff)|lx) == 0)
-			return -two54/zero;  /* log(+-0)=-inf */
+			return -two54/0.0;  /* log(+-0)=-inf */
 		if (hx < 0)
-			return (x-x)/zero;   /* log(-#) = NaN */
+			return (x-x)/0.0;   /* log(-#) = NaN */
 		/* subnormal number, scale up x */
 		k -= 54;
 		x *= two54;
@@ -104,9 +102,9 @@ double log(double x)
 	k += i>>20;
 	f = x - 1.0;
 	if ((0x000fffff&(2+hx)) < 3) {  /* -2**-20 <= f < 2**-20 */
-		if (f == zero) {
+		if (f == 0.0) {
 			if (k == 0) {
-				return zero;
+				return 0.0;
 			}
 			dk = (double)k;
 			return dk*ln2_hi + dk*ln2_lo;

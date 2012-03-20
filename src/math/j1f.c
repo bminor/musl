@@ -19,7 +19,6 @@ static float ponef(float), qonef(float);
 
 static const float
 huge      = 1e30,
-one       = 1.0,
 invsqrtpi = 5.6418961287e-01, /* 0x3f106ebb */
 tpi       = 6.3661974669e-01, /* 0x3f22f983 */
 /* R0/S0 on [0,2] */
@@ -33,8 +32,6 @@ s03 =  1.1771846857e-06, /* 0x359dffc2 */
 s04 =  5.0463624390e-09, /* 0x31ad6446 */
 s05 =  1.2354227016e-11; /* 0x2d59567e */
 
-static const float zero = 0.0;
-
 float j1f(float x)
 {
 	float z,s,c,ss,cc,r,u,v,y;
@@ -43,7 +40,7 @@ float j1f(float x)
 	GET_FLOAT_WORD(hx, x);
 	ix = hx & 0x7fffffff;
 	if (ix >= 0x7f800000)
-		return one/x;
+		return 1.0f/x;
 	y = fabsf(x);
 	if (ix >= 0x40000000) {  /* |x| >= 2.0 */
 		s = sinf(y);
@@ -52,7 +49,7 @@ float j1f(float x)
 		cc = s-c;
 		if (ix < 0x7f000000) {  /* make sure y+y not overflow */
 			z = cosf(y+y);
-			if (s*c > zero)
+			if (s*c > 0.0f)
 				cc = z/ss;
 			else
 				ss = z/cc;
@@ -74,12 +71,12 @@ float j1f(float x)
 	}
 	if (ix < 0x32000000) {  /* |x| < 2**-27 */
 		/* raise inexact if x!=0 */
-		if (huge+x > one)
+		if (huge+x > 1.0f)
 			return 0.5f*x;
 	}
 	z = x*x;
 	r = z*(r00+z*(r01+z*(r02+z*r03)));
-	s = one+z*(s01+z*(s02+z*(s03+z*(s04+z*s05))));
+	s = 1.0f+z*(s01+z*(s02+z*(s03+z*(s04+z*s05))));
 	r *= x;
 	return 0.5f*x + r/s;
 }
@@ -108,11 +105,11 @@ float y1f(float x)
 	ix = 0x7fffffff & hx;
 	/* if Y1(NaN) is NaN, Y1(-inf) is NaN, Y1(inf) is 0 */
 	if (ix >= 0x7f800000)
-		return one/(x+x*x);
+		return 1.0f/(x+x*x);
 	if (ix == 0)
-		return -one/zero;
+		return -1.0f/0.0f;
 	if (hx < 0)
-		return zero/zero;
+		return 0.0f/0.0f;
 	if (ix >= 0x40000000) {  /* |x| >= 2.0 */
 		s = sinf(x);
 		c = cosf(x);
@@ -120,7 +117,7 @@ float y1f(float x)
 		cc = s-c;
 		if (ix < 0x7f000000) {  /* make sure x+x not overflow */
 			z = cosf(x+x);
-			if (s*c > zero)
+			if (s*c > 0.0f)
 				cc = z/ss;
 			else
 				ss = z/cc;
@@ -149,8 +146,8 @@ float y1f(float x)
 		return -tpi/x;
 	z = x*x;
 	u = U0[0]+z*(U0[1]+z*(U0[2]+z*(U0[3]+z*U0[4])));
-	v = one+z*(V0[0]+z*(V0[1]+z*(V0[2]+z*(V0[3]+z*V0[4]))));
-	return x*(u/v) + tpi*(j1f(x)*logf(x)-one/x);
+	v = 1.0f+z*(V0[0]+z*(V0[1]+z*(V0[2]+z*(V0[3]+z*V0[4]))));
+	return x*(u/v) + tpi*(j1f(x)*logf(x)-1.0f/x);
 }
 
 /* For x >= 8, the asymptotic expansions of pone is
@@ -239,10 +236,10 @@ static float ponef(float x)
 	else if (ix >= 0x40f71c58){p = pr5; q = ps5;}
 	else if (ix >= 0x4036db68){p = pr3; q = ps3;}
 	else if (ix >= 0x40000000){p = pr2; q = ps2;}
-	z = one/(x*x);
+	z = 1.0f/(x*x);
 	r = p[0]+z*(p[1]+z*(p[2]+z*(p[3]+z*(p[4]+z*p[5]))));
-	s = one+z*(q[0]+z*(q[1]+z*(q[2]+z*(q[3]+z*q[4]))));
-	return one + r/s;
+	s = 1.0f+z*(q[0]+z*(q[1]+z*(q[2]+z*(q[3]+z*q[4]))));
+	return 1.0f + r/s;
 }
 
 /* For x >= 8, the asymptotic expansions of qone is
@@ -335,8 +332,8 @@ static float qonef(float x)
 	else if (ix >= 0x40f71c58){p = qr5; q = qs5;}
 	else if (ix >= 0x4036db68){p = qr3; q = qs3;}
 	else if (ix >= 0x40000000){p = qr2; q = qs2;}
-	z = one/(x*x);
+	z = 1.0f/(x*x);
 	r = p[0]+z*(p[1]+z*(p[2]+z*(p[3]+z*(p[4]+z*p[5]))));
-	s = one+z*(q[0]+z*(q[1]+z*(q[2]+z*(q[3]+z*(q[4]+z*q[5])))));
+	s = 1.0f+z*(q[0]+z*(q[1]+z*(q[2]+z*(q[3]+z*(q[4]+z*q[5])))));
 	return (.375f + r/s)/x;
 }

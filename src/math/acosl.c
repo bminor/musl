@@ -25,7 +25,6 @@ long double acosl(long double x)
 #include "__invtrigl.h"
 
 static const long double
-one = 1.00000000000000000000e+00,
 pi = 3.14159265358979323846264338327950280e+00L;
 
 long double acosl(long double x)
@@ -55,7 +54,7 @@ long double acosl(long double x)
 		r = p / q;
 		return pio2_hi - (x - (pio2_lo - x * r));
 	} else if (expsign < 0) {  /* x < -0.5 */
-		z = (one + x) * 0.5;
+		z = (1.0 + x) * 0.5;
 		p = P(z);
 		q = Q(z);
 		s = sqrtl(z);
@@ -63,7 +62,7 @@ long double acosl(long double x)
 		w = r * s - pio2_lo;
 		return pi - 2.0 * (s + w);
 	} else {                   /* x > 0.5 */
-		z = (one - x) * 0.5;
+		z = (1.0 - x) * 0.5;
 		s = sqrtl(z);
 		u.e = s;
 		u.bits.manl = 0;

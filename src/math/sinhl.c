@@ -35,7 +35,7 @@ long double sinhl(long double x)
 	return sinh(x);
 }
 #elif LDBL_MANT_DIG == 64 && LDBL_MAX_EXP == 16384
-static const long double one = 1.0, huge = 1.0e4931L;
+static const long double huge = 1.0e4931L;
 
 long double sinhl(long double x)
 {
@@ -55,12 +55,12 @@ long double sinhl(long double x)
 	/* |x| in [0,25], return sign(x)*0.5*(E+E/(E+1))) */
 	if (ix < 0x4003 || (ix == 0x4003 && i0 <= 0xc8000000)) { /* |x| < 25 */
 		if (ix < 0x3fdf)  /* |x|<2**-32 */
-			if (huge + x > one)
+			if (huge + x > 1.0)
 				return x;/* sinh(tiny) = tiny with inexact */
 		t = expm1l(fabsl(x));
 		if (ix < 0x3fff)
-			return h*(2.0*t - t*t/(t + one));
-		return h*(t + t/(t + one));
+			return h*(2.0*t - t*t/(t + 1.0));
+		return h*(t + t/(t + 1.0));
 	}
 
 	/* |x| in [25, log(maxdouble)] return 0.5*exp(|x|) */

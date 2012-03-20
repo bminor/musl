@@ -19,9 +19,6 @@ static const float
 bp[]   = {1.0, 1.5,},
 dp_h[] = { 0.0, 5.84960938e-01,}, /* 0x3f15c000 */
 dp_l[] = { 0.0, 1.56322085e-06,}, /* 0x35d1cfdc */
-zero   =  0.0,
-one    =  1.0,
-two    =  2.0,
 two24  =  16777216.0,  /* 0x4b800000 */
 huge   =  1.0e30,
 tiny   =  1.0e-30,
@@ -60,15 +57,15 @@ float powf(float x, float y)
 	ix = hx & 0x7fffffff;
 	iy = hy & 0x7fffffff;
 
-	/* y == zero: x**0 = 1 */
+	/* y == 0: x**0 = 1 */
 	if (iy == 0)
-		return one;
+		return 1.0f;
 
 	/* x == 1: 1**y = 1, even if y is NaN */
 	if (hx == 0x3f800000)
-		return one;
+		return 1.0f;
 
-	/* y != zero: result is NaN if either arg is NaN */
+	/* y != 0: result is NaN if either arg is NaN */
 	if (ix > 0x7f800000 || iy > 0x7f800000)
 		return (x+0.0f) + (y+0.0f);
 
@@ -92,15 +89,15 @@ float powf(float x, float y)
 	/* special value of y */
 	if (iy == 0x7f800000) {  /* y is +-inf */
 		if (ix == 0x3f800000)      /* (-1)**+-inf is 1 */
-			return one;
+			return 1.0f;
 		else if (ix > 0x3f800000)  /* (|x|>1)**+-inf = inf,0 */
-			return hy >= 0 ? y : zero;
+			return hy >= 0 ? y : 0.0f;
 		else                       /* (|x|<1)**+-inf = 0,inf */
-			return hy < 0 ? -y : zero;
+			return hy < 0 ? -y : 0.0f;
 	}
 	if (iy == 0x3f800000) {  /* y is +-1 */
 		if (hy < 0)
-			return one/x;
+			return 1.0f/x;
 		return x;
 	}
 	if (hy == 0x40000000)    /* y is 2 */
@@ -115,7 +112,7 @@ float powf(float x, float y)
 	if (ix == 0x7f800000 || ix == 0 || ix == 0x3f800000) { /* x is +-0,+-inf,+-1 */
 		z = ax;
 		if (hy < 0)  /* z = (1/|x|) */
-			z = one/z;
+			z = 1.0f/z;
 		if (hx < 0) {
 			if (((ix-0x3f800000)|yisint) == 0) {
 				z = (z-z)/(z-z); /* (-1)**non-int is NaN */
@@ -131,9 +128,9 @@ float powf(float x, float y)
 	if ((n|yisint) == 0)
 		return (x-x)/(x-x);
 
-	sn = one; /* s (sign of result -ve**odd) = -1 else = 1 */
+	sn = 1.0f; /* s (sign of result -ve**odd) = -1 else = 1 */
 	if ((n|(yisint-1)) == 0)  /* (-ve)**(odd int) */
-		sn = -one;
+		sn = -1.0f;
 
 	/* |y| is huge */
 	if (iy > 0x4d000000) { /* if |y| > 2**27 */
@@ -178,7 +175,7 @@ float powf(float x, float y)
 
 		/* compute s = s_h+s_l = (x-1)/(x+1) or (x-1.5)/(x+1.5) */
 		u = ax - bp[k];   /* bp[0]=1.0, bp[1]=1.5 */
-		v = one/(ax+bp[k]);
+		v = 1.0f/(ax+bp[k]);
 		s = u*v;
 		s_h = s;
 		GET_FLOAT_WORD(is, s_h);
@@ -257,8 +254,8 @@ float powf(float x, float y)
 	w = v - (z - u);
 	t = z*z;
 	t1 = z - t*(P1+t*(P2+t*(P3+t*(P4+t*P5))));
-	r = (z*t1)/(t1-two) - (w+z*w);
-	z = one - (r - z);
+	r = (z*t1)/(t1-2.0f) - (w+z*w);
+	z = 1.0f - (r - z);
 	GET_FLOAT_WORD(j, z);
 	j += n<<23;
 	if ((j>>23) <= 0)  /* subnormal output */

@@ -15,7 +15,7 @@
 
 #include "libm.h"
 
-static const float one = 1.0, tiny = 1.0e-30;
+static const float tiny = 1.0e-30;
 
 float sqrtf(float x)
 {
@@ -68,10 +68,10 @@ float sqrtf(float x)
 
 	/* use floating add to find out rounding direction */
 	if (ix != 0) {
-		z = one - tiny; /* raise inexact flag */
-		if (z >= one) {
-			z = one + tiny;
-			if (z > one)
+		z = 1.0f - tiny; /* raise inexact flag */
+		if (z >= 1.0f) {
+			z = 1.0f + tiny;
+			if (z > 1.0f)
 				q += 2;
 			else
 				q += q & 1;

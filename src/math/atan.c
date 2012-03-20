@@ -60,9 +60,7 @@ static const double aT[] = {
   1.62858201153657823623e-02, /* 0x3F90AD3A, 0xE322DA11 */
 };
 
-static const double
-one = 1.0,
-huge = 1.0e300;
+static const double huge = 1.0e300;
 
 double atan(double x)
 {
@@ -86,7 +84,7 @@ double atan(double x)
 	if (ix < 0x3fdc0000) {    /* |x| < 0.4375 */
 		if (ix < 0x3e400000) {  /* |x| < 2^-27 */
 			/* raise inexact */
-			if (huge+x > one)
+			if (huge+x > 1.0)
 				return x;
 		}
 		id = -1;
@@ -95,15 +93,15 @@ double atan(double x)
 		if (ix < 0x3ff30000) {  /* |x| < 1.1875 */
 			if (ix < 0x3fe60000) {  /*  7/16 <= |x| < 11/16 */
 				id = 0;
-				x = (2.0*x-one)/(2.0+x);
+				x = (2.0*x-1.0)/(2.0+x);
 			} else {                /* 11/16 <= |x| < 19/16 */
 				id = 1;
-				x = (x-one)/(x+one);
+				x = (x-1.0)/(x+1.0);
 			}
 		} else {
 			if (ix < 0x40038000) {  /* |x| < 2.4375 */
 				id = 2;
-				x = (x-1.5)/(one+1.5*x);
+				x = (x-1.5)/(1.0+1.5*x);
 			} else {                /* 2.4375 <= |x| < 2^66 */
 				id = 3;
 				x = -1.0/x;
