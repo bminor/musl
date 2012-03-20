@@ -1,21 +1,31 @@
 /*
   regcomp.c - TRE POSIX compatible regex compilation functions.
 
-  Copyright (c) 2001-2006 Ville Laurikari <vl@iki.fi>
+  Copyright (c) 2001-2009 Ville Laurikari <vl@iki.fi>
+  All rights reserved.
 
-  This library is free software; you can redistribute it and/or
-  modify it under the terms of the GNU Lesser General Public
-  License as published by the Free Software Foundation; either
-  version 2.1 of the License, or (at your option) any later version.
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions
+  are met:
 
-  This library is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Lesser General Public License for more details.
+    1. Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
 
-  You should have received a copy of the GNU Lesser General Public
-  License along with this library; if not, write to the Free Software
-  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+    2. Redistributions in binary form must reproduce the above copyright
+       notice, this list of conditions and the following disclaimer in the
+       documentation and/or other materials provided with the distribution.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER AND CONTRIBUTORS
+  ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+  A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT
+  HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
 
@@ -29,6 +39,23 @@
 #include "tre.h"
 
 #include <assert.h>
+
+/***********************************************************************
+ from tre-compile.h
+***********************************************************************/
+
+typedef struct {
+  int position;
+  int code_min;
+  int code_max;
+  int *tags;
+  int assertions;
+  tre_ctype_t class;
+  tre_ctype_t *neg_classes;
+  int backref;
+  int *params;
+} tre_pos_and_tags_t;
+
 
 /***********************************************************************
  from tre-ast.c and tre-ast.h
@@ -54,17 +81,6 @@ typedef enum {
 #define IS_TAG(x)	((x)->code_min == TAG)
 #define IS_BACKREF(x)	((x)->code_min == BACKREF)
 
-/* Taken from tre-compile.h */
-typedef struct {
-  int position;
-  int code_min;
-  int code_max;
-  int *tags;
-  int assertions;
-  tre_ctype_t class;
-  tre_ctype_t *neg_classes;
-  int backref;
-} tre_pos_and_tags_t;
 
 /* A generic AST node.  All AST nodes consist of this node on the top
    level with `obj' pointing to the actual content. */
@@ -87,7 +103,10 @@ typedef struct {
   long code_min;
   long code_max;
   int position;
-  tre_ctype_t class;
+  union {
+    tre_ctype_t class;
+    int *params;
+  } u;
   tre_ctype_t *neg_classes;
 } tre_literal_t;
 
@@ -109,6 +128,10 @@ typedef struct {
   int min;
   /* Maximum number of consecutive matches. */
   int max;
+  /* If 0, match as many characters as possible, if 1 match as few as
+     possible.	Note that this does not always mean the same thing as
+     matching as many/few repetitions as possible. */
+  unsigned int minimal:1;
 } tre_iteration_t;
 
 /* An "union" node.  These are created for the "|" operator. */
@@ -116,6 +139,24 @@ typedef struct {
   tre_ast_node_t *left;
   tre_ast_node_t *right;
 } tre_union_t;
+
+static tre_ast_node_t *
+tre_ast_new_node(tre_mem_t mem, tre_ast_type_t type, size_t size);
+
+static tre_ast_node_t *
+tre_ast_new_literal(tre_mem_t mem, int code_min, int code_max, int position);
+
+static tre_ast_node_t *
+tre_ast_new_iter(tre_mem_t mem, tre_ast_node_t *arg, int min, int max,
+		 int minimal);
+
+static tre_ast_node_t *
+tre_ast_new_union(tre_mem_t mem, tre_ast_node_t *left, tre_ast_node_t *right);
+
+static tre_ast_node_t *
+tre_ast_new_catenation(tre_mem_t mem, tre_ast_node_t *left,
+		       tre_ast_node_t *right);
+
 
 static tre_ast_node_t *
 tre_ast_new_node(tre_mem_t mem, tre_ast_type_t type, size_t size)
@@ -153,7 +194,8 @@ tre_ast_new_literal(tre_mem_t mem, int code_min, int code_max, int position)
 }
 
 static tre_ast_node_t *
-tre_ast_new_iter(tre_mem_t mem, tre_ast_node_t *arg, int min, int max)
+tre_ast_new_iter(tre_mem_t mem, tre_ast_node_t *arg, int min, int max,
+		 int minimal)
 {
   tre_ast_node_t *node;
   tre_iteration_t *iter;
@@ -165,6 +207,7 @@ tre_ast_new_iter(tre_mem_t mem, tre_ast_node_t *arg, int min, int max)
   iter->arg = arg;
   iter->min = min;
   iter->max = max;
+  iter->minimal = minimal;
   node->num_submatches = arg->num_submatches;
 
   return node;
@@ -201,40 +244,82 @@ tre_ast_new_catenation(tre_mem_t mem, tre_ast_node_t *left,
   return node;
 }
 
+
 /***********************************************************************
  from tre-stack.c and tre-stack.h
 ***********************************************************************/
 
+typedef struct tre_stack_rec tre_stack_t;
+
+/* Creates a new stack object.	`size' is initial size in bytes, `max_size'
+   is maximum size, and `increment' specifies how much more space will be
+   allocated with realloc() if all space gets used up.	Returns the stack
+   object or NULL if out of memory. */
+static tre_stack_t *
+tre_stack_new(int size, int max_size, int increment);
+
+/* Frees the stack object. */
+static void
+tre_stack_destroy(tre_stack_t *s);
+
+/* Returns the current number of objects in the stack. */
+static int
+tre_stack_num_objects(tre_stack_t *s);
+
+/* Each tre_stack_push_*(tre_stack_t *s, <type> value) function pushes
+   `value' on top of stack `s'.  Returns REG_ESPACE if out of memory.
+   This tries to realloc() more space before failing if maximum size
+   has not yet been reached.  Returns REG_OK if successful. */
+#define declare_pushf(typetag, type)					      \
+  static reg_errcode_t tre_stack_push_ ## typetag(tre_stack_t *s, type value)
+
+declare_pushf(voidptr, void *);
+declare_pushf(int, int);
+
+/* Each tre_stack_pop_*(tre_stack_t *s) function pops the topmost
+   element off of stack `s' and returns it.  The stack must not be
+   empty. */
+#define declare_popf(typetag, type)		  \
+  static type tre_stack_pop_ ## typetag(tre_stack_t *s)
+
+declare_popf(voidptr, void *);
+declare_popf(int, int);
+
 /* Just to save some typing. */
-#define STACK_PUSH(s, value)						      \
+#define STACK_PUSH(s, typetag, value)					      \
   do									      \
     {									      \
-      status = tre_stack_push(s, (void *)(value));			      \
+      status = tre_stack_push_ ## typetag(s, value);			      \
     }									      \
-  while (0)
+  while (/*CONSTCOND*/0)
 
-#define STACK_PUSHX(s, value)						      \
+#define STACK_PUSHX(s, typetag, value)					      \
   {									      \
-    status = tre_stack_push(s, (void *)(value));			      \
+    status = tre_stack_push_ ## typetag(s, value);			      \
     if (status != REG_OK)						      \
       break;								      \
   }
 
-#define STACK_PUSHR(s, value)						      \
+#define STACK_PUSHR(s, typetag, value)					      \
   {									      \
-    reg_errcode_t status;						      \
-    status = tre_stack_push(s, (void *)(value));			      \
-    if (status != REG_OK)						      \
-      return status;							      \
+    reg_errcode_t _status;						      \
+    _status = tre_stack_push_ ## typetag(s, value);			      \
+    if (_status != REG_OK)						      \
+      return _status;							      \
   }
 
-typedef struct tre_stack_rec {
+union tre_stack_item {
+  void *voidptr_value;
+  int int_value;
+};
+
+struct tre_stack_rec {
   int size;
   int max_size;
   int increment;
   int ptr;
-  void **stack;
-} tre_stack_t;
+  union tre_stack_item *stack;
+};
 
 
 static tre_stack_t *
@@ -273,7 +358,7 @@ tre_stack_num_objects(tre_stack_t *s)
 }
 
 static reg_errcode_t
-tre_stack_push(tre_stack_t *s, void *value)
+tre_stack_push(tre_stack_t *s, union tre_stack_item value)
 {
   if (s->ptr < s->size)
     {
@@ -284,24 +369,20 @@ tre_stack_push(tre_stack_t *s, void *value)
     {
       if (s->size >= s->max_size)
 	{
-	  DPRINT(("tre_stack_push: stack full\n"));
 	  return REG_ESPACE;
 	}
       else
 	{
-	  void **new_buffer;
+	  union tre_stack_item *new_buffer;
 	  int new_size;
-	  DPRINT(("tre_stack_push: trying to realloc more space\n"));
 	  new_size = s->size + s->increment;
 	  if (new_size > s->max_size)
 	    new_size = s->max_size;
 	  new_buffer = xrealloc(s->stack, sizeof(*new_buffer) * new_size);
 	  if (new_buffer == NULL)
 	    {
-	      DPRINT(("tre_stack_push: realloc failed.\n"));
 	      return REG_ESPACE;
 	    }
-	  DPRINT(("tre_stack_push: realloc succeeded.\n"));
 	  assert(new_size > s->size);
 	  s->size = new_size;
 	  s->stack = new_buffer;
@@ -311,11 +392,23 @@ tre_stack_push(tre_stack_t *s, void *value)
   return REG_OK;
 }
 
-static void *
-tre_stack_pop(tre_stack_t *s)
-{
-  return s->stack[--s->ptr];
+#define define_pushf(typetag, type)  \
+  declare_pushf(typetag, type) {     \
+    union tre_stack_item item;	     \
+    item.typetag ## _value = value;  \
+    return tre_stack_push(s, item);  \
 }
+
+define_pushf(int, int)
+define_pushf(voidptr, void *)
+
+#define define_popf(typetag, type)		    \
+  declare_popf(typetag, type) {			    \
+    return s->stack[--s->ptr].typetag ## _value;    \
+  }
+
+define_popf(int, int)
+define_popf(voidptr, void *)
 
 
 /***********************************************************************
@@ -331,23 +424,85 @@ typedef struct {
   /* The parse result. */
   tre_ast_node_t *result;
   /* The regexp to parse and its length. */
-  const tre_char_t *re;
+  const char *re;
   /* The first character of the entire regexp. */
-  const tre_char_t *re_start;
-  /* The first character after the end of the regexp. */
-  const tre_char_t *re_end;
-  int len;
+  const char *re_start;
   /* Current submatch ID. */
   int submatch_id;
   /* Current position (number of literal). */
   int position;
   /* The highest back reference or -1 if none seen so far. */
   int max_backref;
+  /* This flag is set if the regexp uses approximate matching. */
+  int have_approx;
   /* Compilation flags. */
   int cflags;
   /* If this flag is set the top-level submatch is not captured. */
   int nofirstsub;
 } tre_parse_ctx_t;
+
+/* Parses a wide character regexp pattern into a syntax tree.  This parser
+   handles both syntaxes (BRE and ERE), including the TRE extensions. */
+static reg_errcode_t
+tre_parse(tre_parse_ctx_t *ctx);
+
+
+/*
+  This parser is just a simple recursive descent parser for POSIX.2
+  regexps.  The parser supports both the obsolete default syntax and
+  the "extended" syntax, and some nonstandard extensions.
+*/
+
+/* Characters with special meanings in regexp syntax. */
+#define CHAR_PIPE	   '|'
+#define CHAR_LPAREN	   '('
+#define CHAR_RPAREN	   ')'
+#define CHAR_LBRACE	   '{'
+#define CHAR_RBRACE	   '}'
+#define CHAR_LBRACKET	   '['
+#define CHAR_RBRACKET	   ']'
+#define CHAR_MINUS	   '-'
+#define CHAR_STAR	   '*'
+#define CHAR_QUESTIONMARK  '?'
+#define CHAR_PLUS	   '+'
+#define CHAR_PERIOD	   '.'
+#define CHAR_COLON	   ':'
+#define CHAR_EQUAL	   '='
+#define CHAR_COMMA	   ','
+#define CHAR_CARET	   '^'
+#define CHAR_DOLLAR	   '$'
+#define CHAR_BACKSLASH	   '\\'
+#define CHAR_HASH	   '#'
+#define CHAR_TILDE	   '~'
+
+
+/* Some macros for expanding \w, \s, etc. */
+static const struct tre_macro_struct {
+  const char c;
+  const char *expansion;
+} tre_macros[] =
+  { {'t', "\t"},	   {'n', "\n"},		   {'r', "\r"},
+    {'f', "\f"},	   {'a', "\a"},		   {'e', "\033"},
+    {'w', "[[:alnum:]_]"}, {'W', "[^[:alnum:]_]"}, {'s', "[[:space:]]"},
+    {'S', "[^[:space:]]"}, {'d', "[[:digit:]]"},   {'D', "[^[:digit:]]"},
+    { 0, NULL }
+  };
+
+
+/* Expands a macro delimited by `regex' and `regex_end' to `buf', which
+   must have at least `len' items.  Sets buf[0] to zero if the there
+   is no match in `tre_macros'. */
+static const char *
+tre_expand_macro(const char *regex)
+{
+  int i;
+
+  if (!*regex)
+    return 0;
+
+  for (i = 0; tre_macros[i].expansion && tre_macros[i].c != *regex; i++);
+  return tre_macros[i].expansion;
+}
 
 static reg_errcode_t
 tre_new_item(tre_mem_t mem, int min, int max, int *i, int *max_i,
@@ -359,7 +514,6 @@ tre_new_item(tre_mem_t mem, int min, int max, int *i, int *max_i,
   if (*i >= *max_i)
     {
       tre_ast_node_t **new_items;
-      DPRINT(("out of array space, i = %d\n", *i));
       /* If the array is already 1024 items large, give up -- there's
 	 probably an error in the regexp (e.g. not a '\0' terminated
 	 string and missing ']') */
@@ -378,47 +532,11 @@ tre_new_item(tre_mem_t mem, int min, int max, int *i, int *max_i,
 }
 
 
-/* Expands a character class to character ranges. */
-static reg_errcode_t
-tre_expand_ctype(tre_mem_t mem, tre_ctype_t class, tre_ast_node_t ***items,
-		 int *i, int *max_i, int cflags)
-{
-  reg_errcode_t status = REG_OK;
-  tre_cint_t c;
-  int j, min = -1, max = 0;
-  assert(TRE_MB_CUR_MAX == 1);
-
-  DPRINT(("  expanding class to character ranges\n"));
-  for (j = 0; (j < 256) && (status == REG_OK); j++)
-    {
-      c = j;
-      if (tre_isctype(c, class)
-	  || ((cflags & REG_ICASE)
-	      && (tre_isctype(tre_tolower(c), class)
-		  || tre_isctype(tre_toupper(c), class))))
-{
-	  if (min < 0)
-	    min = c;
-	  max = c;
-	}
-      else if (min >= 0)
-	{
-	  DPRINT(("  range %c (%d) to %c (%d)\n", min, min, max, max));
-	  status = tre_new_item(mem, min, max, i, max_i, items);
-	  min = -1;
-	}
-    }
-  if (min >= 0 && status == REG_OK)
-    status = tre_new_item(mem, min, max, i, max_i, items);
-  return status;
-}
-
-
 static int
 tre_compare_items(const void *a, const void *b)
 {
-  tre_ast_node_t *node_a = *(tre_ast_node_t **)a;
-  tre_ast_node_t *node_b = *(tre_ast_node_t **)b;
+  const tre_ast_node_t *node_a = *(tre_ast_node_t * const *)a;
+  const tre_ast_node_t *node_b = *(tre_ast_node_t * const *)b;
   tre_literal_t *l_a = node_a->obj, *l_b = node_b->obj;
   int a_min = l_a->code_min, b_min = l_b->code_min;
 
@@ -443,7 +561,7 @@ tre_parse_bracket_items(tre_parse_ctx_t *ctx, int negate,
 			tre_ast_node_t ***items, int *num_items,
 			int *items_size)
 {
-  const tre_char_t *re = ctx->re;
+  const char *re = ctx->re;
   reg_errcode_t status = REG_OK;
   tre_ctype_t class = (tre_ctype_t)0;
   int i = *num_items;
@@ -454,86 +572,56 @@ tre_parse_bracket_items(tre_parse_ctx_t *ctx, int negate,
   while (status == REG_OK)
     {
       skip = 0;
-      if (re == ctx->re_end)
+      if (!*re)
 	{
 	  status = REG_EBRACK;
 	}
-      else if (*re == ']' && re > ctx->re)
+      else if (*re == CHAR_RBRACKET && re > ctx->re)
 	{
-	  DPRINT(("tre_parse_bracket:	done: '%.*" STRF "'\n",
-		  ctx->re_end - re, re));
 	  re++;
 	  break;
 	}
       else
 	{
 	  tre_cint_t min = 0, max = 0;
+	  wchar_t wc;
+	  int clen = mbtowc(&wc, re, -1);
+
+	  if (clen<0) clen=1, wc=WEOF;
 
 	  class = (tre_ctype_t)0;
-	  if (re + 2 < ctx->re_end
-	      && *(re + 1) == '-' && *(re + 2) != ']')
+	  if (*(re + clen) == CHAR_MINUS && *(re + clen + 1) != CHAR_RBRACKET)
 	    {
-	      DPRINT(("tre_parse_bracket:  range: '%.*" STRF "'\n",
-		      ctx->re_end - re, re));
-	      min = *re;
-	      max = *(re + 2);
-	      re += 3;
+	      min = wc;
+	      re += clen+1;
+	      clen = mbtowc(&wc, re, -1);
+	      if (clen<0) clen=1, wc=WEOF;
+	      max = wc;
+	      re += clen;
 	      /* XXX - Should use collation order instead of encoding values
 		 in character ranges. */
 	      if (min > max)
 		status = REG_ERANGE;
 	    }
-	  else if (re + 1 < ctx->re_end
-		   && *re == '[' && *(re + 1) == '.')
+	  else if (*re == CHAR_LBRACKET && *(re + 1) == CHAR_PERIOD)
 	    status = REG_ECOLLATE;
-	  else if (re + 1 < ctx->re_end
-		   && *re == '[' && *(re + 1) == '=')
+	  else if (*re == CHAR_LBRACKET && *(re + 1) == CHAR_EQUAL)
 	    status = REG_ECOLLATE;
-	  else if (re + 1 < ctx->re_end
-		   && *re == '[' && *(re + 1) == ':')
+	  else if (*re == CHAR_LBRACKET && *(re + 1) == CHAR_COLON)
 	    {
 	      char tmp_str[64];
-	      const tre_char_t *endptr = re + 2;
+	      const char *endptr = re + 2;
 	      int len;
-	      DPRINT(("tre_parse_bracket:  class: '%.*" STRF "'\n",
-		      ctx->re_end - re, re));
-	      while (endptr < ctx->re_end && *endptr != ':')
+	      while (*endptr && *endptr != CHAR_COLON)
 		endptr++;
-	      if (endptr != ctx->re_end)
+	      if (*endptr)
 		{
 		  len = MIN(endptr - re - 2, 63);
-#ifdef TRE_WCHAR
-		  {
-		    tre_char_t tmp_wcs[64];
-		    wcsncpy(tmp_wcs, re + 2, len);
-		    tmp_wcs[len] = '\0';
-#if defined HAVE_WCSRTOMBS
-		    {
-		      mbstate_t state;
-		      const tre_char_t *src = tmp_wcs;
-		      memset(&state, '\0', sizeof(state));
-		      len = wcsrtombs(tmp_str, &src, sizeof(tmp_str), &state);
-		    }
-#elif defined HAVE_WCSTOMBS
-		    len = wcstombs(tmp_str, tmp_wcs, 63);
-#endif /* defined HAVE_WCSTOMBS */
-		  }
-#else /* !TRE_WCHAR */
 		  strncpy(tmp_str, re + 2, len);
-#endif /* !TRE_WCHAR */
 		  tmp_str[len] = '\0';
-		  DPRINT(("  class name: %s\n", tmp_str));
 		  class = tre_ctype(tmp_str);
 		  if (!class)
 		    status = REG_ECTYPE;
-		  /* Optimize character classes for 8 bit character sets. */
-		  if (status == REG_OK && TRE_MB_CUR_MAX == 1)
-		    {
-		      status = tre_expand_ctype(ctx->mem, class, items,
-						&i, &max_i, ctx->cflags);
-		      class = (tre_ctype_t)0;
-		      skip = 1;
-		    }
 		  re = endptr + 2;
 		}
 	      else
@@ -543,13 +631,12 @@ tre_parse_bracket_items(tre_parse_ctx_t *ctx, int negate,
 	    }
 	  else
 	    {
-	      DPRINT(("tre_parse_bracket:   char: '%.*" STRF "'\n",
-		      ctx->re_end - re, re));
-	      if (*re == '-' && *(re + 1) != ']'
+	      if (*re == CHAR_MINUS && *(re + 1) != CHAR_RBRACKET
 		  && ctx->re != re)
 		/* Two ranges are not allowed to share and endpoint. */
 		status = REG_ERANGE;
-	      min = max = *re++;
+	      min = max = wc;
+	      re += clen;
 	    }
 
 	  if (status != REG_OK)
@@ -565,16 +652,15 @@ tre_parse_bracket_items(tre_parse_ctx_t *ctx, int negate,
 	      status = tre_new_item(ctx->mem, min, max, &i, &max_i, items);
 	      if (status != REG_OK)
 		break;
-	      ((tre_literal_t*)((*items)[i-1])->obj)->class = class;
+	      ((tre_literal_t*)((*items)[i-1])->obj)->u.class = class;
 	    }
 
 	  /* Add opposite-case counterpoints if REG_ICASE is present.
 	     This is broken if there are more than two "same" characters. */
 	  if (ctx->cflags & REG_ICASE && !class && status == REG_OK && !skip)
 	    {
-	      int cmin, ccurr;
+	      tre_cint_t cmin, ccurr;
 
-	      DPRINT(("adding opposite-case counterpoints\n"));
 	      while (min <= max)
 		{
 		  if (tre_islower(min))
@@ -626,10 +712,8 @@ tre_parse_bracket(tre_parse_ctx_t *ctx, tre_ast_node_t **result)
   if (items == NULL)
     return REG_ESPACE;
 
-  if (*ctx->re == '^')
+  if (*ctx->re == CHAR_CARET)
     {
-      DPRINT(("tre_parse_bracket: negate: '%.*" STRF "'\n",
-	      ctx->re_end - ctx->re, ctx->re));
       negate = 1;
       ctx->re++;
     }
@@ -642,7 +726,7 @@ tre_parse_bracket(tre_parse_ctx_t *ctx, tre_ast_node_t **result)
 
   /* Sort the array if we need to negate it. */
   if (negate)
-    qsort(items, i, sizeof(*items), tre_compare_items);
+    qsort(items, (unsigned)i, sizeof(*items), tre_compare_items);
 
   curr_max = curr_min = 0;
   /* Build a union of the items in the array, negated if necessary. */
@@ -653,16 +737,12 @@ tre_parse_bracket(tre_parse_ctx_t *ctx, tre_ast_node_t **result)
       min = l->code_min;
       max = l->code_max;
 
-      DPRINT(("item: %d - %d, class %ld, curr_max = %d\n",
-	      (int)l->code_min, (int)l->code_max, (long)l->class, curr_max));
-
       if (negate)
 	{
 	  if (min < curr_max)
 	    {
 	      /* Overlap. */
 	      curr_max = MAX(max + 1, curr_max);
-	      DPRINT(("overlap, curr_max = %d\n", curr_max));
 	      l = NULL;
 	    }
 	  else
@@ -671,13 +751,11 @@ tre_parse_bracket(tre_parse_ctx_t *ctx, tre_ast_node_t **result)
 	      curr_max = min - 1;
 	      if (curr_max >= curr_min)
 		{
-		  DPRINT(("no overlap\n"));
 		  l->code_min = curr_min;
 		  l->code_max = curr_max;
 		}
 	      else
 		{
-		  DPRINT(("no overlap, zero room\n"));
 		  l = NULL;
 		}
 	      curr_min = curr_max = max + 1;
@@ -687,7 +765,6 @@ tre_parse_bracket(tre_parse_ctx_t *ctx, tre_ast_node_t **result)
       if (l != NULL)
 	{
 	  int k;
-	  DPRINT(("creating %d - %d\n", (int)l->code_min, (int)l->code_max));
 	  l->position = ctx->position;
 	  if (num_neg_classes > 0)
 	    {
@@ -723,7 +800,6 @@ tre_parse_bracket(tre_parse_ctx_t *ctx, tre_ast_node_t **result)
   if (negate)
     {
       int k;
-      DPRINT(("final: creating %d - %d\n", curr_min, (int)TRE_CHAR_MAX));
       n = tre_ast_new_literal(ctx->mem, curr_min, TRE_CHAR_MAX, ctx->position);
       if (n == NULL)
 	status = REG_ESPACE;
@@ -776,11 +852,11 @@ tre_parse_bracket(tre_parse_ctx_t *ctx, tre_ast_node_t **result)
 /* Parses a positive decimal integer.  Returns -1 if the string does not
    contain a valid number. */
 static int
-tre_parse_int(const tre_char_t **regex, const tre_char_t *regex_end)
+tre_parse_int(const char **regex)
 {
   int num = -1;
-  const tre_char_t *r = *regex;
-  while (r < regex_end && *r >= '0' && *r <= '9')
+  const char *r = *regex;
+  while (*r-'0'<10U)
     {
       if (num < 0)
 	num = 0;
@@ -796,67 +872,29 @@ static reg_errcode_t
 tre_parse_bound(tre_parse_ctx_t *ctx, tre_ast_node_t **result)
 {
   int min, max;
-  const tre_char_t *r = ctx->re;
-  const tre_char_t *start;
-  int counts_set = 0;
+  const char *r = ctx->re;
+  int minimal = 0;
 
   /* Parse number (minimum repetition count). */
   min = -1;
-  if (r < ctx->re_end && *r >= '0' && *r <= '9') {
-    DPRINT(("tre_parse:	  min count: '%.*" STRF "'\n", ctx->re_end - r, r));
-    min = tre_parse_int(&r, ctx->re_end);
+  if (*r >= '0' && *r <= '9') {
+    min = tre_parse_int(&r);
   }
 
   /* Parse comma and second number (maximum repetition count). */
   max = min;
-  if (r < ctx->re_end && *r == ',')
+  if (*r == CHAR_COMMA)
     {
       r++;
-      DPRINT(("tre_parse:   max count: '%.*" STRF "'\n", ctx->re_end - r, r));
-      max = tre_parse_int(&r, ctx->re_end);
+      max = tre_parse_int(&r);
     }
 
   /* Check that the repeat counts are sane. */
   if ((max >= 0 && min > max) || max > RE_DUP_MAX)
     return REG_BADBR;
 
-
-  /*
-   '{'
-     optionally followed immediately by a number == minimum repcount
-     optionally followed by , then a number == maximum repcount
-  */
-
-
-  do {
-    int done;
-    start = r;
-
-    /* Parse count limit settings */
-    done = 0;
-    if (!counts_set)
-      while (r + 1 < ctx->re_end && !done)
-	{
-	  switch (*r)
-	    {
-	    case ',':
-	      r++;
-	      break;
-	    case ' ':
-	      r++;
-	      break;
-	    case '}':
-	      done = 1;
-	      break;
-	    default:
-	      done = 1;
-	      break;
-	    }
-	}
-  } while (start != r);
-
   /* Missing }. */
-  if (r >= ctx->re_end)
+  if (!*r)
     return REG_EBRACE;
 
   /* Empty contents of {}. */
@@ -866,19 +904,16 @@ tre_parse_bound(tre_parse_ctx_t *ctx, tre_ast_node_t **result)
   /* Parse the ending '}' or '\}'.*/
   if (ctx->cflags & REG_EXTENDED)
     {
-      if (r >= ctx->re_end || *r != '}')
+      if (*r != CHAR_RBRACE)
 	return REG_BADBR;
       r++;
     }
   else
     {
-      if (r + 1 >= ctx->re_end
-	  || *r != '\\'
-	  || *(r + 1) != '}')
+      if (*r != CHAR_BACKSLASH || *(r + 1) != CHAR_RBRACE)
 	return REG_BADBR;
       r += 2;
     }
-
 
   /* Create the AST node(s). */
   if (min == 0 && max == 0)
@@ -893,7 +928,7 @@ tre_parse_bound(tre_parse_ctx_t *ctx, tre_ast_node_t **result)
 	/* Only approximate parameters set, no repetitions. */
 	min = max = 1;
 
-      *result = tre_ast_new_iter(ctx->mem, *result, min, max);
+      *result = tre_ast_new_iter(ctx->mem, *result, min, max, minimal);
       if (!*result)
 	return REG_ESPACE;
     }
@@ -927,19 +962,14 @@ tre_parse(tre_parse_ctx_t *ctx)
   int bottom = tre_stack_num_objects(stack);
   int depth = 0;
 
-  DPRINT(("tre_parse: parsing '%.*" STRF "', len = %d\n",
-	  ctx->len, ctx->re, ctx->len));
-
   if (!ctx->nofirstsub)
     {
-      STACK_PUSH(stack, ctx->re);
-      STACK_PUSH(stack, ctx->submatch_id);
-      STACK_PUSH(stack, PARSE_MARK_FOR_SUBMATCH);
+      STACK_PUSH(stack, int, ctx->submatch_id);
+      STACK_PUSH(stack, int, PARSE_MARK_FOR_SUBMATCH);
       ctx->submatch_id++;
     }
-  STACK_PUSH(stack, PARSE_RE);
+  STACK_PUSH(stack, int, PARSE_RE);
   ctx->re_start = ctx->re;
-  ctx->re_end = ctx->re + ctx->len;
 
 
   /* The following is basically just a recursive descent parser.  I use
@@ -950,67 +980,67 @@ tre_parse(tre_parse_ctx_t *ctx)
     {
       if (status != REG_OK)
 	break;
-      symbol = (tre_parse_re_stack_symbol_t)tre_stack_pop(stack);
+      symbol = tre_stack_pop_int(stack);
       switch (symbol)
 	{
 	case PARSE_RE:
 	  /* Parse a full regexp.  A regexp is one or more branches,
 	     separated by the union operator `|'. */
 	  if (ctx->cflags & REG_EXTENDED)
-	    STACK_PUSHX(stack, PARSE_UNION);
-	  STACK_PUSHX(stack, PARSE_BRANCH);
+	    STACK_PUSHX(stack, int, PARSE_UNION);
+	  STACK_PUSHX(stack, int, PARSE_BRANCH);
 	  break;
 
 	case PARSE_BRANCH:
 	  /* Parse a branch.  A branch is one or more pieces, concatenated.
 	     A piece is an atom possibly followed by a postfix operator. */
-	  STACK_PUSHX(stack, PARSE_CATENATION);
-	  STACK_PUSHX(stack, PARSE_PIECE);
+	  STACK_PUSHX(stack, int, PARSE_CATENATION);
+	  STACK_PUSHX(stack, int, PARSE_PIECE);
 	  break;
 
 	case PARSE_PIECE:
 	  /* Parse a piece.  A piece is an atom possibly followed by one
 	     or more postfix operators. */
-	  STACK_PUSHX(stack, PARSE_POSTFIX);
-	  STACK_PUSHX(stack, PARSE_ATOM);
+	    STACK_PUSHX(stack, int, PARSE_POSTFIX);
+	  STACK_PUSHX(stack, int, PARSE_ATOM);
 	  break;
 
 	case PARSE_CATENATION:
 	  /* If the expression has not ended, parse another piece. */
 	  {
 	    tre_char_t c;
-	    if (ctx->re >= ctx->re_end)
+	    if (!*ctx->re)
 	      break;
 	    c = *ctx->re;
-	    if (ctx->cflags & REG_EXTENDED && c == '|')
-	      break;
-	    if ((ctx->cflags & REG_EXTENDED
-	         && c == ')' && depth > 0)
-	        || (!(ctx->cflags & REG_EXTENDED)
-		    && (c == '\\'
-		        && *(ctx->re + 1) == ')')))
-	      {
-	        if (!(ctx->cflags & REG_EXTENDED) && depth == 0)
-	          status = REG_EPAREN;
-	        DPRINT(("tre_parse:	  group end: '%.*" STRF "'\n",
-		        ctx->re_end - ctx->re, ctx->re));
-	        depth--;
-	        if (!(ctx->cflags & REG_EXTENDED))
-	          ctx->re += 2;
-	        break;
-	      }
+		if (ctx->cflags & REG_EXTENDED && c == CHAR_PIPE)
+		  break;
+		if ((ctx->cflags & REG_EXTENDED
+		     && c == CHAR_RPAREN && depth > 0)
+		    || (!(ctx->cflags & REG_EXTENDED)
+			&& (c == CHAR_BACKSLASH
+			    && *(ctx->re + 1) == CHAR_RPAREN)))
+		  {
+		    if (!(ctx->cflags & REG_EXTENDED) && depth == 0)
+		      status = REG_EPAREN;
+		    depth--;
+		    if (!(ctx->cflags & REG_EXTENDED))
+		      ctx->re += 2;
+		    break;
+		  }
 
-	    /* Left associative concatenation. */
-	    STACK_PUSHX(stack, PARSE_CATENATION);
-	    STACK_PUSHX(stack, result);
-	    STACK_PUSHX(stack, PARSE_POST_CATENATION);
-	    STACK_PUSHX(stack, PARSE_PIECE);
+	      {
+		/* Default case, left associative concatenation. */
+		STACK_PUSHX(stack, int, PARSE_CATENATION);
+		STACK_PUSHX(stack, voidptr, result);
+		STACK_PUSHX(stack, int, PARSE_POST_CATENATION);
+		STACK_PUSHX(stack, int, PARSE_PIECE);
+	      }
 	    break;
 	  }
 
 	case PARSE_POST_CATENATION:
 	  {
-	    tre_ast_node_t *tree = tre_stack_pop(stack);
+	    tre_ast_node_t *tree = tre_stack_pop_voidptr(stack);
 	    tre_ast_node_t *tmp_node;
 	    tmp_node = tre_ast_new_catenation(ctx->mem, tree, result);
 	    if (!tmp_node)
@@ -1020,21 +1050,19 @@ tre_parse(tre_parse_ctx_t *ctx)
 	  }
 
 	case PARSE_UNION:
-	  if (ctx->re >= ctx->re_end)
+	  if (!*ctx->re)
 	    break;
 	  switch (*ctx->re)
 	    {
-	    case '|':
-	      DPRINT(("tre_parse:	union: '%.*" STRF "'\n",
-		      ctx->re_end - ctx->re, ctx->re));
-	      STACK_PUSHX(stack, PARSE_UNION);
-	      STACK_PUSHX(stack, result);
-	      STACK_PUSHX(stack, PARSE_POST_UNION);
-	      STACK_PUSHX(stack, PARSE_BRANCH);
+	    case CHAR_PIPE:
+	      STACK_PUSHX(stack, int, PARSE_UNION);
+	      STACK_PUSHX(stack, voidptr, result);
+	      STACK_PUSHX(stack, int, PARSE_POST_UNION);
+	      STACK_PUSHX(stack, int, PARSE_BRANCH);
 	      ctx->re++;
 	      break;
 
-	    case ')':
+	    case CHAR_RPAREN:
 	      ctx->re++;
 	      break;
 
@@ -1046,7 +1074,7 @@ tre_parse(tre_parse_ctx_t *ctx)
 	case PARSE_POST_UNION:
 	  {
 	    tre_ast_node_t *tmp_node;
-	    tre_ast_node_t *tree = tre_stack_pop(stack);
+	    tre_ast_node_t *tree = tre_stack_pop_voidptr(stack);
 	    tmp_node = tre_ast_new_union(ctx->mem, tree, result);
 	    if (!tmp_node)
 	      return REG_ESPACE;
@@ -1056,38 +1084,55 @@ tre_parse(tre_parse_ctx_t *ctx)
 
 	case PARSE_POSTFIX:
 	  /* Parse postfix operators. */
-	  if (ctx->re >= ctx->re_end)
+	  if (!*ctx->re)
 	    break;
 	  switch (*ctx->re)
 	    {
-	    case '+':
-	    case '?':
+	    case CHAR_PLUS:
+	    case CHAR_QUESTIONMARK:
 	      if (!(ctx->cflags & REG_EXTENDED))
-	        break;
-	    case '*':
+		break;
+		/*FALLTHROUGH*/
+	    case CHAR_STAR:
 	      {
 		tre_ast_node_t *tmp_node;
+		int minimal = 0;
 		int rep_min = 0;
 		int rep_max = -1;
-		if (*ctx->re == '+')
+
+		if (*ctx->re == CHAR_PLUS)
 		  rep_min = 1;
-		if (*ctx->re == '?')
+		if (*ctx->re == CHAR_QUESTIONMARK)
 		  rep_max = 1;
 
+		  {
+		    if (*(ctx->re + 1) == CHAR_QUESTIONMARK)
+		      {
+			minimal = 1;
+			ctx->re++;
+		      }
+		    else if (*(ctx->re + 1) == CHAR_STAR
+			     || *(ctx->re + 1) == CHAR_PLUS)
+		      {
+			/* These are reserved for future extensions. */
+			return REG_BADRPT;
+		      }
+		  }
+
 		ctx->re++;
-		tmp_node = tre_ast_new_iter(ctx->mem, result, rep_min, rep_max);
+		tmp_node = tre_ast_new_iter(ctx->mem, result, rep_min, rep_max,
+					    minimal);
 		if (tmp_node == NULL)
 		  return REG_ESPACE;
 		result = tmp_node;
-		STACK_PUSHX(stack, PARSE_POSTFIX);
-		break;
+		STACK_PUSHX(stack, int, PARSE_POSTFIX);
 	      }
+	      break;
 
-	    case '\\':
+	    case CHAR_BACKSLASH:
 	      /* "\{" is special without REG_EXTENDED */
 	      if (!(ctx->cflags & REG_EXTENDED)
-		  && ctx->re + 1 < ctx->re_end
-		  && *(ctx->re + 1) == '{')
+		  && *(ctx->re + 1) == CHAR_LBRACE)
 		{
 		  ctx->re++;
 		  goto parse_brace;
@@ -1095,20 +1140,18 @@ tre_parse(tre_parse_ctx_t *ctx)
 	      else
 		break;
 
-	    case '{':
+	    case CHAR_LBRACE:
 	      /* "{" is literal without REG_EXTENDED */
 	      if (!(ctx->cflags & REG_EXTENDED))
 		break;
 
 	    parse_brace:
-	      DPRINT(("tre_parse:	bound: '%.*" STRF "'\n",
-		      ctx->re_end - ctx->re, ctx->re));
 	      ctx->re++;
 
 	      status = tre_parse_bound(ctx, &result);
 	      if (status != REG_OK)
 		return status;
-	      STACK_PUSHX(stack, PARSE_POSTFIX);
+	      STACK_PUSHX(stack, int, PARSE_POSTFIX);
 	      break;
 	    }
 	  break;
@@ -1119,29 +1162,25 @@ tre_parse(tre_parse_ctx_t *ctx)
 	     a `\' followed by a character, or a single character. */
 
 	  /* End of regexp? (empty string). */
-	  if (ctx->re >= ctx->re_end)
+	  if (!*ctx->re)
 	    goto parse_literal;
 
 	  switch (*ctx->re)
 	    {
-	    case '(':  /* parenthesized subexpression */
+	    case CHAR_LPAREN:  /* parenthesized subexpression */
 
 	      if (ctx->cflags & REG_EXTENDED
 		  || (ctx->re > ctx->re_start
-		      && *(ctx->re - 1) == '\\'))
+		      && *(ctx->re - 1) == CHAR_BACKSLASH))
 		{
 		  depth++;
 		    {
-		      DPRINT(("tre_parse: group begin: '%.*" STRF
-			      "', submatch %d\n",
-			      ctx->re_end - ctx->re, ctx->re,
-			      ctx->submatch_id));
 		      ctx->re++;
 		      /* First parse a whole RE, then mark the resulting tree
 			 for submatching. */
-		      STACK_PUSHX(stack, ctx->submatch_id);
-		      STACK_PUSHX(stack, PARSE_MARK_FOR_SUBMATCH);
-		      STACK_PUSHX(stack, PARSE_RE);
+		      STACK_PUSHX(stack, int, ctx->submatch_id);
+		      STACK_PUSHX(stack, int, PARSE_MARK_FOR_SUBMATCH);
+		      STACK_PUSHX(stack, int, PARSE_RE);
 		      ctx->submatch_id++;
 		    }
 		}
@@ -1149,13 +1188,11 @@ tre_parse(tre_parse_ctx_t *ctx)
 		goto parse_literal;
 	      break;
 
-	    case ')':  /* end of current subexpression */
+	    case CHAR_RPAREN:  /* end of current subexpression */
 	      if ((ctx->cflags & REG_EXTENDED && depth > 0)
 		  || (ctx->re > ctx->re_start
-		      && *(ctx->re - 1) == '\\'))
+		      && *(ctx->re - 1) == CHAR_BACKSLASH))
 		{
-		  DPRINT(("tre_parse:	    empty: '%.*" STRF "'\n",
-			  ctx->re_end - ctx->re, ctx->re));
 		  /* We were expecting an atom, but instead the current
 		     subexpression was closed.	POSIX leaves the meaning of
 		     this to be implementation-defined.	 We interpret this as
@@ -1170,44 +1207,130 @@ tre_parse(tre_parse_ctx_t *ctx)
 		goto parse_literal;
 	      break;
 
-	    case '[': /* bracket expression */
-	      DPRINT(("tre_parse:     bracket: '%.*" STRF "'\n",
-		      ctx->re_end - ctx->re, ctx->re));
+	    case CHAR_LBRACKET: /* bracket expression */
 	      ctx->re++;
 	      status = tre_parse_bracket(ctx, &result);
 	      if (status != REG_OK)
 		return status;
 	      break;
 
-	    case '\\':
+	    case CHAR_BACKSLASH:
 	      /* If this is "\(" or "\)" chew off the backslash and
 		 try again. */
 	      if (!(ctx->cflags & REG_EXTENDED)
-		  && ctx->re + 1 < ctx->re_end
-		  && (*(ctx->re + 1) == '('
-		      || *(ctx->re + 1) == ')'))
+		  && (*(ctx->re + 1) == CHAR_LPAREN
+		      || *(ctx->re + 1) == CHAR_RPAREN))
 		{
 		  ctx->re++;
-		  STACK_PUSHX(stack, PARSE_ATOM);
+		  STACK_PUSHX(stack, int, PARSE_ATOM);
 		  break;
 		}
 
-	      if (ctx->re + 1 >= ctx->re_end)
+	      /* If a macro is used, parse the expanded macro recursively. */
+	      {
+		const char *buf = tre_expand_macro(ctx->re + 1);
+		if (buf)
+		  {
+		    tre_parse_ctx_t subctx;
+		    memcpy(&subctx, ctx, sizeof(subctx));
+		    subctx.re = buf;
+		    subctx.nofirstsub = 1;
+		    status = tre_parse(&subctx);
+		    if (status != REG_OK)
+		      return status;
+		    ctx->re += 2;
+		    ctx->position = subctx.position;
+		    result = subctx.result;
+		    break;
+		  }
+	      }
+
+	      if (!*ctx->re)
 		/* Trailing backslash. */
 		return REG_EESCAPE;
 
-	      DPRINT(("tre_parse:  bleep: '%.*" STRF "'\n",
-		      ctx->re_end - ctx->re, ctx->re));
 	      ctx->re++;
 	      switch (*ctx->re)
 		{
+		case 'b':
+		  result = tre_ast_new_literal(ctx->mem, ASSERTION,
+					       ASSERT_AT_WB, -1);
+		  ctx->re++;
+		  break;
+		case 'B':
+		  result = tre_ast_new_literal(ctx->mem, ASSERTION,
+					       ASSERT_AT_WB_NEG, -1);
+		  ctx->re++;
+		  break;
+		case '<':
+		  result = tre_ast_new_literal(ctx->mem, ASSERTION,
+					       ASSERT_AT_BOW, -1);
+		  ctx->re++;
+		  break;
+		case '>':
+		  result = tre_ast_new_literal(ctx->mem, ASSERTION,
+					       ASSERT_AT_EOW, -1);
+		  ctx->re++;
+		  break;
+		case 'x':
+		  ctx->re++;
+		  if (ctx->re[0] != CHAR_LBRACE)
+		    {
+		      /* 8 bit hex char. */
+		      char tmp[3] = {0, 0, 0};
+		      long val;
+
+		      if (tre_isxdigit(ctx->re[0]))
+			{
+			  tmp[0] = (char)ctx->re[0];
+			  ctx->re++;
+			}
+		      if (tre_isxdigit(ctx->re[0]))
+			{
+			  tmp[1] = (char)ctx->re[0];
+			  ctx->re++;
+			}
+		      val = strtol(tmp, NULL, 16);
+		      result = tre_ast_new_literal(ctx->mem, (int)val,
+						   (int)val, ctx->position);
+		      ctx->position++;
+		      break;
+		    }
+		  else if (*ctx->re)
+		    {
+		      /* Wide char. */
+		      char tmp[32];
+		      long val;
+		      int i = 0;
+		      ctx->re++;
+		      while (*ctx->re && i < sizeof tmp)
+			{
+			  if (ctx->re[0] == CHAR_RBRACE)
+			    break;
+			  if (tre_isxdigit(ctx->re[0]))
+			    {
+			      tmp[i] = (char)ctx->re[0];
+			      i++;
+			      ctx->re++;
+			      continue;
+			    }
+			  return REG_EBRACE;
+			}
+		      ctx->re++;
+		      tmp[i] = 0;
+		      val = strtol(tmp, NULL, 16);
+		      result = tre_ast_new_literal(ctx->mem, (int)val, (int)val,
+						   ctx->position);
+		      ctx->position++;
+		      break;
+		    }
+		  /*FALLTHROUGH*/
+
 		default:
-		  if (!(ctx->cflags & REG_EXTENDED) && tre_isdigit(*ctx->re))
+		  if (tre_isdigit(*ctx->re))
 		    {
 		      /* Back reference. */
 		      int val = *ctx->re - '0';
-		      DPRINT(("tre_parse:     backref: '%.*" STRF "'\n",
-			      ctx->re_end - ctx->re + 1, ctx->re - 1));
 		      result = tre_ast_new_literal(ctx->mem, BACKREF, val,
 						   ctx->position);
 		      if (result == NULL)
@@ -1219,8 +1342,6 @@ tre_parse(tre_parse_ctx_t *ctx)
 		  else
 		    {
 		      /* Escaped character. */
-		      DPRINT(("tre_parse:     escaped: '%.*" STRF "'\n",
-			      ctx->re_end - ctx->re + 1, ctx->re - 1));
 		      result = tre_ast_new_literal(ctx->mem, *ctx->re, *ctx->re,
 						   ctx->position);
 		      ctx->position++;
@@ -1232,9 +1353,7 @@ tre_parse(tre_parse_ctx_t *ctx)
 		return REG_ESPACE;
 	      break;
 
-	    case '.':	 /* the any-symbol */
-	      DPRINT(("tre_parse:	  any: '%.*" STRF "'\n",
-		      ctx->re_end - ctx->re, ctx->re));
+	    case CHAR_PERIOD:	 /* the any-symbol */
 	      if (ctx->cflags & REG_NEWLINE)
 		{
 		  tre_ast_node_t *tmp1;
@@ -1263,17 +1382,15 @@ tre_parse(tre_parse_ctx_t *ctx)
 	      ctx->re++;
 	      break;
 
-	    case '^':	 /* beginning of line assertion */
+	    case CHAR_CARET:	 /* beginning of line assertion */
 	      /* '^' has a special meaning everywhere in EREs, and in the
 		 beginning of the RE and after \( is BREs. */
 	      if (ctx->cflags & REG_EXTENDED
 		  || (ctx->re - 2 >= ctx->re_start
-		      && *(ctx->re - 2) == '\\'
-		      && *(ctx->re - 1) == '(')
+		      && *(ctx->re - 2) == CHAR_BACKSLASH
+		      && *(ctx->re - 1) == CHAR_LPAREN)
 		  || ctx->re == ctx->re_start)
 		{
-		  DPRINT(("tre_parse:	      BOL: '%.*" STRF "'\n",
-			  ctx->re_end - ctx->re, ctx->re));
 		  result = tre_ast_new_literal(ctx->mem, ASSERTION,
 					       ASSERT_AT_BOL, -1);
 		  if (result == NULL)
@@ -1284,17 +1401,14 @@ tre_parse(tre_parse_ctx_t *ctx)
 		goto parse_literal;
 	      break;
 
-	    case '$':	 /* end of line assertion. */
+	    case CHAR_DOLLAR:	 /* end of line assertion. */
 	      /* '$' is special everywhere in EREs, and in the end of the
 		 string and before \) is BREs. */
 	      if (ctx->cflags & REG_EXTENDED
-		  || (ctx->re + 2 < ctx->re_end
-		      && *(ctx->re + 1) == '\\'
-		      && *(ctx->re + 2) == ')')
-		  || ctx->re + 1 == ctx->re_end)
+		  || (*(ctx->re + 1) == CHAR_BACKSLASH
+		      && *(ctx->re + 2) == CHAR_RPAREN)
+		  || !*(ctx->re + 1))
 		{
-		  DPRINT(("tre_parse:	      EOL: '%.*" STRF "'\n",
-			  ctx->re_end - ctx->re, ctx->re));
 		  result = tre_ast_new_literal(ctx->mem, ASSERTION,
 					       ASSERT_AT_EOL, -1);
 		  if (result == NULL)
@@ -1312,34 +1426,34 @@ tre_parse(tre_parse_ctx_t *ctx)
 		 regexp ends here, we interpret it as an empty expression
 		 (which matches an empty string).  */
 	      if (
-		  (ctx->re >= ctx->re_end
-		   || *ctx->re == '*'
+		  (!*ctx->re
+		   || *ctx->re == CHAR_STAR
 		   || (ctx->cflags & REG_EXTENDED
-		       && (*ctx->re == '|'
-			   || *ctx->re == '{'
-			   || *ctx->re == '+'
-			   || *ctx->re == '?'))
+		       && (*ctx->re == CHAR_PIPE
+			   || *ctx->re == CHAR_LBRACE
+			   || *ctx->re == CHAR_PLUS
+			   || *ctx->re == CHAR_QUESTIONMARK))
 		   /* Test for "\)" in BRE mode. */
 		   || (!(ctx->cflags & REG_EXTENDED)
-		       && ctx->re + 1 < ctx->re_end
-		       && *ctx->re == '\\'
-		       && *(ctx->re + 1) == '{')))
+		       && !*(ctx->re + 1)
+		       && *ctx->re == CHAR_BACKSLASH
+		       && *(ctx->re + 1) == CHAR_LBRACE)))
 		{
-		  DPRINT(("tre_parse:	    empty: '%.*" STRF "'\n",
-			  ctx->re_end - ctx->re, ctx->re));
 		  result = tre_ast_new_literal(ctx->mem, EMPTY, -1, -1);
 		  if (!result)
 		    return REG_ESPACE;
 		  break;
 		}
 
-	      DPRINT(("tre_parse:     literal: '%.*" STRF "'\n",
-		      ctx->re_end - ctx->re, ctx->re));
+	      wchar_t wc;
+	      int clen = mbtowc(&wc, ctx->re, -1);
+	      if (clen<0) clen=1, wc=WEOF;
+
 	      /* Note that we can't use an tre_isalpha() test here, since there
 		 may be characters which are alphabetic but neither upper or
 		 lower case. */
 	      if (ctx->cflags & REG_ICASE
-		  && (tre_isupper(*ctx->re) || tre_islower(*ctx->re)))
+		  && (tre_isupper(wc) || tre_islower(wc)))
 		{
 		  tre_ast_node_t *tmp1;
 		  tre_ast_node_t *tmp2;
@@ -1352,13 +1466,13 @@ tre_parse(tre_parse_ctx_t *ctx)
 		     that at least for multi-character collating elements there
 		     could be several opposite-case counterpoints, but they
 		     cannot be supported portably anyway. */
-		  tmp1 = tre_ast_new_literal(ctx->mem, tre_toupper(*ctx->re),
-					     tre_toupper(*ctx->re),
+		  tmp1 = tre_ast_new_literal(ctx->mem, tre_toupper(wc),
+					     tre_toupper(wc),
 					     ctx->position);
 		  if (!tmp1)
 		    return REG_ESPACE;
-		  tmp2 = tre_ast_new_literal(ctx->mem, tre_tolower(*ctx->re),
-					     tre_tolower(*ctx->re),
+		  tmp2 = tre_ast_new_literal(ctx->mem, tre_tolower(wc),
+					     tre_tolower(wc),
 					     ctx->position);
 		  if (!tmp2)
 		    return REG_ESPACE;
@@ -1368,20 +1482,20 @@ tre_parse(tre_parse_ctx_t *ctx)
 		}
 	      else
 		{
-		  result = tre_ast_new_literal(ctx->mem, *ctx->re, *ctx->re,
+		  result = tre_ast_new_literal(ctx->mem, wc, wc,
 					       ctx->position);
 		  if (!result)
 		    return REG_ESPACE;
 		}
 	      ctx->position++;
-	      ctx->re++;
+	      ctx->re += clen;
 	      break;
 	    }
 	  break;
 
 	case PARSE_MARK_FOR_SUBMATCH:
 	  {
-	    int submatch_id = (int)tre_stack_pop(stack);
+	    int submatch_id = tre_stack_pop_int(stack);
 
 	    if (result->submatch_id >= 0)
 	      {
@@ -1401,7 +1515,11 @@ tre_parse(tre_parse_ctx_t *ctx)
 	  }
 
 	case PARSE_RESTORE_CFLAGS:
-	  ctx->cflags = (int)tre_stack_pop(stack);
+	  ctx->cflags = tre_stack_pop_int(stack);
+	  break;
+
+	default:
+	  assert(0);
 	  break;
 	}
     }
@@ -1417,9 +1535,17 @@ tre_parse(tre_parse_ctx_t *ctx)
 }
 
 
+
 /***********************************************************************
  from tre-compile.c
 ***********************************************************************/
+
+
+/*
+  TODO:
+   - Fix tre_ast_to_tnfa() to recurse using a stack instead of recursive
+     function calls.
+*/
 
 /*
   Algorithms to setup tags so that submatch addressing can be done.
@@ -1429,42 +1555,60 @@ tre_parse(tre_parse_ctx_t *ctx)
 /* Inserts a catenation node to the root of the tree given in `node'.
    As the left child a new tag with number `tag_id' to `node' is added,
    and the right child is the old root. */
-/*              OR                  */
-/* Inserts a catenation node to the root of the tree given in `node'.
-   As the right child a new tag with number `tag_id' to `node' is added,
-   and the left child is the old root. */
 static reg_errcode_t
-tre_add_tag(tre_mem_t mem, tre_ast_node_t *node, int tag_id, int right)
+tre_add_tag_left(tre_mem_t mem, tre_ast_node_t *node, int tag_id)
 {
   tre_catenation_t *c;
-  tre_ast_node_t *child_tag, *child_old;
-
-  DPRINT(("add_tag_%s: tag %d\n", right ? "right" : "left", tag_id));
 
   c = tre_mem_alloc(mem, sizeof(*c));
   if (c == NULL)
     return REG_ESPACE;
-  child_tag = tre_ast_new_literal(mem, TAG, tag_id, -1);
-  if (child_tag == NULL)
+  c->left = tre_ast_new_literal(mem, TAG, tag_id, -1);
+  if (c->left == NULL)
     return REG_ESPACE;
-  child_old = tre_mem_alloc(mem, sizeof(tre_ast_node_t));
-  if (child_old == NULL)
+  c->right = tre_mem_alloc(mem, sizeof(tre_ast_node_t));
+  if (c->right == NULL)
     return REG_ESPACE;
 
-  child_old->obj = node->obj;
-  child_old->type = node->type;
-  child_old->nullable = -1;
-  child_old->submatch_id = -1;
-  child_old->firstpos = NULL;
-  child_old->lastpos = NULL;
-  child_old->num_tags = 0;
+  c->right->obj = node->obj;
+  c->right->type = node->type;
+  c->right->nullable = -1;
+  c->right->submatch_id = -1;
+  c->right->firstpos = NULL;
+  c->right->lastpos = NULL;
+  c->right->num_tags = 0;
   node->obj = c;
   node->type = CATENATION;
+  return REG_OK;
+}
 
-  c->right = c->left = child_old;
-  if (right) c->right = child_tag;
-  else c->left = child_tag;
+/* Inserts a catenation node to the root of the tree given in `node'.
+   As the right child a new tag with number `tag_id' to `node' is added,
+   and the left child is the old root. */
+static reg_errcode_t
+tre_add_tag_right(tre_mem_t mem, tre_ast_node_t *node, int tag_id)
+{
+  tre_catenation_t *c;
 
+  c = tre_mem_alloc(mem, sizeof(*c));
+  if (c == NULL)
+    return REG_ESPACE;
+  c->right = tre_ast_new_literal(mem, TAG, tag_id, -1);
+  if (c->right == NULL)
+    return REG_ESPACE;
+  c->left = tre_mem_alloc(mem, sizeof(tre_ast_node_t));
+  if (c->left == NULL)
+    return REG_ESPACE;
+
+  c->left->obj = node->obj;
+  c->left->type = node->type;
+  c->left->nullable = -1;
+  c->left->submatch_id = -1;
+  c->left->firstpos = NULL;
+  c->left->lastpos = NULL;
+  c->left->num_tags = 0;
+  node->obj = c;
+  node->type = CATENATION;
   return REG_OK;
 }
 
@@ -1484,6 +1628,27 @@ typedef struct {
   int next_tag;
 } tre_tag_states_t;
 
+
+/* Go through `regset' and set submatch data for submatches that are
+   using this tag. */
+static void
+tre_purge_regset(int *regset, tre_tnfa_t *tnfa, int tag)
+{
+  int i;
+
+  for (i = 0; regset[i] >= 0; i++)
+    {
+      int id = regset[i] / 2;
+      int start = !(regset[i] % 2);
+      if (start)
+	tnfa->submatch_data[id].so_tag = tag;
+      else
+	tnfa->submatch_data[id].eo_tag = tag;
+    }
+  regset[0] = -1;
+}
+
+
 /* Adds tags to appropriate locations in the parse tree in `tree', so that
    subexpressions marked for submatch addressing can be traced. */
 static reg_errcode_t
@@ -1498,15 +1663,20 @@ tre_add_tags(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree,
   int first_pass = (mem == NULL || tnfa == NULL);
   int *regset, *orig_regset;
   int num_tags = 0; /* Total number of tags. */
+  int num_minimals = 0;	 /* Number of special minimal tags. */
   int tag = 0;	    /* The tag that is to be added next. */
   int next_tag = 1; /* Next tag to use after this one. */
   int *parents;	    /* Stack of submatches the current submatch is
 		       contained in. */
+  int minimal_tag = -1; /* Tag that marks the beginning of a minimal match. */
   tre_tag_states_t *saved_states;
 
   tre_tag_direction_t direction = TRE_TAG_MINIMIZE;
   if (!first_pass)
+    {
       tnfa->end_tag = 0;
+      tnfa->minimal_tags[0] = -1;
+    }
 
   regset = xmalloc(sizeof(*regset) * ((tnfa->num_submatches + 1) * 2));
   if (regset == NULL)
@@ -1536,21 +1706,21 @@ tre_add_tags(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree,
 	saved_states[i].tag = -1;
     }
 
-  STACK_PUSH(stack, node);
-  STACK_PUSH(stack, ADDTAGS_RECURSE);
+  STACK_PUSH(stack, voidptr, node);
+  STACK_PUSH(stack, int, ADDTAGS_RECURSE);
 
   while (tre_stack_num_objects(stack) > bottom)
     {
       if (status != REG_OK)
 	break;
 
-      symbol = (tre_addtags_symbol_t)tre_stack_pop(stack);
+      symbol = (tre_addtags_symbol_t)tre_stack_pop_int(stack);
       switch (symbol)
 	{
 
 	case ADDTAGS_SET_SUBMATCH_END:
 	  {
-	    int id = (int)tre_stack_pop(stack);
+	    int id = tre_stack_pop_int(stack);
 	    int i;
 
 	    /* Add end of this submatch to regset. */
@@ -1565,7 +1735,7 @@ tre_add_tags(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree,
 	  }
 
 	case ADDTAGS_RECURSE:
-	  node = tre_stack_pop(stack);
+	  node = tre_stack_pop_voidptr(stack);
 
 	  if (node->submatch_id >= 0)
 	    {
@@ -1600,8 +1770,8 @@ tre_add_tags(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree,
 
 	      /* Add end of this submatch to regset after processing this
 		 node. */
-	      STACK_PUSHX(stack, node->submatch_id);
-	      STACK_PUSHX(stack, ADDTAGS_SET_SUBMATCH_END);
+	      STACK_PUSHX(stack, int, node->submatch_id);
+	      STACK_PUSHX(stack, int, ADDTAGS_SET_SUBMATCH_END);
 	    }
 
 	  switch (node->type)
@@ -1613,38 +1783,30 @@ tre_add_tags(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree,
 		if (!IS_SPECIAL(lit) || IS_BACKREF(lit))
 		  {
 		    int i;
-		    DPRINT(("Literal %d-%d\n",
-			    (int)lit->code_min, (int)lit->code_max));
 		    if (regset[0] >= 0)
 		      {
 			/* Regset is not empty, so add a tag before the
 			   literal or backref. */
 			if (!first_pass)
 			  {
-			    status = tre_add_tag(mem, node, tag, 0 /*left*/);
+			    status = tre_add_tag_left(mem, node, tag);
 			    tnfa->tag_directions[tag] = direction;
-			    /* Go through the regset and set submatch data for
-			       submatches that are using this tag. */
-			    for (i = 0; regset[i] >= 0; i++)
+			    if (minimal_tag >= 0)
 			      {
-				int id = regset[i] >> 1;
-				int start = !(regset[i] & 1);
-				DPRINT(("  Using tag %d for %s offset of "
-					"submatch %d\n", tag,
-					start ? "start" : "end", id));
-				if (start)
-				  tnfa->submatch_data[id].so_tag = tag;
-				else
-				  tnfa->submatch_data[id].eo_tag = tag;
+				for (i = 0; tnfa->minimal_tags[i] >= 0; i++);
+				tnfa->minimal_tags[i] = tag;
+				tnfa->minimal_tags[i + 1] = minimal_tag;
+				tnfa->minimal_tags[i + 2] = -1;
+				minimal_tag = -1;
+				num_minimals++;
 			      }
+			    tre_purge_regset(regset, tnfa, tag);
 			  }
 			else
 			  {
-			    DPRINT(("  num_tags = 1\n"));
 			    node->num_tags = 1;
 			  }
 
-			DPRINT(("  num_tags++\n"));
 			regset[0] = -1;
 			tag = next_tag;
 			num_tags++;
@@ -1663,82 +1825,75 @@ tre_add_tags(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree,
 		tre_ast_node_t *left = cat->left;
 		tre_ast_node_t *right = cat->right;
 		int reserved_tag = -1;
-		DPRINT(("Catenation, next_tag = %d\n", next_tag));
 
 
 		/* After processing right child. */
-		STACK_PUSHX(stack, node);
-		STACK_PUSHX(stack, ADDTAGS_AFTER_CAT_RIGHT);
+		STACK_PUSHX(stack, voidptr, node);
+		STACK_PUSHX(stack, int, ADDTAGS_AFTER_CAT_RIGHT);
 
 		/* Process right child. */
-		STACK_PUSHX(stack, right);
-		STACK_PUSHX(stack, ADDTAGS_RECURSE);
+		STACK_PUSHX(stack, voidptr, right);
+		STACK_PUSHX(stack, int, ADDTAGS_RECURSE);
 
 		/* After processing left child. */
-		STACK_PUSHX(stack, next_tag + left->num_tags);
-		DPRINT(("  Pushing %d for after left\n",
-			next_tag + left->num_tags));
+		STACK_PUSHX(stack, int, next_tag + left->num_tags);
 		if (left->num_tags > 0 && right->num_tags > 0)
 		  {
 		    /* Reserve the next tag to the right child. */
-		    DPRINT(("  Reserving next_tag %d to right child\n",
-			    next_tag));
 		    reserved_tag = next_tag;
 		    next_tag++;
 		  }
-		STACK_PUSHX(stack, reserved_tag);
-		STACK_PUSHX(stack, ADDTAGS_AFTER_CAT_LEFT);
+		STACK_PUSHX(stack, int, reserved_tag);
+		STACK_PUSHX(stack, int, ADDTAGS_AFTER_CAT_LEFT);
 
 		/* Process left child. */
-		STACK_PUSHX(stack, left);
-		STACK_PUSHX(stack, ADDTAGS_RECURSE);
+		STACK_PUSHX(stack, voidptr, left);
+		STACK_PUSHX(stack, int, ADDTAGS_RECURSE);
 
 		}
 	      break;
 	    case ITERATION:
 	      {
 		tre_iteration_t *iter = node->obj;
-		DPRINT(("Iteration\n"));
 
 		if (first_pass)
 		  {
-		    STACK_PUSHX(stack, regset[0] >= 0);
+		    STACK_PUSHX(stack, int, regset[0] >= 0 || iter->minimal);
 		  }
 		else
 		  {
-		    STACK_PUSHX(stack, tag);
+		    STACK_PUSHX(stack, int, tag);
+		    STACK_PUSHX(stack, int, iter->minimal);
 		  }
-		STACK_PUSHX(stack, node);
-		STACK_PUSHX(stack, ADDTAGS_AFTER_ITERATION);
+		STACK_PUSHX(stack, voidptr, node);
+		STACK_PUSHX(stack, int, ADDTAGS_AFTER_ITERATION);
 
-		STACK_PUSHX(stack, iter->arg);
-		STACK_PUSHX(stack, ADDTAGS_RECURSE);
+		STACK_PUSHX(stack, voidptr, iter->arg);
+		STACK_PUSHX(stack, int, ADDTAGS_RECURSE);
 
 		/* Regset is not empty, so add a tag here. */
-		if (regset[0] >= 0)
+		if (regset[0] >= 0 || iter->minimal)
 		  {
 		    if (!first_pass)
 		      {
 			int i;
-			status = tre_add_tag(mem, node, tag, 0 /*left*/);
-			tnfa->tag_directions[tag] = direction;
-			/* Go through the regset and set submatch data for
-			   submatches that are using this tag. */
-			for (i = 0; regset[i] >= 0; i++)
+			status = tre_add_tag_left(mem, node, tag);
+			if (iter->minimal)
+			  tnfa->tag_directions[tag] = TRE_TAG_MAXIMIZE;
+			else
+			  tnfa->tag_directions[tag] = direction;
+			if (minimal_tag >= 0)
 			  {
-			    int id = regset[i] >> 1;
-			    int start = !(regset[i] & 1);
-			    DPRINT(("  Using tag %d for %s offset of "
-				    "submatch %d\n", tag,
-				    start ? "start" : "end", id));
-			    if (start)
-			      tnfa->submatch_data[id].so_tag = tag;
-			    else
-			      tnfa->submatch_data[id].eo_tag = tag;
+			    for (i = 0; tnfa->minimal_tags[i] >= 0; i++);
+			    tnfa->minimal_tags[i] = tag;
+			    tnfa->minimal_tags[i + 1] = minimal_tag;
+			    tnfa->minimal_tags[i + 2] = -1;
+			    minimal_tag = -1;
+			    num_minimals++;
 			  }
+			tre_purge_regset(regset, tnfa, tag);
 		      }
 
-		    DPRINT(("  num_tags++\n"));
 		    regset[0] = -1;
 		    tag = next_tag;
 		    num_tags++;
@@ -1766,28 +1921,26 @@ tre_add_tags(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree,
 		    right_tag = next_tag;
 		  }
 
-		DPRINT(("Union\n"));
-
 		/* After processing right child. */
-		STACK_PUSHX(stack, right_tag);
-		STACK_PUSHX(stack, left_tag);
-		STACK_PUSHX(stack, regset);
-		STACK_PUSHX(stack, regset[0] >= 0);
-		STACK_PUSHX(stack, node);
-		STACK_PUSHX(stack, right);
-		STACK_PUSHX(stack, left);
-		STACK_PUSHX(stack, ADDTAGS_AFTER_UNION_RIGHT);
+		STACK_PUSHX(stack, int, right_tag);
+		STACK_PUSHX(stack, int, left_tag);
+		STACK_PUSHX(stack, voidptr, regset);
+		STACK_PUSHX(stack, int, regset[0] >= 0);
+		STACK_PUSHX(stack, voidptr, node);
+		STACK_PUSHX(stack, voidptr, right);
+		STACK_PUSHX(stack, voidptr, left);
+		STACK_PUSHX(stack, int, ADDTAGS_AFTER_UNION_RIGHT);
 
 		/* Process right child. */
-		STACK_PUSHX(stack, right);
-		STACK_PUSHX(stack, ADDTAGS_RECURSE);
+		STACK_PUSHX(stack, voidptr, right);
+		STACK_PUSHX(stack, int, ADDTAGS_RECURSE);
 
 		/* After processing left child. */
-		STACK_PUSHX(stack, ADDTAGS_AFTER_UNION_LEFT);
+		STACK_PUSHX(stack, int, ADDTAGS_AFTER_UNION_LEFT);
 
 		/* Process left child. */
-		STACK_PUSHX(stack, left);
-		STACK_PUSHX(stack, ADDTAGS_RECURSE);
+		STACK_PUSHX(stack, voidptr, left);
+		STACK_PUSHX(stack, int, ADDTAGS_RECURSE);
 
 		/* Regset is not empty, so add a tag here. */
 		if (regset[0] >= 0)
@@ -1795,25 +1948,20 @@ tre_add_tags(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree,
 		    if (!first_pass)
 		      {
 			int i;
-			status = tre_add_tag(mem, node, tag, 0 /*left*/);
+			status = tre_add_tag_left(mem, node, tag);
 			tnfa->tag_directions[tag] = direction;
-			/* Go through the regset and set submatch data for
-			   submatches that are using this tag. */
-			for (i = 0; regset[i] >= 0; i++)
+			if (minimal_tag >= 0)
 			  {
-			    int id = regset[i] >> 1;
-			    int start = !(regset[i] & 1);
-			    DPRINT(("  Using tag %d for %s offset of "
-				    "submatch %d\n", tag,
-				    start ? "start" : "end", id));
-			    if (start)
-			      tnfa->submatch_data[id].so_tag = tag;
-			    else
-			      tnfa->submatch_data[id].eo_tag = tag;
+			    for (i = 0; tnfa->minimal_tags[i] >= 0; i++);
+			    tnfa->minimal_tags[i] = tag;
+			    tnfa->minimal_tags[i + 1] = minimal_tag;
+			    tnfa->minimal_tags[i + 2] = -1;
+			    minimal_tag = -1;
+			    num_minimals++;
 			  }
+			tre_purge_regset(regset, tnfa, tag);
 		      }
 
-		    DPRINT(("  num_tags++\n"));
 		    regset[0] = -1;
 		    tag = next_tag;
 		    num_tags++;
@@ -1845,43 +1993,52 @@ tre_add_tags(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree,
 
 	case ADDTAGS_AFTER_ITERATION:
 	  {
+	    int minimal = 0;
 	    int enter_tag;
-	    node = tre_stack_pop(stack);
+	    node = tre_stack_pop_voidptr(stack);
 	    if (first_pass)
+	      {
 		node->num_tags = ((tre_iteration_t *)node->obj)->arg->num_tags
-		  + (int)tre_stack_pop(stack);
+		  + tre_stack_pop_int(stack);
+		minimal_tag = -1;
+	      }
 	    else
-		enter_tag = (int)tre_stack_pop(stack);
+	      {
+		minimal = tre_stack_pop_int(stack);
+		enter_tag = tre_stack_pop_int(stack);
+		if (minimal)
+		  minimal_tag = enter_tag;
+	      }
 
-	    DPRINT(("After iteration\n"));
-	    direction = TRE_TAG_MAXIMIZE;
+	    if (!first_pass)
+	      {
+		if (minimal)
+		  direction = TRE_TAG_MINIMIZE;
+		else
+		  direction = TRE_TAG_MAXIMIZE;
+	      }
 	    break;
 	  }
 
 	case ADDTAGS_AFTER_CAT_LEFT:
 	  {
-	    int new_tag = (int)tre_stack_pop(stack);
-	    next_tag = (int)tre_stack_pop(stack);
-	    DPRINT(("After cat left, tag = %d, next_tag = %d\n",
-		    tag, next_tag));
+	    int new_tag = tre_stack_pop_int(stack);
+	    next_tag = tre_stack_pop_int(stack);
 	    if (new_tag >= 0)
 	      {
-		DPRINT(("  Setting tag to %d\n", new_tag));
 		tag = new_tag;
 	      }
 	    break;
 	  }
 
 	case ADDTAGS_AFTER_CAT_RIGHT:
-	  DPRINT(("After cat right\n"));
-	  node = tre_stack_pop(stack);
+	  node = tre_stack_pop_voidptr(stack);
 	  if (first_pass)
 	    node->num_tags = ((tre_catenation_t *)node->obj)->left->num_tags
 	      + ((tre_catenation_t *)node->obj)->right->num_tags;
 	  break;
 
 	case ADDTAGS_AFTER_UNION_LEFT:
-	  DPRINT(("After union left\n"));
 	  /* Lift the bottom of the `regset' array so that when processing
 	     the right operand the items currently in the array are
 	     invisible.	 The original bottom was saved at ADDTAGS_UNION and
@@ -1893,20 +2050,19 @@ tre_add_tags(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree,
 	case ADDTAGS_AFTER_UNION_RIGHT:
 	  {
 	    int added_tags, tag_left, tag_right;
-	    tre_ast_node_t *left = tre_stack_pop(stack);
-	    tre_ast_node_t *right = tre_stack_pop(stack);
-	    DPRINT(("After union right\n"));
-	    node = tre_stack_pop(stack);
-	    added_tags = (int)tre_stack_pop(stack);
+	    tre_ast_node_t *left = tre_stack_pop_voidptr(stack);
+	    tre_ast_node_t *right = tre_stack_pop_voidptr(stack);
+	    node = tre_stack_pop_voidptr(stack);
+	    added_tags = tre_stack_pop_int(stack);
 	    if (first_pass)
 	      {
 		node->num_tags = ((tre_union_t *)node->obj)->left->num_tags
 		  + ((tre_union_t *)node->obj)->right->num_tags + added_tags
 		  + ((node->num_submatches > 0) ? 2 : 0);
 	      }
-	    regset = tre_stack_pop(stack);
-	    tag_left = (int)tre_stack_pop(stack);
-	    tag_right = (int)tre_stack_pop(stack);
+	    regset = tre_stack_pop_voidptr(stack);
+	    tag_left = tre_stack_pop_int(stack);
+	    tag_right = tre_stack_pop_int(stack);
 
 	    /* Add tags after both children, the left child gets a smaller
 	       tag than the right child.  This guarantees that we prefer
@@ -1921,12 +2077,11 @@ tre_add_tags(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree,
 	      {
 		if (!first_pass)
 		  {
-		    status = tre_add_tag(mem, left, tag_left, 1 /*right*/);
-		    tnfa->tag_directions[tag] = TRE_TAG_MAXIMIZE;
-		    status = tre_add_tag(mem, right, tag_right, 1 /*right*/);
-		    tnfa->tag_directions[tag] = TRE_TAG_MAXIMIZE;
+		    status = tre_add_tag_right(mem, left, tag_left);
+		    tnfa->tag_directions[tag_left] = TRE_TAG_MAXIMIZE;
+		    status = tre_add_tag_right(mem, right, tag_right);
+		    tnfa->tag_directions[tag_right] = TRE_TAG_MAXIMIZE;
 		  }
-		DPRINT(("  num_tags += 2\n"));
 		num_tags += 2;
 	      }
 	    direction = TRE_TAG_MAXIMIZE;
@@ -1941,30 +2096,23 @@ tre_add_tags(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree,
     } /* end while(tre_stack_num_objects(stack) > bottom) */
 
   if (!first_pass)
+    tre_purge_regset(regset, tnfa, tag);
+
+  if (!first_pass && minimal_tag >= 0)
     {
       int i;
-      /* Go through the regset and set submatch data for
-	 submatches that are using this tag. */
-      for (i = 0; regset[i] >= 0; i++)
-	{
-	  int id = regset[i] >> 1;
-	  int start = !(regset[i] & 1);
-	  DPRINT(("  Using tag %d for %s offset of "
-		  "submatch %d\n", num_tags,
-		  start ? "start" : "end", id));
-	  if (start)
-	    tnfa->submatch_data[id].so_tag = num_tags;
-	  else
-	    tnfa->submatch_data[id].eo_tag = num_tags;
-	}
+      for (i = 0; tnfa->minimal_tags[i] >= 0; i++);
+      tnfa->minimal_tags[i] = tag;
+      tnfa->minimal_tags[i + 1] = minimal_tag;
+      tnfa->minimal_tags[i + 2] = -1;
+      minimal_tag = -1;
+      num_minimals++;
     }
-
-  DPRINT(("tre_add_tags: %s complete.  Number of tags %d.\n",
-	  first_pass? "First pass" : "Second pass", num_tags));
 
   assert(tree->num_tags == num_tags);
   tnfa->end_tag = num_tags;
   tnfa->num_tags = num_tags;
+  tnfa->num_minimals = num_minimals;
   xfree(orig_regset);
   xfree(parents);
   xfree(saved_states);
@@ -1998,8 +2146,8 @@ tre_copy_ast(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *ast,
   tre_ast_node_t **result = copy;
   tre_copyast_symbol_t symbol;
 
-  STACK_PUSH(stack, ast);
-  STACK_PUSH(stack, COPY_RECURSE);
+  STACK_PUSH(stack, voidptr, ast);
+  STACK_PUSH(stack, int, COPY_RECURSE);
 
   while (status == REG_OK && tre_stack_num_objects(stack) > bottom)
     {
@@ -2007,14 +2155,14 @@ tre_copy_ast(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *ast,
       if (status != REG_OK)
 	break;
 
-      symbol = (tre_copyast_symbol_t)tre_stack_pop(stack);
+      symbol = (tre_copyast_symbol_t)tre_stack_pop_int(stack);
       switch (symbol)
 	{
 	case COPY_SET_RESULT_PTR:
-	  result = tre_stack_pop(stack);
+	  result = tre_stack_pop_voidptr(stack);
 	  break;
 	case COPY_RECURSE:
-	  node = tre_stack_pop(stack);
+	  node = tre_stack_pop_voidptr(stack);
 	  switch (node->type)
 	    {
 	    case LITERAL:
@@ -2055,52 +2203,53 @@ tre_copy_ast(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *ast,
 	    case UNION:
 	      {
 		tre_union_t *uni = node->obj;
-		tre_union_t *copy;
+		tre_union_t *tmp;
 		*result = tre_ast_new_union(mem, uni->left, uni->right);
 		if (*result == NULL)
 		  {
 		    status = REG_ESPACE;
 		    break;
 		  }
-		copy = (*result)->obj;
-		result = &copy->left;
-		STACK_PUSHX(stack, uni->right);
-		STACK_PUSHX(stack, COPY_RECURSE);
-		STACK_PUSHX(stack, &copy->right);
-		STACK_PUSHX(stack, COPY_SET_RESULT_PTR);
-		STACK_PUSHX(stack, uni->left);
-		STACK_PUSHX(stack, COPY_RECURSE);
+		tmp = (*result)->obj;
+		result = &tmp->left;
+		STACK_PUSHX(stack, voidptr, uni->right);
+		STACK_PUSHX(stack, int, COPY_RECURSE);
+		STACK_PUSHX(stack, voidptr, &tmp->right);
+		STACK_PUSHX(stack, int, COPY_SET_RESULT_PTR);
+		STACK_PUSHX(stack, voidptr, uni->left);
+		STACK_PUSHX(stack, int, COPY_RECURSE);
 		break;
 	      }
 	    case CATENATION:
 	      {
 		tre_catenation_t *cat = node->obj;
-		tre_catenation_t *copy;
+		tre_catenation_t *tmp;
 		*result = tre_ast_new_catenation(mem, cat->left, cat->right);
 		if (*result == NULL)
 		  {
 		    status = REG_ESPACE;
 		    break;
 		  }
-		copy = (*result)->obj;
-		copy->left = NULL;
-		copy->right = NULL;
-		result = &copy->left;
+		tmp = (*result)->obj;
+		tmp->left = NULL;
+		tmp->right = NULL;
+		result = &tmp->left;
 
-		STACK_PUSHX(stack, cat->right);
-		STACK_PUSHX(stack, COPY_RECURSE);
-		STACK_PUSHX(stack, &copy->right);
-		STACK_PUSHX(stack, COPY_SET_RESULT_PTR);
-		STACK_PUSHX(stack, cat->left);
-		STACK_PUSHX(stack, COPY_RECURSE);
+		STACK_PUSHX(stack, voidptr, cat->right);
+		STACK_PUSHX(stack, int, COPY_RECURSE);
+		STACK_PUSHX(stack, voidptr, &tmp->right);
+		STACK_PUSHX(stack, int, COPY_SET_RESULT_PTR);
+		STACK_PUSHX(stack, voidptr, cat->left);
+		STACK_PUSHX(stack, int, COPY_RECURSE);
 		break;
 	      }
 	    case ITERATION:
 	      {
 		tre_iteration_t *iter = node->obj;
-		STACK_PUSHX(stack, iter->arg);
-		STACK_PUSHX(stack, COPY_RECURSE);
-		*result = tre_ast_new_iter(mem, iter->arg, iter->min, iter->max);
+		STACK_PUSHX(stack, voidptr, iter->arg);
+		STACK_PUSHX(stack, int, COPY_RECURSE);
+		*result = tre_ast_new_iter(mem, iter->arg, iter->min,
+					   iter->max, iter->minimal);
 		if (*result == NULL)
 		  {
 		    status = REG_ESPACE;
@@ -2138,11 +2287,10 @@ tre_expand_ast(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *ast,
   int pos_add = 0;
   int pos_add_total = 0;
   int max_pos = 0;
-  /* Approximate parameter nesting level. */
   int iter_depth = 0;
 
-  STACK_PUSHR(stack, ast);
-  STACK_PUSHR(stack, EXPAND_RECURSE);
+  STACK_PUSHR(stack, voidptr, ast);
+  STACK_PUSHR(stack, int, EXPAND_RECURSE);
   while (status == REG_OK && tre_stack_num_objects(stack) > bottom)
     {
       tre_ast_node_t *node;
@@ -2151,10 +2299,8 @@ tre_expand_ast(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *ast,
       if (status != REG_OK)
 	break;
 
-      DPRINT(("pos_add %d\n", pos_add));
-
-      symbol = (tre_expand_ast_symbol_t)tre_stack_pop(stack);
-      node = tre_stack_pop(stack);
+      symbol = (tre_expand_ast_symbol_t)tre_stack_pop_int(stack);
+      node = tre_stack_pop_voidptr(stack);
       switch (symbol)
 	{
 	case EXPAND_RECURSE:
@@ -2174,36 +2320,35 @@ tre_expand_ast(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *ast,
 	    case UNION:
 	      {
 		tre_union_t *uni = node->obj;
-		STACK_PUSHX(stack, uni->right);
-		STACK_PUSHX(stack, EXPAND_RECURSE);
-		STACK_PUSHX(stack, uni->left);
-		STACK_PUSHX(stack, EXPAND_RECURSE);
+		STACK_PUSHX(stack, voidptr, uni->right);
+		STACK_PUSHX(stack, int, EXPAND_RECURSE);
+		STACK_PUSHX(stack, voidptr, uni->left);
+		STACK_PUSHX(stack, int, EXPAND_RECURSE);
 		break;
 	      }
 	    case CATENATION:
 	      {
 		tre_catenation_t *cat = node->obj;
-		STACK_PUSHX(stack, cat->right);
-		STACK_PUSHX(stack, EXPAND_RECURSE);
-		STACK_PUSHX(stack, cat->left);
-		STACK_PUSHX(stack, EXPAND_RECURSE);
+		STACK_PUSHX(stack, voidptr, cat->right);
+		STACK_PUSHX(stack, int, EXPAND_RECURSE);
+		STACK_PUSHX(stack, voidptr, cat->left);
+		STACK_PUSHX(stack, int, EXPAND_RECURSE);
 		break;
 	      }
 	    case ITERATION:
 	      {
 		tre_iteration_t *iter = node->obj;
-		STACK_PUSHX(stack, pos_add);
-		STACK_PUSHX(stack, node);
-		STACK_PUSHX(stack, EXPAND_AFTER_ITER);
-		STACK_PUSHX(stack, iter->arg);
-		STACK_PUSHX(stack, EXPAND_RECURSE);
+		STACK_PUSHX(stack, int, pos_add);
+		STACK_PUSHX(stack, voidptr, node);
+		STACK_PUSHX(stack, int, EXPAND_AFTER_ITER);
+		STACK_PUSHX(stack, voidptr, iter->arg);
+		STACK_PUSHX(stack, int, EXPAND_RECURSE);
 		/* If we are going to expand this node at EXPAND_AFTER_ITER
 		   then don't increase the `pos' fields of the nodes now, it
 		   will get done when expanding. */
 		if (iter->min > 1 || iter->max > 1)
 		  pos_add = 0;
 		iter_depth++;
-		DPRINT(("iter\n"));
 		break;
 	      }
 	    default:
@@ -2215,23 +2360,22 @@ tre_expand_ast(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *ast,
 	  {
 	    tre_iteration_t *iter = node->obj;
 	    int pos_add_last;
-	    pos_add = (int)tre_stack_pop(stack);
+	    pos_add = tre_stack_pop_int(stack);
 	    pos_add_last = pos_add;
 	    if (iter->min > 1 || iter->max > 1)
 	      {
 		tre_ast_node_t *seq1 = NULL, *seq2 = NULL;
-		int i;
+		int j;
 		int pos_add_save = pos_add;
 
 		/* Create a catenated sequence of copies of the node. */
-		for (i = 0; i < iter->min; i++)
+		for (j = 0; j < iter->min; j++)
 		  {
 		    tre_ast_node_t *copy;
 		    /* Remove tags from all but the last copy. */
-		    int flags = ((i + 1 < iter->min)
+		    int flags = ((j + 1 < iter->min)
 				 ? COPY_REMOVE_TAGS
 				 : COPY_MAXIMIZE_FIRST_TAG);
-		    DPRINT(("  pos_add %d\n", pos_add));
 		    pos_add_save = pos_add;
 		    status = tre_copy_ast(mem, stack, iter->arg, flags,
 					  &pos_add, tag_directions, &copy,
@@ -2254,13 +2398,13 @@ tre_expand_ast(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *ast,
 					  &pos_add, NULL, &seq2, &max_pos);
 		    if (status != REG_OK)
 		      return status;
-		    seq2 = tre_ast_new_iter(mem, seq2, 0, -1);
+		    seq2 = tre_ast_new_iter(mem, seq2, 0, -1, 0);
 		    if (seq2 == NULL)
 		      return REG_ESPACE;
 		  }
 		else
 		  {
-		    for (i = iter->min; i < iter->max; i++)
+		    for (j = iter->min; j < iter->max; j++)
 		      {
 			tre_ast_node_t *tmp, *copy;
 			pos_add_save = pos_add;
@@ -2315,12 +2459,6 @@ tre_expand_ast(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *ast,
      allocated for the transition table. */
   if (max_pos > *position)
     *position = max_pos;
-
-#ifdef TRE_DEBUG
-  DPRINT(("Expanded AST:\n"));
-  tre_ast_print(ast);
-  DPRINT(("*position %d, max_pos %d\n", *position, max_pos));
-#endif
 
   return status;
 }
@@ -2441,7 +2579,8 @@ tre_set_union(tre_mem_t mem, tre_pos_and_tags_t *set1, tre_pos_and_tags_t *set2,
    set to the number of tags seen on the path. */
 static reg_errcode_t
 tre_match_empty(tre_stack_t *stack, tre_ast_node_t *node, int *tags,
-		int *assertions, int *num_tags_seen)
+		int *assertions, int *params, int *num_tags_seen,
+		int *params_seen)
 {
   tre_literal_t *lit;
   tre_union_t *uni;
@@ -2453,12 +2592,12 @@ tre_match_empty(tre_stack_t *stack, tre_ast_node_t *node, int *tags,
   if (num_tags_seen)
     *num_tags_seen = 0;
 
-  status = tre_stack_push(stack, node);
+  status = tre_stack_push_voidptr(stack, node);
 
   /* Walk through the tree recursively. */
   while (status == REG_OK && tre_stack_num_objects(stack) > bottom)
     {
-      node = tre_stack_pop(stack);
+      node = tre_stack_pop_voidptr(stack);
 
       switch (node->type)
 	{
@@ -2505,9 +2644,9 @@ tre_match_empty(tre_stack_t *stack, tre_ast_node_t *node, int *tags,
 	     right subexpression. */
 	  uni = (tre_union_t *)node->obj;
 	  if (uni->left->nullable)
-	    STACK_PUSHX(stack, uni->left)
+	    STACK_PUSHX(stack, voidptr, uni->left)
 	  else if (uni->right->nullable)
-	    STACK_PUSHX(stack, uni->right)
+	    STACK_PUSHX(stack, voidptr, uni->right)
 	  else
 	    assert(0);
 	  break;
@@ -2517,8 +2656,8 @@ tre_match_empty(tre_stack_t *stack, tre_ast_node_t *node, int *tags,
 	  cat = (tre_catenation_t *)node->obj;
 	  assert(cat->left->nullable);
 	  assert(cat->right->nullable);
-	  STACK_PUSHX(stack, cat->left);
-	  STACK_PUSHX(stack, cat->right);
+	  STACK_PUSHX(stack, voidptr, cat->left);
+	  STACK_PUSHX(stack, voidptr, cat->right);
 	  break;
 
 	case ITERATION:
@@ -2526,7 +2665,7 @@ tre_match_empty(tre_stack_t *stack, tre_ast_node_t *node, int *tags,
 	     all, so we go through the argument if possible. */
 	  iter = (tre_iteration_t *)node->obj;
 	  if (iter->arg->nullable)
-	    STACK_PUSHX(stack, iter->arg);
+	    STACK_PUSHX(stack, voidptr, iter->arg);
 	  break;
 
 	default:
@@ -2554,16 +2693,16 @@ tre_compute_nfl(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree)
 {
   int bottom = tre_stack_num_objects(stack);
 
-  STACK_PUSHR(stack, tree);
-  STACK_PUSHR(stack, NFL_RECURSE);
+  STACK_PUSHR(stack, voidptr, tree);
+  STACK_PUSHR(stack, int, NFL_RECURSE);
 
   while (tre_stack_num_objects(stack) > bottom)
     {
       tre_nfl_stack_symbol_t symbol;
       tre_ast_node_t *node;
 
-      symbol = (tre_nfl_stack_symbol_t) tre_stack_pop(stack);
-      node = tre_stack_pop(stack);
+      symbol = (tre_nfl_stack_symbol_t)tre_stack_pop_int(stack);
+      node = tre_stack_pop_voidptr(stack);
       switch (symbol)
 	{
 	case NFL_RECURSE:
@@ -2583,13 +2722,13 @@ tre_compute_nfl(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree)
 		      return REG_ESPACE;
 		    node->lastpos = tre_set_one(mem, lit->position, 0,
 						TRE_CHAR_MAX, 0, NULL,
-						lit->code_max);
+						(int)lit->code_max);
 		    if (!node->lastpos)
 		      return REG_ESPACE;
 		  }
 		else if (lit->code_min < 0)
 		  {
-		    /* Tags, empty strings and zero width assertions:
+		    /* Tags, empty strings, params, and zero width assertions:
 		       nullable = true, firstpos = {}, and lastpos = {}. */
 		    node->nullable = 1;
 		    node->firstpos = tre_set_empty(mem);
@@ -2605,13 +2744,14 @@ tre_compute_nfl(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree)
 		       lastpos = {i}. */
 		    node->nullable = 0;
 		    node->firstpos =
-		      tre_set_one(mem, lit->position, lit->code_min,
-				  lit->code_max, 0, NULL, -1);
+		      tre_set_one(mem, lit->position, (int)lit->code_min,
+				  (int)lit->code_max, 0, NULL, -1);
 		    if (!node->firstpos)
 		      return REG_ESPACE;
 		    node->lastpos = tre_set_one(mem, lit->position,
-						lit->code_min, lit->code_max,
-						lit->class, lit->neg_classes,
+						(int)lit->code_min,
+						(int)lit->code_max,
+						lit->u.class, lit->neg_classes,
 						-1);
 		    if (!node->lastpos)
 		      return REG_ESPACE;
@@ -2622,32 +2762,32 @@ tre_compute_nfl(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree)
 	    case UNION:
 	      /* Compute the attributes for the two subtrees, and after that
 		 for this node. */
-	      STACK_PUSHR(stack, node);
-	      STACK_PUSHR(stack, NFL_POST_UNION);
-	      STACK_PUSHR(stack, ((tre_union_t *)node->obj)->right);
-	      STACK_PUSHR(stack, NFL_RECURSE);
-	      STACK_PUSHR(stack, ((tre_union_t *)node->obj)->left);
-	      STACK_PUSHR(stack, NFL_RECURSE);
+	      STACK_PUSHR(stack, voidptr, node);
+	      STACK_PUSHR(stack, int, NFL_POST_UNION);
+	      STACK_PUSHR(stack, voidptr, ((tre_union_t *)node->obj)->right);
+	      STACK_PUSHR(stack, int, NFL_RECURSE);
+	      STACK_PUSHR(stack, voidptr, ((tre_union_t *)node->obj)->left);
+	      STACK_PUSHR(stack, int, NFL_RECURSE);
 	      break;
 
 	    case CATENATION:
 	      /* Compute the attributes for the two subtrees, and after that
 		 for this node. */
-	      STACK_PUSHR(stack, node);
-	      STACK_PUSHR(stack, NFL_POST_CATENATION);
-	      STACK_PUSHR(stack, ((tre_catenation_t *)node->obj)->right);
-	      STACK_PUSHR(stack, NFL_RECURSE);
-	      STACK_PUSHR(stack, ((tre_catenation_t *)node->obj)->left);
-	      STACK_PUSHR(stack, NFL_RECURSE);
+	      STACK_PUSHR(stack, voidptr, node);
+	      STACK_PUSHR(stack, int, NFL_POST_CATENATION);
+	      STACK_PUSHR(stack, voidptr, ((tre_catenation_t *)node->obj)->right);
+	      STACK_PUSHR(stack, int, NFL_RECURSE);
+	      STACK_PUSHR(stack, voidptr, ((tre_catenation_t *)node->obj)->left);
+	      STACK_PUSHR(stack, int, NFL_RECURSE);
 	      break;
 
 	    case ITERATION:
 	      /* Compute the attributes for the subtree, and after that for
 		 this node. */
-	      STACK_PUSHR(stack, node);
-	      STACK_PUSHR(stack, NFL_POST_ITERATION);
-	      STACK_PUSHR(stack, ((tre_iteration_t *)node->obj)->arg);
-	      STACK_PUSHR(stack, NFL_RECURSE);
+	      STACK_PUSHR(stack, voidptr, node);
+	      STACK_PUSHR(stack, int, NFL_POST_ITERATION);
+	      STACK_PUSHR(stack, voidptr, ((tre_iteration_t *)node->obj)->arg);
+	      STACK_PUSHR(stack, int, NFL_RECURSE);
 	      break;
 	    }
 	  break; /* end case: NFL_RECURSE */
@@ -2682,7 +2822,8 @@ tre_compute_nfl(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree)
 
 	case NFL_POST_CATENATION:
 	  {
-	    int num_tags, *tags, assertions;
+	    int num_tags, *tags, assertions, params_seen;
+	    int *params;
 	    reg_errcode_t status;
 	    tre_catenation_t *cat = node->obj;
 	    node->nullable = cat->left->nullable && cat->right->nullable;
@@ -2691,9 +2832,11 @@ tre_compute_nfl(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree)
 	    if (cat->left->nullable)
 	      {
 		/* The left side matches the empty string.  Make a first pass
-		   with tre_match_empty() to get the number of tags. */
+		   with tre_match_empty() to get the number of tags and
+		   parameters. */
 		status = tre_match_empty(stack, cat->left,
-					 NULL, NULL, &num_tags);
+					 NULL, NULL, NULL, &num_tags,
+					 &params_seen);
 		if (status != REG_OK)
 		  return status;
 		/* Allocate arrays for the tags and parameters. */
@@ -2703,9 +2846,9 @@ tre_compute_nfl(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree)
 		tags[0] = -1;
 		assertions = 0;
 		/* Second pass with tre_mach_empty() to get the list of
-		   tags. */
+		   tags and parameters. */
 		status = tre_match_empty(stack, cat->left, tags,
-					 &assertions, NULL);
+					 &assertions, params, NULL, NULL);
 		if (status != REG_OK)
 		  {
 		    xfree(tags);
@@ -2727,9 +2870,11 @@ tre_compute_nfl(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree)
 	    if (cat->right->nullable)
 	      {
 		/* The right side matches the empty string.  Make a first pass
-		   with tre_match_empty() to get the number of tags. */
+		   with tre_match_empty() to get the number of tags and
+		   parameters. */
 		status = tre_match_empty(stack, cat->right,
-					 NULL, NULL, &num_tags);
+					 NULL, NULL, NULL, &num_tags,
+					 &params_seen);
 		if (status != REG_OK)
 		  return status;
 		/* Allocate arrays for the tags and parameters. */
@@ -2739,9 +2884,9 @@ tre_compute_nfl(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree)
 		tags[0] = -1;
 		assertions = 0;
 		/* Second pass with tre_mach_empty() to get the list of
-		   tags. */
+		   tags and parameters. */
 		status = tre_match_empty(stack, cat->right, tags,
-					 &assertions, NULL);
+					 &assertions, params, NULL, NULL);
 		if (status != REG_OK)
 		  {
 		    xfree(tags);
@@ -2814,7 +2959,6 @@ tre_make_trans(tre_pos_and_tags_t *p1, tre_pos_and_tags_t *p2,
 		   detect it here. */
 		if (trans->state_id == p2->position)
 		  {
-		    DPRINT(("*"));
 		    break;
 		  }
 #endif
@@ -2903,39 +3047,6 @@ tre_make_trans(tre_pos_and_tags_t *p1, tre_pos_and_tags_t *p2,
 		trans->tags[l] = -1;
 	      }
 
-
-#ifdef TRE_DEBUG
-	    {
-	      int *tags;
-
-	      DPRINT(("	 %2d -> %2d on %3d", p1->position, p2->position,
-		      p1->code_min));
-	      if (p1->code_max != p1->code_min)
-		DPRINT(("-%3d", p1->code_max));
-	      tags = trans->tags;
-	      if (tags)
-		{
-		  DPRINT((", tags ["));
-		  while (*tags >= 0)
-		    {
-		      DPRINT(("%d", *tags));
-		      tags++;
-		      if (*tags >= 0)
-			DPRINT((","));
-		    }
-		  DPRINT(("]"));
-		}
-	      if (trans->assertions)
-		DPRINT((", assert %d", trans->assertions));
-	      if (trans->assertions & ASSERT_BACKREF)
-		DPRINT((", backref %d", trans->u.backref));
-	      else if (trans->class)
-		DPRINT((", class %ld", (long)trans->class));
-	      if (trans->neg_classes)
-		DPRINT((", neg_classes %p", trans->neg_classes));
-	      DPRINT(("\n"));
-	    }
-#endif /* TRE_DEBUG */
 	    p2++;
 	  }
 	p1++;
@@ -3017,8 +3128,239 @@ tre_ast_to_tnfa(tre_ast_node_t *node, tre_tnfa_transition_t *transitions,
 }
 
 
-static void
-tre_free(regex_t *preg)
+#define ERROR_EXIT(err)		  \
+  do				  \
+    {				  \
+      errcode = err;		  \
+      if (/*CONSTCOND*/1)	  \
+      	goto error_exit;	  \
+    }				  \
+ while (/*CONSTCOND*/0)
+
+
+int
+regcomp(regex_t *preg, const char *regex, int cflags)
+{
+  tre_stack_t *stack;
+  tre_ast_node_t *tree, *tmp_ast_l, *tmp_ast_r;
+  tre_pos_and_tags_t *p;
+  int *counts = NULL, *offs = NULL;
+  int i, add = 0;
+  tre_tnfa_transition_t *transitions, *initial;
+  tre_tnfa_t *tnfa = NULL;
+  tre_submatch_data_t *submatch_data;
+  tre_tag_direction_t *tag_directions = NULL;
+  reg_errcode_t errcode;
+  tre_mem_t mem;
+
+  /* Parse context. */
+  tre_parse_ctx_t parse_ctx;
+
+  /* Allocate a stack used throughout the compilation process for various
+     purposes. */
+  stack = tre_stack_new(512, 10240, 128);
+  if (!stack)
+    return REG_ESPACE;
+  /* Allocate a fast memory allocator. */
+  mem = tre_mem_new();
+  if (!mem)
+    {
+      tre_stack_destroy(stack);
+      return REG_ESPACE;
+    }
+
+  /* Parse the regexp. */
+  memset(&parse_ctx, 0, sizeof(parse_ctx));
+  parse_ctx.mem = mem;
+  parse_ctx.stack = stack;
+  parse_ctx.re = regex;
+  parse_ctx.cflags = cflags;
+  parse_ctx.max_backref = -1;
+  errcode = tre_parse(&parse_ctx);
+  if (errcode != REG_OK)
+    ERROR_EXIT(errcode);
+  preg->re_nsub = parse_ctx.submatch_id - 1;
+  tree = parse_ctx.result;
+
+  /* Back references and approximate matching cannot currently be used
+     in the same regexp. */
+  if (parse_ctx.max_backref >= 0 && parse_ctx.have_approx)
+    ERROR_EXIT(REG_BADPAT);
+
+#ifdef TRE_DEBUG
+  tre_ast_print(tree);
+#endif /* TRE_DEBUG */
+
+  /* Referring to nonexistent subexpressions is illegal. */
+  if (parse_ctx.max_backref > (int)preg->re_nsub)
+    ERROR_EXIT(REG_ESUBREG);
+
+  /* Allocate the TNFA struct. */
+  tnfa = xcalloc(1, sizeof(tre_tnfa_t));
+  if (tnfa == NULL)
+    ERROR_EXIT(REG_ESPACE);
+  tnfa->have_backrefs = parse_ctx.max_backref >= 0;
+  tnfa->have_approx = parse_ctx.have_approx;
+  tnfa->num_submatches = parse_ctx.submatch_id;
+
+  /* Set up tags for submatch addressing.  If REG_NOSUB is set and the
+     regexp does not have back references, this can be skipped. */
+  if (tnfa->have_backrefs || !(cflags & REG_NOSUB))
+    {
+
+      /* Figure out how many tags we will need. */
+      errcode = tre_add_tags(NULL, stack, tree, tnfa);
+      if (errcode != REG_OK)
+	ERROR_EXIT(errcode);
+
+      if (tnfa->num_tags > 0)
+	{
+	  tag_directions = xmalloc(sizeof(*tag_directions)
+				   * (tnfa->num_tags + 1));
+	  if (tag_directions == NULL)
+	    ERROR_EXIT(REG_ESPACE);
+	  tnfa->tag_directions = tag_directions;
+	  memset(tag_directions, -1,
+		 sizeof(*tag_directions) * (tnfa->num_tags + 1));
+	}
+      tnfa->minimal_tags = xcalloc((unsigned)tnfa->num_tags * 2 + 1,
+				   sizeof(tnfa->minimal_tags));
+      if (tnfa->minimal_tags == NULL)
+	ERROR_EXIT(REG_ESPACE);
+
+      submatch_data = xcalloc((unsigned)parse_ctx.submatch_id,
+			      sizeof(*submatch_data));
+      if (submatch_data == NULL)
+	ERROR_EXIT(REG_ESPACE);
+      tnfa->submatch_data = submatch_data;
+
+      errcode = tre_add_tags(mem, stack, tree, tnfa);
+      if (errcode != REG_OK)
+	ERROR_EXIT(errcode);
+
+    }
+
+  /* Expand iteration nodes. */
+  errcode = tre_expand_ast(mem, stack, tree, &parse_ctx.position,
+			   tag_directions, &tnfa->params_depth);
+  if (errcode != REG_OK)
+    ERROR_EXIT(errcode);
+
+  /* Add a dummy node for the final state.
+     XXX - For certain patterns this dummy node can be optimized away,
+	   for example "a*" or "ab*".	Figure out a simple way to detect
+	   this possibility. */
+  tmp_ast_l = tree;
+  tmp_ast_r = tre_ast_new_literal(mem, 0, 0, parse_ctx.position++);
+  if (tmp_ast_r == NULL)
+    ERROR_EXIT(REG_ESPACE);
+
+  tree = tre_ast_new_catenation(mem, tmp_ast_l, tmp_ast_r);
+  if (tree == NULL)
+    ERROR_EXIT(REG_ESPACE);
+
+  errcode = tre_compute_nfl(mem, stack, tree);
+  if (errcode != REG_OK)
+    ERROR_EXIT(errcode);
+
+  counts = xmalloc(sizeof(int) * parse_ctx.position);
+  if (counts == NULL)
+    ERROR_EXIT(REG_ESPACE);
+
+  offs = xmalloc(sizeof(int) * parse_ctx.position);
+  if (offs == NULL)
+    ERROR_EXIT(REG_ESPACE);
+
+  for (i = 0; i < parse_ctx.position; i++)
+    counts[i] = 0;
+  tre_ast_to_tnfa(tree, NULL, counts, NULL);
+
+  add = 0;
+  for (i = 0; i < parse_ctx.position; i++)
+    {
+      offs[i] = add;
+      add += counts[i] + 1;
+      counts[i] = 0;
+    }
+  transitions = xcalloc((unsigned)add + 1, sizeof(*transitions));
+  if (transitions == NULL)
+    ERROR_EXIT(REG_ESPACE);
+  tnfa->transitions = transitions;
+  tnfa->num_transitions = add;
+
+  errcode = tre_ast_to_tnfa(tree, transitions, counts, offs);
+  if (errcode != REG_OK)
+    ERROR_EXIT(errcode);
+
+  tnfa->firstpos_chars = NULL;
+
+  p = tree->firstpos;
+  i = 0;
+  while (p->position >= 0)
+    {
+      i++;
+      p++;
+    }
+
+  initial = xcalloc((unsigned)i + 1, sizeof(tre_tnfa_transition_t));
+  if (initial == NULL)
+    ERROR_EXIT(REG_ESPACE);
+  tnfa->initial = initial;
+
+  i = 0;
+  for (p = tree->firstpos; p->position >= 0; p++)
+    {
+      initial[i].state = transitions + offs[p->position];
+      initial[i].state_id = p->position;
+      initial[i].tags = NULL;
+      /* Copy the arrays p->tags, and p->params, they are allocated
+	 from a tre_mem object. */
+      if (p->tags)
+	{
+	  int j;
+	  for (j = 0; p->tags[j] >= 0; j++);
+	  initial[i].tags = xmalloc(sizeof(*p->tags) * (j + 1));
+	  if (!initial[i].tags)
+	    ERROR_EXIT(REG_ESPACE);
+	  memcpy(initial[i].tags, p->tags, sizeof(*p->tags) * (j + 1));
+	}
+      initial[i].assertions = p->assertions;
+      i++;
+    }
+  initial[i].state = NULL;
+
+  tnfa->num_transitions = add;
+  tnfa->final = transitions + offs[tree->lastpos[0].position];
+  tnfa->num_states = parse_ctx.position;
+  tnfa->cflags = cflags;
+
+  tre_mem_destroy(mem);
+  tre_stack_destroy(stack);
+  xfree(counts);
+  xfree(offs);
+
+  preg->TRE_REGEX_T_FIELD = (void *)tnfa;
+  return REG_OK;
+
+ error_exit:
+  /* Free everything that was allocated and return the error code. */
+  tre_mem_destroy(mem);
+  if (stack != NULL)
+    tre_stack_destroy(stack);
+  if (counts != NULL)
+    xfree(counts);
+  if (offs != NULL)
+    xfree(offs);
+  preg->TRE_REGEX_T_FIELD = (void *)tnfa;
+  regfree(preg);
+  return errcode;
+}
+
+
+
+
+void
+regfree(regex_t *preg)
 {
   tre_tnfa_t *tnfa;
   unsigned int i;
@@ -3059,304 +3401,9 @@ tre_free(regex_t *preg)
 
   if (tnfa->tag_directions)
     xfree(tnfa->tag_directions);
+  if (tnfa->firstpos_chars)
+    xfree(tnfa->firstpos_chars);
+  if (tnfa->minimal_tags)
+    xfree(tnfa->minimal_tags);
   xfree(tnfa);
 }
-
-
-#define ERROR_EXIT(err)		  \
-  do				  \
-    {				  \
-      errcode = err;		  \
-      if (1) goto error_exit;	  \
-    }				  \
- while (0)
-
-
-static int
-tre_compile(regex_t *preg, const tre_char_t *regex, size_t n, int cflags)
-{
-  tre_stack_t *stack;
-  tre_ast_node_t *tree, *tmp_ast_l, *tmp_ast_r;
-  tre_pos_and_tags_t *p;
-  int *counts = NULL, *offs = NULL;
-  int i, add = 0;
-  tre_tnfa_transition_t *transitions, *initial;
-  tre_tnfa_t *tnfa = NULL;
-  tre_submatch_data_t *submatch_data;
-  tre_tag_direction_t *tag_directions = NULL;
-  reg_errcode_t errcode;
-  tre_mem_t mem;
-
-  /* Parse context. */
-  tre_parse_ctx_t parse_ctx;
-
-  /* Allocate a stack used throughout the compilation process for various
-     purposes. */
-  stack = tre_stack_new(512, 10240, 128);
-  if (!stack)
-    return REG_ESPACE;
-  /* Allocate a fast memory allocator. */
-  mem = tre_mem_new();
-  if (!mem)
-    {
-      tre_stack_destroy(stack);
-      return REG_ESPACE;
-    }
-
-  /* Parse the regexp. */
-  memset(&parse_ctx, 0, sizeof(parse_ctx));
-  parse_ctx.mem = mem;
-  parse_ctx.stack = stack;
-  parse_ctx.re = regex;
-  parse_ctx.len = n;
-  parse_ctx.cflags = cflags;
-  parse_ctx.max_backref = -1;
-  DPRINT(("tre_compile: parsing '%.*" STRF "'\n", n, regex));
-  errcode = tre_parse(&parse_ctx);
-  if (errcode != REG_OK)
-    ERROR_EXIT(errcode);
-  preg->re_nsub = preg->__nsub2 = parse_ctx.submatch_id - 1;
-  tree = parse_ctx.result;
-
-#ifdef TRE_DEBUG
-  tre_ast_print(tree);
-#endif /* TRE_DEBUG */
-
-  /* Referring to nonexistent subexpressions is illegal. */
-  if (parse_ctx.max_backref > (int)preg->re_nsub)
-    ERROR_EXIT(REG_ESUBREG);
-
-  /* Allocate the TNFA struct. */
-  tnfa = xcalloc(1, sizeof(tre_tnfa_t));
-  if (tnfa == NULL)
-    ERROR_EXIT(REG_ESPACE);
-  tnfa->have_backrefs = parse_ctx.max_backref >= 0;
-  tnfa->num_submatches = parse_ctx.submatch_id;
-
-  /* Set up tags for submatch addressing.  If REG_NOSUB is set and the
-     regexp does not have back references, this can be skipped. */
-  if (tnfa->have_backrefs || !(cflags & REG_NOSUB))
-    {
-      DPRINT(("tre_compile: setting up tags\n"));
-
-      /* Figure out how many tags we will need. */
-      errcode = tre_add_tags(NULL, stack, tree, tnfa);
-      if (errcode != REG_OK)
-	ERROR_EXIT(errcode);
-#ifdef TRE_DEBUG
-      tre_ast_print(tree);
-#endif /* TRE_DEBUG */
-
-      if (tnfa->num_tags > 0)
-	{
-	  tag_directions = xmalloc(sizeof(*tag_directions)
-				   * (tnfa->num_tags + 1));
-	  if (tag_directions == NULL)
-	    ERROR_EXIT(REG_ESPACE);
-	  tnfa->tag_directions = tag_directions;
-	  memset(tag_directions, -1,
-		 sizeof(*tag_directions) * (tnfa->num_tags + 1));
-	}
-
-      submatch_data = xcalloc(parse_ctx.submatch_id, sizeof(*submatch_data));
-      if (submatch_data == NULL)
-	ERROR_EXIT(REG_ESPACE);
-      tnfa->submatch_data = submatch_data;
-
-      errcode = tre_add_tags(mem, stack, tree, tnfa);
-      if (errcode != REG_OK)
-	ERROR_EXIT(errcode);
-
-#ifdef TRE_DEBUG
-      for (i = 0; i < parse_ctx.submatch_id; i++)
-	DPRINT(("pmatch[%d] = {t%d, t%d}\n",
-		i, submatch_data[i].so_tag, submatch_data[i].eo_tag));
-      for (i = 0; i < tnfa->num_tags; i++)
-	DPRINT(("t%d is %s\n", i,
-		tag_directions[i] == TRE_TAG_MINIMIZE ?
-		"minimized" : "maximized"));
-#endif /* TRE_DEBUG */
-    }
-
-  /* Expand iteration nodes. */
-  errcode = tre_expand_ast(mem, stack, tree, &parse_ctx.position,
-			   tag_directions, NULL);
-  if (errcode != REG_OK)
-    ERROR_EXIT(errcode);
-
-  /* Add a dummy node for the final state.
-     XXX - For certain patterns this dummy node can be optimized away,
-	   for example "a*" or "ab*".	Figure out a simple way to detect
-	   this possibility. */
-  tmp_ast_l = tree;
-  tmp_ast_r = tre_ast_new_literal(mem, 0, 0, parse_ctx.position++);
-  if (tmp_ast_r == NULL)
-    ERROR_EXIT(REG_ESPACE);
-
-  tree = tre_ast_new_catenation(mem, tmp_ast_l, tmp_ast_r);
-  if (tree == NULL)
-    ERROR_EXIT(REG_ESPACE);
-
-#ifdef TRE_DEBUG
-  tre_ast_print(tree);
-  DPRINT(("Number of states: %d\n", parse_ctx.position));
-#endif /* TRE_DEBUG */
-
-  errcode = tre_compute_nfl(mem, stack, tree);
-  if (errcode != REG_OK)
-    ERROR_EXIT(errcode);
-
-  counts = xmalloc(sizeof(int) * parse_ctx.position);
-  if (counts == NULL)
-    ERROR_EXIT(REG_ESPACE);
-
-  offs = xmalloc(sizeof(int) * parse_ctx.position);
-  if (offs == NULL)
-    ERROR_EXIT(REG_ESPACE);
-
-  for (i = 0; i < parse_ctx.position; i++)
-    counts[i] = 0;
-  tre_ast_to_tnfa(tree, NULL, counts, NULL);
-
-  add = 0;
-  for (i = 0; i < parse_ctx.position; i++)
-    {
-      offs[i] = add;
-      add += counts[i] + 1;
-      counts[i] = 0;
-    }
-  transitions = xcalloc(add + 1, sizeof(*transitions));
-  if (transitions == NULL)
-    ERROR_EXIT(REG_ESPACE);
-  tnfa->transitions = transitions;
-  tnfa->num_transitions = add;
-
-  DPRINT(("Converting to TNFA:\n"));
-  errcode = tre_ast_to_tnfa(tree, transitions, counts, offs);
-  if (errcode != REG_OK)
-    ERROR_EXIT(errcode);
-
-  p = tree->firstpos;
-  i = 0;
-  while (p->position >= 0)
-    {
-      i++;
-
-#ifdef TRE_DEBUG
-      {
-	int *tags;
-	DPRINT(("initial: %d", p->position));
-	tags = p->tags;
-	if (tags != NULL)
-	  {
-	    if (*tags >= 0)
-	      DPRINT(("/"));
-	    while (*tags >= 0)
-	      {
-		DPRINT(("%d", *tags));
-		tags++;
-		if (*tags >= 0)
-		  DPRINT((","));
-	      }
-	  }
-	DPRINT((", assert %d", p->assertions));
-	DPRINT(("\n"));
-      }
-#endif /* TRE_DEBUG */
-
-      p++;
-    }
-
-  initial = xcalloc(i + 1, sizeof(tre_tnfa_transition_t));
-  if (initial == NULL)
-    ERROR_EXIT(REG_ESPACE);
-  tnfa->initial = initial;
-
-  i = 0;
-  for (p = tree->firstpos; p->position >= 0; p++)
-    {
-      initial[i].state = transitions + offs[p->position];
-      initial[i].state_id = p->position;
-      initial[i].tags = NULL;
-      /* Copy the arrays p->tags, they are allocated
-	 from a tre_mem object. */
-      if (p->tags)
-	{
-	  int j;
-	  for (j = 0; p->tags[j] >= 0; j++);
-	  initial[i].tags = xmalloc(sizeof(*p->tags) * (j + 1));
-	  if (!initial[i].tags)
-	    ERROR_EXIT(REG_ESPACE);
-	  memcpy(initial[i].tags, p->tags, sizeof(*p->tags) * (j + 1));
-	}
-      initial[i].assertions = p->assertions;
-      i++;
-    }
-  initial[i].state = NULL;
-
-  tnfa->num_transitions = add;
-  tnfa->final = transitions + offs[tree->lastpos[0].position];
-  tnfa->num_states = parse_ctx.position;
-  tnfa->cflags = cflags;
-
-  DPRINT(("final state %p\n", (void *)tnfa->final));
-
-  tre_mem_destroy(mem);
-  tre_stack_destroy(stack);
-  xfree(counts);
-  xfree(offs);
-
-  preg->TRE_REGEX_T_FIELD = (void *)tnfa;
-  return REG_OK;
-
- error_exit:
-  /* Free everything that was allocated and return the error code. */
-  tre_mem_destroy(mem);
-  if (stack != NULL)
-    tre_stack_destroy(stack);
-  if (counts != NULL)
-    xfree(counts);
-  if (offs != NULL)
-    xfree(offs);
-  preg->TRE_REGEX_T_FIELD = (void *)tnfa;
-  tre_free(preg);
-  return errcode;
-}
-
-
-/***********************************************************************
- from regcomp.c
-***********************************************************************/
-
-int
-regcomp(regex_t *preg, const char *regex, int cflags)
-{
-  int ret;
-  tre_char_t *wregex;
-  size_t n = strlen(regex);
-
-  if (n+1 > SIZE_MAX/sizeof(tre_char_t))
-    return REG_ESPACE;
-  wregex = xmalloc(sizeof(tre_char_t) * (n + 1));
-  if (wregex == NULL)
-    return REG_ESPACE;
-
-  n = mbstowcs(wregex, regex, n+1);
-  if (n == (size_t)-1) {
-    xfree(wregex);
-    return REG_BADPAT;
-  }
-
-  ret = tre_compile(preg, wregex, n, cflags);
-  xfree(wregex);
-
-  return ret;
-}
-
-void
-regfree(regex_t *preg)
-{
-  tre_free(preg);
-}
-
-/* EOF */
