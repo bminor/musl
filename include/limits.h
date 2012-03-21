@@ -5,14 +5,22 @@
 
 #include <bits/limits.h>
 
+/* Support signed or unsigned plain-char */
+
+#ifdef __CHAR_UNSIGNED__
+#define CHAR_MIN 0
+#define CHAR_MAX 255
+#else
+#define CHAR_MIN (-128)
+#define CHAR_MAX 127
+#endif
+
 /* Some universal constants... */
 
 #define CHAR_BIT 8
 #define SCHAR_MIN (-128)
 #define SCHAR_MAX 127
 #define UCHAR_MAX 255
-#define CHAR_MIN (-128)
-#define CHAR_MAX 127
 #define SHRT_MIN  (-1-0x7fff)
 #define SHRT_MAX  0x7fff
 #define USHRT_MAX 0xffff
