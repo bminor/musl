@@ -12,3 +12,5 @@
 #define LDBL_DIG 18
 #define LDBL_MIN_10_EXP (-4931)
 #define LDBL_MAX_10_EXP 4932
+
+#define DECIMAL_DIG 21

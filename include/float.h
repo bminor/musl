@@ -29,6 +29,4 @@
 
 #include <bits/float.h>
 
-#define DECIMAL_DIG LDBL_DIG
-
 #endif
