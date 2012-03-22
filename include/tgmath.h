@@ -121,6 +121,69 @@ sizeof(double) == sizeof(long double)
 	__LDBL(x) ? fabsl(x) : \
 	fabs(x) ))
 
+/* suppress any macros in math.h or complex.h */
+
+#undef acos
+#undef acosh
+#undef asin
+#undef asinh
+#undef atan
+#undef atan2
+#undef atanh
+#undef carg
+#undef cbrt
+#undef ceil
+#undef cimag
+#undef conj
+#undef copysign
+#undef cos
+#undef cosh
+#undef cproj
+#undef creal
+#undef erf
+#undef erfc
+#undef exp
+#undef exp2
+#undef expm1
+#undef fabs
+#undef fdim
+#undef floor
+#undef fma
+#undef fmax
+#undef fmin
+#undef fmod
+#undef frexp
+#undef hypot
+#undef ilogb
+#undef ldexp
+#undef lgamma
+#undef llrint
+#undef llround
+#undef log
+#undef log10
+#undef log1p
+#undef log2
+#undef logb
+#undef lrint
+#undef lround
+#undef nearbyint
+#undef nextafter
+#undef nexttoward
+#undef pow
+#undef remainder
+#undef remquo
+#undef rint
+#undef round
+#undef scalbln
+#undef scalbn
+#undef sin
+#undef sinh
+#undef sqrt
+#undef tan
+#undef tanh
+#undef tgamma
+#undef trunc
+
 /* tg functions */
 
 #define acos(x)         __tg_real_complex(acos, (x))
