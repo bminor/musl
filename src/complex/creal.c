@@ -1,6 +1,6 @@
 #include <complex.h>
 
-double creal(double complex z)
+double (creal)(double complex z)
 {
-	return z;
+	return creal(z);
 }

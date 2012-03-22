@@ -173,14 +173,6 @@ union lcomplex {
 	long double a[2];
 };
 
-// FIXME: move to complex.h ?
-#define creal(z) ((double)(z))
-#define crealf(z) ((float)(z))
-#define creall(z) ((long double)(z))
-#define cimag(z) ((union dcomplex){(z)}.a[1])
-#define cimagf(z) ((union fcomplex){(z)}.a[1])
-#define cimagl(z) ((union lcomplex){(z)}.a[1])
-
 /* x + y*I is not supported properly by gcc */
 #define cpack(x,y) ((union dcomplex){.a={(x),(y)}}.z)
 #define cpackf(x,y) ((union fcomplex){.a={(x),(y)}}.z)

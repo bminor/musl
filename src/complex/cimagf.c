@@ -2,6 +2,5 @@
 
 float (cimagf)(float complex z)
 {
-	union fcomplex u = {z};
-	return u.a[1];
+	return cimagf(z);
 }

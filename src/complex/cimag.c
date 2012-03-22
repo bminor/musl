@@ -2,6 +2,5 @@
 
 double (cimag)(double complex z)
 {
-	union dcomplex u = {z};
-	return u.a[1];
+	return cimag(z);
 }
