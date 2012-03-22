@@ -1,18 +1,21 @@
 #include <unistd.h>
 #include <limits.h>
 #include <errno.h>
+#include <sys/resource.h>
+#include "syscall.h"
 
 #define VER (-2)
 #define OFLOW (-3)
+#define RLIM(x) (-32768|(RLIMIT_ ## x))
 
 long sysconf(int name)
 {
 	static const short values[] = {
 		[_SC_ARG_MAX] = OFLOW,
-		[_SC_CHILD_MAX] = -1,
+		[_SC_CHILD_MAX] = RLIM(NPROC),
 		[_SC_CLK_TCK] = 100,
 		[_SC_NGROUPS_MAX] = 32,
-		[_SC_OPEN_MAX] = 1024,
+		[_SC_OPEN_MAX] = RLIM(NOFILE),
 		[_SC_STREAM_MAX] = -1,
 		[_SC_TZNAME_MAX] = TZNAME_MAX,
 		[_SC_JOB_CONTROL] = 1,
@@ -217,6 +220,10 @@ long sysconf(int name)
 	} else if (values[name] == OFLOW) {
 		if (name == _SC_ARG_MAX) return ARG_MAX;
 		if (name == _SC_SEM_VALUE_MAX) return SEM_VALUE_MAX;
+	} else if (values[name] < 0) {
+		long lim[2];
+		__syscall(SYS_getrlimit, values[name]&16383, lim);
+		return lim[0] < 0 ? LONG_MAX : lim[0];
 	}
 	return values[name];
 }
