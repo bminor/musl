@@ -97,16 +97,16 @@ double creal(double complex);
 float crealf(float complex);
 long double creall(long double complex);
 
-#define __CREALIMAG(x, t, i) \
-	((union { _Complex t __z; t __xy[2]; }){(_Complex t)(x)}.__xy[i])
+#define __CIMAG(x, t) \
+	((union { _Complex t __z; t __xy[2]; }){(_Complex t)(x)}.__xy[1])
 
-#define creal(x) __CREALIMAG(x, double, 0)
-#define crealf(x) __CREALIMAG(x, float, 0)
-#define creall(x) __CREALIMAG(x, long double, 0)
+#define creal(x) ((double)(x))
+#define crealf(x) ((float)(x))
+#define creall(x) ((long double)(x))
 
-#define cimag(x) __CREALIMAG(x, double, 1)
-#define cimagf(x) __CREALIMAG(x, float, 1)
-#define cimagl(x) __CREALIMAG(x, long double, 1)
+#define cimag(x) __CIMAG(x, double)
+#define cimagf(x) __CIMAG(x, float)
+#define cimagl(x) __CIMAG(x, long double)
 
 #ifdef __cplusplus
 }
