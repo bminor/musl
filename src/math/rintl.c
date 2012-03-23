@@ -42,8 +42,6 @@ shift[2] = {
 	0x1.0p63, -0x1.0p63
 #elif LDBL_MANT_DIG == 113
 	0x1.0p112, -0x1.0p112
-#else
-#error "Unsupported long double format"
 #endif
 };
 static const float zero[2] = { 0.0, -0.0 };
