@@ -1,4 +1,3 @@
-#ifdef __PIC__
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,6 +16,10 @@
 #include <pthread.h>
 #include <ctype.h>
 #include <dlfcn.h>
+
+static int errflag;
+
+#ifdef __PIC__
 
 #include "reloc.h"
 
@@ -631,11 +634,12 @@ void *dlopen(const char *file, int mode)
 		tail = orig_tail;
 		tail->next = 0;
 		p = 0;
+	} else p = load_library(file);
+
+	if (!p) {
+		errflag = 1;
 		goto end;
 	}
-
-	p = load_library(file);
-	if (!p) goto end;
 
 	/* First load handling */
 	if (!p->deps) {
@@ -674,8 +678,11 @@ static void *do_dlsym(struct dso *p, const char *s, void *ra)
 		if (!p) p=head;
 		p=p->next;
 	}
-	if (p == head || p == RTLD_DEFAULT)
-		return find_sym(head, s, 0);
+	if (p == head || p == RTLD_DEFAULT) {
+		void *res = find_sym(head, s, 0);
+		if (!res) errflag = 1;
+		return res;
+	}
 	h = hash(s);
 	sym = lookup(s, h, p->syms, p->hashtab, p->strings);
 	if (sym && sym->st_value && (1<<(sym->st_info&0xf) & OK_TYPES))
@@ -686,6 +693,7 @@ static void *do_dlsym(struct dso *p, const char *s, void *ra)
 		if (sym && sym->st_value && (1<<(sym->st_info&0xf) & OK_TYPES))
 			return p->deps[i]->base + sym->st_value;
 	}
+	errflag = 1;
 	return 0;
 }
 
@@ -710,6 +718,8 @@ void *__dlsym(void *p, const char *s, void *ra)
 
 char *dlerror()
 {
+	if (!errflag) return 0;
+	errflag = 0;
 	return "unknown error";
 }
 
