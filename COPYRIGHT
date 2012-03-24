@@ -4,10 +4,10 @@ See the file COPYING for the text of this license.
 See below for the copyright status on all code included in musl:
 
 The TRE regular expression implementation (src/regex/reg* and
-src/regex/tre*) is Copyright © 2001-2006 Ville Laurikari and licensed
-under the terms of the GNU LGPL version 2.1 or later. The included
-version was heavily modified in Spring 2006 by Rich Felker in the
-interests of size, simplicity, and namespace cleanliness.
+src/regex/tre*) is Copyright © 2001-2008 Ville Laurikari and licensed
+under a 2-clause BSD license (license text in the source files). The
+included version has been heavily modified by Rich Felker in 2012, in
+the interests of size, simplicity, and namespace cleanliness.
 
 Most of the math library code (src/math/* and src/complex/*) is
 Copyright © 1993,2004 Sun Microsystems or
