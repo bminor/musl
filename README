@@ -26,9 +26,7 @@ intended to be stable at this point, and serious efforts have been
 made, using three separate test frameworks, to verify the correctness
 of the implementation. Many major system-level and user-level programs
 are known to work with musl, either out-of-the-box or with minor
-patches to address portability errors; the main remaining applications
-which definitely will not work are those which require C++ support,
-which will be addressed during the 0.8 or 0.9 development series.
+patches to address portability errors.
 
 Included with this package is a gcc wrapper script (musl-gcc) which
 allows you to build musl-linked programs using an existing gcc 4.x

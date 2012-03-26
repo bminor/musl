@@ -3,16 +3,15 @@
 #include <stdarg.h>
 #include <monetary.h>
 #include <errno.h>
+#include <stdarg.h>
 
-ssize_t strfmon(char *s, size_t n, const char *fmt, ...)
+static ssize_t vstrfmon_l(char *s, size_t n, locale_t loc, const char *fmt, va_list ap)
 {
 	size_t l;
 	double x;
 	int fill, nogrp, negpar, nosym, left, intl;
 	int lp, rp, w, fw;
 	char *s0=s;
-	va_list ap;
-	va_start(ap, fmt);
 	for (; n && *fmt; ) {
 		if (*fmt != '%') {
 		literal:
@@ -74,4 +73,29 @@ ssize_t strfmon(char *s, size_t n, const char *fmt, ...)
 		n -= l;
 	}
 	return s-s0;
+}
+
+ssize_t strfmon_l(char *s, size_t n, locale_t loc, const char *fmt, ...)
+{
+	va_list ap;
+	ssize_t ret;
+
+	va_start(ap, fmt);
+	ret = vstrfmon_l(s, n, loc, fmt, ap);
+	va_end(ap);
+
+	return ret;
+}
+
+
+ssize_t strfmon(char *s, size_t n, const char *fmt, ...)
+{
+	va_list ap;
+	ssize_t ret;
+
+	va_start(ap, fmt);
+	ret = vstrfmon_l(s, n, 0, fmt, ap);
+	va_end(ap);
+
+	return ret;
 }
