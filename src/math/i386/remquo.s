@@ -2,8 +2,8 @@
 .type remquof,@function
 remquof:
 	mov 12(%esp),%ecx
-	fldl 8(%esp)
-	fldl 4(%esp)
+	flds 8(%esp)
+	flds 4(%esp)
 	mov 11(%esp),%dh
 	xor 7(%esp),%dh
 	jmp 1f
@@ -12,8 +12,8 @@ remquof:
 .type remquol,@function
 remquol:
 	mov 28(%esp),%ecx
-	fldl 16(%esp)
-	fldl 4(%esp)
+	fldt 16(%esp)
+	fldt 4(%esp)
 	mov 25(%esp),%dh
 	xor 13(%esp),%dh
 	jmp 1f
@@ -26,7 +26,7 @@ remquo:
 	fldl 4(%esp)
 	mov 19(%esp),%dh
 	xor 11(%esp),%dh
-1:      fprem1
+1:	fprem1
 	fnstsw %ax
 	sahf
 	jp 1b
