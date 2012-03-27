@@ -89,6 +89,8 @@
 #include "libm.h"
 
 #if LDBL_MANT_DIG == 53 && LDBL_MAX_EXP == 1024
+double __lgamma_r(double x, int *sg);
+
 long double __lgammal_r(long double x, int *sg)
 {
 	return __lgamma_r(x, sg);
