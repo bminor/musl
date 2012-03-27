@@ -165,8 +165,6 @@ static const long double R[] = {
  6.9314718055994530931447E-1L,
 };
 
-#define douba(k) A[k]
-#define doubb(k) B[k]
 #define MEXP (NXT*16384.0L)
 /* The following if denormal numbers are supported, else -MEXP: */
 #define MNEXP (-NXT*(16384.0L+64.0L))
@@ -300,15 +298,15 @@ long double powl(long double x, long double y)
 
 	/* find significand in antilog table A[] */
 	i = 1;
-	if (x <= douba(17))
+	if (x <= A[17])
 		i = 17;
-	if (x <= douba(i+8))
+	if (x <= A[i+8])
 		i += 8;
-	if (x <= douba(i+4))
+	if (x <= A[i+4])
 		i += 4;
-	if (x <= douba(i+2))
+	if (x <= A[i+2])
 		i += 2;
-	if (x >= douba(1))
+	if (x >= A[1])
 		i = -1;
 	i += 1;
 
@@ -319,9 +317,9 @@ long double powl(long double x, long double y)
 	 *
 	 * log(x/a) = log(1+v),  v = x/a - 1 = (x-a)/a
 	 */
-	x -= douba(i);
-	x -= doubb(i/2);
-	x /= douba(i);
+	x -= A[i];
+	x -= B[i/2];
+	x /= A[i];
 
 	/* rational approximation for log(1+v):
 	 *
@@ -340,7 +338,8 @@ long double powl(long double x, long double y)
 	z += x;
 
 	/* Compute exponent term of the base 2 logarithm. */
-	w = -i / NXT;
+	w = -i;
+	w /= NXT;
 	w += e;
 	/* Now base 2 log of x is w + z. */
 
@@ -397,7 +396,7 @@ long double powl(long double x, long double y)
 		i = 1;
 	i = e/NXT + i;
 	e = NXT*i - e;
-	w = douba(e);
+	w = A[e];
 	z = w * z;  /*  2**-e * ( 1 + (2**Hb-1) )  */
 	z = z + w;
 	z = scalbnl(z, i);  /* multiply by integer power of 2 */
