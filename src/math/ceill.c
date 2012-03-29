@@ -49,8 +49,7 @@ long double ceill(long double x)
 
 static const long double huge = 1.0e300;
 
-long double
-ceill(long double x)
+long double ceill(long double x)
 {
 	union IEEEl2bits u = { .e = x };
 	int e = u.bits.exp - LDBL_MAX_EXP + 1;

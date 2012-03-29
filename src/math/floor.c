@@ -50,7 +50,7 @@ double floor(double x)
 				if (i0 < 0)
 					i0 += 0x00100000>>j0;
 				i0 &= ~i;
-				i1=0;
+				i1 = 0;
 			}
 		}
 	} else if (j0 > 51) {
@@ -59,18 +59,18 @@ double floor(double x)
 		else
 			return x;   /* x is integral */
 	} else {
-		i = ((uint32_t)(0xffffffff))>>(j0-20);
+		i = (uint32_t)0xffffffff>>(j0-20);
 		if ((i1&i) == 0)
 			return x;   /* x is integral */
 		/* raise inexact flag */
 		if (huge+x > 0.0) {
 			if (i0 < 0) {
 				if (j0 == 20)
-					i0+=1;
+					i0++;
 				else {
 					j = i1+(1<<(52-j0));
 					if (j < i1)
-						i0 += 1; /* got a carry */
+						i0++; /* got a carry */
 					i1 = j;
 				}
 			}

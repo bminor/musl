@@ -28,7 +28,6 @@ float ceilf(float x)
 		if (j0 < 0) {
 			/* raise inexact if x != 0 */
 			if (huge+x > 0.0f) {
-				/* return 0*sign(x) if |x|<1 */
 				if (i0 < 0)
 					i0 = 0x80000000;
 				else if(i0 != 0)

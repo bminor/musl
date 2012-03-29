@@ -34,7 +34,6 @@ double ceil(double x)
 		if (j0 < 0) {
 			 /* raise inexact if x != 0 */
 			if (huge+x > 0.0) {
-				/* return 0*sign(x) if |x|<1 */
 				if (i0 < 0) {
 					i0 = 0x80000000;
 					i1=0;
@@ -44,7 +43,7 @@ double ceil(double x)
 				}
 			}
 		} else {
-			i = (0x000fffff)>>j0;
+			i = 0x000fffff>>j0;
 			if (((i0&i)|i1) == 0) /* x is integral */
 				return x;
 			/* raise inexact flag */

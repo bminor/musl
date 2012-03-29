@@ -97,6 +97,6 @@ long double floorl(long double x)
 		if (huge + x > 0.0)
 			u.bits.manl &= ~m;
 	}
-	return (u.e);
+	return u.e;
 }
 #endif
