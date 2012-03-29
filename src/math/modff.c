@@ -1,33 +1,37 @@
-#include "libm.h"
+#include <math.h>
+#include <stdint.h>
 
 float modff(float x, float *iptr)
 {
-	uint32_t u, mask;
+	union {float x; uint32_t n;} u = {x};
+	uint32_t mask;
 	int e;
 
-	GET_FLOAT_WORD(u, x);
-	e = (int)(u>>23 & 0xff) - 0x7f;
+	e = (int)(u.n>>23 & 0xff) - 0x7f;
 
 	/* no fractional part */
 	if (e >= 23) {
 		*iptr = x;
-		if (e == 0x80 && u<<9 != 0) /* nan */
+		if (e == 0x80 && u.n<<9 != 0) { /* nan */
 			return x;
-		SET_FLOAT_WORD(x, u & 0x80000000);
-		return x;
+		}
+		u.n &= 0x80000000;
+		return u.x;
 	}
 	/* no integral part */
 	if (e < 0) {
-		SET_FLOAT_WORD(*iptr, u & 0x80000000);
+		u.n &= 0x80000000;
+		*iptr = u.x;
 		return x;
 	}
 
 	mask = 0x007fffff>>e;
-	if ((u & mask) == 0) {
+	if ((u.n & mask) == 0) {
 		*iptr = x;
-		SET_FLOAT_WORD(x, u & 0x80000000);
-		return x;
+		u.n &= 0x80000000;
+		return u.x;
 	}
-	SET_FLOAT_WORD(*iptr, u & ~mask);
+	u.n &= ~mask;
+	*iptr = u.x;
 	return x - *iptr;
 }
