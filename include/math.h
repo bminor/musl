@@ -77,8 +77,8 @@ int __signbitf(float);
 int __signbitl(long double);
 
 #define signbit(x) ( \
-	sizeof(x) == sizeof(float) ? !!(__FLOAT_BITS(x) & 0x80000000) : \
-	sizeof(x) == sizeof(double) ? !!(__DOUBLE_BITS(x) & (__uint64_t)1<<63) : \
+	sizeof(x) == sizeof(float) ? (int)(__FLOAT_BITS(x)>>31) : \
+	sizeof(x) == sizeof(double) ? (int)(__DOUBLE_BITS(x)>>63) : \
 	__signbitl(x) )
 
 #define isunordered(x,y) (isnan((x)) ? ((void)(y),1) : isnan((y)))
