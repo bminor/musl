@@ -61,7 +61,7 @@ int getaddrinfo(const char *host, const char *serv, const struct addrinfo *hint,
 	//char hostbuf[256];
 	char line[512];
 	FILE *f, _f;
-	unsigned char _buf[64];
+	unsigned char _buf[1024];
 	char *z;
 	int result;
 	int cnt;

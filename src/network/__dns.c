@@ -29,7 +29,7 @@ int __dns_doqueries(unsigned char *dest, const char *name, int *rr, int rrcnt)
 	time_t t0 = time(0);
 	int fd;
 	FILE *f, _f;
-	unsigned char _buf[64];
+	unsigned char _buf[256];
 	char line[64], *s, *z;
 	union {
 		struct sockaddr_in sin;
