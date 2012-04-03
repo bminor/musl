@@ -5,9 +5,6 @@
 extern "C" {
 #endif
 
-#if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
- || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
-
 #include <signal.h>
 #include <time.h>
 
@@ -50,8 +47,6 @@ int aio_suspend(const struct aiocb *const [], int, const struct timespec *);
 int aio_fsync(int, struct aiocb *);
 
 int lio_listio(int, struct aiocb *const [], int, struct sigevent *);
-
-#endif
 
 #ifdef __cplusplus
 }
