@@ -15,9 +15,10 @@ asinl:
 asin:
 	fldl 4(%esp)
 1:	fld %st(0)
-	fmul %st(0)
 	fld1
-	fsubp %st(1)
+	fsub %st(0),%st(1)
+	fadd %st(2)
+	fmulp
 	fsqrt
 	fpatan
 	ret
