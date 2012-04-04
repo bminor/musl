@@ -61,7 +61,7 @@ static inline long __syscall1(long __n, long __a1)
 {
 	unsigned long __ret;
 	__asm__ __volatile__ ("xchg %2,%%ebx ; int $128 ; xchg %2,%%ebx"
-		: "=a"(__ret) : "a"(__n), "r"(__a1) : "memory");
+		: "=a"(__ret) : "a"(__n), "d"(__a1) : "memory");
 	return __ret;
 }
 
@@ -69,7 +69,7 @@ static inline long __syscall2(long __n, long __a1, long __a2)
 {
 	unsigned long __ret;
 	__asm__ __volatile__ ("xchg %2,%%ebx ; int $128 ; xchg %2,%%ebx"
-		: "=a"(__ret) : "a"(__n), "r"(__a1), "c"(__a2) : "memory");
+		: "=a"(__ret) : "a"(__n), "d"(__a1), "c"(__a2) : "memory");
 	return __ret;
 }
 
@@ -77,7 +77,7 @@ static inline long __syscall3(long __n, long __a1, long __a2, long __a3)
 {
 	unsigned long __ret;
 	__asm__ __volatile__ ("xchg %2,%%ebx ; int $128 ; xchg %2,%%ebx"
-		: "=a"(__ret) : "a"(__n), "r"(__a1), "c"(__a2), "d"(__a3) : "memory");
+		: "=a"(__ret) : "a"(__n), "S"(__a1), "c"(__a2), "d"(__a3) : "memory");
 	return __ret;
 }
 
@@ -85,7 +85,7 @@ static inline long __syscall4(long __n, long __a1, long __a2, long __a3, long __
 {
 	unsigned long __ret;
 	__asm__ __volatile__ ("xchg %2,%%ebx ; int $128 ; xchg %2,%%ebx"
-		: "=a"(__ret) : "a"(__n), "r"(__a1), "c"(__a2), "d"(__a3), "S"(__a4) : "memory");
+		: "=a"(__ret) : "a"(__n), "D"(__a1), "c"(__a2), "d"(__a3), "S"(__a4) : "memory");
 	return __ret;
 }
 
