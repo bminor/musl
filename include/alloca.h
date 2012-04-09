@@ -10,6 +10,10 @@ extern "C" {
 
 void *alloca(size_t);
 
+#ifdef __GNUC__
+#define alloca __builtin_alloca
+#endif
+
 #ifdef __cplusplus
 }
 #endif
