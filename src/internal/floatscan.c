@@ -225,8 +225,10 @@ static long double decfloat(FILE *f, int bits, int emin, int sign, int pok)
 		}
 	}
 
-	for (y=i=0; i<LD_B1B_DIG && (a+i & MASK)!=z; i++)
+	for (y=i=0; i<LD_B1B_DIG; i++) {
+		if ((a+i & MASK)==z) x[z=(z+1 & MASK)] = 0;
 		y = 1000000000.0L * y + x[a+i & MASK];
+	}
 
 	y *= sign;
 
