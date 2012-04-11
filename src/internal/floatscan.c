@@ -138,7 +138,33 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 	e2 = 0;
 	rp = lrp;
 
-	while (rp < 18+9*LD_B1B_DIG) {
+	if (rp % 9) {
+		static const int p10s[] = {
+			100000000, 10000000, 1000000, 100000,
+			10000, 1000, 100, 10
+		};
+		int rpm9 = rp>=0 ? rp%9 : rp%9+9;
+		int p10 = p10s[rpm9-1];
+		uint32_t carry = 0;
+		for (k=a; k!=z; k=(k+1 & MASK)) {
+			uint32_t tmp = x[k] % p10;
+			x[k] = x[k]/p10 + carry;
+			carry = 1000000000/p10 * tmp;
+			if (k==a && !x[k]) {
+				a = (a+1 & MASK);
+				rp -= 9;
+			}
+		}
+		if (carry) {
+			if ((z+1 & MASK) != a) {
+				x[z] = carry;
+				z = (z+1 & MASK);
+			} else x[z-1 & MASK] |= 1;
+		}
+		rp += 9-rpm9;
+	}
+
+	while (rp < 9*LD_B1B_DIG || (rp == 9*LD_B1B_DIG && x[0]<th[0])) {
 		uint32_t carry = 0;
 		e2 -= 29;
 		for (k=(z-1 & MASK); ; k=(k-1 & MASK)) {
@@ -162,32 +188,6 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 			a = (a-1 & MASK);
 			x[a] = carry;
 		}
-	}
-
-	if (rp % 9) {
-		static const int p10s[] = {
-			100000000, 10000000, 1000000, 100000,
-			10000, 1000, 100, 10
-		};
-		int rpm9 = rp % 9;
-		int p10 = p10s[rpm9-1];
-		uint32_t carry = 0;
-		for (k=a; k!=z; k=(k+1 & MASK)) {
-			uint32_t tmp = x[k] % p10;
-			x[k] = x[k]/p10 + carry;
-			carry = 1000000000/p10 * tmp;
-			if (k==a && !x[k]) {
-				a = (a+1 & MASK);
-				rp -= 9;
-			}
-		}
-		if (carry) {
-			if ((z+1 & MASK) != a) {
-				x[z] = carry;
-				z = (z+1 & MASK);
-			} else x[z-1 & MASK] |= 1;
-		}
-		rp += 9-rpm9;
 	}
 
 	for (;;) {
