@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include "shgetc.h"
 #include "floatscan.h"
 #include "stdio_impl.h"
 
@@ -10,8 +11,9 @@ static long double strtox(const char *s, char **p, int prec)
 		.buf = (void *)t, .rpos = (void *)t,
 		.rend = (void *)-1, .lock = -1
 	};
-	off_t cnt;
-	long double y = __floatscan(&f, -1, prec, 1, &cnt);
+	shlim(&f, 0);
+	long double y = __floatscan(&f, -1, prec, 1);
+	off_t cnt = shcnt(&f);
 	if (p) *p = cnt ? t + cnt : (char *)s;
 	return y;
 }

@@ -59,6 +59,8 @@ struct __FILE_s {
 	off_t off;
 	int (*flush)(FILE *);
 	void *mustbezero_2;
+	unsigned char *shend;
+	off_t shlim, shcnt;
 };
 
 size_t __stdio_read(FILE *, unsigned char *, size_t);

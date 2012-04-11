@@ -4,6 +4,7 @@
 #include <float.h>
 #include <limits.h>
 
+#include "shgetc.h"
 #include "floatscan.h"
 
 #if LDBL_MANT_DIG == 53 && LDBL_MAX_EXP == 1024
@@ -23,71 +24,58 @@
 #define MASK (KMAX-1)
 
 
-#if 1
-#include "stdio_impl.h"
-#undef ungetc
-#define ungetc(c,f) ((f)->rpos--,(c))
-#undef getc
-#define getc getc_unlocked
-#endif
-
-
-static long long scanexp(FILE *f, off_t *pcnt)
+static long long scanexp(FILE *f, int pok)
 {
 	int c;
 	int x;
 	long long y;
 	int neg = 0;
 	
-	*pcnt += (c=getc(f))>=0;
+	c = shgetc(f);
 	if (c=='+' || c=='-') {
 		neg = (c=='-');
-		*pcnt += (c=getc(f))>=0;
-		if (c-'0'>=10U) {
-			if (c>=0) {
-				ungetc(c, f);
-				--*pcnt;
-			}
-			return LLONG_MIN;
-		}
+		c = shgetc(f);
+		if (c-'0'>=10U && pok) shunget(f);
 	}
-	for (x=0; c-'0'<10U && x<INT_MAX/10; *pcnt += (c=getc(f))>=0)
+	if (c-'0'>=10U) {
+		shunget(f);
+		return LLONG_MIN;
+	}
+	for (x=0; c-'0'<10U && x<INT_MAX/10; c = shgetc(f))
 		x = 10*x + c-'0';
-	for (y=x; c-'0'<10U && x<LLONG_MAX/10; *pcnt += (c=getc(f))>=0)
+	for (y=x; c-'0'<10U && x<LLONG_MAX/10; c = shgetc(f))
 		y = 10*y + c-'0';
-	for (; c-'0'<10U; *pcnt += (c=getc(f))>=0);
-	if (c>=0) {
-		ungetc(c, f);
-		--*pcnt;
-	}
+	for (; c-'0'<10U; c = shgetc(f));
+	shunget(f);
 	return neg ? -y : y;
 }
 
 
-static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int pok, off_t *pcnt)
+static long double decfloat(FILE *f, int bits, int emin, int sign, int pok)
 {
 	uint32_t x[KMAX];
 	static const uint32_t th[] = { LD_B1B_MAX };
 	int i, j, k, a, z;
 	long long lrp=-1, dc=0;
+	long long e10=0;
 	int gotdig = 0;
 	int rp;
-	int e10=0;
 	int e2;
 	long double y;
 	long double frac=0;
 	long double bias=0;
+	int c;
 
 	j=0;
 	k=0;
 
-	if (c<0) *pcnt += (c=getc(f))>=0;
+	c = shgetc(f);
 
 	/* Don't let leading zeros consume buffer space */
-	for (; c=='0'; *pcnt += (c=getc(f))>=0) gotdig=1;
+	for (; c=='0'; c = shgetc(f)) gotdig=1;
 
 	x[0] = 0;
-	for (; c-'0'<10U || c=='.'; *pcnt += (c=getc(f))>=0) {
+	for (; c-'0'<10U || c=='.'; c = shgetc(f)) {
 		if (c == '.') {
 			if (lrp!=-1) break;
 			lrp = dc;
@@ -108,21 +96,22 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 	if (lrp==-1) lrp=dc;
 
 	if (gotdig && (c|32)=='e') {
-		e10 = scanexp(f, pcnt);
+		e10 = scanexp(f, pok);
 		if (e10 == LLONG_MIN) {
-			if (!pok) {
-				*pcnt = 0;
+			if (pok) {
+				shunget(f);
+			} else {
+				shlim(f, 0);
 				return 0;
 			}
 			e10 = 0;
 		}
 		lrp += e10;
 	} else if (c>=0) {
-		ungetc(c, f);
-		--*pcnt;
+		shunget(f);
 	}
 	if (!gotdig) {
-		*pcnt = 0;
+		shlim(f, 0);
 		return 0;
 	}
 
@@ -271,7 +260,7 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 	return y;
 }
 
-static long double hexfloat(FILE *f, int c, int bits, int emin, int sign, int pok, off_t *pcnt)
+static long double hexfloat(FILE *f, int bits, int emin, int sign, int pok)
 {
 	uint32_t x = 0;
 	long double y = 0;
@@ -282,20 +271,21 @@ static long double hexfloat(FILE *f, int c, int bits, int emin, int sign, int po
 	long long dc = 0;
 	long long e2 = 0;
 	int d;
+	int c;
 
-	if (c<0) *pcnt += (c=getc(f))>=0;
+	c = shgetc(f);
 
 	/* Skip leading zeros */
-	for (; c=='0'; *pcnt += (c=getc(f))>=0) gotdig = 1;
+	for (; c=='0'; c = shgetc(f)) gotdig = 1;
 
 	if (c=='.') {
 		gotrad = 1;
-		*pcnt += (c=getc(f))>=0;
+		c = shgetc(f);
 		/* Count zeros after the radix point before significand */
-		for (rp=0; c=='0'; *pcnt += (c=getc(f))>=0, rp--) gotdig = 1;
+		for (rp=0; c=='0'; c = shgetc(f), rp--) gotdig = 1;
 	}
 
-	for (; c-'0'<10U || (c|32)-'a'<6U || c=='.'; *pcnt += (c=getc(f))>=0) {
+	for (; c-'0'<10U || (c|32)-'a'<6U || c=='.'; c = shgetc(f)) {
 		if (c=='.') {
 			if (gotrad) break;
 			rp = dc;
@@ -316,21 +306,24 @@ static long double hexfloat(FILE *f, int c, int bits, int emin, int sign, int po
 		}
 	}
 	if (!gotdig) {
-		if (c>=0) {
-			ungetc(c, f);
-			--*pcnt;
+		shunget(f);
+		if (pok) {
+			shunget(f);
+			if (gotrad) shunget(f);
+		} else {
+			shlim(f, 0);
 		}
-		if (pok) *pcnt -= 1+gotrad; /* uncount the rp, x of 0x */
-		else *pcnt = 0;
 		return 0;
 	}
 	if (!gotrad) rp = dc;
 	while (dc<8) x *= 16, dc++;
 	if ((c|32)=='p') {
-		e2 = scanexp(f, pcnt);
+		e2 = scanexp(f, pok);
 		if (e2 == LLONG_MIN) {
-			if (!pok) {
-				*pcnt = 0;
+			if (pok) {
+				shunget(f);
+			} else {
+				shlim(f, 0);
 				return 0;
 			}
 			e2 = 0;
@@ -369,14 +362,12 @@ static long double hexfloat(FILE *f, int c, int bits, int emin, int sign, int po
 	return scalbnl(y, e2);
 }
 
-long double __floatscan(FILE *f, int c, int prec, int pok, off_t *pcnt)
+long double __floatscan(FILE *f, int c, int prec, int pok)
 {
 	int sign = 1;
 	int i;
 	int bits;
 	int emin;
-
-	*pcnt = 0;
 
 	switch (prec) {
 	case 0:
@@ -395,44 +386,40 @@ long double __floatscan(FILE *f, int c, int prec, int pok, off_t *pcnt)
 		return 0;
 	}
 
-	if (c<0) *pcnt += (c=getc(f))>=0;
+	if (c<0) c = shgetc(f);
 
 	if (c=='+' || c=='-') {
 		sign -= 2*(c=='-');
-		*pcnt += (c=getc(f))>=0;
+		c = shgetc(f);
 	}
 
 	for (i=0; i<8 && (c|32)=="infinity"[i]; i++)
-		if (i<7) c = getc(f);
+		if (i<7) c = shgetc(f);
 	if (i==3 || i==8 || (i>3 && pok)) {
-		if (i==3 && c>=0) ungetc(c, f);
-		if (i==8) *pcnt += 7;
-		else *pcnt += 2;
+		if (i==3) shunget(f);
+		if (pok) for (; i>3; i--) shunget(f);
+		else shlim(f, 0);
 		return sign * INFINITY;
 	}
 	if (!i) for (i=0; i<3 && (c|32)=="nan"[i]; i++)
-		if (i<3) c = getc(f);
+		if (i<3) c = shgetc(f);
 	if (i==3) {
-		*pcnt += 2;
-		return sign>0 ? NAN : -NAN;
+		return NAN;
 	}
 
 	if (i) {
-		if (c>=0) ungetc(c, f);
-		*pcnt = 0;
+		shunget(f);
+		shlim(f, 0);
 		return 0;
 	}
 
 	if (c=='0') {
-		*pcnt += (c=getc(f))>=0;
+		c = shgetc(f);
 		if ((c|32) == 'x')
-			return hexfloat(f, -1, bits, emin, sign, pok, pcnt);
-		if (c>=0) {
-			ungetc(c, f);
-			--*pcnt;
-		}
+			return hexfloat(f, bits, emin, sign, pok);
 		c = '0';
 	}
 
-	return decfloat(f, c, bits, emin, sign, pok, pcnt);
+	shunget(f);
+	return decfloat(f, bits, emin, sign, pok);
 }
