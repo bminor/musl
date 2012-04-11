@@ -52,7 +52,7 @@ static long long scanexp(FILE *f, int pok)
 }
 
 
-static long double decfloat(FILE *f, int bits, int emin, int sign, int pok)
+static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int pok)
 {
 	uint32_t x[KMAX];
 	static const uint32_t th[] = { LD_B1B_MAX };
@@ -65,12 +65,9 @@ static long double decfloat(FILE *f, int bits, int emin, int sign, int pok)
 	long double y;
 	long double frac=0;
 	long double bias=0;
-	int c;
 
 	j=0;
 	k=0;
-
-	c = shgetc(f);
 
 	/* Don't let leading zeros consume buffer space */
 	for (; c=='0'; c = shgetc(f)) gotdig=1;
@@ -338,6 +335,8 @@ static long double hexfloat(FILE *f, int bits, int emin, int sign, int pok)
 			}
 			e2 = 0;
 		}
+	} else {
+		shunget(f);
 	}
 	e2 += 4*rp - 32;
 
@@ -436,9 +435,9 @@ long double __floatscan(FILE *f, int c, int prec, int pok)
 		c = shgetc(f);
 		if ((c|32) == 'x')
 			return hexfloat(f, bits, emin, sign, pok);
+		shunget(f);
 		c = '0';
 	}
 
-	shunget(f);
-	return decfloat(f, bits, emin, sign, pok);
+	return decfloat(f, c, bits, emin, sign, pok);
 }
