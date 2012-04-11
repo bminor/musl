@@ -3,7 +3,7 @@
 void __shlim(FILE *f, off_t lim)
 {
 	f->shlim = lim;
-	f->shcnt = f->rend ? f->rend - f->buf : 0;
+	f->shcnt = f->rend - f->rpos;
 	if (lim && f->rend - f->rpos > lim)
 		f->shend = f->rpos + lim;
 	else
