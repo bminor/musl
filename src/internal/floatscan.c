@@ -77,7 +77,7 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 		if (c == '.') {
 			if (lrp!=-1) break;
 			lrp = dc;
-		} else if (k < KMAX) {
+		} else if (k < KMAX-2) {
 			dc++;
 			if (j) x[k] = x[k]*10 + c-'0';
 			else x[k] = c-'0';
@@ -88,7 +88,7 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 			gotdig=1;
 		} else {
 			dc++;
-			x[KMAX-1] |= c-'0';
+			if (c!='0') x[KMAX-3] |= 1;
 		}
 	}
 	if (lrp==-1) lrp=dc;
@@ -146,7 +146,7 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 		int rpm9 = rp>=0 ? rp%9 : rp%9+9;
 		int p10 = p10s[rpm9-1];
 		uint32_t carry = 0;
-		for (k=a; k!=z; k=(k+1 & MASK)) {
+		for (k=a; k!=z; k++) {
 			uint32_t tmp = x[k] % p10;
 			x[k] = x[k]/p10 + carry;
 			carry = 1000000000/p10 * tmp;
@@ -155,12 +155,7 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 				rp -= 9;
 			}
 		}
-		if (carry) {
-			if ((z+1 & MASK) != a) {
-				x[z] = carry;
-				z = (z+1 & MASK);
-			} else x[z-1 & MASK] |= 1;
-		}
+		if (carry) x[z++] = carry;
 		rp += 9-rpm9;
 	}
 
