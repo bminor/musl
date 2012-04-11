@@ -3,6 +3,7 @@
 #include <math.h>
 #include <float.h>
 #include <limits.h>
+#include <errno.h>
 
 #include "shgetc.h"
 #include "floatscan.h"
@@ -111,6 +112,7 @@ static long double decfloat(FILE *f, int bits, int emin, int sign, int pok)
 		shunget(f);
 	}
 	if (!gotdig) {
+		errno = EINVAL;
 		shlim(f, 0);
 		return 0;
 	}
@@ -119,10 +121,14 @@ static long double decfloat(FILE *f, int bits, int emin, int sign, int pok)
 		return sign * 0.0;
 	if (lrp==dc && (!k || (k==1 && !j)) && (bits>30 || x[0]>>bits==0))
 		return sign * (long double)x[0];
-	if (lrp > -emin/2)
+	if (lrp > -emin/2) {
+		errno = ERANGE;
 		return sign * LDBL_MAX * LDBL_MAX;
-	if (lrp < emin-2*LDBL_MANT_DIG)
+	}
+	if (lrp < emin-2*LDBL_MANT_DIG) {
+		errno = ERANGE;
 		return sign * LDBL_MIN * LDBL_MIN;
+	}
 
 	if (k<KMAX && j) {
 		for (; j<9; j++) x[k]*=10;
@@ -257,6 +263,8 @@ static long double decfloat(FILE *f, int bits, int emin, int sign, int pok)
 
 	y = scalbnl(y, e2);
 
+	if (!y) errno = ERANGE;
+
 	return y;
 }
 
@@ -332,8 +340,14 @@ static long double hexfloat(FILE *f, int bits, int emin, int sign, int pok)
 	e2 += 4*rp - 32;
 
 	if (!x) return sign * 0.0;
-	if (e2 > -emin) return sign * LDBL_MAX * LDBL_MAX;
-	if (e2 < emin-2*LDBL_MANT_DIG) return sign * LDBL_MIN * LDBL_MIN;
+	if (e2 > -emin) {
+		errno = ERANGE;
+		return sign * LDBL_MAX * LDBL_MAX;
+	}
+	if (e2 < emin-2*LDBL_MANT_DIG) {
+		errno = ERANGE;
+		return sign * LDBL_MIN * LDBL_MIN;
+	}
 
 	while (x < 0x80000000) {
 		if (y>=0.5) {
@@ -358,6 +372,8 @@ static long double hexfloat(FILE *f, int bits, int emin, int sign, int pok)
 
 	y = bias + sign*(long double)x + sign*y;
 	y -= bias;
+
+	if (!y) errno = ERANGE;
 
 	return scalbnl(y, e2);
 }
@@ -409,6 +425,7 @@ long double __floatscan(FILE *f, int c, int prec, int pok)
 
 	if (i) {
 		shunget(f);
+		errno = EINVAL;
 		shlim(f, 0);
 		return 0;
 	}
