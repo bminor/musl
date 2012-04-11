@@ -2,14 +2,31 @@
 #include "floatscan.h"
 #include "stdio_impl.h"
 
-double strtod(const char *s, char **p)
+static long double strtox(const char *s, char **p, int prec)
 {
+	char *t = (char *)s;
+	while (isspace(*t)) t++;
 	FILE f = {
-		.buf = (void *)s, .rpos = (void *)s,
+		.buf = (void *)t, .rpos = (void *)t,
 		.rend = (void *)-1, .lock = -1
 	};
 	off_t cnt;
-	double y = __floatscan(&f, -1, 1, 1, &cnt);
-	if (p) *p = (char *)s + cnt;
+	long double y = __floatscan(&f, -1, prec, 1, &cnt);
+	if (p) *p = cnt ? t + cnt : (char *)s;
 	return y;
+}
+
+float strtof(const char *s, char **p)
+{
+	return strtox(s, p, 0);
+}
+
+double strtod(const char *s, char **p)
+{
+	return strtox(s, p, 1);
+}
+
+long double strtold(const char *s, char **p)
+{
+	return strtox(s, p, 2);
 }
