@@ -200,16 +200,17 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 		/* FIXME: find a way to compute optimal sh */
 		if (rp > 9+9*LD_B1B_DIG) sh = 9;
 		e2 += sh;
-		for (k=a; k!=z; k=(k+1 & MASK)) {
+		for (i=0; (k=(a+i & MASK))!=z && i<LD_B1B_DIG+3; i++) {
 			uint32_t tmp = x[k] & (1<<sh)-1;
 			x[k] = (x[k]>>sh) + carry;
 			carry = (1000000000>>sh) * tmp;
 			if (k==a && !x[k]) {
 				a = (a+1 & MASK);
+				i--;
 				rp -= 9;
 			}
 		}
-		if (carry) {
+		if (carry && k==z) {
 			if ((z+1 & MASK) != a) {
 				x[z] = carry;
 				z = (z+1 & MASK);
