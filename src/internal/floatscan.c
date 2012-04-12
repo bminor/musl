@@ -59,12 +59,15 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 	int i, j, k, a, z;
 	long long lrp=-1, dc=0;
 	long long e10=0;
+	int lnz = 0;
 	int gotdig = 0;
 	int rp;
 	int e2;
 	long double y;
 	long double frac=0;
 	long double bias=0;
+	static const int p10s[] = { 10, 100, 1000, 10000,
+		100000, 1000000, 10000000, 100000000 };
 
 	j=0;
 	k=0;
@@ -78,6 +81,7 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 			if (lrp!=-1) break;
 			lrp = dc;
 		} else if (k < KMAX-2) {
+			if (c!='0') lnz = dc;
 			dc++;
 			if (j) x[k] = x[k]*10 + c-'0';
 			else x[k] = c-'0';
@@ -114,9 +118,11 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 		return 0;
 	}
 
-	if (!x[0])
-		return sign * 0.0;
-	if (lrp==dc && (!k || (k==1 && !j)) && (bits>30 || x[0]>>bits==0))
+	/* Handle zero specially to avoid nasty special cases later */
+	if (!x[0]) return sign * 0.0;
+
+	/* Optimize small integers (w/no exponent) and over/under-flow */
+	if (lrp==dc && dc<10 && (bits>30 || x[0]>>bits==0))
 		return sign * (long double)x[0];
 	if (lrp > -emin/2) {
 		errno = ERANGE;
@@ -127,6 +133,7 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 		return sign * LDBL_MIN * LDBL_MIN;
 	}
 
+	/* Align incomplete final B1B digit */
 	if (k<KMAX && j) {
 		for (; j<9; j++) x[k]*=10;
 		k++;
@@ -138,13 +145,19 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 	e2 = 0;
 	rp = lrp;
 
+	/* Optimize small to mid-size integers (even in exp. notation) */
+	if (lnz<9 && lnz<=rp && rp < 18) {
+		if (rp == 9) return sign * (long double)x[0];
+		if (rp < 9) return sign * (long double)x[0] / p10s[8-rp];
+		int bitlim = bits-3*(int)(rp-9);
+		if (bitlim>30 || x[0]>>bitlim==0)
+			return sign * (long double)x[0] * p10s[rp-10];
+	}
+
+	/* Align radix point to B1B digit boundary */
 	if (rp % 9) {
-		static const int p10s[] = {
-			100000000, 10000000, 1000000, 100000,
-			10000, 1000, 100, 10
-		};
 		int rpm9 = rp>=0 ? rp%9 : rp%9+9;
-		int p10 = p10s[rpm9-1];
+		int p10 = p10s[8-rpm9];
 		uint32_t carry = 0;
 		for (k=a; k!=z; k++) {
 			uint32_t tmp = x[k] % p10;
@@ -159,6 +172,7 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 		rp += 9-rpm9;
 	}
 
+	/* Upscale until desired number of bits are left of radix point */
 	while (rp < 9*LD_B1B_DIG || (rp == 9*LD_B1B_DIG && x[a]<th[0])) {
 		uint32_t carry = 0;
 		e2 -= 29;
@@ -185,6 +199,7 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 		}
 	}
 
+	/* Downscale until exactly number of bits are left of radix point */
 	for (;;) {
 		uint32_t carry = 0;
 		int sh = 1;
@@ -218,6 +233,7 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 		}
 	}
 
+	/* Assemble desired bits into floating point variable */
 	for (y=i=0; i<LD_B1B_DIG; i++) {
 		if ((a+i & MASK)==z) x[z=(z+1 & MASK)] = 0;
 		y = 1000000000.0L * y + x[a+i & MASK];
@@ -225,11 +241,13 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 
 	y *= sign;
 
+	/* Limit precision for denormal results */
 	if (bits > LDBL_MANT_DIG+e2-emin) {
 		bits = LDBL_MANT_DIG+e2-emin;
 		if (bits<0) bits=0;
 	}
 
+	/* Calculate bias term to force rounding, move out lower bits */
 	if (bits < LDBL_MANT_DIG) {
 		bias = copysignl(scalbn(1, 2*LDBL_MANT_DIG-bits-1), y);
 		frac = fmodl(y, scalbn(1, LDBL_MANT_DIG-bits));
@@ -237,6 +255,7 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 		y += bias;
 	}
 
+	/* Process tail of decimal input so it can affect rounding */
 	if ((a+i & MASK) != z) {
 		uint32_t t = x[a+i & MASK];
 		if (t < 500000000 && (t || (a+i+1 & MASK) != z))
