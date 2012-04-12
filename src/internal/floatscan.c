@@ -159,7 +159,7 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 		rp += 9-rpm9;
 	}
 
-	while (rp < 9*LD_B1B_DIG || (rp == 9*LD_B1B_DIG && x[0]<th[0])) {
+	while (rp < 9*LD_B1B_DIG || (rp == 9*LD_B1B_DIG && x[a]<th[0])) {
 		uint32_t carry = 0;
 		e2 -= 29;
 		for (k=(z-1 & MASK); ; k=(k-1 & MASK)) {
