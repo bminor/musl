@@ -403,16 +403,16 @@ long double __floatscan(FILE *f, int c, int prec, int pok)
 
 	switch (prec) {
 	case 0:
-		bits = 24;
-		emin = -149;
+		bits = FLT_MANT_DIG;
+		emin = FLT_MIN_EXP-bits;
 		break;
 	case 1:
-		bits = 53;
-		emin = -1074;
+		bits = DBL_MANT_DIG;
+		emin = DBL_MIN_EXP-bits;
 		break;
 	case 2:
 		bits = LDBL_MANT_DIG;
-		emin = -16445;
+		emin = LDBL_MIN_EXP-bits;
 		break;
 	default:
 		return 0;
