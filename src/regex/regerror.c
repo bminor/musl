@@ -22,14 +22,14 @@ static const char messages[] = {
   "Invalid contents of {}\0"
   "Invalid character range\0"
   "Out of memory\0"
-  "XXX\0"
+  "Repetition not preceded by valid expression\0"
   "\0Unknown error"
 };
 
 size_t regerror(int e, const regex_t *preg, char *buf, size_t size)
 {
 	const char *s;
-	for (s=messages; e && *s; e--, e+=strlen(s)+1);
+	for (s=messages; e && *s; e--, s+=strlen(s)+1);
 	if (!*s) s++;
 	return 1+snprintf(buf, size, "%s", s);
 }
