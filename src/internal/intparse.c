@@ -83,9 +83,19 @@ int __intparse(struct intparse *v, const void *buf, size_t n)
 		v->state++;
 		v->val = v->small;
 	case 5:
-		llim = UINTMAX_MAX/b;
-		for (; n && (d=digits[*s])<b && v->val<=llim && d<=UINTMAX_MAX-v->val*b; n--, s++)
-			v->val = v->val * b + d;
+		if (b==10) {
+			for (; n && *s-'0'<10U && v->val<=UINTMAX_MAX/10 && (*s-'0')<=UINTMAX_MAX-10*v->val; n--, s++)
+				v->val = v->val * 10 + (*s-'0');
+		} else if ((b&-b) == b) {
+			int bs = "\0\1\2\4\7\3\6\5"[(0x17*b)>>5&7];
+			llim = UINTMAX_MAX>>bs;
+			for (; n && (d=digits[*s])<b && v->val<=llim; n--, s++)
+				v->val = (v->val<<bs) + d;
+		} else {
+			llim = UINTMAX_MAX/b;
+			for (; n && (d=digits[*s])<b && v->val<=llim && d<=UINTMAX_MAX-b*v->val; n--, s++)
+				v->val = v->val * b + d;
+		}
 		if (!n) return 1;
 		if (d >= b) goto finished;
 		v->state++;
