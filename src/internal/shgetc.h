@@ -3,23 +3,7 @@
 void __shlim(FILE *, off_t);
 int __shgetc(FILE *);
 
-static inline off_t shcnt(FILE *f)
-{
-	return f->shcnt + (f->rpos - f->rend);
-}
-
-static inline void shlim(FILE *f, off_t lim)
-{
-	__shlim(f, lim);
-}
-
-static inline int shgetc(FILE *f)
-{
-	if (f->rpos < f->shend) return *f->rpos++;
-	return __shgetc(f);
-}
-
-static inline void shunget(FILE *f)
-{
-	if (f->rend) f->rpos--;
-}
+#define shcnt(f) ((f)->shcnt + ((f)->rpos - (f)->rend))
+#define shlim(f, lim) __shlim((f), (lim))
+#define shgetc(f) (((f)->rpos < (f)->shend) ? *(f)->rpos++ : __shgetc(f))
+#define shunget(f) ((f)->rend ? (void)(f)->rpos-- : (void)0)
