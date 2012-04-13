@@ -25,12 +25,12 @@ static const unsigned char digits[] = {
 };
 
 #define SLIM (UINT_MAX/36-1)
-#define LLIM (UINTMAX_MAX/36-1)
 
 int __intparse(struct intparse *v, const void *buf, size_t n)
 {
 	const unsigned char *s = buf;
 	int d, b = v->base;
+	uintmax_t llim;
 
 	v->cnt += n;
 	for (; n; n--, s++) switch (v->state) {
@@ -83,16 +83,12 @@ int __intparse(struct intparse *v, const void *buf, size_t n)
 		v->state++;
 		v->val = v->small;
 	case 5:
-		for (; n && (d=digits[*s])<b && v->val<=LLIM; n--, s++)
+		llim = UINTMAX_MAX/b;
+		for (; n && (d=digits[*s])<b && v->val<=llim && d<=UINTMAX_MAX-v->val*b; n--, s++)
 			v->val = v->val * b + d;
 		if (!n) return 1;
 		if (d >= b) goto finished;
-		if (v->val <= (UINTMAX_MAX-d)/b)
-			v->val = v->val * b + d;
-		else
-			v->err = ERANGE;
 		v->state++;
-		n--; s++;
 	case 6:
 		if (n && digits[*s]<b) {
 			v->err = ERANGE;
