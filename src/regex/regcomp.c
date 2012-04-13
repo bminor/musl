@@ -1105,20 +1105,6 @@ tre_parse(tre_parse_ctx_t *ctx)
 		if (*ctx->re == CHAR_QUESTIONMARK)
 		  rep_max = 1;
 
-		  {
-		    if (*(ctx->re + 1) == CHAR_QUESTIONMARK)
-		      {
-			minimal = 1;
-			ctx->re++;
-		      }
-		    else if (*(ctx->re + 1) == CHAR_STAR
-			     || *(ctx->re + 1) == CHAR_PLUS)
-		      {
-			/* These are reserved for future extensions. */
-			return REG_BADRPT;
-		      }
-		  }
-
 		ctx->re++;
 		tmp_node = tre_ast_new_iter(ctx->mem, result, rep_min, rep_max,
 					    minimal);
