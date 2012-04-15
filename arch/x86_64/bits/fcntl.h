@@ -25,6 +25,8 @@
 
 #define F_SETOWN 8
 #define F_GETOWN 9
+#define F_SETSIG 10
+#define F_GETSIG 11
 
 #define F_GETLK 5
 #define F_SETLK 6
