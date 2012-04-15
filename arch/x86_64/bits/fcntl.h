@@ -31,5 +31,3 @@
 #define F_GETLK 5
 #define F_SETLK 6
 #define F_SETLKW 7
-
-#define F_DUPFD_CLOEXEC 1030

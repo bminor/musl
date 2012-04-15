@@ -34,6 +34,8 @@ int posix_fallocate(int, off_t, off_t);
 #define O_WRONLY  01
 #define O_RDWR    02
 
+#define F_DUPFD_CLOEXEC 1030
+
 #define F_RDLCK 0
 #define F_WRLCK 1
 #define F_UNLCK 2
