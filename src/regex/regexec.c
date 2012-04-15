@@ -174,7 +174,7 @@ tre_tnfa_run_parallel(const tre_tnfa_t *tnfa, const void *string,
   tre_char_t prev_c = 0, next_c = 0;
   const char *str_byte = string;
   int pos = -1;
-  unsigned int pos_add_next = 1;
+  int pos_add_next = 1;
 #ifdef TRE_MBSTATE
   mbstate_t mbstate;
 #endif /* TRE_MBSTATE */
@@ -583,7 +583,7 @@ tre_tnfa_run_backtrack(const tre_tnfa_t *tnfa, const void *string,
   tre_char_t prev_c = 0, next_c = 0;
   const char *str_byte = string;
   int pos = 0;
-  unsigned int pos_add_next = 1;
+  int pos_add_next = 1;
 #ifdef TRE_MBSTATE
   mbstate_t mbstate;
 #endif /* TRE_MBSTATE */
