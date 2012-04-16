@@ -81,8 +81,8 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 			if (lrp!=-1) break;
 			lrp = dc;
 		} else if (k < KMAX-2) {
-			if (c!='0') lnz = dc;
 			dc++;
+			if (c!='0') lnz = dc;
 			if (j) x[k] = x[k]*10 + c-'0';
 			else x[k] = c-'0';
 			if (++j==9) {
