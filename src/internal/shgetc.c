@@ -13,7 +13,10 @@ void __shlim(FILE *f, off_t lim)
 int __shgetc(FILE *f)
 {
 	int c;
-	if (f->shcnt >= f->shlim) return EOF;
+	if (f->shlim && f->shcnt >= f->shlim) {
+		f->shend = 0;
+		return EOF;
+	}
 	c = __uflow(f);
 	if (f->shlim && f->rend - f->rpos > f->shlim - f->shcnt - 1)
 		f->shend = f->rpos + (f->shlim - f->shcnt - 1);

@@ -6,4 +6,4 @@ int __shgetc(FILE *);
 #define shcnt(f) ((f)->shcnt + ((f)->rpos - (f)->rend))
 #define shlim(f, lim) __shlim((f), (lim))
 #define shgetc(f) (((f)->rpos < (f)->shend) ? *(f)->rpos++ : __shgetc(f))
-#define shunget(f) ((f)->rend ? (void)(f)->rpos-- : (void)0)
+#define shunget(f) ((f)->shend ? (void)(f)->rpos-- : (void)0)
