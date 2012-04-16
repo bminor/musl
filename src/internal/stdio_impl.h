@@ -69,6 +69,8 @@ size_t __stdout_write(FILE *, const unsigned char *, size_t);
 off_t __stdio_seek(FILE *, off_t, int);
 int __stdio_close(FILE *);
 
+size_t __string_read(FILE *, unsigned char *, size_t);
+
 int __toread(FILE *);
 int __towrite(FILE *);
 
