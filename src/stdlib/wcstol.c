@@ -1,18 +1,75 @@
-#include <wchar.h>
-#include <stdlib.h>
-#include <inttypes.h>
-#include <errno.h>
-#include <limits.h>
+#include "stdio_impl.h"
+#include "intscan.h"
+#include "shgetc.h"
+
+/* This read function heavily cheats. It knows:
+ *  (1) len will always be 1
+ *  (2) non-ascii characters don't matter */
+
+static size_t do_read(FILE *f, unsigned char *buf, size_t len)
+{
+	size_t i;
+	const wchar_t *wcs = f->cookie;
+
+	for (i=0; i<f->buf_size && wcs[i]; i++)
+		f->buf[i] = wcs[i] < 128 ? wcs[i] : '@';
+	f->rpos = f->buf;
+	f->rend = f->buf + i;
+	f->cookie = (void *)(wcs+i);
+
+	if (i && len) {
+		*buf = *f->rpos++;
+		return 1;
+	}
+	return 0;
+}
+
+static unsigned long long wcstox(const wchar_t *s, wchar_t **p, int base, unsigned long long lim)
+{
+	unsigned char buf[64];
+	FILE f = {0};
+	f.flags = 0;
+	f.rpos = f.rend = 0;
+	f.buf = buf;
+	f.buf_size = sizeof buf;
+	f.lock = -1;
+	f.read = do_read;
+	f.cookie = (void *)s;
+	shlim(&f, 0);
+	unsigned long long y = __intscan(&f, base, 1, lim);
+	if (p) {
+		size_t cnt = shcnt(&f);
+		*p = (wchar_t *)s + cnt;
+	}
+	return y;
+}
+
+unsigned long long wcstoull(const wchar_t *s, wchar_t **p, int base)
+{
+	return wcstox(s, p, base, ULLONG_MAX);
+}
+
+long long wcstoll(const wchar_t *s, wchar_t **p, int base)
+{
+	return wcstox(s, p, base, LLONG_MIN);
+}
+
+unsigned long wcstoul(const wchar_t *s, wchar_t **p, int base)
+{
+	return wcstox(s, p, base, ULONG_MAX);
+}
 
 long wcstol(const wchar_t *s, wchar_t **p, int base)
 {
-	intmax_t x = wcstoimax(s, p, base);
-	if (x > LONG_MAX) {
-		errno = ERANGE;
-		return LONG_MAX;
-	} else if (x < LONG_MIN) {
-		errno = ERANGE;
-		return LONG_MIN;
-	}
-	return x;
+	return wcstox(s, p, base, 0UL+LONG_MIN);
+}
+
+intmax_t wcstoimax(const wchar_t *s, wchar_t **p, int base)
+{
+	return wcstoll(s, p, base);
+}
+
+uintmax_t wcstoumax(const wchar_t *s, wchar_t **p, int base)
+{
+	return wcstoull(s, p, base);
 }
