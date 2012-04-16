@@ -98,4 +98,4 @@ E(EDQUOT,       "Quota exceeded")
 E(ENOMEDIUM,    "No medium found")
 E(EMEDIUMTYPE,  "Wrong medium type")
 
-E(0,            "Invalid error number")
+E(0,            "No error information")
