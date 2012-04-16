@@ -11,6 +11,7 @@ static size_t do_read(FILE *f, unsigned char *buf, size_t len)
 	size_t i;
 	const wchar_t *wcs = f->cookie;
 
+	if (!wcs[0]) wcs=L"@";
 	for (i=0; i<f->buf_size && wcs[i]; i++)
 		f->buf[i] = wcs[i] < 128 ? wcs[i] : '@';
 	f->rpos = f->buf;
@@ -30,8 +31,8 @@ static unsigned long long wcstox(const wchar_t *s, wchar_t **p, int base, unsign
 	FILE f = {0};
 	f.flags = 0;
 	f.rpos = f.rend = 0;
-	f.buf = buf;
-	f.buf_size = sizeof buf;
+	f.buf = buf + 4;
+	f.buf_size = sizeof buf - 4;
 	f.lock = -1;
 	f.read = do_read;
 	f.cookie = (void *)s;
