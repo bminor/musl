@@ -1,19 +1,35 @@
-#include <stdio.h>
-#include <string.h>
-#include <wchar.h>
-#include <wctype.h>
+#include "stdio_impl.h"
 
-#include "__scanf.h"
-
-static void s_read(rctx_t *r)
+static size_t wstring_read(FILE *f, unsigned char *buf, size_t len)
 {
-	wchar_t *s = r->opaque;
-	if (!s[r->l]) r->c = -1;
-	else r->c = s[r->l++];
+	const wchar_t *src = f->cookie;
+	size_t k;
+
+	if (!src) return 0;
+
+	k = wcsrtombs((void *)f->buf, &src, f->buf_size, 0);
+	if (k==(size_t)-1) {
+		f->rpos = f->rend = 0;
+		return 0;
+	}
+
+	f->rpos = f->buf;
+	f->rend = f->buf + k;
+	f->cookie = (void *)src;
+
+	if (!len) return 0;
+
+	*buf = *f->rpos++;
+	return 1;
 }
 
 int vswscanf(const wchar_t *s, const wchar_t *fmt, va_list ap)
 {
-	rctx_t r = { s_read, (void *)s, 1, iswspace };
-	return __scanf(&r, fmt, ap);
+	unsigned char buf[256];
+	FILE f = {
+		.buf = buf, .buf_size = sizeof buf,
+		.cookie = (void *)s,
+		.read = wstring_read, .lock = -1
+	};
+	return vfwscanf(&f, fmt, ap);
 }
