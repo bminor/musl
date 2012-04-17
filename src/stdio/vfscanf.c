@@ -284,7 +284,7 @@ int vfscanf(FILE *f, const char *fmt, va_list ap)
 		int_common:
 			x = __intscan(f, base, 0, ULLONG_MAX);
 			if (!shcnt(f)) goto match_fail;
-			if (t=='p') *(void **)dest = (void *)(uintptr_t)x;
+			if (t=='p' && dest) *(void **)dest = (void *)(uintptr_t)x;
 			else store_int(dest, size, x);
 			break;
 		case 'a': case 'A':
