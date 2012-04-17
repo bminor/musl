@@ -83,7 +83,7 @@ static int in_set(const wchar_t *set, int c)
 
 #undef ungetwc
 #define ungetwc(c,f) \
-	((f)->rend && (c)<128 ? *--(f)->rpos : ungetwc((c),(f)))
+	((f)->rend && (c)<128U ? *--(f)->rpos : ungetwc((c),(f)))
 #endif
 
 int vfwscanf(FILE *f, const wchar_t *fmt, va_list ap)
@@ -215,19 +215,22 @@ int vfwscanf(FILE *f, const wchar_t *fmt, va_list ap)
 
 		case 's':
 			s = dest;
-			while (!iswspace(c=getwc(f)) && c!=EOF) {
+			while (width && !iswspace(c=getwc(f)) && c!=EOF) {
 				int l = wctomb(s?s:tmp, c);
 				if (l<0) goto input_fail;
 				if (s) s+=l;
 				pos++;
+				width--;
 			}
+			if (width) ungetwc(c, f);
 			if (s) *s = 0;
 			break;
 
 		case 'S':
 			wcs = dest;
-			while (!iswspace(c=getwc(f)) && c!=EOF)
-				pos++, *wcs++ = c;
+			while (width && !iswspace(c=getwc(f)) && c!=EOF)
+				width--, pos++, *wcs++ = c;
+			if (width) ungetwc(c, f);
 			if (wcs) *wcs = 0;
 			break;
 
