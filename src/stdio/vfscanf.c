@@ -227,14 +227,14 @@ int vfscanf(FILE *f, const char *fmt, va_list ap)
 
 			scanset[0] = 0;
 			if (*p == '-') p++, scanset[1+'-'] = 1-invert;
-			if (*p == ']') p++, scanset[1+']'] = 1-invert;
-			for (; *p && *p != ']'; p++) {
-				if (*p=='-' && p[1] != ']')
+			else if (*p == ']') p++, scanset[1+']'] = 1-invert;
+			for (; *p != ']'; p++) {
+				if (!*p) goto fmt_fail;
+				if (*p=='-' && p[1] && p[1] != ']')
 					for (c=p++[-1]; c<*p; c++)
 						scanset[1+c] = 1-invert;
 				scanset[1+*p] = 1-invert;
 			}
-			if (!*p) goto fmt_fail;
 
 			if (size == SIZE_l) {
 				st = (mbstate_t){0};
