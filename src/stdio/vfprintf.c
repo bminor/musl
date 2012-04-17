@@ -652,8 +652,9 @@ int vfprintf(FILE *f, const char *fmt, va_list ap)
 	FLOCK(f);
 	if (!f->buf_size) {
 		saved_buf = f->buf;
-		f->buf = internal_buf;
+		f->wpos = f->wbase = f->buf = internal_buf;
 		f->buf_size = sizeof internal_buf;
+		f->wend = internal_buf + sizeof internal_buf;
 	}
 	ret = printf_core(f, fmt, &ap2, nl_arg, nl_type);
 	if (saved_buf) {
