@@ -32,7 +32,7 @@ int tcflow (int, int);
 
 pid_t tcgetsid (int);
 
-#ifdef _GNUS_SOURCE
+#ifdef _GNU_SOURCE
 void cfmakeraw(struct termios *);
 int cfsetspeed(struct termios *, speed_t);
 #endif
