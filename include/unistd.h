@@ -159,6 +159,8 @@ int setgroups(size_t, const gid_t []);
 int setresuid(uid_t, uid_t, uid_t);
 int setresgid(gid_t, gid_t, gid_t);
 char *get_current_dir_name(void);
+int daemon(int, int);
+int getdomainname(char *, size_t);
 #endif
 
 #define _XOPEN_VERSION          700

@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <termios.h>
 
 void cfmakeraw(struct termios *t)

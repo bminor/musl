@@ -108,6 +108,11 @@ struct tm *getdate (const char *);
 #endif
 
 
+#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+int stime(time_t *);
+#endif
+
+
 #ifdef __cplusplus
 }
 #endif
