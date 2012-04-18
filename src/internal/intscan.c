@@ -54,6 +54,7 @@ unsigned long long __intscan(FILE *f, unsigned base, int pok, unsigned long long
 	} else {
 		if (base == 0) base = 10;
 		if (val[c] >= base) {
+			shunget(f);
 			shlim(f, 0);
 			errno = EINVAL;
 			return 0;
