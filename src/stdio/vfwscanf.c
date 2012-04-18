@@ -181,8 +181,11 @@ int vfwscanf(FILE *f, const wchar_t *fmt, va_list ap)
 		/* Transform ls,lc -> S,C */
 		if (size==SIZE_l && (t&15)==3) t&=~32;
 
-		if (t != 'n' && t != '[' && (t|32) != 'c') {
-			while (iswspace((c=getwc(f)))) pos++;
+		if (t != 'n') {
+			if (t != '[' && (t|32) != 'c')
+				while (iswspace((c=getwc(f)))) pos++;
+			else
+				c=getwc(f);
 			if (c < 0) goto input_fail;
 			ungetwc(c, f);
 		}
@@ -264,9 +267,7 @@ int vfwscanf(FILE *f, const wchar_t *fmt, va_list ap)
 			}
 			if (width) ungetwc(c, f);
 
-			if (!gotmatch)
-				if (c>=0) goto match_fail;
-				else goto input_fail;
+			if (!gotmatch) goto match_fail;
 
 			if (*p==']') p++;
 			while (*p!=']') {
