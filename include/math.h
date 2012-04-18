@@ -25,7 +25,7 @@ extern "C" {
 #define HUGE_VALL ((long double)INFINITY)
 
 #define MATH_ERRNO  1
-#define MATH_EXCEPT 2
+#define MATH_ERREXCEPT 2
 #define math_errhandling 2
 
 #define FP_ILOGBNAN (((unsigned)-1)>>1)
