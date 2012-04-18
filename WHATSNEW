@@ -456,3 +456,37 @@ bug fixes:
 - strtoull wrongly rejecting the highest 16 possible values as overflow
 - math.h constant expression fixes for INFINITY/NAN/etc.
 - scanf mishandling of "0" with "%x"
+
+
+
+0.8.8 release notes
+
+new feature:
+- major math correctness and performance improvements
+- many math functions implemented in asm for i386
+- some math functions (mostly long double) in asm for x86_64
+- new floating point parser/converter with correct rounding
+- implement wcstod, wcstof, and wcstold
+- new scanf implementation - cleaner, faster, more correct
+- minimal/incomplete strfmon implementation
+
+compatibility:
+- header fixes for c++
+- regex code resync with TRE; support common regex extensions
+- support for compiling apps with gcc's -funsigned-char
+- sysconf now returns dynamic limits for open files, processes
+- give dlerror proper error status stickiness
+- make alloca work even with -fno-builtin
+
+critical security fixes:
+- stack-based buffer overflow in fprintf on unbuffered files
+
+other bug fixes:
+- rare gcc register allocation (miscompilation) bug in syscall wrappers
+- printf was rejecting the valid (but redundant) %lf format specifier
+- fixed big data bloat (missing const) in math functions
+- many math fixes related to floating point exceptions and rounding
+- corrected DECIMAL_DIG definitions
+- tgammal was wrongly setting global signgam
+- crash in wordfree with uninitialized we_offs
+- fix wordexp not null-initializing the we_offs initial slots
