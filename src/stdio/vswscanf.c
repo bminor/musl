@@ -17,7 +17,7 @@ static size_t wstring_read(FILE *f, unsigned char *buf, size_t len)
 	f->rend = f->buf + k;
 	f->cookie = (void *)src;
 
-	if (!len) return 0;
+	if (!len || !k) return 0;
 
 	*buf = *f->rpos++;
 	return 1;

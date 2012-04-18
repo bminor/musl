@@ -264,7 +264,9 @@ int vfwscanf(FILE *f, const wchar_t *fmt, va_list ap)
 			}
 			if (width) ungetwc(c, f);
 
-			if (!gotmatch) goto match_fail;
+			if (!gotmatch)
+				if (c>=0) goto match_fail;
+				else goto input_fail;
 
 			if (*p==']') p++;
 			while (*p!=']') {
