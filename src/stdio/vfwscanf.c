@@ -214,13 +214,14 @@ int vfwscanf(FILE *f, const wchar_t *fmt, va_list ap)
 			break;
 
 		case 's':
+			if (width < 1) width = -1;
 			s = dest;
 			while (width && !iswspace(c=getwc(f)) && c!=EOF) {
 				int l = wctomb(s?s:tmp, c);
 				if (l<0) goto input_fail;
 				if (s) s+=l;
 				pos++;
-				width--;
+				width-=(width>0);
 			}
 			if (width) ungetwc(c, f);
 			if (s) *s = 0;
@@ -228,8 +229,9 @@ int vfwscanf(FILE *f, const wchar_t *fmt, va_list ap)
 
 		case 'S':
 			wcs = dest;
+			if (width < 1) width = -1;
 			while (width && !iswspace(c=getwc(f)) && c!=EOF)
-				width--, pos++, *wcs++ = c;
+				width-=(width>0), pos++, *wcs++ = c;
 			if (width) ungetwc(c, f);
 			if (wcs) *wcs = 0;
 			break;
@@ -243,6 +245,8 @@ int vfwscanf(FILE *f, const wchar_t *fmt, va_list ap)
 
 			int gotmatch = 0;
 
+			if (width < 1) width = -1;
+
 			while (width) {
 				if ((c=getwc(f))<0) break;
 				if (in_set(p, c) == invert)
@@ -255,7 +259,7 @@ int vfwscanf(FILE *f, const wchar_t *fmt, va_list ap)
 					if (s) s+=l;
 				}
 				pos++;
-				width--;
+				width-=(width>0);
 				gotmatch=1;
 			}
 			if (width) ungetwc(c, f);
