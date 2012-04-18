@@ -312,6 +312,7 @@ int vfscanf(FILE *f, const char *fmt, va_list ap)
 				if (readwc(c, &wcs, &st) < 0)
 					goto input_fail;
 			}
+			shunget(f);
 			if (!mbsinit(&st)) goto input_fail;
 			if (dest) *wcs++ = 0;
 			break;
