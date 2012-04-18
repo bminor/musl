@@ -243,7 +243,7 @@ int vfwscanf(FILE *f, const wchar_t *fmt, va_list ap)
 
 			int gotmatch = 0;
 
-			for (;;) {
+			while (width) {
 				if ((c=getwc(f))<0) break;
 				if (in_set(p, c) == invert)
 					break;
@@ -255,9 +255,10 @@ int vfwscanf(FILE *f, const wchar_t *fmt, va_list ap)
 					if (s) s+=l;
 				}
 				pos++;
+				width--;
 				gotmatch=1;
 			}
-			ungetwc(c, f);
+			if (width) ungetwc(c, f);
 
 			if (!gotmatch) goto match_fail;
 
