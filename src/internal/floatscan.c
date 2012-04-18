@@ -428,9 +428,10 @@ long double __floatscan(FILE *f, int c, int prec, int pok)
 	for (i=0; i<8 && (c|32)=="infinity"[i]; i++)
 		if (i<7) c = shgetc(f);
 	if (i==3 || i==8 || (i>3 && pok)) {
-		if (i==3) shunget(f);
-		if (pok) for (; i>3; i--) shunget(f);
-		else shlim(f, 0);
+		if (i!=8) {
+			shunget(f);
+			if (pok) for (; i>3; i--) shunget(f);
+		}
 		return sign * INFINITY;
 	}
 	if (!i) for (i=0; i<3 && (c|32)=="nan"[i]; i++)
