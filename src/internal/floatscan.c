@@ -394,12 +394,13 @@ static long double hexfloat(FILE *f, int bits, int emin, int sign, int pok)
 	return scalbnl(y, e2);
 }
 
-long double __floatscan(FILE *f, int c, int prec, int pok)
+long double __floatscan(FILE *f, int prec, int pok)
 {
 	int sign = 1;
 	int i;
 	int bits;
 	int emin;
+	int c;
 
 	switch (prec) {
 	case 0:
@@ -418,7 +419,7 @@ long double __floatscan(FILE *f, int c, int prec, int pok)
 		return 0;
 	}
 
-	if (c<0) c = shgetc(f);
+	while (isspace((c=shgetc(f))));
 
 	if (c=='+' || c=='-') {
 		sign -= 2*(c=='-');

@@ -5,16 +5,14 @@
 
 static long double strtox(const char *s, char **p, int prec)
 {
-	char *t = (char *)s;
-	while (isspace(*t)) t++;
 	FILE f = {
-		.buf = (void *)t, .rpos = (void *)t,
+		.buf = (void *)s, .rpos = (void *)s,
 		.rend = (void *)-1, .lock = -1
 	};
 	shlim(&f, 0);
-	long double y = __floatscan(&f, -1, prec, 1);
+	long double y = __floatscan(&f, prec, 1);
 	off_t cnt = shcnt(&f);
-	if (p) *p = cnt ? t + cnt : (char *)s;
+	if (p) *p = cnt ? (char *)s + cnt : (char *)s;
 	return y;
 }
 

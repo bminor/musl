@@ -32,7 +32,7 @@ unsigned long long __intscan(FILE *f, unsigned base, int pok, unsigned long long
 		errno = EINVAL;
 		return 0;
 	}
-	c = shgetc(f);
+	while (isspace((c=shgetc(f))));
 	if (c=='+' || c=='-') {
 		neg = -(c=='-');
 		c = shgetc(f);

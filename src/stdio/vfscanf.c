@@ -291,7 +291,7 @@ int vfscanf(FILE *f, const char *fmt, va_list ap)
 		case 'e': case 'E':
 		case 'f': case 'F':
 		case 'g': case 'G':
-			y = __floatscan(f, -1, size, 0);
+			y = __floatscan(f, size, 0);
 			if (!shcnt(f)) goto match_fail;
 			if (dest) switch (size) {
 			case SIZE_def:
