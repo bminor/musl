@@ -27,6 +27,7 @@ static size_t do_read(FILE *f, unsigned char *buf, size_t len)
 
 static unsigned long long wcstox(const wchar_t *s, wchar_t **p, int base, unsigned long long lim)
 {
+	wchar_t *t = (wchar_t *)s;
 	unsigned char buf[64];
 	FILE f = {0};
 	f.flags = 0;
@@ -35,12 +36,13 @@ static unsigned long long wcstox(const wchar_t *s, wchar_t **p, int base, unsign
 	f.buf_size = sizeof buf - 4;
 	f.lock = -1;
 	f.read = do_read;
-	f.cookie = (void *)s;
+	while (iswspace(*t)) t++;
+	f.cookie = (void *)t;
 	shlim(&f, 0);
 	unsigned long long y = __intscan(&f, base, 1, lim);
 	if (p) {
 		size_t cnt = shcnt(&f);
-		*p = (wchar_t *)s + cnt;
+		*p = cnt ? t + cnt : (wchar_t *)s;
 	}
 	return y;
 }

@@ -39,9 +39,11 @@ static long double wcstox(const wchar_t *s, wchar_t **p, int prec)
 	while (iswspace(*t)) t++;
 	f.cookie = (void *)t;
 	shlim(&f, 0);
-	long double y = __floatscan(&f, -1, prec, 1);
-	off_t cnt = shcnt(&f);
-	if (p) *p = cnt ? t + cnt : (wchar_t *)s;
+	long double y = __floatscan(&f, prec, 1);
+	if (p) {
+		size_t cnt = shcnt(&f);
+		*p = cnt ? t + cnt : (wchar_t *)s;
+	}
 	return y;
 }
 
