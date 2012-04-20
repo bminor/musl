@@ -490,3 +490,14 @@ other bug fixes:
 - tgammal was wrongly setting global signgam
 - crash in wordfree with uninitialized we_offs
 - fix wordexp not null-initializing the we_offs initial slots
+
+
+
+0.8.9 release notes
+
+bug fixes:
+- major breakage in strtol and family: failure to accept leading spaces
+- incorrect name for MATH_ERREXCEPT in math.h
+
+compatibility:
+- prototypes for a few additional nonstandard functions
