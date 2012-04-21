@@ -24,6 +24,8 @@
 
 #define MASK (KMAX-1)
 
+#define CONCAT2(x,y) x ## y
+#define CONCAT(x,y) CONCAT2(x,y)
 
 static long long scanexp(FILE *f, int pok)
 {
@@ -63,6 +65,8 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 	int gotdig = 0, gotrad = 0;
 	int rp;
 	int e2;
+	int emax = -emin-bits+3;
+	int denormal = 0;
 	long double y;
 	long double frac=0;
 	long double bias=0;
@@ -250,6 +254,7 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 	if (bits > LDBL_MANT_DIG+e2-emin) {
 		bits = LDBL_MANT_DIG+e2-emin;
 		if (bits<0) bits=0;
+		denormal = 1;
 	}
 
 	/* Calculate bias term to force rounding, move out lower bits */
@@ -280,11 +285,18 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 	y += frac;
 	y -= bias;
 
-	y = scalbnl(y, e2);
+	if ((e2+LDBL_MANT_DIG & INT_MAX) > emax-5) {
+		if (fabs(y) >= CONCAT(0x1p, LDBL_MANT_DIG)) {
+			if (denormal && bits==LDBL_MANT_DIG+e2-emin)
+				denormal = 0;
+			y *= 0.5;
+			e2++;
+		}
+		if (e2+LDBL_MANT_DIG>emax || (denormal && frac))
+			errno = ERANGE;
+	}
 
-	if (!y) errno = ERANGE;
-
-	return y;
+	return scalbnl(y, e2);
 }
 
 static long double hexfloat(FILE *f, int bits, int emin, int sign, int pok)
