@@ -220,7 +220,7 @@ long sysconf(int name)
 	} else if (values[name] == OFLOW) {
 		if (name == _SC_ARG_MAX) return ARG_MAX;
 		if (name == _SC_SEM_VALUE_MAX) return SEM_VALUE_MAX;
-	} else if (values[name] < 0) {
+	} else if (values[name] < OFLOW) {
 		long lim[2];
 		__syscall(SYS_getrlimit, values[name]&16383, lim);
 		return lim[0] < 0 ? LONG_MAX : lim[0];
