@@ -57,10 +57,10 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 	uint32_t x[KMAX];
 	static const uint32_t th[] = { LD_B1B_MAX };
 	int i, j, k, a, z;
-	long long lrp=-1, dc=0;
+	long long lrp=0, dc=0;
 	long long e10=0;
 	int lnz = 0;
-	int gotdig = 0;
+	int gotdig = 0, gotrad = 0;
 	int rp;
 	int e2;
 	long double y;
@@ -74,11 +74,16 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 
 	/* Don't let leading zeros consume buffer space */
 	for (; c=='0'; c = shgetc(f)) gotdig=1;
+	if (c=='.') {
+		gotrad = 1;
+		for (c = shgetc(f); c=='0'; c = shgetc(f)) gotdig=1, lrp--;
+	}
 
 	x[0] = 0;
 	for (; c-'0'<10U || c=='.'; c = shgetc(f)) {
 		if (c == '.') {
-			if (lrp!=-1) break;
+			if (gotrad) break;
+			gotrad = 1;
 			lrp = dc;
 		} else if (k < KMAX-2) {
 			dc++;
@@ -95,7 +100,7 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 			if (c!='0') x[KMAX-3] |= 1;
 		}
 	}
-	if (lrp==-1) lrp=dc;
+	if (!gotrad) lrp=dc;
 
 	if (gotdig && (c|32)=='e') {
 		e10 = scanexp(f, pok);
