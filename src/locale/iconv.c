@@ -94,7 +94,7 @@ iconv_t iconv_open(const char *to, const char *from)
 
 	if ((t = find_charmap(to))==-1
 	 || (f = find_charmap(from))==-1
-	 || (t >= 0320)) {
+	 || (charmaps[t] >= 0320)) {
 		errno = EINVAL;
 		return (iconv_t)-1;
 	}
