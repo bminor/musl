@@ -436,7 +436,7 @@ long double __floatscan(FILE *f, int prec, int pok)
 		return sign * INFINITY;
 	}
 	if (!i) for (i=0; i<3 && (c|32)=="nan"[i]; i++)
-		if (i<3) c = shgetc(f);
+		if (i<2) c = shgetc(f);
 	if (i==3) {
 		return NAN;
 	}
