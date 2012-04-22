@@ -141,7 +141,6 @@ void swab(const void *, void *, ssize_t);
 long gethostid(void);
 int nice(int);
 void sync(void);
-int getdtablesize(void);
 #endif
 
 #ifdef _GNU_SOURCE
@@ -163,6 +162,7 @@ int getresgid(gid_t *, gid_t *, gid_t *);
 char *get_current_dir_name(void);
 int daemon(int, int);
 int getdomainname(char *, size_t);
+int getdtablesize(void);
 #endif
 
 #define _XOPEN_VERSION          700
