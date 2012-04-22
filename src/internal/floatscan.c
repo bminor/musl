@@ -89,7 +89,7 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 			if (gotrad) break;
 			gotrad = 1;
 			lrp = dc;
-		} else if (k < KMAX-2) {
+		} else if (k < KMAX-3) {
 			dc++;
 			if (c!='0') lnz = dc;
 			if (j) x[k] = x[k]*10 + c-'0';
@@ -101,7 +101,7 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 			gotdig=1;
 		} else {
 			dc++;
-			if (c!='0') x[KMAX-3] |= 1;
+			if (c!='0') x[KMAX-4] |= 1;
 		}
 	}
 	if (!gotrad) lrp=dc;
@@ -143,7 +143,7 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 	}
 
 	/* Align incomplete final B1B digit */
-	if (k<KMAX && j) {
+	if (j) {
 		for (; j<9; j++) x[k]*=10;
 		k++;
 		j=0;
