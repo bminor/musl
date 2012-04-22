@@ -163,6 +163,9 @@ char *get_current_dir_name(void);
 int daemon(int, int);
 int getdomainname(char *, size_t);
 int getdtablesize(void);
+void setusershell(void);
+void endusershell(void);
+char *getusershell(void);
 #endif
 
 #define _XOPEN_VERSION          700
