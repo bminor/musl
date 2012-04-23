@@ -30,6 +30,7 @@ static const struct {
 	CASELACE(0x4c1,0x4cd),
 	CASELACE(0x4d0,0x50e),
 
+	CASELACE(0x514,0x526),
 	CASEMAP(0x531,0x556,0x561),
 
 	CASELACE(0x01a0,0x01a4),
@@ -69,11 +70,18 @@ static const struct {
 	CASEMAP(0x2c00,0x2c2e,0x2c30),
 	CASELACE(0x2c67,0x2c6b),
 	CASELACE(0x2c80,0x2ce2),
+	CASELACE(0x2ceb,0x2ced),
+
+	CASELACE(0xa640,0xa66c),
+	CASELACE(0xa680,0xa696),
 
 	CASELACE(0xa722,0xa72e),
 	CASELACE(0xa732,0xa76e),
 	CASELACE(0xa779,0xa77b),
 	CASELACE(0xa77e,0xa786),
+
+	CASELACE(0xa790,0xa792),
+	CASELACE(0xa7a0,0xa7a8),
 
 	CASEMAP(0xff21,0xff3a,0xff41),
 	{ 0,0,0 }
@@ -144,6 +152,8 @@ static const unsigned short pairs[][2] = {
 	{ 0x03f7, 0x03f8 },
 	{ 0x03fa, 0x03fb },
 	{ 0x1e60, 0x1e9b },
+	{ 0xdf, 0xdf },
+	{ 0x1e9e, 0xdf },
 
 	{ 0x1f59, 0x1f51 },
 	{ 0x1f5b, 0x1f53 },
@@ -181,10 +191,20 @@ static const unsigned short pairs[][2] = {
 	{ 0x2c6d, 0x251 },
 	{ 0x2c6e, 0x271 },
 	{ 0x2c6f, 0x250 },
+	{ 0x2c70, 0x252 },
 	{ 0x2c72, 0x2c73 },
 	{ 0x2c75, 0x2c76 },
+	{ 0x2c7e, 0x23f },
+	{ 0x2c7f, 0x240 },
+	{ 0x2cf2, 0x2cf3 },
 
 	{ 0xa77d, 0x1d79 },
+	{ 0xa78b, 0xa78c },
+	{ 0xa78d, 0x265 },
+	{ 0xa7aa, 0x266 },
+
+	{ 0x10c7, 0x2d27 },
+	{ 0x10cd, 0x2d2d },
 
 	/* bogus greek 'symbol' letters */
 	{ 0x376, 0x377 },
@@ -207,17 +227,19 @@ static wchar_t __towcase(wchar_t wc, int lower)
 	int i;
 	int lmul = 2*lower-1;
 	int lmask = lower-1;
-	if ((unsigned)wc - 0x10400 < 0x50)
-		return wc + lmul*0x28;
 	/* no letters with case in these large ranges */
 	if (!iswalpha(wc)
 	 || (unsigned)wc - 0x0600 <= 0x0fff-0x0600
-	 || (unsigned)wc - 0x2e00 <= 0xa6ff-0x2e00
+	 || (unsigned)wc - 0x2e00 <= 0xa63f-0x2e00
 	 || (unsigned)wc - 0xa800 <= 0xfeff-0xa800)
 		return wc;
 	/* special case because the diff between upper/lower is too big */
-	if ((unsigned)wc - 0x10a0 < 0x26 || (unsigned)wc - 0x2d00 < 0x26)
-		return wc + lmul*(0x2d00-0x10a0);
+	if (lower && (unsigned)wc - 0x10a0 < 0x2e)
+		if (wc>0x10c5 && wc != 0x10c7 && wc != 0x10cd) return wc;
+		else return wc + 0x2d00 - 0x10a0;
+	if (!lower && (unsigned)wc - 0x2d00 < 0x26)
+		if (wc>0x2d25 && wc != 0x2d27 && wc != 0x2d2d) return wc;
+		else return wc + 0x10a0 - 0x2d00;
 	for (i=0; casemaps[i].len; i++) {
 		int base = casemaps[i].upper + (lmask & casemaps[i].lower);
 		if ((unsigned)wc-base < casemaps[i].len) {
@@ -230,8 +252,8 @@ static wchar_t __towcase(wchar_t wc, int lower)
 		if (pairs[i][1-lower] == wc)
 			return pairs[i][lower];
 	}
-	if ((unsigned)wc - 0x10428 + (lower<<5) + (lower<<3) < 0x28)
-		return wc - 0x28 + (lower<<10) + (lower<<6);
+	if ((unsigned)wc - (0x10428 - 0x28*lower) < 0x28)
+		return wc - 0x28 + 0x50*lower;
 	return wc;
 }
 
