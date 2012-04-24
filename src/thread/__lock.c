@@ -4,7 +4,7 @@ void __lock_2(volatile int *l)
 {
 	if (!__syscall(SYS_futex, l, FUTEX_LOCK_PI, 0, 0))
 		return;
-	int old, tid = __pthread_self()->tid;
+	int old, tid = __pthread_self()->tid|INT_MIN;
 	while ((old = a_cas(l, 0, tid))) {
 		a_cas(l, old, old|INT_MIN);
 		__syscall(SYS_futex, l, FUTEX_WAIT, old|INT_MIN, 0);
