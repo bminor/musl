@@ -16,10 +16,7 @@ struct dirent *readdir(DIR *dir)
 	
 	if (dir->buf_pos >= dir->buf_end) {
 		int len = __getdents(dir->fd, (void *)dir->buf, sizeof dir->buf);
-		if (len < 0) {
-			dir->lock = 0;
-			return NULL;
-		} else if (len == 0) return 0;
+		if (len <= 0) return 0;
 		dir->buf_end = len;
 		dir->buf_pos = 0;
 	}

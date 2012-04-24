@@ -88,8 +88,8 @@ int __putc_unlocked(int, FILE *);
 
 FILE *__fdopen(int, const char *);
 
-#define OFLLOCK() LOCK(&libc.ofl_lock)
-#define OFLUNLOCK() UNLOCK(&libc.ofl_lock)
+#define OFLLOCK() LOCK(libc.ofl_lock)
+#define OFLUNLOCK() UNLOCK(libc.ofl_lock)
 
 #define feof(f) ((f)->flags & F_EOF)
 #define ferror(f) ((f)->flags & F_ERR)

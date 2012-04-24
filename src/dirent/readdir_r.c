@@ -11,18 +11,18 @@ int readdir_r(DIR *dir, struct dirent *buf, struct dirent **result)
 	int errno_save = errno;
 	int ret;
 	
-	LOCK(&dir->lock);
+	LOCK(dir->lock);
 	errno = 0;
 	de = readdir(dir);
 	if ((ret = errno)) {
-		UNLOCK(&dir->lock);
+		UNLOCK(dir->lock);
 		return ret;
 	}
 	errno = errno_save;
 	if (de) memcpy(buf, de, de->d_reclen);
 	else buf = NULL;
 
-	UNLOCK(&dir->lock);
+	UNLOCK(dir->lock);
 	*result = buf;
 	return 0;
 }

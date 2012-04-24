@@ -14,22 +14,22 @@ static struct fl
 	void *a[COUNT];
 } builtin, *head;
 
-static int lock;
+static int lock[2];
 
 void __funcs_on_exit()
 {
 	int i;
 	void (*func)(void *), *arg;
-	LOCK(&lock);
+	LOCK(lock);
 	for (; head; head=head->next) {
 		for (i=COUNT-1; i>=0 && !head->f[i]; i--);
 		if (i<0) continue;
 		func = head->f[i];
 		arg = head->a[i];
 		head->f[i] = 0;
-		UNLOCK(&lock);
+		UNLOCK(lock);
 		func(arg);
-		LOCK(&lock);
+		LOCK(lock);
 	}
 }
 
@@ -41,7 +41,7 @@ int __cxa_atexit(void (*func)(void *), void *arg, void *dso)
 {
 	int i;
 
-	LOCK(&lock);
+	LOCK(lock);
 
 	/* Defer initialization of head so it can be in BSS */
 	if (!head) head = &builtin;
@@ -50,7 +50,7 @@ int __cxa_atexit(void (*func)(void *), void *arg, void *dso)
 	if (head->f[COUNT-1]) {
 		struct fl *new_fl = calloc(sizeof(struct fl), 1);
 		if (!new_fl) {
-			UNLOCK(&lock);
+			UNLOCK(lock);
 			return -1;
 		}
 		new_fl->next = head;
@@ -62,7 +62,7 @@ int __cxa_atexit(void (*func)(void *), void *arg, void *dso)
 	head->f[i] = func;
 	head->a[i] = arg;
 
-	UNLOCK(&lock);
+	UNLOCK(lock);
 	return 0;
 }
 

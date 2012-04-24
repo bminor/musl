@@ -10,7 +10,7 @@
 #include <pthread.h>
 #include "libc.h"
 
-static int lock;
+static int lock[2];
 static const char *log_ident;
 static int log_opt;
 static int log_facility = LOG_USER;
@@ -36,10 +36,10 @@ void closelog(void)
 {
 	int cs;
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
-	LOCK(&lock);
+	LOCK(lock);
 	close(log_fd);
 	log_fd = -1;
-	UNLOCK(&lock);
+	UNLOCK(lock);
 	pthread_setcancelstate(cs, 0);
 }
 
@@ -59,9 +59,9 @@ void openlog(const char *ident, int opt, int facility)
 {
 	int cs;
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
-	LOCK(&lock);
+	LOCK(lock);
 	__openlog(ident, opt, facility);
-	UNLOCK(&lock);
+	UNLOCK(lock);
 	pthread_setcancelstate(cs, 0);
 }
 
@@ -77,7 +77,7 @@ static void _vsyslog(int priority, const char *message, va_list ap)
 	if (log_fd < 0) {
 		__openlog(log_ident, log_opt | LOG_NDELAY, log_facility);
 		if (log_fd < 0) {
-			UNLOCK(&lock);
+			UNLOCK(lock);
 			return;
 		}
 	}
@@ -98,7 +98,7 @@ static void _vsyslog(int priority, const char *message, va_list ap)
 		sendto(log_fd, buf, l, 0, (void *)&log_addr, 11);
 	}
 
-	UNLOCK(&lock);
+	UNLOCK(lock);
 }
 
 void __vsyslog(int priority, const char *message, va_list ap)
@@ -106,9 +106,9 @@ void __vsyslog(int priority, const char *message, va_list ap)
 	int cs;
 	if (!(log_mask & LOG_MASK(priority&7)) || (priority&~0x3ff)) return;
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
-	LOCK(&lock);
+	LOCK(lock);
 	_vsyslog(priority, message, ap);
-	UNLOCK(&lock);
+	UNLOCK(lock);
 	pthread_setcancelstate(cs, 0);
 }
 

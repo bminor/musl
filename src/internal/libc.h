@@ -15,7 +15,7 @@ struct __libc {
 	volatile int threads_minus_1;
 	int canceldisable;
 	FILE *ofl_head;
-	int ofl_lock;
+	int ofl_lock[2];
 };
 
 

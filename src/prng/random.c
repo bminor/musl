@@ -33,7 +33,7 @@ static int n = 31;
 static int i = 3;
 static int j = 0;
 static uint32_t *x = init+1;
-static int lock;
+static int lock[2];
 
 static uint32_t lcg31(uint32_t x) {
 	return (1103515245*x + 12345) & 0x7fffffff;
@@ -74,9 +74,9 @@ static void __srandom(unsigned seed) {
 }
 
 void srandom(unsigned seed) {
-	LOCK(&lock);
+	LOCK(lock);
 	__srandom(seed);
-	UNLOCK(&lock);
+	UNLOCK(lock);
 }
 
 char *initstate(unsigned seed, char *state, size_t size) {
@@ -84,7 +84,7 @@ char *initstate(unsigned seed, char *state, size_t size) {
 
 	if (size < 8)
 		return 0;
-	LOCK(&lock);
+	LOCK(lock);
 	old = savestate();
 	if (size < 32)
 		n = 0;
@@ -98,24 +98,24 @@ char *initstate(unsigned seed, char *state, size_t size) {
 		n = 63;
 	x = (uint32_t*)state + 1;
 	__srandom(seed);
-	UNLOCK(&lock);
+	UNLOCK(lock);
 	return old;
 }
 
 char *setstate(char *state) {
 	void *old;
 
-	LOCK(&lock);
+	LOCK(lock);
 	old = savestate();
 	loadstate((uint32_t*)state);
-	UNLOCK(&lock);
+	UNLOCK(lock);
 	return old;
 }
 
 long random(void) {
 	long k;
 
-	LOCK(&lock);
+	LOCK(lock);
 	if (n == 0) {
 		k = x[0] = lcg31(x[0]);
 		goto end;
@@ -127,6 +127,6 @@ long random(void) {
 	if (++j == n)
 		j = 0;
 end:
-	UNLOCK(&lock);
+	UNLOCK(lock);
 	return k;
 }

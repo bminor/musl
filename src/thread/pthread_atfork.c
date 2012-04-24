@@ -8,14 +8,14 @@ static struct atfork_funcs {
 	struct atfork_funcs *prev, *next;
 } *funcs;
 
-static int lock;
+static int lock[2];
 
 void __fork_handler(int who)
 {
 	struct atfork_funcs *p;
 	if (!funcs) return;
 	if (who < 0) {
-		LOCK(&lock);
+		LOCK(lock);
 		for (p=funcs; p; p = p->next) {
 			if (p->prepare) p->prepare();
 			funcs = p;
@@ -26,7 +26,7 @@ void __fork_handler(int who)
 			else if (who && p->child) p->child();
 			funcs = p;
 		}
-		UNLOCK(&lock);
+		UNLOCK(lock);
 	}
 }
 
@@ -35,7 +35,7 @@ int pthread_atfork(void (*prepare)(void), void (*parent)(void), void (*child)(vo
 	struct atfork_funcs *new = malloc(sizeof *new);
 	if (!new) return -1;
 
-	LOCK(&lock);
+	LOCK(lock);
 	new->next = funcs;
 	new->prev = 0;
 	new->prepare = prepare;
@@ -43,6 +43,6 @@ int pthread_atfork(void (*prepare)(void), void (*parent)(void), void (*child)(vo
 	new->child = child;
 	if (funcs) funcs->prev = new;
 	funcs = new;
-	UNLOCK(&lock);
+	UNLOCK(lock);
 	return 0;
 }

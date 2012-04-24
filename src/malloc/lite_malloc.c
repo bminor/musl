@@ -12,7 +12,7 @@ void *__simple_malloc(size_t n)
 {
 	static uintptr_t cur, brk;
 	uintptr_t base, new;
-	static int lock;
+	static int lock[2];
 	size_t align=1;
 
 	if (!n) n++;
@@ -22,7 +22,7 @@ void *__simple_malloc(size_t n)
 		align += align;
 	n = n + align - 1 & -align;
 
-	LOCK(&lock);
+	LOCK(lock);
 	if (!cur) cur = brk = __brk(0)+16;
 	base = cur + align-1 & -align;
 	if (n > SIZE_MAX - PAGE_SIZE - base) goto fail;
@@ -32,12 +32,12 @@ void *__simple_malloc(size_t n)
 		brk = new;
 	}
 	cur = base+n;
-	UNLOCK(&lock);
+	UNLOCK(lock);
 
 	return (void *)base;
 
 fail:
-	UNLOCK(&lock);
+	UNLOCK(lock);
 toobig:
 	errno = ENOMEM;
 	return 0;
