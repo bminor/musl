@@ -59,9 +59,13 @@ struct dso
 	char buf[];
 };
 
+struct __pthread;
+struct __pthread *__pthread_self_init(void);
+
 static struct dso *head, *tail, *libc;
 static char *env_path, *sys_path, *r_path;
 static int rtld_used;
+static int ssp_used;
 static int runtime;
 static jmp_buf rtld_fail;
 static pthread_rwlock_t lock;
@@ -108,6 +112,7 @@ static void *find_sym(struct dso *dso, const char *s, int need_def)
 	void *def = 0;
 	if (h==0x6b366be && !strcmp(s, "dlopen")) rtld_used = 1;
 	if (h==0x6b3afd && !strcmp(s, "dlsym")) rtld_used = 1;
+	if (h==0x595a4cc && !strcmp(s, "__stack_chk_fail")) ssp_used = 1;
 	for (; dso; dso=dso->next) {
 		Sym *sym;
 		if (!dso->global) continue;
@@ -610,6 +615,8 @@ void *__dynlink(int argc, char **argv)
 		free(sys_path);
 		reclaim((void *)builtin_dsos, 0, sizeof builtin_dsos);
 	}
+
+	if (ssp_used) __pthread_self_init();
 
 	errno = 0;
 	return (void *)aux[AT_ENTRY];
