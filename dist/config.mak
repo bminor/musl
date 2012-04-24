@@ -26,6 +26,9 @@ syslibdir = /lib
 # Uncomment for smaller code size.
 #CFLAGS += -fomit-frame-pointer -mno-accumulate-outgoing-args
 
+# Uncomment to omit massive GCC4 DWARF2 bloat (only useful for debugging)
+#CFLAGS += -fno-asynchronous-unwind-tables
+
 # Uncomment for warnings (as errors). Might need tuning to your gcc version.
 #CFLAGS += -Werror -Wall -Wpointer-arith -Wcast-align -Wno-parentheses -Wno-char-subscripts -Wno-uninitialized -Wno-sequence-point -Wno-missing-braces -Wno-unused-value -Wno-overflow -Wno-int-to-pointer-cast
 
