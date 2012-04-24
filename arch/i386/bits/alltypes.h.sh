@@ -37,10 +37,10 @@ TYPEDEF long wint_t;
 TYPEDEF long wctrans_t;
 TYPEDEF long wctype_t;
 
-TYPEDEF char      int8_t;
-TYPEDEF short     int16_t;
-TYPEDEF int       int32_t;
-TYPEDEF long long int64_t;
+TYPEDEF signed char int8_t;
+TYPEDEF short       int16_t;
+TYPEDEF int         int32_t;
+TYPEDEF long long   int64_t;
 
 TYPEDEF unsigned char      uint8_t;
 TYPEDEF unsigned short     uint16_t;
