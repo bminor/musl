@@ -38,15 +38,24 @@ typedef Elf64_Sym Sym;
 #define R_SYM(x) ((x)>>32)
 #endif
 
-struct dso
-{
-	struct dso *next, *prev;
-	int refcnt;
+struct debug {
+	int ver;
+	void *head;
+	void (*bp)(void);
+	int state;
+	void *base;
+};
+
+struct dso {
+	unsigned char *base;
+	char *name;
 	size_t *dynv;
+	struct dso *next, *prev;
+
+	int refcnt;
 	Sym *syms;
 	uint32_t *hashtab;
 	char *strings;
-	unsigned char *base;
 	unsigned char *map;
 	size_t map_len;
 	dev_t dev;
@@ -55,7 +64,6 @@ struct dso
 	char relocated;
 	char constructed;
 	struct dso **deps;
-	char *name;
 	char buf[];
 };
 
@@ -69,6 +77,9 @@ static int ssp_used;
 static int runtime;
 static jmp_buf rtld_fail;
 static pthread_rwlock_t lock;
+static struct debug debug;
+
+struct debug *_dl_debug_addr = &debug;
 
 #define AUX_CNT 24
 #define DYN_CNT 34
@@ -500,6 +511,10 @@ static void do_init_fini(struct dso *p)
 	}
 }
 
+void _dl_debug_state(void)
+{
+}
+
 void *__dynlink(int argc, char **argv)
 {
 	size_t *auxv, aux[AUX_CNT] = {0};
@@ -608,6 +623,16 @@ void *__dynlink(int argc, char **argv)
 	 * all memory used by the dynamic linker. */
 	runtime = 1;
 
+	for (i=0; app->dynv[i]; i+=2)
+		if (app->dynv[i]==DT_DEBUG)
+			app->dynv[i+1] = (size_t)&debug;
+	debug.ver = 1;
+	debug.bp = _dl_debug_state;
+	debug.head = head;
+	debug.base = lib->base;
+	debug.state = 0;
+	_dl_debug_state();
+
 	do_init_fini(tail);
 
 	if (!rtld_used) {
@@ -677,6 +702,8 @@ void *dlopen(const char *file, int mode)
 			p->deps[i]->global = 1;
 		p->global = 1;
 	}
+
+	_dl_debug_state();
 
 	do_init_fini(tail);
 end:
