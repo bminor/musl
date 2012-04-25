@@ -501,3 +501,31 @@ bug fixes:
 
 compatibility:
 - prototypes for a few additional nonstandard functions
+
+
+
+0.8.10 release notes
+
+new features:
+- correct over/underflow detection (ERANGE setting) for strtod
+- new musl-gcc wrapper, specfile based, faster and more robust
+- meaningful return strings for dlerror
+- new iswalpha, iswpunct, and wcwidth; sync'd to Unicode 6.1
+- towupper/towlower sync'd with Unicode 6.1
+- new futex-based libc-internal locks instead of spinlocks
+- experimental stack protector support (minimal; no random canary)
+- experimental gdb shared library tracking support
+
+compatibility:
+- getusershell family functions
+- getresuid and getresgid syscall wrappers
+- byte swapping macros in endian.h
+- getdtablesize was wrongly declared in unistd.h for _XOPEN_SOURCE
+
+bug fixes:
+- iconv_open wrongly rejecting most dest charsets (broken in 0.8.0)
+- sysconf failure when correct value is -1 (broken in 0.8.8)
+- scanf and strtod family functions overreading past NAN (4 bytes vs 3)
+- scanf and strtod wrongly treating "0.00000000001", etc. as 0
+- many bugs in towupper/towlower (never seriously tested before)
+- int8_t definition was wrong when gcc -funsigned-char was used
