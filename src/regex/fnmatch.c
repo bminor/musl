@@ -53,6 +53,7 @@ int fnmatch(const char *p, const char *s, int flags)
 	int first;
 	int no_slash = (flags & FNM_PATHNAME) ? '/' : 0;
 	int no_period = (flags & FNM_PERIOD) && !(flags & __FNM_CONT) ? '.' : 0x100;
+	const char *p1;
 
 	flags |= __FNM_CONT;
 
@@ -84,6 +85,7 @@ int fnmatch(const char *p, const char *s, int flags)
 					break;
 			return FNM_NOMATCH;
 		case '[':
+			p1 = p-1;
 			not = (*p == '!' || *p == '^');
 			if (not) p++;
 			k = next(&s);
@@ -92,7 +94,7 @@ int fnmatch(const char *p, const char *s, int flags)
 			match = 0;
 			first = 1;
 			for (;;) {
-				if (!*p) return FNM_NOMATCH;
+				if (!*p) goto literal_bracket;
 				if (*p == ']' && !first) break;
 				first = 0;
 				if (*p == '[' && *(p+1) == ':') {
@@ -112,15 +114,20 @@ int fnmatch(const char *p, const char *s, int flags)
 					continue;
 				}
 				c = bracket_next(&p);
-				if (c == BRACKET_ERROR)
-					return FNM_NOMATCH;
+				if (c == BRACKET_ERROR) {
+literal_bracket:
+					match = (k=='[');
+					p = p1;
+					not = 0;
+					break;
+				}
 				if (c == BRACKET_NOCHAR)
 					continue;
 				if (*p == '-' && *(p+1) != ']') {
 					p++;
 					d = bracket_next(&p);
 					if (d == BRACKET_ERROR)
-						return FNM_NOMATCH;
+						goto literal_bracket;
 					if (d == BRACKET_NOCHAR)
 						continue;
 					if (k >= c && k <= d)
