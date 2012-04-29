@@ -12,7 +12,7 @@ struct args {
 	const struct sigevent *sev;
 };
 
-void *start(void *p)
+static void *start(void *p)
 {
 	struct args *args = p;
 	char buf[32];
