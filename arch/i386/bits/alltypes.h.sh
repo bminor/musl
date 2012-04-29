@@ -64,8 +64,13 @@ TYPEDEF uint64_t           uint_fast64_t;
 TYPEDEF long          intptr_t;
 TYPEDEF unsigned long uintptr_t;
 
+#if defined(__FLT_EVAL_METHOD__) && __FLT_EVAL_METHOD__ == 0
+TYPEDEF float float_t;
+TYPEDEF double double_t;
+#else
 TYPEDEF long double float_t;
 TYPEDEF long double double_t;
+#endif
 
 TYPEDEF long time_t;
 TYPEDEF int suseconds_t;
