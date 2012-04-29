@@ -56,6 +56,7 @@ int     sched_yield(void);
 #define CLONE_NEWNET	0x40000000
 #define CLONE_IO	0x80000000
 int clone (int (*)(void *), void *, int, void *, ...);
+int unshare(int);
 #endif
 
 #ifdef __cplusplus
