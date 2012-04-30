@@ -387,6 +387,10 @@ float       y1f(float);
 long double y1l(long double);
 float       ynf(int, float);
 long double ynl(int, long double);
+
+double      exp10(double);
+float       exp10f(float);
+long double exp10l(long double);
 #endif
 
 #ifdef __cplusplus
