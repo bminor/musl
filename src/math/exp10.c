@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 #include <math.h>
+#include "libc.h"
 
 double exp10(double x)
 {
@@ -17,3 +18,5 @@ double exp10(double x)
 	}
 	return pow(10.0, x);
 }
+
+weak_alias(exp10, pow10);
