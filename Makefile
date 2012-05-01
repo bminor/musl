@@ -27,7 +27,6 @@ INC     = -I./src/internal -I./include -I./arch/$(ARCH)
 PIC     = -fPIC -O3
 AR      = $(CROSS_COMPILE)ar
 RANLIB  = $(CROSS_COMPILE)ranlib
-OBJCOPY = $(CROSS_COMPILE)objcopy
 
 ALL_INCLUDES = $(sort $(wildcard include/*.h include/*/*.h) $(GENH))
 
@@ -80,7 +79,6 @@ include/bits/alltypes.h: include/bits/alltypes.h.sh
 
 lib/libc.so: $(LOBJS)
 	$(CC) $(LDFLAGS) -Wl,-soname=libc.so -o $@ $(LOBJS) -lgcc
-	$(OBJCOPY) --weaken $@
 
 lib/libc.a: $(OBJS)
 	rm -f $@
