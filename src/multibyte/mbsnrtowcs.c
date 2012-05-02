@@ -47,6 +47,10 @@ size_t mbsnrtowcs(wchar_t *wcs, const char **src, size_t n, size_t wn, mbstate_t
 				cnt = l;
 				break;
 			}
+			if (!l) {
+				s = 0;
+				break;
+			}
 			/* have to roll back partial character */
 			*(unsigned *)st = 0;
 			break;

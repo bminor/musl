@@ -20,7 +20,7 @@ size_t wcsnrtombs(char *dst, const wchar_t **wcs, size_t wn, size_t n, mbstate_t
 	if (!dst) s = buf, n = sizeof buf;
 	else s = dst;
 
-	while ( n && ( (n2=wn)>=n || n2>32 ) ) {
+	while ( ws && n && ( (n2=wn)>=n || n2>32 ) ) {
 		if (n2>=n) n2=n;
 		wn -= n2;
 		l = wcsrtombs(s, &ws, n2, 0);
@@ -35,10 +35,11 @@ size_t wcsnrtombs(char *dst, const wchar_t **wcs, size_t wn, size_t n, mbstate_t
 		}
 		cnt += l;
 	}
-	while (n && wn) {
+	if (ws) while (n && wn) {
 		l = wcrtomb(s, *ws, 0);
-		if (!(l+1)) {
-			cnt = l;
+		if ((l+1)<=1) {
+			if (!l) ws = 0;
+			else cnt = l;
 			break;
 		}
 		ws++; wn--;
