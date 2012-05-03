@@ -9,8 +9,6 @@ _start:
 	pop %rsi        /* 2nd arg: argc */
 	mov %rsp,%rdx   /* 3rd arg: argv */
 	andq $-16,%rsp  /* align stack pointer */
-	push %rax       /* 8th arg: glibc ABI compatible */
-	push %rsp       /* 7th arg: glibc ABI compatible */
 	lea _fini(%rip),%r8           /* 5th arg: fini/dtors function */
 	lea _init(%rip),%rcx          /* 4th arg: init/ctors function */
 	mov main@GOTPCREL(%rip),%rdi  /* 1st arg: application entry ip */
