@@ -3,13 +3,13 @@
 .text
 .global _start
 _start:
-	xorl %ebp,%ebp
-	popl %ecx
-	movl %esp,%eax
-	andl $-16,%esp
-	pushl %esp
-	pushl %esp
-	pushl %edx
+	xor %ebp,%ebp
+	pop %ecx
+	mov %esp,%eax
+	and $-16,%esp
+	push %esp
+	push %esp
+	push %edx
 	call 1f
 1:	addl $_GLOBAL_OFFSET_TABLE_,(%esp)
 	pop %ebx
@@ -17,8 +17,8 @@ _start:
 1:	addl $[_fini-.],(%esp)
 	call 1f
 1:	addl $[_init-.],(%esp)
-	pushl %eax
-	pushl %ecx
-	pushl main@GOT(%ebx)
+	push %eax
+	push %ecx
+	push main@GOT(%ebx)
 	call __libc_start_main@plt
 1:	jmp 1b

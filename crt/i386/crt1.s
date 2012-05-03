@@ -3,17 +3,17 @@
 .text
 .global _start
 _start:
-	xorl %ebp,%ebp
-	popl %ecx
-	movl %esp,%eax
-	andl $-16,%esp
-	pushl %esp
-	pushl %esp
-	pushl %edx
-	pushl $_fini
-	pushl $_init
-	pushl %eax
-	pushl %ecx
-	pushl $main
+	xor %ebp,%ebp
+	pop %ecx
+	mov %esp,%eax
+	and $-16,%esp
+	push %esp
+	push %esp
+	push %edx
+	push $_fini
+	push $_init
+	push %eax
+	push %ecx
+	push $main
 	call __libc_start_main
 1:	jmp 1b
