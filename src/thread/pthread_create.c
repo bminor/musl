@@ -120,6 +120,7 @@ int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(vo
 	new->tsd = (void *)tsd;
 	if (attr) new->detached = attr->_a_detach;
 	new->unblock_cancel = self->cancel;
+	new->canary = self->canary ^ (uintptr_t)&new;
 	stack = (void *)new;
 
 	__synccall_lock();

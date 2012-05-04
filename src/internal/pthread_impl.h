@@ -22,8 +22,12 @@
 
 struct pthread {
 	struct pthread *self;
+	void *dtv, *unused1, *unused2;
+	uintptr_t sysinfo;
+	uintptr_t canary;
 	pid_t tid, pid;
 	int tsd_used, errno_val, *errno_ptr;
+	/* All cancellation-related fields must remain together, in order */
 	volatile uintptr_t cp_sp, cp_ip;
 	volatile int cancel, canceldisable, cancelasync;
 	unsigned char *map_base;

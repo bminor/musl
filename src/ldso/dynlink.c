@@ -67,8 +67,7 @@ struct dso {
 	char buf[];
 };
 
-struct __pthread;
-struct __pthread *__pthread_self_init(void);
+void __init_ssp(size_t *);
 
 static struct dso *head, *tail, *libc;
 static char *env_path, *sys_path, *r_path;
@@ -633,6 +632,8 @@ void *__dynlink(int argc, char **argv)
 	debug.state = 0;
 	_dl_debug_state();
 
+	if (ssp_used) __init_ssp(auxv);
+
 	do_init_fini(tail);
 
 	if (!rtld_used) {
@@ -640,8 +641,6 @@ void *__dynlink(int argc, char **argv)
 		free(sys_path);
 		reclaim((void *)builtin_dsos, 0, sizeof builtin_dsos);
 	}
-
-	if (ssp_used) __pthread_self_init();
 
 	errno = 0;
 	return (void *)aux[AT_ENTRY];
