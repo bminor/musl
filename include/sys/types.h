@@ -72,6 +72,15 @@ typedef long register_t;
 #include <sys/sysmacros.h>
 #endif
 
+#ifdef _LARGEFILE64_SOURCE
+#define blksize64_t blksize_t
+#define blkcnt64_t blkcnt_t
+#define fsblkcnt64_t fsblkcnt_t
+#define fsfilcnt64_t fsfilcnt_t
+#define ino64_t ino_t
+#define off64_t off_t
+#endif
+
 #ifdef __cplusplus
 }
 #endif

@@ -96,6 +96,17 @@ int lchmod(const char *, mode_t);
 #define S_IEXEC S_IXUSR
 #endif
 
+#ifdef _LARGEFILE64_SOURCE
+#define stat64 stat
+#define fstat64 fstat
+#define lstat64 lstat
+#define fstatat64 fstatat
+#define blksize64_t blksize_t
+#define blkcnt64_t blkcnt_t
+#define ino64_t ino_t
+#define off64_t off_t
+#endif
+
 #ifdef __cplusplus
 }
 #endif

@@ -87,6 +87,12 @@ int prlimit(pid_t, int, const struct rlimit *, struct rlimit *);
 
 #define RLIM_NLIMITS RLIMIT_NLIMITS
 
+#ifdef _LARGEFILE64_SOURCE
+#define getrlimit64 getrlimit
+#define setrlimit64 setrlimit
+#define rlimit64 rlimit
+#define rlim64_t rlim_t
+#endif
 
 #ifdef __cplusplus
 }
