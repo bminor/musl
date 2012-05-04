@@ -20,6 +20,7 @@ SRCS = $(sort $(wildcard src/*/*.c))
 OBJS = $(SRCS:.c=.o)
 LOBJS = $(OBJS:.o=.lo)
 GENH = include/bits/alltypes.h
+IMPH = src/internal/stdio_impl.h src/internal/pthread_impl.h src/internal/libc.h
 
 LDFLAGS = 
 CPPFLAGS =
@@ -78,13 +79,13 @@ include/bits/alltypes.h: include/bits/alltypes.h.sh
 %.o: $(ARCH)/%.s
 	$(CC) $(CFLAGS_ALL_STATIC) -c -o $@ $<
 
-%.o: %.c $(GENH)
+%.o: %.c $(GENH) $(IMPH)
 	$(CC) $(CFLAGS_ALL_STATIC) -c -o $@ $<
 
 %.lo: $(ARCH)/%.s
 	$(CC) $(CFLAGS_ALL_SHARED) -c -o $@ $<
 
-%.lo: %.c $(GENH)
+%.lo: %.c $(GENH) $(IMPH)
 	$(CC) $(CFLAGS_ALL_SHARED) -c -o $@ $<
 
 lib/libc.so: $(LOBJS)
