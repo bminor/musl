@@ -88,6 +88,16 @@ int posix_fallocate(int, off_t, off_t);
 #define FNDELAY O_NDELAY
 #endif
 
+#ifdef _LARGEFILE64_SOURCE
+#define open64 open
+#define openat64 openat
+#define creat64 creat
+#define lockf64 lockf
+#define posix_fadvise64 posix_fadvise
+#define posix_fallocate64 posix_fallocate
+#define off64_t off_t
+#endif
+
 #ifdef __cplusplus
 }
 #endif

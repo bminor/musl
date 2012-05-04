@@ -34,6 +34,11 @@ void globfree(glob_t *);
 #define GLOB_NOMATCH 3
 #define GLOB_NOSYS   4
 
+#ifdef _LARGEFILE64_SOURCE
+#define glob64 glob
+#define globfree64 globfree
+#endif
+
 #ifdef __cplusplus
 }
 #endif

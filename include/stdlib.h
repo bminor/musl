@@ -139,6 +139,9 @@ char *fcvt(double, int, int *, int *);
 char *gcvt(double, int, char *);
 #endif
 
+#ifdef _LARGEFILE64_SOURCE
+#define mkstemp64 mkstemp
+#endif
 
 #ifdef __cplusplus
 }

@@ -168,6 +168,16 @@ void endusershell(void);
 char *getusershell(void);
 #endif
 
+#ifdef _LARGEFILE64_SOURCE
+#define lseek64 lseek
+#define pread64 pread
+#define pwrite64 pwrite
+#define truncate64 truncate
+#define ftruncate64 ftruncate
+#define lockf64 lockf
+#define off64_t off_t
+#endif
+
 #define _XOPEN_VERSION          700
 #define _XOPEN_UNIX             1
 #define _XOPEN_ENH_I18N         1
