@@ -292,7 +292,7 @@ static int wprintf_core(FILE *f, const wchar_t *fmt, va_list *ap, union arg *nl_
 		case 's':
 			bs = arg.p;
 			if (p<0) p = INT_MAX;
-			for (l=0; l<p && (i=mbtowc(&wc, bs, MB_LEN_MAX))>0; bs+=i, l++);
+			for (i=l=0; l<p && (i=mbtowc(&wc, bs, MB_LEN_MAX))>0; bs+=i, l++);
 			if (i<0) return -1;
 			p=l;
 			if (w<p) w=p;
