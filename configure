@@ -1,0 +1,275 @@
+#!/bin/sh
+
+usage () {
+cat <<EOF
+Usage: $0 [OPTION]... [VAR=VALUE]... [BUILDTYPE]
+
+To assign environment variables (e.g., CC, CFLAGS...), specify them as
+VAR=VALUE.  See below for descriptions of some of the useful variables.
+
+Defaults for the options are specified in brackets.
+
+Installation directories:
+  --prefix=PREFIX         main installation prefix [/usr/local/musl]
+  --exec-prefix=EPREFIX   installation prefix for executable files [PREFIX]
+
+Fine tuning of the installation directories:
+  --bindir=DIR            user executables [EPREFIX/bin]
+  --libdir=DIR            library files for the linker [PREFIX/lib]
+  --includedir=DIR        include files for the C compiler [PREFIX/include]
+  --syslibdir=DIR         location for the dynamic linker [/lib]
+
+System types:
+  --target=TARGET         configure to run on target TARGET [detected]
+  --build=BUILD           same as --target
+
+Optional features:
+  --enable-debug          build with debugging information [disabled]
+  --enable-warnings       build with recommended warnings flags [disabled]
+  --enable-gcc-wrapper    build musl-gcc toolchain wrapper [auto]
+  --disable-shared        inhibit building shared library [enabled]
+  --disable-static        inhibit building static library [enabled]
+
+Some influential environment variables:
+  CC                      C compiler command [detected]
+  CFLAGS                  C compiler flags [-Os -pipe ...]
+
+Use these variables to override the choices made by configure.
+
+EOF
+exit 0
+}
+
+# Helper functions
+
+echo () { printf "%s\n" "$*" ; }
+fail () { echo "$*" ; exit 1 ; }
+fnmatch () { eval "case \"\$2\" in $1) return 0 ;; *) return 1 ;; esac" ; }
+cmdexists () { type "$1" >/dev/null 2>&1 ; }
+trycc () { test -z "$CC" && cmdexists "$1" && CC=$1 ; }
+
+setdir () {
+if eval "test -z \"\${$1}\"" ; then eval "$1=\$2"
+else eval "fnmatch '*/' \"\${$1}\"" && eval "$1=\${$1%/}" ; fi
+}
+
+tryflag () {
+printf "checking whether compiler accepts %s... " "$2"
+echo "typedef int x;" > "$tmpc"
+if "$CC" "$2" -c -o /dev/null "$tmpc" 2>/dev/null ; then
+printf "yes\n"
+eval "$1=\"\${$1} \$2\""
+eval "$1=\${$1# }"
+return 0
+else
+printf "no\n"
+return 1
+fi
+}
+
+
+
+# Beginning of actual script
+
+prefix=
+exec_prefix=
+bindir=
+libdir=
+includedir=
+syslibdir=
+build=
+debug=no
+warnings=
+shared=yes
+static=yes
+
+for arg ; do
+case "$arg" in
+--help) usage ;;
+--prefix=*) prefix=${arg#*=} ;;
+--exec-prefix=*) exec_prefix=${arg#*=} ;;
+--bindir=*) bindir=${arg#*=} ;;
+--libdir=*) libdir=${arg#*=} ;;
+--includedir=*) includedir=${arg#*=} ;;
+--syslibdir=*) syslibdir=${arg#*=} ;;
+--enable-shared|--enable-shared=yes) shared=yes ;;
+--disable-shared|--enable-shared=no) shared=no ;;
+--enable-static|--enable-static=yes) static=yes ;;
+--disable-static|--enable-static=no) static=no ;;
+--enable-debug|--enable-debug=yes) debug=yes ;;
+--disable-debug|--enable-debug=no) debug=no ;;
+--enable-warnings|--enable-warnings=yes) warnings=yes ;;
+--disable-warnings|--enable-warnings=no) warnings=no ;;
+--enable-gcc-wrapper|--enable-gcc-wrapper=yes) wrapper=yes ;;
+--disable-gcc-wrapper|--enable-gcc-wrapper=no) wrapper=no ;;
+--enable-*|--disable-*|--with-*|--without-*|--*dir=*|--host=*) ;;
+--build=*|--target=*) build=${arg#*=} ;;
+-* ) echo "$0: unknown option $arg" ;;
+CC=*) CC=${arg#*=} ;;
+CFLAGS=*) CFLAGS=${arg#*=} ;;
+CPPFLAGS=*) CPPFLAGS=${arg#*=} ;;
+LDFLAGS=*) LDFLAGS=${arg#*=} ;;
+*) build=$arg ;;
+esac
+done
+
+setdir prefix /usr/local/musl
+setdir exec_prefix '$(prefix)'
+setdir bindir '$(exec_prefix)/bin'
+setdir libdir '$(prefix)/lib'
+setdir includedir '$(prefix)/include'
+setdir syslibdir '/lib'
+
+#
+# Get a temp filename we can use
+#
+i=0
+set -C
+while : ; do i=$(($i+1))
+tmpc="./conf$$-$PPID-$i.c"
+2>/dev/null > "$tmpc" && break
+test "$i" -gt 50 && fail "$0: cannot create temporary file $tmpc"
+done
+set +C
+trap 'rm "$tmpc"' EXIT INT QUIT TERM HUP
+
+#
+# Find a C compiler to use
+#
+printf "checking for C compiler... "
+trycc gcc
+trycc c99
+trycc cc
+printf "%s\n" "$CC"
+test -n "$CC" || { echo "$0: cannot find a C compiler" ; exit 1 ; }
+
+#
+# Only build musl-gcc wrapper if toolchain does not already target musl
+#
+if test -z "$wrapper" ; then
+printf "checking whether compiler is gcc... "
+if fnmatch 'gcc*|GCC*' "$("$CC" --version 2>/dev/null)" ; then
+echo yes
+printf "checking whether to build musl-gcc wrapper... "
+wrapper=yes
+while read line ; do
+case "$line" in */ld-musl-*) wrapper=no ;; esac
+done <<EOF
+$($CC -dumpspecs)
+EOF
+echo $wrapper
+else
+echo no
+fi
+fi
+
+
+
+#
+# Find the build architecture
+#
+printf "checking build system type... "
+test -n "$build" || build=$("$CC" -dumpmachine 2>/dev/null) || build=unknown
+printf "%s\n" "$build"
+
+#
+# Convert to just ARCH
+#
+case "$build" in
+arm*) ARCH=arm ;;
+i?86*) ARCH=i386 ;;
+x86_64*) ARCH=x86_64 ;;
+unknown) fail "$0: unable to detect built target; try $0 --build=..." ;;
+*) fail "$0: unknown or unsupported build target \"$build\"" ;;
+esac
+
+#
+# Try to get a conforming C99 freestanding environment
+#
+tryflag CFLAGS_C99FSE -std=c99
+tryflag CFLAGS_C99FSE -nostdinc
+tryflag CFLAGS_C99FSE -ffreestanding \
+|| tryflag CFLAGS_C99FSE -fno-builtin
+tryflag CFLAGS_C99FSE -fexcess-precision=standard \
+|| tryflag CFLAGS_C99FSE -ffloat-store
+
+#
+# Setup basic default CFLAGS: debug, optimization, and -pipe
+#
+if fnmatch '-O*|*\ -O*' "$CFLAGS_AUTO $CFLAGS" ; then :
+else
+tryflag CFLAGS_AUTO -Os || tryflag CFLAGS_AUTO -O2
+fi
+test "x$debug" = xyes && CFLAGS_AUTO="-g"
+tryflag CFLAGS_AUTO -pipe
+
+#
+# If debugging is disabled, omit bloated DWARF2 unwind tables & frame ptr
+#
+if fnmatch '-g*|*\ -g*' "$CFLAGS_AUTO $CFLAGS" ; then :
+else 
+tryflag CFLAGS_AUTO -fno-unwind-tables
+tryflag CFLAGS_AUTO -fno-asynchronous-unwind-tables
+tryflag CFLAGS_AUTO -fomit-frame-pointer
+fi
+
+#
+# Some optimization levels add bloated alignment that hurt performance
+#
+tryflag CFLAGS_AUTO -falign-functions=1
+tryflag CFLAGS_AUTO -falign-labels=1
+tryflag CFLAGS_AUTO -falign-loops=1
+tryflag CFLAGS_AUTO -falign-jumps=1
+
+#
+# On x86, make sure we don't have incompatible instruction set
+# extensions enabled by default. This is bad for making static binaries.
+# We cheat and use i486 rather than i386 because i386 really does not
+# work anyway (issues with atomic ops).
+#
+if test "$ARCH" = "i386" ; then
+fnmatch '-march=*|*\ -march=*' "$CFLAGS" || tryflag CFLAGS_AUTO -march=i486
+fnmatch '-mtune=*|*\ -mtune=*' "$CFLAGS" || tryflag CFLAGS_AUTO -mtune=generic
+fi
+
+if test "x$warnings" = xyes ; then
+tryflag CFLAGS_AUTO -Wall
+tryflag CFLAGS_AUTO -Wpointer-arith
+tryflag CFLAGS_AUTO -Wcast-align
+tryflag CFLAGS_AUTO -Wno-parentheses
+tryflag CFLAGS_AUTO -Wno-uninitialized
+tryflag CFLAGS_AUTO -Wno-missing-braces
+tryflag CFLAGS_AUTO -Wno-unused-value
+tryflag CFLAGS_AUTO -Wno-unused-but-set-variable
+tryflag CFLAGS_AUTO -Wno-unknown-pragmas
+fi
+
+
+printf "creating config.mak... "
+
+exec 3>&1 1>config.mak
+
+
+cat << EOF
+# This version of config.mak was generated by configure
+# Any changes made here will be lost if configure is re-run
+ARCH = $ARCH
+prefix = $prefix
+exec_prefix = $exec_prefix
+bindir = $bindir
+libdir = $libdir
+includedir = $includedir
+syslibdir = $syslibdir
+CC = $CC
+CFLAGS= $CFLAGS_AUTO $CFLAGS
+CFLAGS_C99FSE = $CFLAGS_C99FSE
+CPPFLAGS = $CPPFLAGS
+LDFLAGS = $LDFLAGS
+EOF
+test "x$static" = xno && echo "STATIC_LIBS ="
+test "x$shared" = xno && echo "SHARED_LIBS ="
+test "x$wrapper" = xno && echo "ALL_TOOLS ="
+test "x$wrapper" = xno && echo "TOOL_LIBS ="
+exec 1>&3 3>&-
+
+printf "done\n"
