@@ -1,7 +1,31 @@
-musl as a whole is licensed under the GNU LGPL version 2.1 or later.
-See the file COPYING for the text of this license.
+musl as a whole is licensed under the following standard MIT license:
 
-See below for the copyright status on all code included in musl:
+Copyright © 2005-2012 Rich Felker
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+Portions of this software are contributed or derived from software
+authored by third parties. Complete details on the copyright status of
+all code included in musl follows below:
+
 
 The TRE regular expression implementation (src/regex/reg* and
 src/regex/tre*) is Copyright © 2001-2008 Ville Laurikari and licensed
@@ -16,16 +40,14 @@ Copyright © 2003-2009 Steven G. Kargl or
 Copyright © 2003-2009 Bruce D. Evans or
 Copyright © 2008 Stephen L. Moshier
 and labelled as such. All have been licensed under extremely
-permissive terms which are compatible with the GNU LGPL. See the
-comments in the individual files for details.
+permissive terms. See the comments in the individual files for
+details.
 
 The implementation of DES for crypt (src/misc/crypt.c) is Copyright ©
-1994 David Burren. It is licensed under a BSD license compatible with
-the GNU LGPL.
+1994 David Burren. It is licensed under a BSD license.
 
 The smoothsort implementation (src/stdlib/qsort.c) is Copyright © 2011
-Valentin Ochs and is licensed under an MIT-style license compatible
-with the GNU LGPL.
+Valentin Ochs and is licensed under an MIT-style license.
 
 The BSD PRNG implementation (src/prng/random.c) and XSI search API
 (src/search/*.c) functions are Copyright © 2011 Szabolcs Nagy and
@@ -35,8 +57,8 @@ hereby granted. There is no warranty."
 
 The x86_64 port was written by Nicholas J. Kain. Several files (crt)
 were released into the public domain; others are licensed under the
-standard MIT license terms. See individual files for their copyright
-status.
+standard MIT license terms at the top of this file. See individual
+files for their copyright status.
 
 All files which have no copyright comments are original works
 Copyright © 2005-2012 Rich Felker, the main author of this library.
