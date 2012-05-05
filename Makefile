@@ -124,9 +124,11 @@ $(DESTDIR)$(libdir)/%: lib/%
 $(DESTDIR)$(includedir)/%: include/%
 	install -D -m 644 $< $@
 
-$(DESTDIR)$(LDSO_PATHNAME): lib/libc.so
-	install -d -m 755 $(DESTDIR)$(syslibdir) || true
+$(DESTDIR)$(LDSO_PATHNAME): $(DESTDIR)$(syslibdir)
 	ln -sf $(libdir)/libc.so $@ || true
+
+$(DESTDIR)$(syslibdir):
+	install -d -m 755 $(DESTDIR)$(syslibdir)
 
 .PRECIOUS: $(CRT_LIBS:lib/%=crt/%)
 
