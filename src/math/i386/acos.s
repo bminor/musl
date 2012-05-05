@@ -1,3 +1,5 @@
+# use acos(x) = atan2(fabs(sqrt((1-x)*(1+x))), x)
+
 .global acosf
 .type acosf,@function
 acosf:
@@ -14,17 +16,13 @@ acosl:
 .type acos,@function
 acos:
 	fldl 4(%esp)
-1:	fld1
-	fld %st(1)
+1:	fld %st(0)
 	fld1
-	fsubp
-	fsqrt
-	fxch %st(2)
-	faddp
-	fsqrt
-	fpatan
-	fld1
-	fld1
-	faddp
+	fsub %st(0),%st(1)
+	fadd %st(2)
 	fmulp
+	fsqrt
+	fabs         # fix sign of zero (matters in downward rounding mode)
+	fxch %st(1)
+	fpatan
 	ret
