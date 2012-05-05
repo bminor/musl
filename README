@@ -12,30 +12,37 @@ comparison chart on the project website,
 
 For installation instructions, see the INSTALL file.
 
-Please refer to the COPYRIGHT file for details on the copyright status
-of code included in musl, and the COPYING file for the license (LGPL)
-under which the library as a whole is distributed.
+Please refer to the COPYRIGHT file for details on the copyright and
+license status of code included in musl (standard MIT license).
 
 
 
 Greetings!
 
-As of the 0.8.0 release, musl is in _beta_ status. While some
-interfaces remain incomplete or yet to be implemented, the ABI is
-intended to be stable at this point, and serious efforts have been
-made, using three separate test frameworks, to verify the correctness
-of the implementation. Many major system-level and user-level programs
-are known to work with musl, either out-of-the-box or with minor
-patches to address portability errors.
+With the 0.9.0 release, musl has reached a milestone in completeness
+and compatibility. All interfaces in ISO C99 and POSIX 2008 base exist
+in musl, along with a number of non-standardized interfaces based on
+GNU and BSD libraries and syscall interfaces for Linux-kernel-specific
+functions. Some interfaces lack obscure or rarely-used functionality
+needed for strict conformance, but the vast majority of interfaces go
+above and beyond the requirements for conformance, often promising
+success where other implementations can fail under resource exhaustion
+or other corner-case conditions.
+
+At this point, hundreds of packages have been successfully built
+against musl, either out-of-the-box or with minor patches to address
+portability errors. Testing has been conducted using three separate
+test frameworks and numerous additional standalone test cases to
+verify the correctness of the implementation.
 
 Included with this package is a gcc wrapper script (musl-gcc) which
-allows you to build musl-linked programs using an existing gcc 4.x
-toolchain on the host. There are also now at least two mini
+allows you to build musl-linked programs using an existing gcc 3.x or
+4.x toolchain on the host. There are also now at several mini
 distributions (in the form of build scripts) which provide a
-self-hosting musl-based toolchain and system root: Sabotage Linux and
-Bootstrap Linux. These are much better options than the wrapper script
-if you wish to use dynamic linking or build packages with many library
-dependencies.
+self-hosting musl-based toolchain and system root. These are much
+better options than the wrapper script if you wish to use dynamic
+linking or build packages with many library dependencies. See the musl
+website for details.
 
 The musl project is actively seeking contributors, mostly in the areas
 of porting, testing, and application compatibility improvement. For

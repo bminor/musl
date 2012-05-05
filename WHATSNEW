@@ -529,3 +529,36 @@ bug fixes:
 - scanf and strtod wrongly treating "0.00000000001", etc. as 0
 - many bugs in towupper/towlower (never seriously tested before)
 - int8_t definition was wrong when gcc -funsigned-char was used
+
+
+
+0.9.0 release notes
+
+license change: MIT
+
+new features:
+- configure script, improved build system
+- full stack protector support
+- PIE support on x86 and x86_64
+- new O(1) space, O(nm) time implementation of fnmatch
+- improved support for sse2 floating point mode on x86
+
+compatibility:
+- added linux unshare syscall
+- exp10 function
+- sqrtl support on arm (previously missing)
+- removed minimal linux/*.h headers that could conflict with real ones
+- support for _LARGEFILE64_SOURCE (mapped to standard fcns with #define)
+- better c89 compatibility in headers
+- stub versions of sched_* functions (previously missing)
+- pthread stacks no longer executable (compat with hardened kernels)
+
+optimization:
+- additional x86_64 math asm
+- better formula for acos use in i386 asm
+
+bug fixes:
+- large (up to a few %) errors in strtod for certain values due to bug
+- mbsnrtowcs and wcsnrtombs were completely broken (bad exit logic)
+- wide printf %.0s could fail due to uninitialized variable
+- missing dlerror strings for dlsym in some cases
