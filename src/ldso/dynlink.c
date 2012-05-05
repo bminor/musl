@@ -723,7 +723,7 @@ static void *do_dlsym(struct dso *p, const char *s, void *ra)
 	}
 	if (p == head || p == RTLD_DEFAULT) {
 		void *res = find_sym(head, s, 0);
-		if (!res) errflag = 1;
+		if (!res) goto failed;
 		return res;
 	}
 	h = hash(s);
@@ -736,6 +736,7 @@ static void *do_dlsym(struct dso *p, const char *s, void *ra)
 		if (sym && sym->st_value && (1<<(sym->st_info&0xf) & OK_TYPES))
 			return p->deps[i]->base + sym->st_value;
 	}
+failed:
 	errflag = 1;
 	snprintf(errbuf, sizeof errbuf, "Symbol not found: %s", s);
 	return 0;
