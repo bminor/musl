@@ -192,6 +192,7 @@ tryflag CFLAGS_C99FSE -ffreestanding \
 || tryflag CFLAGS_C99FSE -fno-builtin
 tryflag CFLAGS_C99FSE -fexcess-precision=standard \
 || tryflag CFLAGS_C99FSE -ffloat-store
+tryflag CFLAGS_C99FSE -frounding-math
 
 #
 # Setup basic default CFLAGS: debug, optimization, and -pipe
