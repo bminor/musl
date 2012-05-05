@@ -36,9 +36,16 @@ to compile and link programs and libraries against musl.
 
 To install musl as an alternate libc, follow these steps:
 
-1. Edit config.mak to select your system's CPU architecture (i386,
-   x86_64, or arm), installation prefix, location for the dynamic
-   linker, and other build preferences.
+1. Configure musl's build with a command similar to:
+   ./configure --prefix=/usr/local/musl --exec-prefix=/usr/local
+   Refer to ./configure --help for details on other options. You may
+   change the install prefix if you like, but DO NOT set it to a
+   location that contains your existing libraries based on another
+   libc such as glibc or uClibc. If you do not intend to use dynamic
+   linking, you may disable it at this point via --disable-shared and
+   cut the build time in half. If you wish to use dynamic linking but
+   do not have permissions to write to /lib, you will need to set an
+   alternate dynamic linker location via --syslibdir.
 
 2. Run "make". Parallel build is fully supported, so you can instead
    use "make -j3" or so on SMP systems if you like.
@@ -46,10 +53,13 @@ To install musl as an alternate libc, follow these steps:
 3. Run "make install" as a user sufficient privileges to write to the
    destination.
 
-4. Ensure that /etc/ld-musl-$ARCH.path (where $ARCH is replaced by
-   i386, x86_64, etc. as appropriate) contains the correct search path
-   for where you intend to install musl-linked shared library files.
-   This step can be skipped if you disabled dynamic linking.
+4. Create a file named /etc/ld-musl-$ARCH.path (where $ARCH is
+   replaced by i386, x86_64, etc. as appropriate) containing the
+   correct colon-delimited search path for where you intend to install
+   musl-linked shared library files. If this file is missing, musl
+   will search the standard path, and you will encounter problems when
+   it attempts to load libraries linked against your host libc. Note
+   that this step can be skipped if you disabled dynamic linking.
 
 After installing, you can use musl via the musl-gcc wrapper. For
 example:
@@ -81,8 +91,9 @@ main host system library directories.
 
 Finally, it's worth noting that musl's include and lib directories in
 the build tree are setup to be usable without installation, if
-necessary. Just modify the musl-gcc wrapper's libc_prefix variable to
-point to the source/build tree.
+necessary. Just modify the the paths in the spec file used by musl-gcc
+(it's located at $prefix/lib/musl-gcc.specs) to point to the
+source/build tree.
 
 
 
@@ -107,10 +118,9 @@ TO CONVERT IT TO BE A MUSL-BASED SYSTEM!!
    the search path before you move them, or your system will break
    badly and you will not be able to continue.
 
-2. Edit musl's config.mak and set the installation prefix to the
-   prefix your compiler toolchain is configured to search, probably
-   /usr. Set ARCH to match your CPU architecture, and change any other
-   options as you see fit.
+2. Configure musl's build with a command similar to:
+   ./configure --prefix=/usr --disable-gcc-wrapper
+   Refer to ./configure --help for details on other options.
 
 3. Run "make" to compile musl.
 
