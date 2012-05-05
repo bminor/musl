@@ -1,4 +1,4 @@
-/* Copyright 2011 Nicholas J. Kain, licensed GNU LGPL 2.1 or later */
+/* Copyright 2011-2012 Nicholas J. Kain, licensed under standard MIT license */
 .global _longjmp
 .global longjmp
 .type _longjmp,@function
