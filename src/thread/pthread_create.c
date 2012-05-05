@@ -104,7 +104,7 @@ int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(vo
 		size = guard + ROUND(attr->_a_stacksize + DEFAULT_STACK_SIZE);
 	}
 	size += __pthread_tsd_size;
-	map = mmap(0, size, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_ANON, -1, 0);
+	map = mmap(0, size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, -1, 0);
 	if (map == MAP_FAILED) return EAGAIN;
 	if (guard) mprotect(map, guard, PROT_NONE);
 
