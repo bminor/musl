@@ -30,9 +30,7 @@ float nexttowardf(float x, long double y)
 	if (e == 0x7f800000)
 		return x + x;
 	/* raise underflow if ux.value is subnormal or zero */
-	if (e == 0) {
-		volatile float z;
-		z = x*x + ux.value*ux.value;
-	}
+	if (e == 0)
+		FORCE_EVAL(x*x + ux.value*ux.value);
 	return ux.value;
 }

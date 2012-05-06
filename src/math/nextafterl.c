@@ -38,10 +38,8 @@ long double nextafterl(long double x, long double y)
 	if (ux.bits.exp == 0x7fff)
 		return x + x;
 	/* raise underflow if ux.value is subnormal or zero */
-	if (ux.bits.exp == 0) {
-		volatile float z;
-		z = x*x + ux.value*ux.value;
-	}
+	if (ux.bits.exp == 0)
+		FORCE_EVAL(x*x + ux.value*ux.value);
 	return ux.value;
 }
 #elif LDBL_MANT_DIG == 113 && LDBL_MAX_EXP == 16384
@@ -77,10 +75,8 @@ long double nextafterl(long double x, long double y)
 	if (ux.bits.exp == 0x7fff)
 		return x + x;
 	/* raise underflow if ux.value is subnormal or zero */
-	if (ux.bits.exp == 0) {
-		volatile float z;
-		z = x*x + ux.value*ux.value;
-	}
+	if (ux.bits.exp == 0)
+		FORCE_EVAL(x*x + ux.value*ux.value);
 	return ux.value;
 }
 #endif
