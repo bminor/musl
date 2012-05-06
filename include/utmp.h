@@ -11,6 +11,12 @@ extern "C" {
 #define UT_NAMESIZE 32
 #define UT_HOSTSIZE 256
 
+struct lastlog {
+	time_t ll_time;
+	char ll_line[UT_LINESIZE];
+	char ll_host[UT_HOSTSIZE];
+};
+
 #define ut_time ut_tv.tv_sec
 #define ut_name ut_user
 #define ut_exit __ut_exit
