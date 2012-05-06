@@ -545,13 +545,15 @@ new features:
 
 compatibility:
 - added linux unshare syscall
-- exp10 function
+- exp10/pow10 function
 - sqrtl support on arm (previously missing)
 - removed minimal linux/*.h headers that could conflict with real ones
 - support for _LARGEFILE64_SOURCE (mapped to standard fcns with #define)
 - better c89 compatibility in headers
 - stub versions of sched_* functions (previously missing)
 - pthread stacks no longer executable (compat with hardened kernels)
+- new ar.h and lastlog.h (legacy junk)
+- various other header improvements
 
 optimization:
 - additional x86_64 math asm

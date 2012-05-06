@@ -30,10 +30,11 @@ success where other implementations can fail under resource exhaustion
 or other corner-case conditions.
 
 At this point, hundreds of packages have been successfully built
-against musl, either out-of-the-box or with minor patches to address
-portability errors. Testing has been conducted using three separate
-test frameworks and numerous additional standalone test cases to
-verify the correctness of the implementation.
+against musl - either out-of-the-box or with minor patches to address
+portability errors - ranging from low-level system utilities and
+network daemons to major gui applications. Testing has been conducted
+using three separate test frameworks and numerous additional
+standalone test cases to verify the correctness of the implementation.
 
 Included with this package is a gcc wrapper script (musl-gcc) which
 allows you to build musl-linked programs using an existing gcc 3.x or
