@@ -28,8 +28,8 @@ extern "C" {
 #define MATH_ERREXCEPT 2
 #define math_errhandling 2
 
-#define FP_ILOGBNAN (((unsigned)-1)>>1)
-#define FP_ILOGB0 (~FP_ILOGBNAN)
+#define FP_ILOGBNAN (-1-(int)(((unsigned)-1)>>1))
+#define FP_ILOGB0 FP_ILOGBNAN
 
 #define FP_NAN       0
 #define FP_INFINITE  1
