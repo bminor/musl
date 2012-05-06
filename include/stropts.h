@@ -129,7 +129,8 @@ struct str_list {
 	struct str_mlist *sl_modlist;
 };
 
-int ioctl (int, int, ...);
+int isastream(int);
+int ioctl(int, int, ...);
 
 #ifdef __cplusplus
 }
