@@ -1,15 +1,3 @@
-/* origin: FreeBSD /usr/src/lib/msun/src/s_nexttoward.c */
-/*
- * ====================================================
- * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
- *
- * Developed at SunPro, a Sun Microsystems, Inc. business.
- * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice
- * is preserved.
- * ====================================================
- */
-
 #include "libm.h"
 
 #if LDBL_MANT_DIG == 53 && LDBL_MAX_EXP == 1024
@@ -17,52 +5,42 @@ double nexttoward(double x, long double y)
 {
 	return nextafter(x, y);
 }
-#elif (LDBL_MANT_DIG == 64 || LDBL_MANT_DIG == 113) && LDBL_MAX_EXP == 16384
+#else
+#define SIGN ((uint64_t)1<<63)
+
 double nexttoward(double x, long double y)
 {
-	union IEEEl2bits uy;
-	volatile double t;
-	int32_t hx,ix;
-	uint32_t lx;
+	union dshape ux;
+	int e;
 
-	EXTRACT_WORDS(hx, lx, x);
-	ix = hx & 0x7fffffff;
-	uy.e = y;
-
-	if ((ix >= 0x7ff00000 && ((ix-0x7ff00000)|lx) != 0) ||
-	    (uy.bits.exp == 0x7fff && ((uy.bits.manh&~LDBL_NBIT)|uy.bits.manl) != 0))
-		return x + y;  /* x or y is nan */
+	if (isnan(x) || isnan(y))
+		return x + y;
 	if (x == y)
-		return (double)y;
-	if (x == 0.0) {
-		INSERT_WORDS(x, uy.bits.sign<<31, 1);  /* return +-minsubnormal */
-		/* raise underflow */
-		t = x * x;
-		if (t == x)
-			return t;
-		return x;
+		return y;
+	ux.value = x;
+	if (x == 0) {
+		ux.bits = 1;
+		if (signbit(y))
+			ux.bits |= SIGN;
+	} else if (x < y) {
+		if (signbit(x))
+			ux.bits--;
+		else
+			ux.bits++;
+	} else {
+		if (signbit(x))
+			ux.bits++;
+		else
+			ux.bits--;
 	}
-	if (hx > 0.0 ^ x < y) {  /* x -= ulp */
-		if (lx == 0)
-			hx--;
-		lx--;
-	} else {                 /* x += ulp */
-		lx++;
-		if (lx == 0)
-			hx++;
-	}
-	ix = hx & 0x7ff00000;
-	if (ix >= 0x7ff00000)   /* overflow  */
+	e = ux.bits>>52 & 0x7ff;
+	/* raise overflow if ux.value is infinite and x is finite */
+	if (e == 0x7ff)
 		return x + x;
-	if (ix < 0x00100000) {  /* underflow */
-		/* raise underflow flag */
-		t = x * x;
-		if (t != x) {
-			INSERT_WORDS(x, hx, lx);
-			return x;
-		}
+	/* raise underflow if ux.value is subnormal or zero */
+	if (e == 0) {
+		volatile float z = x*x + ux.value*ux.value;
 	}
-	INSERT_WORDS(x, hx, lx);
-	return x;
+	return ux.value;
 }
 #endif

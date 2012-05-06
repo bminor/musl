@@ -1,79 +1,36 @@
-/* origin: FreeBSD /usr/src/lib/msun/src/s_nextafter.c */
-/*
- * ====================================================
- * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
- *
- * Developed at SunPro, a Sun Microsystems, Inc. business.
- * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice
- * is preserved.
- * ====================================================
- */
-/* IEEE functions
- *      nextafter(x,y)
- *      return the next machine floating-point number of x in the
- *      direction toward y.
- *   Special cases:
- */
-
 #include "libm.h"
+
+#define SIGN ((uint64_t)1<<63)
 
 double nextafter(double x, double y)
 {
-	volatile double t;
-	int32_t hx,hy,ix,iy;
-	uint32_t lx,ly;
+	union dshape ux, uy;
+	uint64_t ax, ay;
+	int e;
 
-	EXTRACT_WORDS(hx, lx, x);
-	EXTRACT_WORDS(hy, ly, y);
-	ix = hx & 0x7fffffff;  /* |x| */
-	iy = hy & 0x7fffffff;  /* |y| */
-
-	if ((ix >= 0x7ff00000 && (ix-0x7ff00000)|lx) != 0 ||   /* x is nan */
-	    (iy >= 0x7ff00000 && (iy-0x7ff00000)|ly) != 0)     /* y is nan */
-		return x+y;
-	if (x == y)          /* x == y */
+	if (isnan(x) || isnan(y))
+		return x + y;
+	ux.value = x;
+	uy.value = y;
+	if (ux.bits == uy.bits)
 		return y;
-	if ((ix|lx) == 0) {  /* x == 0 */
-		INSERT_WORDS(x, hy&0x80000000, 1);  /* return +-minsubnormal */
-		/* raise underflow flag */
-		t = x*x;
-		if (t == x)
-			return t;
-		return x;
-	}
-	if (hx >= 0) {  /* x > 0 */
-		if (hx > hy || (hx == hy && lx > ly)) {  /* x > y, x -= ulp */
-			if (lx == 0)
-				hx--;
-			lx--;
-		} else {                                 /* x < y, x += ulp */
-			lx++;
-			if (lx == 0)
-				hx++;
-		}
-	} else {        /* x < 0 */
-		if (hy >= 0 || hx > hy || (hx == hy && lx > ly)) { /* x < y, x -= ulp */
-			if (lx == 0)
-				hx--;
-			lx--;
-		} else {                                 /* x > y, x += ulp */
-			lx++;
-			if (lx == 0)
-				hx++;
-		}
-	}
-	hy = hx & 0x7ff00000;
-	if (hy >= 0x7ff00000)  /* overflow  */
-		return x+x;
-	if (hy < 0x00100000) { /* underflow */
-		/* raise underflow flag */
-		t = x*x;
-		if (t != x) {
-			INSERT_WORDS(y, hx, lx);
+	ax = ux.bits & ~SIGN;
+	ay = uy.bits & ~SIGN;
+	if (ax == 0) {
+		if (ay == 0)
 			return y;
-		}
+		ux.bits = (uy.bits & SIGN) | 1;
+	} else if (ax > ay || ((ux.bits ^ uy.bits) & SIGN))
+		ux.bits--;
+	else
+		ux.bits++;
+	e = ux.bits >> 52 & 0x7ff;
+	/* raise overflow if ux.value is infinite and x is finite */
+	if (e == 0x7ff)
+		return x + x;
+	/* raise underflow if ux.value is subnormal or zero */
+	if (e == 0) {
+		volatile double z = x*x + ux.value*ux.value;
 	}
-	INSERT_WORDS(x, hx, lx);
-	return x;
+	return ux.value;
 }

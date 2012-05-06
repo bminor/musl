@@ -1,21 +1,3 @@
-/* origin: FreeBSD /usr/src/lib/msun/src/s_nextafterl.c */
-/*
- * ====================================================
- * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
- *
- * Developed at SunPro, a Sun Microsystems, Inc. business.
- * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice
- * is preserved.
- * ====================================================
- */
-/* IEEE functions
- *      nextafter(x,y)
- *      return the next machine floating-point number of x in the
- *      direction toward y.
- *   Special cases:
- */
-
 #include "libm.h"
 
 #if LDBL_MANT_DIG == 53 && LDBL_MAX_EXP == 1024
@@ -23,55 +5,80 @@ long double nextafterl(long double x, long double y)
 {
 	return nextafter(x, y);
 }
-#elif (LDBL_MANT_DIG == 64 || LDBL_MANT_DIG == 113) && LDBL_MAX_EXP == 16384
+#elif LDBL_MANT_DIG == 64 && LDBL_MAX_EXP == 16384
+#define MSB ((uint64_t)1<<63)
 long double nextafterl(long double x, long double y)
 {
-	volatile long double t;
-	union IEEEl2bits ux, uy;
+	union ldshape ux, uy;
 
-	ux.e = x;
-	uy.e = y;
-
-	if ((ux.bits.exp == 0x7fff && ((ux.bits.manh&~LDBL_NBIT)|ux.bits.manl) != 0) ||
-	    (uy.bits.exp == 0x7fff && ((uy.bits.manh&~LDBL_NBIT)|uy.bits.manl) != 0))
-		return x+y;  /* x or y is nan */
+	if (isnan(x) || isnan(y))
+		return x + y;
 	if (x == y)
-		return y;    /* x=y, return y */
-	if (x == 0.0) {
-		/* return +-minsubnormal */
-		ux.bits.manh = 0;
-		ux.bits.manl = 1;
+		return y;
+	ux.value = x;
+	if (x == 0) {
+		uy.value = y;
+		ux.bits.m = 1;
 		ux.bits.sign = uy.bits.sign;
-		/* raise underflow flag */
-		t = ux.e*ux.e;
-		if (t == ux.e)
-			return t;
-		return ux.e;
-	}
-	if(x > 0.0 ^ x < y) {  /* x -= ulp */
-		if (ux.bits.manl == 0) {
-			if ((ux.bits.manh&~LDBL_NBIT) == 0)
-				ux.bits.exp--;
-			ux.bits.manh = (ux.bits.manh - 1) | (ux.bits.manh & LDBL_NBIT);
+	} else if (x < y ^ ux.bits.sign) {
+		ux.bits.m++;
+		if ((ux.bits.m & ~MSB) == 0) {
+			ux.bits.m = MSB;
+			ux.bits.exp++;
 		}
-		ux.bits.manl--;
-	} else {               /* x += ulp */
-		ux.bits.manl++;
-		if (ux.bits.manl == 0) {
-			ux.bits.manh = (ux.bits.manh + 1) | (ux.bits.manh & LDBL_NBIT);
-			if ((ux.bits.manh&~LDBL_NBIT)==0)
+	} else {
+		if ((ux.bits.m & ~MSB) == 0) {
+			ux.bits.exp--;
+			if (ux.bits.exp)
+				ux.bits.m = 0;
+		}
+		ux.bits.m--;
+	}
+	/* raise overflow if ux.value is infinite and x is finite */
+	if (ux.bits.exp == 0x7fff)
+		return x + x;
+	/* raise underflow if ux.value is subnormal or zero */
+	if (ux.bits.exp == 0) {
+		volatile float z = x*x + ux.value*ux.value;
+	}
+	return ux.value;
+}
+#elif LDBL_MANT_DIG == 113 && LDBL_MAX_EXP == 16384
+long double nextafterl(long double x, long double y)
+{
+	union ldshape ux, uy;
+
+	if (isnan(x) || isnan(y))
+		return x + y;
+	if (x == y)
+		return y;
+	ux.value = x;
+	if (x == 0) {
+		uy.value = y;
+		ux.bits.mlo = 1;
+		ux.bits.sign = uy.bits.sign;
+	} else if (x < y ^ ux.bits.sign) {
+		ux.bits.mlo++;
+		if (ux.bits.mlo == 0) {
+			ux.bits.mhi++;
+			if (ux.bits.mhi == 0)
 				ux.bits.exp++;
 		}
+	} else {
+		if (ux.bits.mlo == 0) {
+			if (ux.bits.mhi == 0)
+				ux.bits.exp--;
+			ux.bits.mhi--;
+		}
+		ux.bits.mlo--;
 	}
-	if (ux.bits.exp == 0x7fff)  /* overflow  */
-		return x+x;
-	if (ux.bits.exp == 0) {     /* underflow */
-		mask_nbit_l(ux);
-		/* raise underflow flag */
-		t = ux.e * ux.e;
-		if (t != ux.e)
-			return ux.e;
+	/* raise overflow if ux.value is infinite and x is finite */
+	if (ux.bits.exp == 0x7fff)
+		return x + x;
+	/* raise underflow if ux.value is subnormal or zero */
+	if (ux.bits.exp == 0) {
+		volatile float z = x*x + ux.value*ux.value;
 	}
-	return ux.e;
+	return ux.value;
 }
 #endif
