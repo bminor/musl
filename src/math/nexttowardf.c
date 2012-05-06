@@ -31,7 +31,8 @@ float nexttowardf(float x, long double y)
 		return x + x;
 	/* raise underflow if ux.value is subnormal or zero */
 	if (e == 0) {
-		volatile float z = x*x + ux.value*ux.value;
+		volatile float z;
+		z = x*x + ux.value*ux.value;
 	}
 	return ux.value;
 }

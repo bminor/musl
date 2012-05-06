@@ -30,7 +30,8 @@ double nextafter(double x, double y)
 		return x + x;
 	/* raise underflow if ux.value is subnormal or zero */
 	if (e == 0) {
-		volatile double z = x*x + ux.value*ux.value;
+		volatile double z;
+		z = x*x + ux.value*ux.value;
 	}
 	return ux.value;
 }

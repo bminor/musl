@@ -39,7 +39,8 @@ long double nextafterl(long double x, long double y)
 		return x + x;
 	/* raise underflow if ux.value is subnormal or zero */
 	if (ux.bits.exp == 0) {
-		volatile float z = x*x + ux.value*ux.value;
+		volatile float z;
+		z = x*x + ux.value*ux.value;
 	}
 	return ux.value;
 }
@@ -77,7 +78,8 @@ long double nextafterl(long double x, long double y)
 		return x + x;
 	/* raise underflow if ux.value is subnormal or zero */
 	if (ux.bits.exp == 0) {
-		volatile float z = x*x + ux.value*ux.value;
+		volatile float z;
+		z = x*x + ux.value*ux.value;
 	}
 	return ux.value;
 }
