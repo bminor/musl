@@ -41,7 +41,7 @@ float remquof(float x, float y, int *quo)
 		q = 0;
 		goto fixup;
 	} else if(hx==hy) {  /* |x| = |y| return x*0*/
-		*quo = 1;
+		*quo = sxy ? -1 : 1;
 		return Zero[(uint32_t)sx>>31];
 	}
 
@@ -92,6 +92,7 @@ float remquof(float x, float y, int *quo)
 
 	/* convert back to floating value and restore the sign */
 	if (hx == 0) {                             /* return sign(x)*0 */
+		q &= 0x7fffffff;
 		*quo = sxy ? -q : q;
 		return Zero[(uint32_t)sx>>31];
 	}
