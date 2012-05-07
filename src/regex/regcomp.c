@@ -1210,7 +1210,7 @@ tre_parse(tre_parse_ctx_t *ctx)
 		  }
 	      }
 
-	      if (!*ctx->re)
+	      if (!ctx->re[1])
 		/* Trailing backslash. */
 		return REG_EESCAPE;
 
