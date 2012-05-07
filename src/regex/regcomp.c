@@ -1186,7 +1186,7 @@ tre_parse(tre_parse_ctx_t *ctx)
 		  ctx->re++;
 		  goto lparen;
 		}
-	      if (!(ctx->cflags & REG_EXTENDED) && *(ctx->re + 1) == CHAR_LPAREN)
+	      if (!(ctx->cflags & REG_EXTENDED) && *(ctx->re + 1) == CHAR_RPAREN)
 		{
 		  goto empty_atom;
 		}
