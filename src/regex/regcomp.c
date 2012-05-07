@@ -1149,10 +1149,6 @@ tre_parse(tre_parse_ctx_t *ctx)
 	     an empty set of `()', a bracket expression, `.', `^', `$',
 	     a `\' followed by a character, or a single character. */
 
-	  /* End of regexp? (empty string). */
-	  if (!*ctx->re)
-	    goto parse_literal;
-
 	  switch (*ctx->re)
 	    {
 	    case CHAR_LPAREN:  /* parenthesized subexpression */
@@ -1394,6 +1390,7 @@ tre_parse(tre_parse_ctx_t *ctx)
 	      if (!(ctx->cflags & REG_EXTENDED))
 	        goto parse_literal;
 
+	    case 0:
 	    empty_atom:
 	      result = tre_ast_new_literal(ctx->mem, EMPTY, -1, -1);
 	      if (!result)
