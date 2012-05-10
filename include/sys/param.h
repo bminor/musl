@@ -18,7 +18,7 @@
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
-#define __bitop(x,i,o) ((a)[(i)/8] o 1<<(i)%8)
+#define __bitop(x,i,o) ((x)[(i)/8] o 1<<(i)%8)
 #define setbit(x,i) __bitop(x,i,|=)
 #define clrbit(x,i) __bitop(x,i,&=~)
 #define isset(x,i) __bitop(x,i,&)
