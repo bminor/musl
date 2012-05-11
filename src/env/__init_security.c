@@ -8,7 +8,7 @@
 
 #define AUX_CNT 24
 
-void dummy(size_t *auxv)
+static void dummy(size_t *auxv)
 {
 }
 weak_alias(dummy, __init_ssp);
