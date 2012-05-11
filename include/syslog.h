@@ -59,7 +59,9 @@ void openlog (const char *, int, int);
 int setlogmask (int);
 void syslog (int, const char *, ...);
 
-#if defined(_GNU_SOURCE) && defined(SYSLOG_NAMES)
+#if defined(_GNU_SOURCE)
+void vsyslog (int, const char *, va_list);
+#if defined(SYSLOG_NAMES)
 #define __NEED_va_list
 #include <bits/alltypes.h>
 #define	INTERNAL_NOPRI 0x10
@@ -89,7 +91,7 @@ typedef struct {
 	{ "local2", LOG_LOCAL2 }, { "local3", LOG_LOCAL3 }, \
 	{ "local4", LOG_LOCAL4 }, { "local5", LOG_LOCAL5 }, \
 	{ "local6", LOG_LOCAL6 }, { "local7", LOG_LOCAL7 }, { NULL, -1 } })
-void vsyslog (int, const char *, va_list);
+#endif
 #endif
 
 #ifdef __cplusplus
