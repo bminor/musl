@@ -44,7 +44,7 @@ double remquo(double x, double y, int *quo)
 			goto fixup;
 		}
 		if (lx == ly) {            /* |x| = |y| return x*0 */
-			*quo = 1;
+			*quo = sxy ? -1 : 1;
 			return Zero[(uint32_t)sx>>31];
 		}
 	}
@@ -127,6 +127,7 @@ double remquo(double x, double y, int *quo)
 
 	/* convert back to floating value and restore the sign */
 	if ((hx|lx) == 0) {  /* return sign(x)*0 */
+		q &= 0x7fffffff;
 		*quo = sxy ? -q : q;
 		return Zero[(uint32_t)sx>>31];
 	}
@@ -144,10 +145,10 @@ double remquo(double x, double y, int *quo)
 			hx >>= n;
 		} else if (n <= 31) {
 			lx = (hx<<(32-n))|(lx>>n);
-			hx = sx;
+			hx = 0;
 		} else {
 			lx = hx>>(n-32);
-			hx = sx;
+			hx = 0;
 		}
 	}
 fixup:

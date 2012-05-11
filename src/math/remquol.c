@@ -94,7 +94,7 @@ long double remquol(long double x, long double y, int *quo)
 			goto fixup;       /* |x|<|y| return x or x-y */
 		}
 		if (ux.bits.manh == uy.bits.manh && ux.bits.manl == uy.bits.manl) {
-			*quo = 1;
+			*quo = sxy ? -1 : 1;
 			return Zero[sx];  /* |x|=|y| return x*0*/
 		}
 	}
@@ -152,6 +152,7 @@ long double remquol(long double x, long double y, int *quo)
 
 	/* convert back to floating value and restore the sign */
 	if ((hx|lx) == 0) {  /* return sign(x)*0 */
+		q &= 0x7fffffff;
 		*quo = sxy ? -q : q;
 		return Zero[sx];
 	}
