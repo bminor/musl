@@ -138,6 +138,11 @@ uint16_t ntohs(uint16_t);
 #define IN6_IS_ADDR_MC_GLOBAL(a) \
         (IN6_IS_ADDR_MULTICAST(a) && ((((uint8_t *) (a))[1] & 0xf) == 0xe))
 
+#define __ARE_4_EQUAL(a,b) \
+	(!( 0[a]-0[b] | 1[a]-1[b] | 2[a]-2[b] | 3[a]-3[b] ))
+#define IN6_ARE_ADDR_EQUAL(a,b) \
+	__ARE_4_EQUAL((const uint32_t *)(a), (const uint32_t *)(b))
+
 #define	IN_CLASSA(a)		((((in_addr_t)(a)) & 0x80000000) == 0)
 #define	IN_CLASSA_NET		0xff000000
 #define	IN_CLASSA_NSHIFT	24
