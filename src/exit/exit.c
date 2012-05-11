@@ -2,6 +2,8 @@
 #include <unistd.h>
 #include <stdio.h>
 #include "libc.h"
+#include "atomic.h"
+#include "syscall.h"
 
 static void dummy()
 {
@@ -13,10 +15,10 @@ weak_alias(dummy, __fflush_on_exit);
 
 void exit(int code)
 {
-	static int lock[2];
+	static int lock;
 
 	/* If more than one thread calls exit, hang until _Exit ends it all */
-	LOCK(lock);
+	while (a_swap(&lock, 1)) __syscall(SYS_pause);
 
 	/* Only do atexit & stdio flush if they were actually used */
 	__funcs_on_exit();
