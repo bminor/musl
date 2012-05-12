@@ -38,6 +38,8 @@ struct qelem {
 	struct qelem *q_forw, *q_back;
 	char q_data[1];
 };
+
+void tdestroy(void *, void (*)(void *));
 #endif
 
 #ifdef __cplusplus
