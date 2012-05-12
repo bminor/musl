@@ -1,6 +1,12 @@
 #include <stdlib.h>
 #include <search.h>
 
+/*
+avl tree implementation using recursive functions
+the height of an n node tree is less than 1.44*log2(n+2)-1
+(so the max recursion depth in case of a tree with 2^32 nodes is 45)
+*/
+
 struct node {
 	const void *key;
 	struct node *left;
