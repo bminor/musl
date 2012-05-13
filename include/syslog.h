@@ -60,10 +60,10 @@ int setlogmask (int);
 void syslog (int, const char *, ...);
 
 #if defined(_GNU_SOURCE)
-void vsyslog (int, const char *, va_list);
-#if defined(SYSLOG_NAMES)
 #define __NEED_va_list
 #include <bits/alltypes.h>
+void vsyslog (int, const char *, va_list);
+#if defined(SYSLOG_NAMES)
 #define	INTERNAL_NOPRI 0x10
 #define	INTERNAL_MARK (LOG_NFACILITIES<<3)
 struct __CODE {
