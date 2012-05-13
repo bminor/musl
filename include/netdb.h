@@ -138,6 +138,14 @@ struct hostent *gethostbyname2(const char *, int);
 int gethostbyaddr_r(const void *, socklen_t, int, struct hostent *, char *, size_t, struct hostent **, int *);
 int getservbyport_r(int, const char *, struct servent *, char *, size_t, struct servent **);
 int getservbyname_r(const char *, const char *, struct servent *, char *, size_t, struct servent **);
+#define EAI_NODATA     -5
+#define EAI_ADDRFAMILY -9
+#define EAI_INPROGRESS -100
+#define EAI_CANCELED   -101
+#define EAI_NOTCANCELED -102
+#define EAI_ALLDONE    -103
+#define EAI_INTR       -104
+#define EAI_IDN_ENCODE -105
 #endif
 
 
