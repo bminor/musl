@@ -1052,8 +1052,6 @@ tre_parse(tre_parse_ctx_t *ctx)
 	  }
 
 	case PARSE_UNION:
-	  if (!*ctx->re)
-	    break;
 	  switch (*ctx->re)
 	    {
 	    case CHAR_PIPE:
@@ -1086,8 +1084,6 @@ tre_parse(tre_parse_ctx_t *ctx)
 
 	case PARSE_POSTFIX:
 	  /* Parse postfix operators. */
-	  if (!*ctx->re)
-	    break;
 	  switch (*ctx->re)
 	    {
 	    case CHAR_PLUS:
