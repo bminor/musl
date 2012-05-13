@@ -44,9 +44,6 @@ struct addrinfo
 #define NI_DGRAM        0x10
 /*#define NI_NUMERICSCOPE */
 
-#define NI_MAXHOST 255
-#define NI_MAXSERV 32
-
 #define EAI_BADFLAGS   -1
 #define EAI_NONAME     -2
 #define EAI_AGAIN      -3
@@ -146,6 +143,8 @@ int getservbyname_r(const char *, const char *, struct servent *, char *, size_t
 #define EAI_ALLDONE    -103
 #define EAI_INTR       -104
 #define EAI_IDN_ENCODE -105
+#define NI_MAXHOST 255
+#define NI_MAXSERV 32
 #endif
 
 
