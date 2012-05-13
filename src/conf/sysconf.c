@@ -6,6 +6,7 @@
 
 #define VER (-2)
 #define OFLOW (-3)
+#define CPUCNT (-4)
 #define RLIM(x) (-32768|(RLIMIT_ ## x))
 
 long sysconf(int name)
@@ -94,8 +95,8 @@ long sysconf(int name)
 		[_SC_THREAD_PRIO_INHERIT] = -1,
 		[_SC_THREAD_PRIO_PROTECT] = -1,
 		[_SC_THREAD_PROCESS_SHARED] = VER,
-		[_SC_NPROCESSORS_CONF] = -1,
-		[_SC_NPROCESSORS_ONLN] = -1,
+		[_SC_NPROCESSORS_CONF] = CPUCNT,
+		[_SC_NPROCESSORS_ONLN] = CPUCNT,
 		[_SC_PHYS_PAGES] = -1,
 		[_SC_AVPHYS_PAGES] = -1,
 		[_SC_ATEXIT_MAX] = -1,
@@ -220,6 +221,13 @@ long sysconf(int name)
 	} else if (values[name] == OFLOW) {
 		if (name == _SC_ARG_MAX) return ARG_MAX;
 		if (name == _SC_SEM_VALUE_MAX) return SEM_VALUE_MAX;
+	} else if (values[name] == CPUCNT) {
+		unsigned char set[128] = {1};
+		int i, cnt;
+		__syscall(SYS_sched_getaffinity, 0, sizeof set, set);
+		for (i=cnt=0; i<sizeof set; i++)
+			for (; set[i]; set[i]&=set[i]-1, cnt++);
+		return cnt;
 	} else if (values[name] < OFLOW) {
 		long lim[2];
 		__syscall(SYS_getrlimit, values[name]&16383, lim);
