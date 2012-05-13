@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <netdb.h>
 #include "__dns.h"
 #include "libc.h"

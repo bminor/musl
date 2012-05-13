@@ -128,7 +128,11 @@ struct hostent *gethostbyaddr (const void *, socklen_t, int);
 int gethostbyaddr_r(const void *, socklen_t, int, struct hostent *, char *, size_t, struct hostent **, int *);
 int getservbyport_r(int, const char *, struct servent *, char *, size_t, struct servent **);
 int getservbyname_r(const char *, const char *, struct servent *, char *, size_t, struct servent **);
-extern int h_errno;
+#ifdef __GNUC__
+__attribute__((const))
+#endif
+int *__h_errno_location(void);
+#define h_errno (*__h_errno_location())
 #define EAI_NODATA     -5
 #define EAI_ADDRFAMILY -9
 #define EAI_INPROGRESS -100
