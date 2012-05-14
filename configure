@@ -148,7 +148,7 @@ test -n "$CC" || { echo "$0: cannot find a C compiler" ; exit 1 ; }
 #
 if test -z "$wrapper" ; then
 printf "checking whether compiler is gcc... "
-if fnmatch '*\(GCC\)*' "$("$CC" --version 2>/dev/null)" ; then
+if fnmatch '*gcc\ version*' "$("$CC" -v 2>&1)" ; then
 echo yes
 printf "checking whether to build musl-gcc wrapper... "
 wrapper=yes
