@@ -63,6 +63,7 @@
 #define SEM_NSEMS_MAX 256
 #define DELAYTIMER_MAX 0x7fffffff
 #define MQ_PRIO_MAX 32768
+#define LOGIN_NAME_MAX 256
 
 /* Arbitrary numbers... */
 
