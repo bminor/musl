@@ -83,7 +83,7 @@ struct __timer {
 #define _b_limit __u.__i[2]
 #define _b_count __u.__i[3]
 #define _b_waiters2 __u.__i[4]
-#define _b_inst __u.__p[4]
+#define _b_inst __u.__p[3]
 
 #include "pthread_arch.h"
 
