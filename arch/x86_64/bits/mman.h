@@ -30,7 +30,7 @@
 #define MCL_CURRENT     1
 #define MCL_FUTURE      2
 
-#ifdef _GNU_SOURCE
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 #define MADV_NORMAL      0
 #define MADV_RANDOM      1
 #define MADV_SEQUENTIAL  2

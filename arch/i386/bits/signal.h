@@ -1,5 +1,5 @@
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
- || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+ || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 
 struct __fpstate {
 	unsigned long __x[7];
@@ -31,7 +31,7 @@ typedef struct __ucontext {
 #define SA_RESETHAND  0x80000000
 #define SA_RESTORER   0x04000000
 
-#ifdef _GNU_SOURCE
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 struct sigcontext {
 	unsigned short gs, __gsh, fs, __fsh, es, __esh, ds, __dsh;
 	unsigned long edi, esi, ebp, esp, ebx, edx, ecx, eax;
