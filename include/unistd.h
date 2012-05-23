@@ -9,17 +9,14 @@ extern "C" {
 #define STDOUT_FILENO 1
 #define STDERR_FILENO 2
 
-#undef SEEK_SET
-#undef SEEK_CUR
-#undef SEEK_END
 #define SEEK_SET 0
 #define SEEK_CUR 1
 #define SEEK_END 2
 
-#if defined(_BSD_SOURCE) && !defined(L_SET)
-#define L_SET	SEEK_SET
-#define L_INCR	SEEK_CUR
-#define L_XTND	SEEK_END
+#if defined(_BSD_SOURCE)
+#define L_SET 0
+#define L_INCR 1
+#define L_XTND 2
 #endif
 
 #undef NULL
@@ -69,12 +66,10 @@ int rmdir(const char *);
 int truncate(const char *, off_t);
 int ftruncate(int, off_t);
 
-#ifndef F_OK
 #define F_OK 0
 #define R_OK 4
 #define W_OK 2
 #define X_OK 1
-#endif
 
 int access(const char *, int);
 int faccessat(int, const char *, int, int);
@@ -136,12 +131,10 @@ long fpathconf(int, int);
 long sysconf(int);
 size_t confstr(int, char *, size_t);
 
-#ifndef F_ULOCK
 #define F_ULOCK 0
 #define F_LOCK  1
 #define F_TLOCK 2
 #define F_TEST  3
-#endif
 
 #if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
 int lockf(int, int, off_t);
