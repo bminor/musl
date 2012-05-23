@@ -52,7 +52,6 @@ void __unlockfile(FILE *);
 #define UNLOCK(x) (libc.threads_minus_1 ? (__unlock(x),1) : ((void)(x),1))
 
 void __synccall(void (*)(void *), void *);
-void __synccall_wait(void);
 int __setxid(int, int, int, int);
 
 extern char **__environ;

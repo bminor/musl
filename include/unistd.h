@@ -168,7 +168,6 @@ char *getusershell(void);
 #endif
 
 #ifdef _GNU_SOURCE
-pid_t forkall(void);
 int setresuid(uid_t, uid_t, uid_t);
 int setresgid(gid_t, gid_t, gid_t);
 int getresuid(uid_t *, uid_t *, uid_t *);

@@ -47,14 +47,6 @@ static void handler(int sig, siginfo_t *si, void *ctx)
 	errno = old_errno;
 }
 
-void __synccall_wait()
-{
-	struct chain *ch = cur;
-	sem_post(&ch->sem2);
-	while (sem_wait(&ch->sem));
-	sem_post(&ch->sem);
-}
-
 void __synccall(void (*func)(void *), void *ctx)
 {
 	pthread_t self;
