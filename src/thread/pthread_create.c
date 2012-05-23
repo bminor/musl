@@ -43,14 +43,14 @@ void pthread_exit(void *result)
 	__syscall(SYS_exit, 0);
 }
 
-void __do_cleanup_push(struct __ptcb *cb, void (*f)(void *), void *x)
+void __do_cleanup_push(struct __ptcb *cb)
 {
 	struct pthread *self = pthread_self();
 	cb->__next = self->cancelbuf;
 	self->cancelbuf = cb;
 }
 
-void __do_cleanup_pop(struct __ptcb *cb, int run)
+void __do_cleanup_pop(struct __ptcb *cb)
 {
 	__pthread_self()->cancelbuf = cb->__next;
 }
