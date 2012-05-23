@@ -5,7 +5,7 @@ __syscall_cp_asm:
 	stmfd sp!,{r4,r5,r6,r7,lr}
 .global __cp_begin
 __cp_begin:
-	ld r0,[r0]
+	ldr r0,[r0]
 	cmp r0,#0
 	blne __cancel
 	mov r7,r1
