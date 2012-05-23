@@ -8,7 +8,8 @@ extern "C" {
 
 int gettimeofday (struct timeval *, void *);
 
-#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) \
+ || defined(_BSD_SOURCE)
 
 #define ITIMER_REAL    0
 #define ITIMER_VIRTUAL 1
@@ -26,7 +27,7 @@ int utimes (const char *, const struct timeval [2]);
 
 #endif
 
-#ifdef _GNU_SOURCE
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 int futimes(int, const struct timeval [2]);
 int lutimes(const char *, const struct timeval [2]);
 int settimeofday (const struct timeval *, void *);

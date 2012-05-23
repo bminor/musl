@@ -18,7 +18,8 @@ extern "C" {
 #define __NEED_clock_t
 
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
- || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+ || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) \
+ || defined(_BSD_SOURCE)
 #define __NEED_struct_timespec
 #define __NEED_clockid_t
 #define __NEED_timer_t
@@ -57,7 +58,8 @@ char *ctime (const time_t *);
 
 
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
- || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+ || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) \
+ || defined(_BSD_SOURCE)
 
 size_t strftime_l (char *, size_t, const char *, const struct tm *, locale_t);
 

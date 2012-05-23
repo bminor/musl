@@ -330,8 +330,7 @@ double      trunc(double);
 float       truncf(float);
 long double truncl(long double);
 
-#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
-#define MAXFLOAT        3.40282347e+38F
+#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 #define M_E             2.7182818284590452354   /* e */
 #define M_LOG2E         1.4426950408889634074   /* log_2 e */
 #define M_LOG10E        0.43429448190325182765  /* log_10 e */
@@ -345,7 +344,13 @@ long double truncl(long double);
 #define M_2_SQRTPI      1.12837916709551257390  /* 2/sqrt(pi) */
 #define M_SQRT2         1.41421356237309504880  /* sqrt(2) */
 #define M_SQRT1_2       0.70710678118654752440  /* 1/sqrt(2) */
+#endif
 
+#if defined(_XOPEN_SOURCE)
+#define MAXFLOAT        3.40282347e+38F
+#endif
+
+#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
 extern int signgam;
 
 double      j0(double);
@@ -358,6 +363,7 @@ double      yn(int, double);
 #endif
 
 #ifdef _GNU_SOURCE
+#define HUGE        3.40282347e+38F
 double      scalb(double, double);
 float       scalbf(float, float);
 long double scalbl(long double, long double);

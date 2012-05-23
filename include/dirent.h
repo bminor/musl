@@ -36,7 +36,7 @@ int            dirfd(DIR *);
 int alphasort(const struct dirent **, const struct dirent **);
 int scandir(const char *, struct dirent ***, int (*)(const struct dirent *), int (*)(const struct dirent **, const struct dirent **));
 
-#ifdef _GNU_SOURCE
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 #define DT_UNKNOWN 0
 #define DT_FIFO 1
 #define DT_CHR 2

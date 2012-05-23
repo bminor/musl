@@ -10,7 +10,8 @@ extern "C" {
 #define __NEED_size_t
 
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
- || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+ || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) \
+ || defined(_BSD_SOURCE)
 #define __NEED_ssize_t
 #define __NEED_off_t
 #endif
@@ -120,7 +121,8 @@ char *tmpnam(char *);
 FILE *tmpfile(void);
 
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
- || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+ || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) \
+ || defined(_BSD_SOURCE)
 FILE *fmemopen(void *, size_t, const char *);
 FILE *open_memstream(char **, size_t *);
 FILE *fdopen(int, const char *);
@@ -146,12 +148,13 @@ char *ctermid(char *);
 #endif
 
 
-#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) \
+ || defined(_BSD_SOURCE)
 #define P_tmpdir "/tmp"
 char *tempnam(const char *, const char *);
 #endif
 
-#if defined(_GNU_SOURCE)
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 #define L_cuserid 20
 char *cuserid(char *);
 #undef off64_t

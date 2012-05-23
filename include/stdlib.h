@@ -78,7 +78,8 @@ size_t wcstombs (char *, const wchar_t *, size_t);
 
 
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
- || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+ || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) \
+ || defined(_BSD_SOURCE)
 
 #ifndef WEXITSTATUS
 #define WEXITSTATUS(s) (((s) & 0xff00) >> 8)
@@ -102,20 +103,24 @@ int rand_r (unsigned *);
 #endif
 
 
+#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) \
+ || defined(_BSD_SOURCE)
+char *realpath (const char *, char *);
+long int random (void);
+void srandom (unsigned int);
+char *initstate (unsigned int, char *, size_t);
+char *setstate (char *);
+#endif
+
 #if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
 int putenv (char *);
 int posix_openpt (int);
 int grantpt (int);
 int unlockpt (int);
 char *ptsname (int);
-char *realpath (const char *, char *);
 char *l64a (long);
 long a64l (const char *);
 void setkey (const char *);
-long int random (void);
-void srandom (unsigned int);
-char *initstate (unsigned int, char *, size_t);
-char *setstate (char *);
 double drand48 (void);
 double erand48 (unsigned short [3]);
 long int lrand48 (void);
@@ -127,11 +132,14 @@ unsigned short *seed48 (unsigned short [3]);
 void lcong48 (unsigned short [7]);
 #endif
 
-#if defined(_GNU_SOURCE)
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 #include <alloca.h>
 char *mktemp (char *);
 void *valloc (size_t);
 void *memalign(size_t, size_t);
+#endif
+
+#ifdef _GNU_SOURCE
 int clearenv(void);
 int ptsname_r(int, char *, size_t);
 char *ecvt(double, int, int *, int *);

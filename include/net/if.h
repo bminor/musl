@@ -21,7 +21,7 @@ void if_freenameindex (struct if_nameindex *);
 
 
 
-#ifdef _GNU_SOURCE
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 
 #include <sys/socket.h>
 

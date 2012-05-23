@@ -16,6 +16,12 @@ extern "C" {
 #define SEEK_CUR 1
 #define SEEK_END 2
 
+#if defined(_BSD_SOURCE) && !defined(L_SET)
+#define L_SET	SEEK_SET
+#define L_INCR	SEEK_CUR
+#define L_XTND	SEEK_END
+#endif
+
 #undef NULL
 #ifdef __cplusplus
 #define NULL 0
@@ -63,10 +69,13 @@ int rmdir(const char *);
 int truncate(const char *, off_t);
 int ftruncate(int, off_t);
 
+#ifndef F_OK
 #define F_OK 0
 #define R_OK 4
 #define W_OK 2
 #define X_OK 1
+#endif
+
 int access(const char *, int);
 int faccessat(int, const char *, int, int);
 
@@ -127,10 +136,12 @@ long fpathconf(int, int);
 long sysconf(int);
 size_t confstr(int, char *, size_t);
 
+#ifndef F_ULOCK
 #define F_ULOCK 0
 #define F_LOCK  1
 #define F_TLOCK 2
 #define F_TEST  3
+#endif
 
 #if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
 int lockf(int, int, off_t);
@@ -143,10 +154,9 @@ int nice(int);
 void sync(void);
 #endif
 
-#ifdef _GNU_SOURCE
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 int brk(void *);
 void *sbrk(intptr_t);
-pid_t forkall(void);
 pid_t vfork(void);
 int vhangup(void);
 int chroot(const char *);
@@ -155,6 +165,11 @@ int sethostname(const char *, size_t);
 int usleep(unsigned);
 unsigned ualarm(unsigned, unsigned);
 int setgroups(size_t, const gid_t []);
+char *getpass(const char *);
+#endif
+
+#ifdef _GNU_SOURCE
+pid_t forkall(void);
 int setresuid(uid_t, uid_t, uid_t);
 int setresgid(gid_t, gid_t, gid_t);
 int getresuid(uid_t *, uid_t *, uid_t *);
@@ -166,7 +181,6 @@ int getdtablesize(void);
 void setusershell(void);
 void endusershell(void);
 char *getusershell(void);
-char *getpass(const char *);
 #endif
 
 #ifdef _LARGEFILE64_SOURCE

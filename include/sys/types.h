@@ -58,7 +58,7 @@ typedef __uint16_t u_int16_t;
 typedef __uint32_t u_int32_t;
 typedef __uint64_t u_int64_t;
 
-#ifdef _GNU_SOURCE
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 typedef char *caddr_t;
 typedef unsigned char u_char;
 typedef unsigned short u_short, ushort;

@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-#ifdef _GNU_SOURCE
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 #define __NEED_size_t
 #endif
 
@@ -118,7 +118,7 @@ struct protoent *getprotoent (void);
 struct protoent *getprotobyname (const char *);
 struct protoent *getprotobynumber (int);
 
-#ifdef _GNU_SOURCE
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 const char *hstrerror(int);
 struct hostent *gethostbyname (const char *);
 int gethostbyname_r(const char *, struct hostent *, char *, size_t, struct hostent **, int *);
