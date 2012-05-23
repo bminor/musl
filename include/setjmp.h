@@ -12,9 +12,6 @@ extern "C" {
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) \
  || defined(_BSD_SOURCE)
 typedef unsigned long sigjmp_buf[(128+sizeof(jmp_buf))/sizeof(long)];
-#ifdef _GNU_SOURCE
-#define jmp_buf sigjmp_buf
-#endif
 int sigsetjmp (sigjmp_buf, int);
 void siglongjmp (sigjmp_buf, int);
 #endif
