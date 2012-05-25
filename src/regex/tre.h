@@ -50,7 +50,7 @@ typedef wchar_t tre_char_t;
 
 /* Wide characters. */
 typedef wint_t tre_cint_t;
-#define TRE_CHAR_MAX WCHAR_MAX
+#define TRE_CHAR_MAX 0x10ffff
 
 #define tre_isalnum iswalnum
 #define tre_isalpha iswalpha
