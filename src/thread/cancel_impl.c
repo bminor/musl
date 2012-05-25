@@ -3,7 +3,6 @@
 void __cancel()
 {
 	pthread_t self = __pthread_self();
-	self->cp_sp = 0;
 	self->canceldisable = 1;
 	self->cancelasync = 0;
 	pthread_exit(PTHREAD_CANCELED);
@@ -48,8 +47,7 @@ static void cancel_handler(int sig, siginfo_t *si, void *ctx)
 		__cancel();
 	}
 
-	if (self->cp_sp)
-		__syscall(SYS_tgkill, self->pid, self->tid, SIGCANCEL);
+	__syscall(SYS_tgkill, self->pid, self->tid, SIGCANCEL);
 }
 
 void __testcancel()
