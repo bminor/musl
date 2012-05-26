@@ -13,5 +13,5 @@
 
 int mbsinit(const mbstate_t *st)
 {
-	return !*(unsigned *)st;
+	return !st || !*(unsigned *)st;
 }
