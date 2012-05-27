@@ -64,6 +64,7 @@ struct dso {
 	char relocated;
 	char constructed;
 	struct dso **deps;
+	char *shortname;
 	char buf[];
 };
 
@@ -74,6 +75,7 @@ static char *env_path, *sys_path, *r_path;
 static int rtld_used;
 static int ssp_used;
 static int runtime;
+static int ldd_mode;
 static jmp_buf rtld_fail;
 static pthread_rwlock_t lock;
 static struct debug debug;
@@ -293,9 +295,8 @@ static void *map_library(int fd, size_t *lenp, unsigned char **basep, size_t *dy
 	return map;
 }
 
-static int path_open(const char *name, const char *search)
+static int path_open(const char *name, const char *search, char *buf, size_t buf_size)
 {
-	char buf[2*NAME_MAX+2];
 	const char *s=search, *z;
 	int l, fd;
 	for (;;) {
@@ -303,7 +304,7 @@ static int path_open(const char *name, const char *search)
 		if (!*s) return -1;
 		z = strchr(s, ':');
 		l = z ? z-s : strlen(s);
-		snprintf(buf, sizeof buf, "%.*s/%s", l, s, name);
+		snprintf(buf, buf_size, "%.*s/%s", l, s, name);
 		if ((fd = open(buf, O_RDONLY))>=0) return fd;
 		s += l;
 	}
@@ -320,6 +321,7 @@ static void decode_dyn(struct dso *p)
 
 static struct dso *load_library(const char *name)
 {
+	char buf[2*NAME_MAX+2];
 	unsigned char *base, *map;
 	size_t dyno, map_len;
 	struct dso *p;
@@ -346,7 +348,7 @@ static struct dso *load_library(const char *name)
 	}
 	/* Search for the name to see if it's already loaded */
 	for (p=head->next; p; p=p->next) {
-		if (!strcmp(p->name, name)) {
+		if (!strcmp(p->shortname, name)) {
 			p->refcnt++;
 			return p;
 		}
@@ -356,8 +358,8 @@ static struct dso *load_library(const char *name)
 	} else {
 		if (strlen(name) > NAME_MAX) return 0;
 		fd = -1;
-		if (r_path) fd = path_open(name, r_path);
-		if (fd < 0 && env_path) fd = path_open(name, env_path);
+		if (r_path) fd = path_open(name, r_path, buf, sizeof buf);
+		if (fd < 0 && env_path) fd = path_open(name, env_path, buf, sizeof buf);
 		if (fd < 0) {
 			if (!sys_path) {
 				FILE *f = fopen(ETC_LDSO_PATH, "r");
@@ -367,8 +369,8 @@ static struct dso *load_library(const char *name)
 					fclose(f);
 				}
 			}
-			if (sys_path) fd = path_open(name, sys_path);
-			else fd = path_open(name, "/lib:/usr/local/lib:/usr/lib");
+			if (sys_path) fd = path_open(name, sys_path, buf, sizeof buf);
+			else fd = path_open(name, "/lib:/usr/local/lib:/usr/lib", buf, sizeof buf);
 		}
 	}
 	if (fd < 0) return 0;
@@ -386,7 +388,7 @@ static struct dso *load_library(const char *name)
 	map = map_library(fd, &map_len, &base, &dyno);
 	close(fd);
 	if (!map) return 0;
-	p = calloc(1, sizeof *p + strlen(name) + 1);
+	p = calloc(1, sizeof *p + strlen(buf) + 1);
 	if (!p) {
 		munmap(map, map_len);
 		return 0;
@@ -402,11 +404,15 @@ static struct dso *load_library(const char *name)
 	p->ino = st.st_ino;
 	p->refcnt = 1;
 	p->name = p->buf;
-	strcpy(p->name, name);
+	strcpy(p->name, buf);
+	if (!strchr(name, '/')) p->shortname = strrchr(p->name, '/');
+	if (!p->shortname) p->shortname = p->name;
 
 	tail->next = p;
 	p->prev = tail;
 	tail = p;
+
+	if (ldd_mode) dprintf(1, "\t%s => %s (%p)\n", name, buf, base);
 
 	return p;
 }
@@ -543,10 +549,19 @@ void *__dynlink(int argc, char **argv)
 		env_preload = 0;
 	}
 
+	/* If the dynamic linker was invoked as a program itself, AT_BASE
+	 * will not be set. In that case, we assume the base address is
+	 * the start of the page containing the PHDRs; I don't know any
+	 * better approach... */
+	if (!aux[AT_BASE]) {
+		aux[AT_BASE] = aux[AT_PHDR] & -PAGE_SIZE;
+		aux[AT_PHDR] = aux[AT_PHENT] = aux[AT_PHNUM] = 0;
+	}
+
 	/* The dynamic linker load address is passed by the kernel
 	 * in the AUX vector, so this is easy. */
 	lib->base = (void *)aux[AT_BASE];
-	lib->name = "libc.so";
+	lib->name = lib->shortname = "libc.so";
 	lib->global = 1;
 	ehdr = (void *)lib->base;
 	lib->dynv = (void *)(lib->base + find_dyn(
@@ -554,18 +569,48 @@ void *__dynlink(int argc, char **argv)
 		ehdr->e_phnum, ehdr->e_phentsize));
 	decode_dyn(lib);
 
-	/* Find load address of the main program, via AT_PHDR vs PT_PHDR. */
-	app->base = 0;
-	phdr = (void *)aux[AT_PHDR];
-	for (i=aux[AT_PHNUM]; i; i--, phdr=(void *)((char *)phdr + aux[AT_PHENT])) {
-		if (phdr->p_type == PT_PHDR)
-			app->base = (void *)(aux[AT_PHDR] - phdr->p_vaddr);
+	if (aux[AT_PHDR]) {
+		/* Find load address of the main program, via AT_PHDR vs PT_PHDR. */
+		phdr = (void *)aux[AT_PHDR];
+		for (i=aux[AT_PHNUM]; i; i--, phdr=(void *)((char *)phdr + aux[AT_PHENT])) {
+			if (phdr->p_type == PT_PHDR)
+				app->base = (void *)(aux[AT_PHDR] - phdr->p_vaddr);
+		}
+		app->name = app->shortname = argv[0];
+		app->dynv = (void *)(app->base + find_dyn(
+			(void *)aux[AT_PHDR], aux[AT_PHNUM], aux[AT_PHENT]));
+	} else {
+		int fd;
+		char *ldname = argv[0];
+		size_t dyno, l = strlen(ldname);
+		if (l >= 3 && !strcmp(ldname+l-3, "ldd")) ldd_mode = 1;
+		*argv++ = (void *)-1;
+		if (argv[0] && !strcmp(argv[0], "--")) *argv++ = (void *)-1;
+		if (!argv[0]) {
+			dprintf(2, "musl libc/dynamic program loader\n");
+			dprintf(2, "usage: %s pathname%s\n", ldname,
+				ldd_mode ? "" : " [args]");
+			_exit(1);
+		}
+		fd = open(argv[0], O_RDONLY);
+		if (fd < 0) {
+			dprintf(2, "%s: cannot load %s: %s\n", ldname, argv[0], strerror(errno));
+			_exit(1);
+		}
+		runtime = 1;
+		ehdr = (void *)map_library(fd, &app->map_len, &app->base, &dyno);
+		if (!ehdr) {
+			dprintf(2, "%s: %s: Not a valid dynamic program\n", ldname, argv[0]);
+			_exit(1);
+		}
+		runtime = 0;
+		close(fd);
+		app->name = app->shortname = argv[0];
+		app->dynv = (void *)(app->base + dyno);
+		aux[AT_ENTRY] = ehdr->e_entry;
 	}
-	app->name = argv[0];
 	app->global = 1;
 	app->constructed = 1;
-	app->dynv = (void *)(app->base + find_dyn(
-		(void *)aux[AT_PHDR], aux[AT_PHNUM], aux[AT_PHENT]));
 	decode_dyn(app);
 
 	/* Attach to vdso, if provided by the kernel */
@@ -580,7 +625,7 @@ void *__dynlink(int argc, char **argv)
 			if (phdr->p_type == PT_LOAD)
 				vdso->base = (void *)(vdso_base - phdr->p_vaddr + phdr->p_offset);
 		}
-		vdso->name = "linux-gate.so.1";
+		vdso->name = vdso->shortname = "linux-gate.so.1";
 		vdso->global = 1;
 		decode_dyn(vdso);
 		vdso->prev = lib;
@@ -615,6 +660,8 @@ void *__dynlink(int argc, char **argv)
 	make_global(app);
 	reloc_all(app->next);
 	reloc_all(app);
+
+	if (ldd_mode) _exit(0);
 
 	/* Switch to runtime mode: any further failures in the dynamic
 	 * linker are a reportable failure rather than a fatal startup
