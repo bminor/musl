@@ -159,7 +159,6 @@ char *tempnam(const char *, const char *);
 char *cuserid(char *);
 void setlinebuf(FILE *);
 void setbuffer(FILE *, char *, size_t);
-int fpurge(FILE *);
 int fgetc_unlocked(FILE *);
 int fputc_unlocked(int, FILE *);
 int fflush_unlocked(FILE *);
