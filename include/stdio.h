@@ -157,8 +157,6 @@ char *tempnam(const char *, const char *);
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 #define L_cuserid 20
 char *cuserid(char *);
-#undef off64_t
-#define off64_t off_t
 int asprintf(char **, const char *, ...);
 int vasprintf(char **, const char *, va_list);
 void setlinebuf(FILE *);
