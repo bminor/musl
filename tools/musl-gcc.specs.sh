@@ -17,7 +17,7 @@ cat <<EOF
 libgcc.a%s %:if-exists(libgcc_eh.a%s)
 
 *startfile:
-%{!shared: $libdir/crt1.o} $libdir/crti.o %{shared|pie:crtbeginS.o%s;:crtbegin.o%s}
+%{!shared: $libdir/%{pie:S}crt1.o} $libdir/crti.o %{shared|pie:crtbeginS.o%s;:crtbegin.o%s}
 
 *endfile:
 %{shared|pie:crtendS.o%s;:crtend.o%s} $libdir/crtn.o
