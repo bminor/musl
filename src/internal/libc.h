@@ -62,8 +62,7 @@ extern char **__environ;
 	extern __typeof(old) new __attribute__((weak, alias(#old)))
 
 #undef LFS64_2
-//#define LFS64_2(x, y) weak_alias(x, y)
-#define LFS64_2(x, y) extern __typeof(x) y
+#define LFS64_2(x, y) weak_alias(x, y)
 
 #undef LFS64
 #define LFS64(x) LFS64_2(x, x##64)

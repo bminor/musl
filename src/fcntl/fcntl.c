@@ -16,5 +16,3 @@ int fcntl(int fd, int cmd, ...)
 	if (cmd == F_GETOWN) return __syscall(SYS_fcntl, fd, cmd, arg);
 	return syscall(SYS_fcntl, fd, cmd, arg);
 }
-
-LFS64(fcntl);
