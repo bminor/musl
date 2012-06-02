@@ -95,7 +95,6 @@ int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(vo
 		init_file_lock(__stdin_used);
 		init_file_lock(__stdout_used);
 		init_file_lock(__stderr_used);
-		__syscall(SYS_rt_sigprocmask, SIG_UNBLOCK, SIGPT_SET, 0, 8);
 		libc.threaded = 1;
 	}
 
