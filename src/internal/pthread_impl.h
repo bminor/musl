@@ -110,7 +110,7 @@ void __wake(volatile int *, int, int);
 void __synccall_lock();
 void __synccall_unlock();
 
-#define DEFAULT_STACK_SIZE (16384-PAGE_SIZE)
+#define DEFAULT_STACK_SIZE 81920
 #define DEFAULT_GUARD_SIZE PAGE_SIZE
 
 #endif
