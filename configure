@@ -2,7 +2,7 @@
 
 usage () {
 cat <<EOF
-Usage: $0 [OPTION]... [VAR=VALUE]... [BUILDTYPE]
+Usage: $0 [OPTION]... [VAR=VALUE]... [TARGET]
 
 To assign environment variables (e.g., CC, CFLAGS...), specify them as
 VAR=VALUE.  See below for descriptions of some of the useful variables.
@@ -21,7 +21,7 @@ Fine tuning of the installation directories:
 
 System types:
   --target=TARGET         configure to run on target TARGET [detected]
-  --build=BUILD           same as --target
+  --host=HOST             same as --target
 
 Optional features:
   --enable-debug          build with debugging information [disabled]
@@ -77,7 +77,7 @@ bindir=
 libdir=
 includedir=
 syslibdir=
-build=
+target=
 debug=no
 warnings=
 shared=yes
@@ -102,14 +102,15 @@ case "$arg" in
 --disable-warnings|--enable-warnings=no) warnings=no ;;
 --enable-gcc-wrapper|--enable-gcc-wrapper=yes) wrapper=yes ;;
 --disable-gcc-wrapper|--enable-gcc-wrapper=no) wrapper=no ;;
---enable-*|--disable-*|--with-*|--without-*|--*dir=*|--host=*) ;;
---build=*|--target=*) build=${arg#*=} ;;
+--enable-*|--disable-*|--with-*|--without-*|--*dir=*|--build=*) ;;
+--host=*|--target=*) target=${arg#*=} ;;
 -* ) echo "$0: unknown option $arg" ;;
 CC=*) CC=${arg#*=} ;;
 CFLAGS=*) CFLAGS=${arg#*=} ;;
 CPPFLAGS=*) CPPFLAGS=${arg#*=} ;;
 LDFLAGS=*) LDFLAGS=${arg#*=} ;;
-*) build=$arg ;;
+*=*) ;;
+*) target=$arg ;;
 esac
 done
 
@@ -166,21 +167,21 @@ fi
 
 
 #
-# Find the build architecture
+# Find the target architecture
 #
-printf "checking build system type... "
-test -n "$build" || build=$("$CC" -dumpmachine 2>/dev/null) || build=unknown
-printf "%s\n" "$build"
+printf "checking target system type... "
+test -n "$target" || target=$("$CC" -dumpmachine 2>/dev/null) || target=unknown
+printf "%s\n" "$target"
 
 #
 # Convert to just ARCH
 #
-case "$build" in
+case "$target" in
 arm*) ARCH=arm ;;
 i?86*) ARCH=i386 ;;
 x86_64*) ARCH=x86_64 ;;
-unknown) fail "$0: unable to detect built target; try $0 --build=..." ;;
-*) fail "$0: unknown or unsupported build target \"$build\"" ;;
+unknown) fail "$0: unable to detect target arch; try $0 --target=..." ;;
+*) fail "$0: unknown or unsupported target \"$target\"" ;;
 esac
 
 #
