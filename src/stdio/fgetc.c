@@ -11,3 +11,4 @@ int fgetc(FILE *f)
 }
 
 weak_alias(fgetc, getc);
+weak_alias(fgetc, _IO_getc);

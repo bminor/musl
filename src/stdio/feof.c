@@ -8,3 +8,4 @@ int feof(FILE *f)
 }
 
 weak_alias(feof, feof_unlocked);
+weak_alias(feof, _IO_feof_unlocked);

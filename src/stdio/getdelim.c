@@ -57,3 +57,5 @@ oom:
 	errno = ENOMEM;
 	return -1;
 }
+
+weak_alias(getdelim, __getdelim);

@@ -10,3 +10,4 @@ int fputc(int c, FILE *f)
 }
 
 weak_alias(fputc, putc);
+weak_alias(fputc, _IO_putc);
