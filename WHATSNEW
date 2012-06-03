@@ -564,3 +564,37 @@ bug fixes:
 - mbsnrtowcs and wcsnrtombs were completely broken (bad exit logic)
 - wide printf %.0s could fail due to uninitialized variable
 - missing dlerror strings for dlsym in some cases
+
+
+
+0.9.1 release notes
+
+new features:
+- dynamic linker can be used as a program to explicitly load/run executables
+- ldd command, usable by making a symlink to the dynamic linker named ldd
+
+bug fixes:
+- major bugs in POSIX BRE parsing inherited from TRE regex code
+- character matching bug in regex on ARM: WCHAR_MAX was assumed to be signed
+- various obscure fixes related to signals and pthread cancellation
+- remquot subnormal remainder bug
+- buggy macros in (nonstandard) sys/param.h
+- major bug in pthread barriers on x86_64 (out of bounds write)
+- utimes (legacy) function was making wrong syscall (utime instead of utimes)
+- avoid using "old" syscalls that don't exist on arm eabi linux
+- broken strrchr(str, 0)
+- broken mbsinit(0)
+- broken wcsncmp
+- syntax error in nextafter macro in tgmath.h
+- missing support for -pie in musl-gcc wrapper
+- abort could wrongly fail to terminate the program in some cases
+
+compatibility:
+- increase default thread stack size to 80k
+- support _BSD_SOURCE feature test macro
+- support _LARGEFILE64_SOURCE feature test macro (merely exposes alt names)
+- lots of legacy-compatibility improvements in headers
+- various minor GNU extension functions
+- sysconf reporting number of available CPUs/cores
+- various LSB/glibc ABI interfaces aimed at compatibility with some binaries
+- use fistpll asm mnemonic instead of fistpq for compat with clang
