@@ -177,7 +177,7 @@ char *fgets_unlocked(char *, int, FILE *);
 int fputs_unlocked(const char *, FILE *);
 #endif
 
-#ifdef _LARGEFILE64_SOURCE
+#if defined(_LARGEFILE64_SOURCE) || defined(_GNU_SOURCE)
 #define tmpfile64 tmpfile
 #define fopen64 fopen
 #define freopen64 freopen

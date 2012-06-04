@@ -99,7 +99,7 @@ int posix_fallocate(int, off_t, off_t);
 int lockf(int, int, off_t);
 #endif
 
-#ifdef _LARGEFILE64_SOURCE
+#if defined(_LARGEFILE64_SOURCE) || defined(_GNU_SOURCE)
 #define open64 open
 #define openat64 openat
 #define creat64 creat

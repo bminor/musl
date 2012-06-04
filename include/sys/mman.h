@@ -36,7 +36,7 @@ int madvise (void *, size_t, int);
 int shm_open (const char *, int, mode_t);
 int shm_unlink (const char *);
 
-#ifdef _LARGEFILE64_SOURCE
+#if defined(_LARGEFILE64_SOURCE) || defined(_GNU_SOURCE)
 #define mmap64 mmap
 #define off64_t off_t
 #endif

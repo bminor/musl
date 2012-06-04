@@ -50,7 +50,7 @@ int scandir(const char *, struct dirent ***, int (*)(const struct dirent *), int
 #define DTTOIF(x) ((x)<<12)
 #endif
 
-#ifdef _LARGEFILE64_SOURCE
+#if defined(_LARGEFILE64_SOURCE) || defined(_GNU_SOURCE)
 #define dirent64 dirent
 #define readdir64 readdir
 #define readdir64_r readdir_r

@@ -72,7 +72,7 @@ typedef long register_t;
 #include <sys/sysmacros.h>
 #endif
 
-#ifdef _LARGEFILE64_SOURCE
+#if defined(_LARGEFILE64_SOURCE) || defined(_GNU_SOURCE)
 #define blksize64_t blksize_t
 #define blkcnt64_t blkcnt_t
 #define fsblkcnt64_t fsblkcnt_t

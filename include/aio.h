@@ -48,7 +48,7 @@ int aio_fsync(int, struct aiocb *);
 
 int lio_listio(int, struct aiocb *const [], int, struct sigevent *);
 
-#ifdef _LARGEFILE64_SOURCE
+#if defined(_LARGEFILE64_SOURCE) || defined(_GNU_SOURCE)
 #define aiocb64 aiocb
 #define aio_read64 aio_read
 #define aio_write64 aio_write

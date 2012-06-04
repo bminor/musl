@@ -147,7 +147,7 @@ char *fcvt(double, int, int *, int *);
 char *gcvt(double, int, char *);
 #endif
 
-#ifdef _LARGEFILE64_SOURCE
+#if defined(_LARGEFILE64_SOURCE) || defined(_GNU_SOURCE)
 #define mkstemp64 mkstemp
 #endif
 
