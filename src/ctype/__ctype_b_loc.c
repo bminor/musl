@@ -34,7 +34,7 @@ X(0x8c6),X(0x8c6),X(0x8c6),X(0x4c0),X(0x4c0),X(0x4c0),X(0x4c0),X(0x200),
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 };
 
-static const unsigned short *const ptable = table;
+static const unsigned short *const ptable = table+128;
 
 const unsigned short **__ctype_b_loc(void)
 {

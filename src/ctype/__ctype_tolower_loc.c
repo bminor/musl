@@ -23,7 +23,7 @@ static const int32_t table[] = {
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 };
 
-static const int32_t *const ptable = table;
+static const int32_t *const ptable = table+128;
 
 const int32_t **__ctype_tolower_loc(void)
 {
