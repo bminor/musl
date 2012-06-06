@@ -268,23 +268,20 @@ static void *map_library(int fd, size_t *lenp, unsigned char **basep, size_t *dy
 		prot = (((ph->p_flags&PF_R) ? PROT_READ : 0) |
 			((ph->p_flags&PF_W) ? PROT_WRITE: 0) |
 			((ph->p_flags&PF_X) ? PROT_EXEC : 0));
-		if (mmap(base+this_min, this_max-this_min, prot, MAP_PRIVATE|MAP_FIXED, fd, off_start) == MAP_FAILED) {
-			munmap(map, map_len);
-			return 0;
-		}
+		if (mmap(base+this_min, this_max-this_min, prot, MAP_PRIVATE|MAP_FIXED, fd, off_start) == MAP_FAILED)
+			goto error;
 		if (ph->p_memsz > ph->p_filesz) {
 			size_t brk = (size_t)base+ph->p_vaddr+ph->p_filesz;
 			size_t pgbrk = brk+PAGE_SIZE-1 & -PAGE_SIZE;
 			memset((void *)brk, 0, pgbrk-brk & PAGE_SIZE-1);
-			if (pgbrk-(size_t)base < this_max && mmap((void *)pgbrk, (size_t)base+this_max-pgbrk, prot, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) == MAP_FAILED) {
-				munmap(map, map_len);
-				return 0;
-			}
+			if (pgbrk-(size_t)base < this_max && mmap((void *)pgbrk, (size_t)base+this_max-pgbrk, prot, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) == MAP_FAILED)
+				goto error;
 		}
 	}
 	for (i=0; ((size_t *)(base+dyn))[i]; i+=2)
 		if (((size_t *)(base+dyn))[i]==DT_TEXTREL) {
-			mprotect(map, map_len, PROT_READ|PROT_WRITE|PROT_EXEC);
+			if (mprotect(map, map_len, PROT_READ|PROT_WRITE|PROT_EXEC) < 0)
+				goto error;
 			break;
 		}
 	if (!runtime) reclaim_gaps(base, (void *)((char *)buf + eh->e_phoff),
@@ -293,6 +290,9 @@ static void *map_library(int fd, size_t *lenp, unsigned char **basep, size_t *dy
 	*basep = base;
 	*dynp = dyn;
 	return map;
+error:
+	munmap(map, map_len);
+	return 0;
 }
 
 static int path_open(const char *name, const char *search, char *buf, size_t buf_size)
