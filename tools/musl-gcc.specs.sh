@@ -22,10 +22,8 @@ libgcc.a%s %:if-exists(libgcc_eh.a%s)
 *endfile:
 %{shared|pie:crtendS.o%s;:crtend.o%s} $libdir/crtn.o
 
-%rename link old_link
-
 *link:
-%(old_link) -dynamic-linker $ldso -nostdlib
+-dynamic-linker $ldso -nostdlib %{shared:-shared} %{static:-static} %{rdynamic:-export-dynamic}
 
 *esp_link:
 
