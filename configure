@@ -263,6 +263,8 @@ tryflag CFLAGS_AUTO -Wno-unused-but-set-variable
 tryflag CFLAGS_AUTO -Wno-unknown-pragmas
 fi
 
+# Some patched GCC builds have these defaults messed up...
+tryflag CFLAGS_AUTO -fno-stack-protector
 tryldflag LDFLAGS_AUTO -Wl,--hash-style=sysv
 
 
