@@ -69,8 +69,8 @@ fi
 
 tryldflag () {
 printf "checking whether linker accepts %s... " "$2"
-echo "int main() { return 0; }" > "$tmpc"
-if "$CC" "$2" -o /dev/null "$tmpc" 2>/dev/null ; then
+echo "typedef int x;" > "$tmpc"
+if "$CC" -shared "$2" -o /dev/null "$tmpc" 2>/dev/null ; then
 printf "yes\n"
 eval "$1=\"\${$1} \$2\""
 eval "$1=\${$1# }"
