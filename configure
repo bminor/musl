@@ -67,10 +67,27 @@ return 1
 fi
 }
 
+tryldflag () {
+printf "checking whether linker accepts %s... " "$2"
+echo "int main() { return 0; }" > "$tmpc"
+if "$CC" "$2" -o /dev/null "$tmpc" 2>/dev/null ; then
+printf "yes\n"
+eval "$1=\"\${$1} \$2\""
+eval "$1=\${$1# }"
+return 0
+else
+printf "no\n"
+return 1
+fi
+}
+
 
 
 # Beginning of actual script
 
+CFLAGS_C99FSE=
+CFLAGS_AUTO=
+LDFLAGS_AUTO=
 prefix=
 exec_prefix=
 bindir=
@@ -246,6 +263,8 @@ tryflag CFLAGS_AUTO -Wno-unused-but-set-variable
 tryflag CFLAGS_AUTO -Wno-unknown-pragmas
 fi
 
+tryldflag LDFLAGS_AUTO -Wl,--hash-style=sysv
+
 
 printf "creating config.mak... "
 
@@ -266,7 +285,7 @@ CC = $CC
 CFLAGS= $CFLAGS_AUTO $CFLAGS
 CFLAGS_C99FSE = $CFLAGS_C99FSE
 CPPFLAGS = $CPPFLAGS
-LDFLAGS = $LDFLAGS
+LDFLAGS = $LDFLAGS_AUTO $LDFLAGS
 EOF
 test "x$static" = xno && echo "STATIC_LIBS ="
 test "x$shared" = xno && echo "SHARED_LIBS ="
