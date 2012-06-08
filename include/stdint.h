@@ -90,8 +90,8 @@ typedef unsigned long long uintmax_t;
 #define INT32_C(c) c
 #define INT64_C(c) c ## LL
 
-#define UINT8_C(c)  c ## U
-#define UINT16_C(c) c ## U
+#define UINT8_C(c)  c
+#define UINT16_C(c) c
 #define UINT32_C(c) c ## U
 #define UINT64_C(c) c ## ULL
 
