@@ -103,6 +103,7 @@ int vfscanf(FILE *f, const char *fmt, va_list ap)
 		}
 		if (*p != '%' || p[1] == '%') {
 			p += *p=='%';
+			shlim(f, 0);
 			c = shgetc(f);
 			if (c!=*p) {
 				shunget(f);
