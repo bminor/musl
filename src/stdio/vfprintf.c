@@ -599,12 +599,12 @@ static int printf_core(FILE *f, const char *fmt, va_list *ap, union arg *nl_arg,
 			p = -1;
 		case 'S':
 			ws = arg.p;
-			for (i=0; *ws && (l=wctomb(mb, *ws++))>=0 && l<=0U+p-i; i+=l);
+			for (i=l=0; i<p && *ws && (l=wctomb(mb, *ws++))>=0 && l<=0U+p-i; i+=l);
 			if (l<0) return -1;
 			p = i;
 			pad(f, ' ', w, p, fl);
 			ws = arg.p;
-			for (i=0; *ws && i+(l=wctomb(mb, *ws++))<=p; i+=l)
+			for (i=0; i<p && *ws && i+(l=wctomb(mb, *ws++))<=p; i+=l)
 				out(f, mb, l);
 			pad(f, ' ', w, p, fl^LEFT_ADJ);
 			l = w>p ? w : p;
