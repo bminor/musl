@@ -5,22 +5,21 @@
 extern "C" {
 #endif
 
-/* ?? */
 #define SI_LOAD_SHIFT 16
 
 struct sysinfo {
-	unsigned long long uptime;
+	unsigned long uptime;
 	unsigned long loads[3];
-	unsigned long procs;
 	unsigned long long totalram;
 	unsigned long long freeram;
 	unsigned long long sharedram;
 	unsigned long long bufferram;
 	unsigned long long totalswap;
 	unsigned long long freeswap;
+	unsigned short procs, pad;
 	unsigned long long totalhigh;
 	unsigned long long freehigh;
-	unsigned long mem_unit;
+	unsigned mem_unit;
 	char __reserved[256];
 };
 
