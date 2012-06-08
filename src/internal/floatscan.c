@@ -352,7 +352,7 @@ static long double hexfloat(FILE *f, int bits, int emin, int sign, int pok)
 		} else {
 			shlim(f, 0);
 		}
-		return 0;
+		return sign * 0.0;
 	}
 	if (!gotrad) rp = dc;
 	while (dc<8) x *= 16, dc++;
