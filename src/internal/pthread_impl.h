@@ -59,7 +59,8 @@ struct __timer {
 
 #define _a_stacksize __u.__s[0]
 #define _a_guardsize __u.__s[1]
-#define _a_detach __u.__i[2*__SU+0]
+#define _a_stackaddr __u.__s[2]
+#define _a_detach __u.__i[3*__SU+0]
 #define _m_type __u.__i[0]
 #define _m_lock __u.__i[1]
 #define _m_waiters __u.__i[2]

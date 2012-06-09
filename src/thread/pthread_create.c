@@ -98,16 +98,20 @@ int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(vo
 		libc.threaded = 1;
 	}
 
-	if (attr) {
-		guard = ROUND(attr->_a_guardsize + DEFAULT_GUARD_SIZE);
-		size = guard + ROUND(attr->_a_stacksize + DEFAULT_STACK_SIZE);
+	if (attr && attr->_a_stackaddr) {
+		map = 0;
+		tsd = (void *)(attr->_a_stackaddr-__pthread_tsd_size & -16);
+	} else {
+		if (attr) {
+			guard = ROUND(attr->_a_guardsize + DEFAULT_GUARD_SIZE);
+			size = guard + ROUND(attr->_a_stacksize + DEFAULT_STACK_SIZE);
+		}
+		size += __pthread_tsd_size;
+		map = mmap(0, size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, -1, 0);
+		if (map == MAP_FAILED) return EAGAIN;
+		if (guard) mprotect(map, guard, PROT_NONE);
+		tsd = map + size - __pthread_tsd_size;
 	}
-	size += __pthread_tsd_size;
-	map = mmap(0, size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, -1, 0);
-	if (map == MAP_FAILED) return EAGAIN;
-	if (guard) mprotect(map, guard, PROT_NONE);
-
-	tsd = map + size - __pthread_tsd_size;
 	new = (void *)(tsd - sizeof *new - PAGE_SIZE%sizeof *new);
 	new->map_base = map;
 	new->map_size = size;
