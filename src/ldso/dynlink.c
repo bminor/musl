@@ -60,7 +60,7 @@ struct dso {
 	size_t map_len;
 	dev_t dev;
 	ino_t ino;
-	char global;
+	signed char global;
 	char relocated;
 	char constructed;
 	struct dso **deps;
