@@ -50,12 +50,17 @@ int scandir(const char *, struct dirent ***, int (*)(const struct dirent *), int
 #define DTTOIF(x) ((x)<<12)
 #endif
 
+#ifdef _GNU_SOURCE
+int versionsort(const struct dirent **, const struct dirent **);
+#endif
+
 #if defined(_LARGEFILE64_SOURCE) || defined(_GNU_SOURCE)
 #define dirent64 dirent
 #define readdir64 readdir
 #define readdir64_r readdir_r
 #define scandir64 scandir
 #define alphasort64 alphasort
+#define versionsort64 versionsort
 #define off64_t off_t
 #define ino64_t ino_t
 #endif
