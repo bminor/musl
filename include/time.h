@@ -114,6 +114,9 @@ struct tm *getdate (const char *);
 int stime(time_t *);
 #endif
 
+#if defined(_GNU_SOURCE)
+time_t timegm(struct tm *);
+#endif
 
 #ifdef __cplusplus
 }
