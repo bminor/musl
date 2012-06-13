@@ -100,7 +100,7 @@ int timer_getoverrun (timer_t);
 #endif
 
 
-#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 char *strptime (const char *, const char *, struct tm *);
 extern int daylight;
 extern long timezone;
@@ -110,11 +110,8 @@ struct tm *getdate (const char *);
 #endif
 
 
-#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 int stime(time_t *);
-#endif
-
-#if defined(_GNU_SOURCE)
 time_t timegm(struct tm *);
 #endif
 
