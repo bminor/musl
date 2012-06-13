@@ -100,7 +100,7 @@ int timer_getoverrun (timer_t);
 #endif
 
 
-#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
 char *strptime (const char *, const char *, struct tm *);
 extern int daylight;
 extern long timezone;
