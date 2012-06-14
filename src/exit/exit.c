@@ -20,13 +20,10 @@ void exit(int code)
 	/* If more than one thread calls exit, hang until _Exit ends it all */
 	while (a_swap(&lock, 1)) __syscall(SYS_pause);
 
-	/* Only do atexit & stdio flush if they were actually used */
 	__funcs_on_exit();
-	__fflush_on_exit();
-
-	/* Destructor s**t is kept separate from atexit to avoid bloat */
 	if (libc.fini) libc.fini();
 	if (libc.ldso_fini) libc.ldso_fini();
+	__fflush_on_exit();
 
 	_Exit(code);
 	for(;;);
