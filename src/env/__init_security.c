@@ -29,7 +29,7 @@ void __init_security(size_t *auxv)
 	__syscall(SYS_poll, pfd, 3, 0);
 	for (i=0; i<3; i++)
 		if (pfd[i].revents&POLLNVAL)
-			if (__syscall(SYS_open, "/dev/null", O_RDWR)<0)
+			if (__syscall(SYS_open, "/dev/null", O_RDWR|O_LARGEFILE)<0)
 				a_crash();
 	libc.secure = 1;
 }
