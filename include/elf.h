@@ -1,5 +1,5 @@
 #ifndef _ELF_H
-#define	_ELF_H 1
+#define _ELF_H
 
 #ifdef __cplusplus
 extern "C" {

@@ -1,5 +1,5 @@
-#ifndef __NET_ETHERNET_H
-#define __NET_ETHERNET_H 1
+#ifndef _NET_ETHERNET_H
+#define _NET_ETHERNET_H
 
 #ifdef __cplusplus
 extern "C" {

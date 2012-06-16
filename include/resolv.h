@@ -1,5 +1,5 @@
-#ifndef _RESOLV_H_
-#define _RESOLV_H_
+#ifndef _RESOLV_H
+#define _RESOLV_H
 
 #include <stdint.h>
 #include <arpa/nameser.h>

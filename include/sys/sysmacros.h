@@ -1,5 +1,5 @@
-#ifndef _SYSMACROS_H
-#define _SYSMACROS_H
+#ifndef _SYS_SYSMACROS_H
+#define _SYS_SYSMACROS_H
 
 #define major(x) (((x) >> 8) & 0xff)
 #define minor(x) ((x) & 0xff)

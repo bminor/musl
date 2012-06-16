@@ -1,5 +1,5 @@
-#ifndef _PATHS_H_
-#define	_PATHS_H_
+#ifndef _PATHS_H
+#define _PATHS_H
 
 #define	_PATH_DEFPATH "/usr/local/bin:/bin:/usr/bin"
 #define	_PATH_STDPATH "/bin:/usr/bin:/sbin:/usr/sbin"

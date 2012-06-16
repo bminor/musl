@@ -1,5 +1,5 @@
-#ifndef	_FSUID_H
-#define	_FSUID_H
+#ifndef _SYS_FSUID_H
+#define _SYS_FSUID_H
 
 #ifdef __cplusplus
 extern "C" {

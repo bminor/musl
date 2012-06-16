@@ -1,5 +1,5 @@
-#ifndef _SYS_SYSLOG_H
-#define _SYS_SYSLOG_H
+#ifndef _SYSLOG_H
+#define _SYSLOG_H
 
 #ifdef __cplusplus
 extern "C" {
