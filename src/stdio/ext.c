@@ -14,12 +14,12 @@ int __fsetlocking(FILE *f, int type)
 
 int __fwriting(FILE *f)
 {
-	return f->wend && f->wpos > f->wbase;
+	return (f->flags & F_NORD) || f->wend;
 }
 
 int __freading(FILE *f)
 {
-	return f->rend > f->rpos;
+	return (f->flags & F_NOWR) || f->rend;
 }
 
 int __freadable(FILE *f)
