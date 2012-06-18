@@ -7,7 +7,10 @@ FILE *__fdopen(int fd, const char *mode)
 	int plus = !!strchr(mode, '+');
 
 	/* Check for valid initial mode character */
-	if (!strchr("rwa", *mode)) return 0;
+	if (!strchr("rwa", *mode)) {
+		errno = EINVAL;
+		return 0;
+	}
 
 	/* Allocate FILE+buffer or fail */
 	if (!(f=malloc(sizeof *f + UNGET + BUFSIZ))) return 0;
