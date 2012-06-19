@@ -17,8 +17,9 @@ int __towrite(FILE *f)
 	return 0;
 }
 
-/* Link flush-on-exit code iff any stdio write functions are linked. */
-void __fflush_on_exit()
+const int __towrite_used = 1;
+
+void __flush_on_exit()
 {
-	fflush(0);
+	__stdio_exit();
 }
