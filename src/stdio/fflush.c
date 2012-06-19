@@ -15,9 +15,6 @@ static int __fflush_unlocked(FILE *f)
 	f->wpos = f->wbase = f->wend = 0;
 	f->rpos = f->rend = 0;
 
-	/* Hook for special behavior on flush */
-	if (f->flush) f->flush(f);
-
 	return 0;
 }
 

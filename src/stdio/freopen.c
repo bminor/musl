@@ -32,7 +32,6 @@ FILE *freopen(const char *filename, const char *mode, FILE *f)
 	f->write = f2->write;
 	f->seek = f2->seek;
 	f->close = f2->close;
-	f->flush = f2->flush;
 
 	fclose(f2);
 	return f;
