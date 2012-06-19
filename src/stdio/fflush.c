@@ -25,7 +25,6 @@ weak_alias(dummy, __stdout_used);
 int fflush(FILE *f)
 {
 	int r;
-	FILE *next;
 
 	if (f) {
 		FLOCK(f);
@@ -37,12 +36,9 @@ int fflush(FILE *f)
 	r = __stdout_used ? fflush(__stdout_used) : 0;
 
 	OFLLOCK();
-	for (f=libc.ofl_head; f; f=next) {
+	for (f=libc.ofl_head; f; f=f->next) {
 		FLOCK(f);
-		//OFLUNLOCK();
 		if (f->wpos > f->wbase) r |= __fflush_unlocked(f);
-		//OFLLOCK();
-		next = f->next;
 		FUNLOCK(f);
 	}
 	OFLUNLOCK();
