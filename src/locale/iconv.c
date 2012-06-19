@@ -327,14 +327,14 @@ size_t iconv(iconv_t cd0, char **in, size_t *inb, char **out, size_t *outb)
 		case UCS2LE:
 		case UTF_16BE:
 		case UTF_16LE:
-			if (c < 0x10000) {
+			if (c < 0x10000 || type-UCS2BE < 2U) {
+				if (c >= 0x10000) c = 0xFFFD;
 				if (*outb < 2) goto toobig;
 				put_16((void *)*out, c, totype);
 				*out += 2;
 				*outb -= 2;
 				break;
 			}
-			if (type-UCS2BE < 2U) goto ilseq;
 			if (*outb < 4) goto toobig;
 			c -= 0x10000;
 			put_16((void *)*out, (c>>10)|0xd800, totype);
