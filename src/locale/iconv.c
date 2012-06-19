@@ -12,8 +12,8 @@
 #define UTF_32LE    0303
 #define UCS2BE      0304
 #define UCS2LE      0305
-#define US_ASCII    0306
-#define WCHAR_T     0307
+#define WCHAR_T     0306
+#define US_ASCII    0307
 #define UTF_8       0310
 #define EUC_JP      0320
 #define SHIFT_JIS   0321
@@ -34,14 +34,14 @@
 
 static const unsigned char charmaps[] =
 "utf8\0\0\310"
-"wchart\0\0\307"
+"wchart\0\0\306"
 "ucs2\0ucs2be\0\0\304"
 "ucs2le\0\0\305"
 "utf16\0utf16be\0\0\302"
 "utf16le\0\0\301"
 "ucs4\0ucs4be\0utf32\0utf32be\0\0\300"
 "ucs4le\0utf32le\0\0\303"
-"ascii\0usascii\0iso646\0iso646us\0\0\306"
+"ascii\0usascii\0iso646\0iso646us\0\0\307"
 "eucjp\0\0\320"
 "shiftjis\0sjis\0\0\321"
 "gb18030\0\0\330"
@@ -161,7 +161,7 @@ size_t iconv(iconv_t cd0, char **in, size_t *inb, char **out, size_t *outb)
 		c = *(unsigned char *)*in;
 		l = 1;
 
-		if (c >= 128) switch (type) {
+		if (c >= 128 || type-UTF_32BE < 7U) switch (type) {
 		case UTF_8:
 			l = mbrtowc_utf8(&wc, *in, *inb, &st);
 			if (!l) l++;
@@ -196,9 +196,9 @@ size_t iconv(iconv_t cd0, char **in, size_t *inb, char **out, size_t *outb)
 				if (type-UCS2BE < 2U) goto ilseq;
 				l = 4;
 				if (*inb < 4) goto starved;
-				d = get_16((void *)(*in + 2), from);
-				if ((unsigned)(c-0xdc00) >= 0x400) goto ilseq;
-				c = ((c-0xd800)<<10) | (d-0xdc00);
+				d = get_16((void *)(*in + 2), type);
+				if ((unsigned)(d-0xdc00) >= 0x400) goto ilseq;
+				c = ((c-0xd7c0)<<10) + (d-0xdc00);
 			}
 			break;
 		case SHIFT_JIS:
