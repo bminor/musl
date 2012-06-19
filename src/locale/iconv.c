@@ -336,6 +336,7 @@ size_t iconv(iconv_t cd0, char **in, size_t *inb, char **out, size_t *outb)
 			}
 			if (type-UCS2BE < 2U) goto ilseq;
 			if (*outb < 4) goto toobig;
+			c -= 0x10000;
 			put_16((void *)*out, (c>>10)|0xd800, totype);
 			put_16((void *)(*out + 2), (c&0x3ff)|0xdc00, totype);
 			*out += 4;
