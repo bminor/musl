@@ -7,7 +7,7 @@ int getlogin_r(char *name, size_t size)
 {
 	char *logname = getlogin();
 	if (!logname) return ENXIO; /* or...? */
-	if (strlen(name) >= size) return ERANGE;
+	if (strlen(logname) >= size) return ERANGE;
 	strcpy(name, logname);
 	return 0;
 }
