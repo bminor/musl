@@ -10,7 +10,7 @@ void perror(const char *msg)
 
 	FLOCK(f);
 	
-	if (msg) {
+	if (msg && *msg) {
 		fwrite(msg, strlen(msg), 1, f);
 		fputc(':', f);
 		fputc(' ', f);
