@@ -1,11 +1,12 @@
 #include "stdio_impl.h"
+#include "syscall.h"
 
 int pclose(FILE *f)
 {
-	int status;
+	int status, r;
 	pid_t pid = f->pipe_pid;
 	fclose(f);
-	while (waitpid(pid, &status, 0) == -1)
-		if (errno != EINTR) return -1;
+	while ((r=__syscall(SYS_wait4, pid, &status, 0, 0)) == -EINTR);
+	if (r<0) return __syscall_ret(r);
 	return status;
 }
