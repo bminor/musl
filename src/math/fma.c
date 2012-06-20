@@ -41,7 +41,7 @@ static void mul(long double *hi, long double *lo, long double x, long double y)
 
 /*
 assume (long double)(hi+lo) == hi
-return an adjusted hi so that rounding it to double is correct
+return an adjusted hi so that rounding it to double (or less) precision is correct
 */
 static long double adjust(long double hi, long double lo)
 {
@@ -55,17 +55,25 @@ static long double adjust(long double hi, long double lo)
 	ulo.x = lo;
 	if (uhi.bits.s == ulo.bits.s)
 		uhi.bits.m++;
-	else
+	else {
 		uhi.bits.m--;
+		/* handle underflow and take care of ld80 implicit msb */
+		if (uhi.bits.m == (uint64_t)-1/2) {
+			uhi.bits.m *= 2;
+			uhi.bits.e--;
+		}
+	}
 	return uhi.x;
 }
 
+/* adjusted add so the result is correct when rounded to double (or less) precision */
 static long double dadd(long double x, long double y)
 {
 	add(&x, &y, x, y);
 	return adjust(x, y);
 }
 
+/* adjusted mul so the result is correct when rounded to double (or less) precision */
 static long double dmul(long double x, long double y)
 {
 	mul(&x, &y, x, y);
