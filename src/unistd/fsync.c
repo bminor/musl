@@ -3,6 +3,5 @@
 
 int fsync(int fd)
 {
-	//return syscall(SYS_fsync, fd);
-	return 0;
+	return syscall(SYS_fsync, fd);
 }
