@@ -1,4 +1,11 @@
 #include "stdio_impl.h"
+#include "syscall.h"
+
+static inline void nc_close(int fd)
+{
+	__syscall(SYS_close, fd);
+}
+#define close(x) nc_close(x)
 
 FILE *popen(const char *cmd, const char *mode)
 {
