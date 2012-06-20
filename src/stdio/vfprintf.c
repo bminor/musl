@@ -319,7 +319,7 @@ static int fmt_fp(FILE *f, long double y, int w, int p, int fl, int t)
 	if (j < 9*(z-r-1)) {
 		uint32_t x;
 		/* We avoid C's broken division of negative numbers */
-		d = r + 1 + (j+9*LDBL_MAX_EXP)/9 - LDBL_MAX_EXP;
+		d = r + 1 + ((j+9*LDBL_MAX_EXP)/9 - LDBL_MAX_EXP);
 		j += 9*LDBL_MAX_EXP;
 		j %= 9;
 		for (i=10, j++; j<9; i*=10, j++);
