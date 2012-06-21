@@ -99,6 +99,17 @@ int posix_fallocate(int, off_t, off_t);
 int lockf(int, int, off_t);
 #endif
 
+#if defined(_GNU_SOURCE)
+#define F_OWNER_TID 0
+#define F_OWNER_PID 1
+#define F_OWNER_PGRP 2
+#define F_OWNER_GID 2
+struct f_owner_ex {
+	int type;
+	pid_t pid;
+};
+#endif
+
 #if defined(_LARGEFILE64_SOURCE) || defined(_GNU_SOURCE)
 #define open64 open
 #define openat64 openat
