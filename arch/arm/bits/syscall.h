@@ -374,6 +374,8 @@ static inline long __syscall6(long n, long a, long b, long c, long d, long e, lo
 #define __NR_syncfs	373
 #define __NR_sendmmsg	374
 #define __NR_setns	375
+#define __NR_process_vm_readv	376
+#define __NR_process_vm_writev	377
 
 /* fixup legacy 16-bit junk */
 #undef __NR_lchown
@@ -781,6 +783,8 @@ static inline long __syscall6(long n, long a, long b, long c, long d, long e, lo
 #define SYS_syncfs	373
 #define SYS_sendmmsg	374
 #define SYS_setns	375
+#define SYS_process_vm_readv	376
+#define SYS_process_vm_writev	377
 
 /* fixup legacy 16-bit junk */
 #undef SYS_lchown

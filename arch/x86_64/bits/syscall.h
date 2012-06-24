@@ -367,6 +367,15 @@ static inline long __syscall6(long __n, long __a1, long __a2, long __a3, long __
 #define __NR_fanotify_init			300
 #define __NR_fanotify_mark			301
 #define __NR_prlimit64				302
+#define __NR_name_to_handle_at			303
+#define __NR_open_by_handle_at			304
+#define __NR_clock_adjtime			305
+#define __NR_syncfs				306
+#define __NR_sendmmsg				307
+#define __NR_setns				308
+#define __NR_getcpu				309
+#define __NR_process_vm_readv			310
+#define __NR_process_vm_writev			311
 
 #undef __NR_fstatat
 #undef __NR_pread
@@ -685,6 +694,15 @@ static inline long __syscall6(long __n, long __a1, long __a2, long __a3, long __
 #define SYS_fanotify_init			300
 #define SYS_fanotify_mark			301
 #define SYS_prlimit64				302
+#define SYS_name_to_handle_at			303
+#define SYS_open_by_handle_at			304
+#define SYS_clock_adjtime			305
+#define SYS_syncfs				306
+#define SYS_sendmmsg				307
+#define SYS_setns				308
+#define SYS_getcpu				309
+#define SYS_process_vm_readv			310
+#define SYS_process_vm_writev			311
 
 #undef SYS_fstatat
 #undef SYS_pread
