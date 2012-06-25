@@ -598,3 +598,47 @@ compatibility:
 - sysconf reporting number of available CPUs/cores
 - various LSB/glibc ABI interfaces aimed at compatibility with some binaries
 - use fistpll asm mnemonic instead of fistpq for compat with clang
+
+
+
+0.9.2 release notes
+
+bug fixes:
+- pointer overflow in printf (crash on 32bit userspace, 64bit kernel)
+- printf %ls over-read bug
+- strtod failure to read -0x as negative zero
+- flush stdio after dtors, not before
+- wrong file position for buffered input streams on exit
+- popen was broken when stdin/out were already closed
+- broken wcwidth tables (missing many characters)
+- fwrite: wrong return value of partial/failed write
+- broken utf-16 conversions
+- bad buffer length check in getlogin_r
+- bad perror("") behavior; did not match perror(0)
+- broken sysinfo syscall/structure
+- stdint.h const macro signedness bugs
+- broken include guards in some headers
+- bogus localeconv values
+- cancellation-safety for popen and pclose
+- fma corner cases wrong on i386
+- fcntl F_GETOWN errno missing on failure.
+- char signedness bug in dynamic linker broke dlopen on arm
+- mprotect failure in dynamic linker caused crash instead of error
+
+build system:
+- configure check to work around hacked-up gcc versions
+- test for old binutils that can't support musl dynamic linker
+
+compatibility:
+- make _GNU_SOURCE imply _LARGEFILE64_SOURCE
+- syscall wrapper for lots of nonstandard and/or legacy linux syscalls
+- versionsort stub
+- timegm function (inverse of gmtime)
+- various minor header tweaks
+- make __freading/__fwriting semantics match traditional ones
+- added gnulib-compatibility stdio interfaces
+- added pthread_attr_setstack interface
+- make strerror_r return partial string when buffer is too small
+- duplocale should accept LC_GLOBAL_LOCALE
+- align ptsname_r to upcoming posix requirements
+- support invalid ld80 bit patterns as extra nans.
