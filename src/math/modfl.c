@@ -40,7 +40,7 @@
 #if LDBL_MANT_DIG == 53 && LDBL_MAX_EXP == 1024
 long double modfl(long double x, long double *iptr)
 {
-	return modf(x, iptr);
+	return modf(x, (double *)iptr);
 }
 #elif (LDBL_MANT_DIG == 64 || LDBL_MANT_DIG == 113) && LDBL_MAX_EXP == 16384
 
