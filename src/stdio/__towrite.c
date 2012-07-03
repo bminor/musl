@@ -19,6 +19,8 @@ int __towrite(FILE *f)
 
 const int __towrite_used = 1;
 
+void __stdio_exit(void);
+
 void __flush_on_exit()
 {
 	__stdio_exit();
