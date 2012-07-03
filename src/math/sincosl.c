@@ -1,12 +1,10 @@
+#define _GNU_SOURCE
 #include "libm.h"
 
 #if LDBL_MANT_DIG == 53 && LDBL_MAX_EXP == 1024
 void sincosl(long double x, long double *sin, long double *cos)
 {
-	double s, c;
-	sincos(x, &s, &c);
-	*sin = s;
-	*cos = c;
+	sincos(x, (double *)sin, (double *)cos);
 }
 #elif (LDBL_MANT_DIG == 64 || LDBL_MANT_DIG == 113) && LDBL_MAX_EXP == 16384
 void sincosl(long double x, long double *sin, long double *cos)
