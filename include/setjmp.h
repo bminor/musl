@@ -11,7 +11,11 @@ extern "C" {
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) \
  || defined(_BSD_SOURCE)
-typedef unsigned long sigjmp_buf[(128+sizeof(jmp_buf))/sizeof(long)];
+typedef struct {
+	jmp_buf __jb;
+	unsigned long __fl;
+	unsigned long __ss[128];
+} sigjmp_buf[1];
 int sigsetjmp (sigjmp_buf, int);
 void siglongjmp (sigjmp_buf, int);
 #endif
