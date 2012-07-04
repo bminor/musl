@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 
 int putw(int x, FILE *f)

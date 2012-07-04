@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 
 int getw(FILE *f)
