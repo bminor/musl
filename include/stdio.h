@@ -168,6 +168,8 @@ void clearerr_unlocked(FILE *);
 int feof_unlocked(FILE *);
 int ferror_unlocked(FILE *);
 int fileno_unlocked(FILE *);
+int getw(FILE *);
+int putw(int, FILE *);
 #endif
 
 #ifdef _GNU_SOURCE
