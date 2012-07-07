@@ -766,7 +766,9 @@ static void *do_dlsym(struct dso *p, const char *s, void *ra)
 	if (p == RTLD_NEXT) {
 		for (p=head; p && (unsigned char *)ra-p->map>p->map_len; p=p->next);
 		if (!p) p=head;
-		p=p->next;
+		void *res = find_sym(p->next, s, 0);
+		if (!res) goto failed;
+		return res;
 	}
 	if (p == head || p == RTLD_DEFAULT) {
 		void *res = find_sym(head, s, 0);
