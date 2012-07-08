@@ -99,14 +99,16 @@ static inline void a_or(volatile int *p, int v)
 
 static inline void a_and_64(volatile uint64_t *p, uint64_t v)
 {
-	a_and((int *)p, v);
-	a_and((int *)p+1, v>>32);
+	union { uint64_t v; uint32_t r[2]; } u = { v };
+	a_and((int *)p, u.r[0]);
+	a_and((int *)p+1, u.r[1]);
 }
 
 static inline void a_or_64(volatile uint64_t *p, uint64_t v)
 {
-	a_or((int *)p, v);
-	a_or((int *)p+1, v>>32);
+	union { uint64_t v; uint32_t r[2]; } u = { v };
+	a_or((int *)p, u.r[0]);
+	a_or((int *)p+1, u.r[1]);
 }
 
 #endif
