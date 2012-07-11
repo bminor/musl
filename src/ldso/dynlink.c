@@ -322,6 +322,7 @@ static void decode_dyn(struct dso *p)
 static struct dso *load_library(const char *name)
 {
 	char buf[2*NAME_MAX+2];
+	const char *pathname;
 	unsigned char *base, *map;
 	size_t dyno, map_len;
 	struct dso *p;
@@ -346,16 +347,17 @@ static struct dso *load_library(const char *name)
 			}
 		}
 	}
-	/* Search for the name to see if it's already loaded */
-	for (p=head->next; p; p=p->next) {
-		if (!strcmp(p->shortname, name)) {
-			p->refcnt++;
-			return p;
-		}
-	}
 	if (strchr(name, '/')) {
+		pathname = name;
 		fd = open(name, O_RDONLY);
 	} else {
+		/* Search for the name to see if it's already loaded */
+		for (p=head->next; p; p=p->next) {
+			if (p->shortname && !strcmp(p->shortname, name)) {
+				p->refcnt++;
+				return p;
+			}
+		}
 		if (strlen(name) > NAME_MAX) return 0;
 		fd = -1;
 		if (r_path) fd = path_open(name, r_path, buf, sizeof buf);
@@ -372,6 +374,7 @@ static struct dso *load_library(const char *name)
 			if (sys_path) fd = path_open(name, sys_path, buf, sizeof buf);
 			else fd = path_open(name, "/lib:/usr/local/lib:/usr/lib", buf, sizeof buf);
 		}
+		pathname = buf;
 	}
 	if (fd < 0) return 0;
 	if (fstat(fd, &st) < 0) {
@@ -380,6 +383,10 @@ static struct dso *load_library(const char *name)
 	}
 	for (p=head->next; p; p=p->next) {
 		if (p->dev == st.st_dev && p->ino == st.st_ino) {
+			/* If this library was previously loaded with a
+			 * pathname but a search found the same inode,
+			 * setup its shortname so it can be found by name. */
+			if (!p->shortname) p->shortname = strrchr(p->name, '/')+1;
 			close(fd);
 			p->refcnt++;
 			return p;
@@ -388,7 +395,7 @@ static struct dso *load_library(const char *name)
 	map = map_library(fd, &map_len, &base, &dyno);
 	close(fd);
 	if (!map) return 0;
-	p = calloc(1, sizeof *p + strlen(buf) + 1);
+	p = calloc(1, sizeof *p + strlen(pathname) + 1);
 	if (!p) {
 		munmap(map, map_len);
 		return 0;
@@ -404,15 +411,15 @@ static struct dso *load_library(const char *name)
 	p->ino = st.st_ino;
 	p->refcnt = 1;
 	p->name = p->buf;
-	strcpy(p->name, buf);
-	if (!strchr(name, '/')) p->shortname = strrchr(p->name, '/');
-	if (!p->shortname) p->shortname = p->name;
+	strcpy(p->name, pathname);
+	/* Add a shortname only if name arg was not an explicit pathname. */
+	if (pathname != name) p->shortname = strrchr(p->name, '/')+1;
 
 	tail->next = p;
 	p->prev = tail;
 	tail = p;
 
-	if (ldd_mode) dprintf(1, "\t%s => %s (%p)\n", name, buf, base);
+	if (ldd_mode) dprintf(1, "\t%s => %s (%p)\n", name, pathname, base);
 
 	return p;
 }
@@ -576,7 +583,7 @@ void *__dynlink(int argc, char **argv)
 			if (phdr->p_type == PT_PHDR)
 				app->base = (void *)(aux[AT_PHDR] - phdr->p_vaddr);
 		}
-		app->name = app->shortname = argv[0];
+		app->name = argv[0];
 		app->dynv = (void *)(app->base + find_dyn(
 			(void *)aux[AT_PHDR], aux[AT_PHNUM], aux[AT_PHENT]));
 	} else {
@@ -605,7 +612,7 @@ void *__dynlink(int argc, char **argv)
 		}
 		runtime = 0;
 		close(fd);
-		app->name = app->shortname = argv[0];
+		app->name = argv[0];
 		app->dynv = (void *)(app->base + dyno);
 		aux[AT_ENTRY] = ehdr->e_entry;
 	}
