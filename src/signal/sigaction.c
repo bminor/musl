@@ -13,7 +13,7 @@ weak_alias(dummy, __pthread_self_def);
 
 int __libc_sigaction(int sig, const struct sigaction *sa, struct sigaction *old)
 {
-	struct k_sigaction ksa, *pksa=0;
+	struct k_sigaction ksa;
 	if (sa) {
 		ksa.handler = sa->sa_handler;
 		ksa.flags = sa->sa_flags | SA_RESTORER;
