@@ -20,7 +20,7 @@
 static int errflag;
 static char errbuf[128];
 
-#ifdef __PIC__
+#ifdef SHARED
 
 #include "reloc.h"
 
