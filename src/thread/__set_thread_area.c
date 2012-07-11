@@ -2,5 +2,9 @@
 
 int __set_thread_area(void *p)
 {
-	return -1;
+#ifdef SYS_set_thread_area
+	return __syscall(SYS_set_thread_area, p);
+#else
+	return -ENOSYS;
+#endif
 }
