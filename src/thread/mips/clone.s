@@ -2,9 +2,10 @@
 .global __clone
 .type   __clone,@function
 __clone:
-	# Save function pointer and argument pointer
-	move $25, $4
-	move $8, $7
+	# Save function pointer and argument pointer on new thread stack
+	subu $5, $5, 16
+	sw $4, 0($5)
+	sw $7, 4($5)
 	# Shuffle (fn,sp,fl,arg,ptid,tls,ctid) to (fl,sp,ptid,tls,ctid)
 	move $4, $6
 	lw $6, 16($sp)
@@ -21,6 +22,8 @@ __clone:
 	nop
 	jr $ra
 	nop
-1:	move $4, $8
+1:	lw $25, 0($sp)
+	lw $4, 4($sp)
 	jr $25
+	addu $sp, $sp, 16
 	nop
