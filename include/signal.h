@@ -28,11 +28,9 @@ extern "C" {
 
 #define SIG_HOLD ((void (*)(int)) 2)
 
-#ifndef SIG_BLOCK
 #define SIG_BLOCK     0
 #define SIG_UNBLOCK   1
 #define SIG_SETMASK   2
-#endif
 
 #define SI_ASYNCNL (-60)
 #define SI_TKILL (-6)
