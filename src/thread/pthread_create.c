@@ -24,12 +24,12 @@ void pthread_exit(void *result)
 
 	__pthread_tsd_run_dtors();
 
-	__lock(&self->exitlock);
+	__lock(self->exitlock);
 
 	/* Mark this thread dead before decrementing count */
-	__lock(&self->killlock);
+	__lock(self->killlock);
 	self->dead = 1;
-	a_store(&self->killlock, 0);
+	__unlock(self->killlock);
 
 	do n = libc.threads_minus_1;
 	while (n && a_cas(&libc.threads_minus_1, n, n-1)!=n);

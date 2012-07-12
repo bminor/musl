@@ -28,13 +28,12 @@ struct pthread {
 	pid_t tid, pid;
 	int tsd_used, errno_val, *errno_ptr;
 	volatile int cancel, canceldisable, cancelasync;
+	int detached;
 	unsigned char *map_base;
 	size_t map_size;
 	void *start_arg;
 	void *(*start)(void *);
 	void *result;
-	int detached;
-	int exitlock;
 	struct __ptcb *cancelbuf;
 	void **tsd;
 	pthread_attr_t attr;
@@ -47,7 +46,8 @@ struct pthread {
 	int unblock_cancel;
 	int delete_timer;
 	locale_t locale;
-	int killlock;
+	int killlock[2];
+	int exitlock[2];
 };
 
 struct __timer {
