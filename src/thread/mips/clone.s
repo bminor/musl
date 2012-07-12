@@ -25,5 +25,4 @@ __clone:
 1:	lw $25, 0($sp)
 	lw $4, 4($sp)
 	jr $25
-	addu $sp, $sp, 16
 	nop
