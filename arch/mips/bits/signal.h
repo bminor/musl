@@ -19,13 +19,17 @@ typedef struct __ucontext {
 } ucontext_t;
 
 #define SA_NOCLDSTOP  1
-#define SA_NOCLDWAIT  2
-#define SA_SIGINFO    4
+#define SA_NOCLDWAIT  0x10000
+#define SA_SIGINFO    8
 #define SA_ONSTACK    0x08000000
 #define SA_RESTART    0x10000000
 #define SA_NODEFER    0x40000000
 #define SA_RESETHAND  0x80000000
 #define SA_RESTORER   0x04000000
+
+#define SIG_BLOCK     1
+#define SIG_UNBLOCK   2
+#define SIG_SETMASK   3
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 struct sigcontext
