@@ -36,6 +36,8 @@ void pthread_exit(void *result)
 	if (!n) exit(0);
 
 	if (self->detached && self->map_base) {
+		if (self->detached == 2)
+			__syscall(SYS_set_tid_address, 0);
 		__syscall(SYS_rt_sigprocmask, SIG_BLOCK, (uint64_t[]){-1},0,8);
 		__unmapself(self->map_base, self->map_size);
 	}
@@ -87,6 +89,7 @@ int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(vo
 	size_t guard = DEFAULT_GUARD_SIZE;
 	struct pthread *self = pthread_self(), *new;
 	unsigned char *map, *stack, *tsd;
+	unsigned flags = 0x7d8f00;
 
 	if (!self) return ENOSYS;
 	if (!libc.threaded) {
@@ -121,7 +124,10 @@ int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(vo
 	new->start_arg = arg;
 	new->self = new;
 	new->tsd = (void *)tsd;
-	if (attr) new->detached = attr->_a_detach;
+	if (attr && attr->_a_detach) {
+		new->detached = 1;
+		flags -= 0x200000;
+	}
 	new->unblock_cancel = self->cancel;
 	new->canary = self->canary ^ (uintptr_t)&new;
 	stack = (void *)new;
@@ -129,7 +135,7 @@ int pthread_create(pthread_t *res, const pthread_attr_t *attr, void *(*entry)(vo
 	__synccall_lock();
 
 	a_inc(&libc.threads_minus_1);
-	ret = __clone(start, stack, 0x7d8f00, new, &new->tid, new, &new->tid);
+	ret = __clone(start, stack, flags, new, &new->tid, new, &new->tid);
 
 	__synccall_unlock();
 
