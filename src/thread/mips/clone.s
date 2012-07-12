@@ -5,9 +5,8 @@ __clone:
 	# Save function pointer and argument pointer
 	move $25, $4
 	move $8, $7
-	# Shuffle (fn,sp,fl,arg,ptid,tls,ctid) to (sp,fl,ptid,tls,ctid)
-	move $4, $5
-	move $5, $6
+	# Shuffle (fn,sp,fl,arg,ptid,tls,ctid) to (fl,sp,ptid,tls,ctid)
+	move $4, $6
 	lw $6, 16($sp)
 	lw $7, 20($sp)
 	lw $9, 24($sp)
