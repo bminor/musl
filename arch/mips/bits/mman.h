@@ -13,9 +13,8 @@
 
 #define MAP_TYPE       0x0f
 #define MAP_FILE       0x00
-#define MAP_ANON       0x20
+#define MAP_ANON       0x800
 #define MAP_ANONYMOUS  MAP_ANON
-#define MAP_32BIT      0x40
 
 #define POSIX_MADV_NORMAL       0
 #define POSIX_MADV_RANDOM       1
