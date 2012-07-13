@@ -17,13 +17,6 @@ extern "C" {
 
 #include <bits/socket.h>
 
-struct cmsghdr
-{
-	socklen_t cmsg_len;
-	int cmsg_level;
-	int cmsg_type;
-};
-
 struct ucred
 {
 	pid_t pid;

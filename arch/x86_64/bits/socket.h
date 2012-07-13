@@ -8,3 +8,11 @@ struct msghdr
 	socklen_t msg_controllen, __pad2;
 	int msg_flags;
 };
+
+struct cmsghdr
+{
+	socklen_t cmsg_len;
+	int __pad1;
+	int cmsg_level;
+	int cmsg_type;
+};
