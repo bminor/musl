@@ -70,19 +70,19 @@ static inline int a_swap(volatile int *x, int v)
 
 static inline int a_fetch_add(volatile int *x, int v)
 {
-	int new;
+	int old, dummy;
 	__asm__ __volatile__(
 		".set push\n"
 		".set noreorder\n"
-		"1:	ll %0, 0(%1)\n"
-		"	addu %0, %0, %2\n"
-		"	sc %0, 0(%1)\n"
-		"	beq %0, $0, 1b\n"
+		"1:	ll %0, 0(%2)\n"
+		"	addu %1, %0, %3\n"
+		"	sc %1, 0(%2)\n"
+		"	beq %1, $0, 1b\n"
 		"	nop\n"
 		"1:	\n"
 		".set pop\n"
-		: "=&r"(new) : "r"(x), "r"(v) : "memory" );
-        return new-v;
+		: "=&r"(old), "=&r"(dummy) : "r"(x), "r"(v) : "memory" );
+        return old;
 }
 
 static inline void a_inc(volatile int *x)
