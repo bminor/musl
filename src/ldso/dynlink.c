@@ -577,12 +577,16 @@ void *__dynlink(int argc, char **argv)
 	decode_dyn(lib);
 
 	if (aux[AT_PHDR]) {
+		size_t interp_off = 0;
 		/* Find load address of the main program, via AT_PHDR vs PT_PHDR. */
 		phdr = (void *)aux[AT_PHDR];
 		for (i=aux[AT_PHNUM]; i; i--, phdr=(void *)((char *)phdr + aux[AT_PHENT])) {
 			if (phdr->p_type == PT_PHDR)
 				app->base = (void *)(aux[AT_PHDR] - phdr->p_vaddr);
+			else if (phdr->p_type == PT_INTERP)
+				interp_off = (size_t)phdr->p_vaddr;
 		}
+		if (interp_off) lib->name = (char *)app->base + interp_off;
 		app->name = argv[0];
 		app->dynv = (void *)(app->base + find_dyn(
 			(void *)aux[AT_PHDR], aux[AT_PHNUM], aux[AT_PHENT]));
@@ -612,6 +616,7 @@ void *__dynlink(int argc, char **argv)
 		}
 		runtime = 0;
 		close(fd);
+		lib->name = ldname;
 		app->name = argv[0];
 		app->dynv = (void *)(app->base + dyno);
 		aux[AT_ENTRY] = ehdr->e_entry;
