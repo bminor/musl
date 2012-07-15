@@ -12,6 +12,10 @@ int getservbyname_r(const char *name, const char *prots,
 	struct addrinfo *ai, hint = { .ai_family = AF_INET };
 	int i;
 
+	if (!prots) return -(
+		getservbyname_r(name, "tcp", se, buf, buflen, res)
+		&& getservbyname_r(name, "udp", se, buf, buflen, res) );
+
 	/* Align buffer */
 	i = (uintptr_t)buf & sizeof(char *)-1;
 	if (!i) i = sizeof(char *);

@@ -15,6 +15,10 @@ int getservbyport_r(int port, const char *prots,
 		.sin_port = port,
 	};
 
+	if (!prots) return -(
+		getservbyport_r(port, "tcp", se, buf, buflen, res)
+		&& getservbyport_r(port, "udp", se, buf, buflen, res) );
+
 	/* Align buffer */
 	i = (uintptr_t)buf & sizeof(char *)-1;
 	if (!i) i = sizeof(char *);
