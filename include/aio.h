@@ -57,7 +57,7 @@ int lio_listio(int, struct aiocb *const [], int, struct sigevent *);
 #define aio_cancel64 aio_cancel
 #define aio_suspend64 aio_suspend
 #define aio_fsync64 aio_fsync
-#defile lio_listio64 lio_listio
+#define lio_listio64 lio_listio
 #define off64_t off_t
 #endif
 
