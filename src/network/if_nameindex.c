@@ -10,7 +10,7 @@
 
 static void *do_nameindex(int s, size_t n)
 {
-	size_t i, len;
+	size_t i, len, k;
 	struct ifconf conf;
 	struct if_nameindex *idx;
 
@@ -29,17 +29,16 @@ static void *do_nameindex(int s, size_t n)
 	}
 
 	n = conf.ifc_len / sizeof(struct ifreq);
-	for (i=0; i<n; i++) {
+	for (i=k=0; i<n; i++) {
 		if (ioctl(s, SIOCGIFINDEX, &conf.ifc_req[i]) < 0) {
-			i--;
-			n--;
+			k++;
 			continue;
 		}
-		idx[i].if_index = conf.ifc_req[i].ifr_ifindex;
-		idx[i].if_name = conf.ifc_req[i].ifr_name;
+		idx[i-k].if_index = conf.ifc_req[i].ifr_ifindex;
+		idx[i-k].if_name = conf.ifc_req[i].ifr_name;
 	}
-	idx[i].if_name = 0;
-	idx[i].if_index = 0;
+	idx[i-k].if_name = 0;
+	idx[i-k].if_index = 0;
 
 	return idx;
 }
