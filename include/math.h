@@ -199,8 +199,8 @@ float       fmodf(float, float);
 long double fmodl(long double, long double);
 
 double      frexp(double, int *);
-float       frexpf(float value, int *);
-long double frexpl(long double value, int *);
+float       frexpf(float, int *);
+long double frexpl(long double, int *);
 
 double      hypot(double, double);
 float       hypotf(float, float);
