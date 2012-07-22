@@ -15,21 +15,21 @@ int getservbyport_r(int port, const char *prots,
 		.sin_port = port,
 	};
 
-	if (!prots) return -(
-		getservbyport_r(port, "tcp", se, buf, buflen, res)
-		&& getservbyport_r(port, "udp", se, buf, buflen, res) );
+	if (!prots) {
+		int r = getservbyport_r(port, "tcp", se, buf, buflen, res);
+		if (r) r = getservbyport_r(port, "udp", se, buf, buflen, res);
+		return r;
+	}
 
 	/* Align buffer */
 	i = (uintptr_t)buf & sizeof(char *)-1;
 	if (!i) i = sizeof(char *);
-	if (buflen < 3*sizeof(char *)-i) {
-		errno = ERANGE;
-		return -1;
-	}
+	if (buflen < 3*sizeof(char *)-i)
+		return ERANGE;
 	buf += sizeof(char *)-i;
 	buflen -= sizeof(char *)-i;
 
-	if (strcmp(prots, "tcp") && strcmp(prots, "udp")) return -1;
+	if (strcmp(prots, "tcp") && strcmp(prots, "udp")) return EINVAL;
 
 	se->s_port = port;
 	se->s_proto = (char *)prots;
@@ -39,8 +39,16 @@ int getservbyport_r(int port, const char *prots,
 	se->s_aliases[1] = 0;
 	se->s_aliases[0] = se->s_name = buf;
 
-	if (getnameinfo((void *)&sin, sizeof sin, 0, 0, buf, buflen,
-		strcmp(prots, "udp") ? 0 : NI_DGRAM) < 0) return -1;
+	switch (getnameinfo((void *)&sin, sizeof sin, 0, 0, buf, buflen,
+		strcmp(prots, "udp") ? 0 : NI_DGRAM)) {
+	case EAI_MEMORY:
+	case EAI_SYSTEM:
+		return ENOMEM;
+	default:
+		return ENOENT;
+	case 0:
+		break;
+	}
 
 	*res = se;
 	return 0;
