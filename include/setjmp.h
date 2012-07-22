@@ -14,7 +14,7 @@ extern "C" {
 typedef struct {
 	jmp_buf __jb;
 	unsigned long __fl;
-	unsigned long __ss[128];
+	unsigned long __ss[128/sizeof(long)];
 } sigjmp_buf[1];
 int sigsetjmp (sigjmp_buf, int);
 void siglongjmp (sigjmp_buf, int);
