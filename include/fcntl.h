@@ -9,6 +9,12 @@ extern "C" {
 #define __NEED_pid_t
 #define __NEED_mode_t
 
+#ifdef _GNU_SOURCE
+#define __NEED_size_t
+#define __NEED_ssize_t
+#define __NEED_struct_iovec
+#endif
+
 #include <bits/alltypes.h>
 
 #include <bits/fcntl.h>
@@ -108,6 +114,12 @@ struct f_owner_ex {
 	int type;
 	pid_t pid;
 };
+#define SPLICE_F_MOVE 1
+#define SPLICE_F_NONBLOCK 2
+#define SPLICE_F_MORE 4
+#define SPLICE_F_GIFT 8
+ssize_t vmsplice(int, const struct iovec *, size_t, unsigned);
+ssize_t splice(int, off_t *, int, off_t *, size_t, unsigned);
 #endif
 
 #if defined(_LARGEFILE64_SOURCE) || defined(_GNU_SOURCE)
