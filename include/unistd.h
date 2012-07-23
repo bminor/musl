@@ -174,6 +174,7 @@ int setresgid(gid_t, gid_t, gid_t);
 int getresuid(uid_t *, uid_t *, uid_t *);
 int getresgid(gid_t *, gid_t *, gid_t *);
 char *get_current_dir_name(void);
+int pipe2(int [2], int);
 #endif
 
 #if defined(_LARGEFILE64_SOURCE) || defined(_GNU_SOURCE)
