@@ -79,18 +79,17 @@ int getaddrinfo(const char *host, const char *serv, const struct addrinfo *hint,
 		if (!*z && port > 65535) return EAI_SERVICE;
 		if (!port) {
 			size_t servlen = strlen(serv);
-			char protname[4];
+			char *end = line;
 
 			if (flags & AI_NUMERICSERV) return EAI_SERVICE;
 
 			f = __fopen_rb_ca("/etc/services", &_f, _buf, sizeof _buf);
 			if (!f) return EAI_SERVICE;
 			while (fgets(line, sizeof line, f)) {
-				if (strncmp(line, serv, servlen))
+				if (strncmp(line, serv, servlen) || !isspace(line[servlen]))
 					continue;
-				if (sscanf(line+servlen, "%lu/%3s", &port, protname) < 2)
-					continue;
-				if (strcmp(protname, proto==IPPROTO_UDP ? "udp" : "tcp"))
+				port = strtoul(line+servlen, &end, 10);
+				if (strncmp(end, proto==IPPROTO_UDP ? "/udp" : "/tcp", 4))
 					continue;
 				break;
 			}
