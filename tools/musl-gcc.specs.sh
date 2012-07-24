@@ -11,7 +11,7 @@ cat <<EOF
 %(cc1_cpu) -nostdinc -isystem $incdir 
 
 *link_libgcc:
--L$libdir
+-L$libdir -L .%s
 
 *libgcc:
 libgcc.a%s %:if-exists(libgcc_eh.a%s)
