@@ -23,6 +23,7 @@ void __init_security(size_t *auxv)
 #endif
 
 	for (; auxv[0]; auxv+=2) if (auxv[0]<AUX_CNT) aux[auxv[0]] = auxv[1];
+	__hwcap = aux[AT_HWCAP];
 	if (aux[AT_UID]==aux[AT_EUID] && aux[AT_GID]==aux[AT_EGID]
 		&& !aux[AT_SECURE]) return;
 
