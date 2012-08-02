@@ -6,7 +6,7 @@
 static const char defshells[] = "/bin/sh\n/bin/csh\n";
 
 static char *line;
-size_t linesize;
+static size_t linesize;
 static FILE *f;
 
 void endusershell(void)
