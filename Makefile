@@ -23,6 +23,7 @@ GENH = include/bits/alltypes.h
 IMPH = src/internal/stdio_impl.h src/internal/pthread_impl.h src/internal/libc.h
 
 LDFLAGS = 
+LIBCC = -lgcc
 CPPFLAGS =
 CFLAGS = -Os -pipe
 CFLAGS_C99FSE = -std=c99 -ffreestanding -nostdinc 
@@ -91,7 +92,7 @@ include/bits/alltypes.h: include/bits/alltypes.h.sh
 lib/libc.so: $(LOBJS)
 	$(CC) $(CFLAGS_ALL_SHARED) $(LDFLAGS) -nostdlib -shared \
 	-Wl,-e,_start -Wl,-Bsymbolic-functions \
-	-Wl,-soname=libc.so -o $@ $(LOBJS) -lgcc
+	-Wl,-soname=libc.so -o $@ $(LOBJS) $(LIBCC)
 
 lib/libc.a: $(OBJS)
 	rm -f $@
