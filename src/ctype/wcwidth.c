@@ -1,4 +1,4 @@
-#include <wctype.h>
+#include <wchar.h>
 
 static unsigned char table[] = {
 #include "nonspacing.h"
@@ -8,7 +8,7 @@ static unsigned char wtable[] = {
 #include "wide.h"
 };
 
-int wcwidth(wint_t wc)
+int wcwidth(wchar_t wc)
 {
 	if (wc < 0xffU)
 		return (wc+1 & 0x7f) >= 0x21 ? 1 : wc ? -1 : 0;
