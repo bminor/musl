@@ -642,3 +642,38 @@ compatibility:
 - duplocale should accept LC_GLOBAL_LOCALE
 - align ptsname_r to upcoming posix requirements
 - support invalid ld80 bit patterns as extra nans.
+
+
+
+0.9.3 release notes
+
+new features:
+- mips (32-bit, o32 abi) port, currently static-linked only
+- newly overhauled crypt implementation
+- improved library pathname info for debugger from the dynamic linker
+- getaddrinfo (and getservbyname) now support /etc/services lookups
+- pipe2 syscall wrapper
+- splice and vmsplice syscall wrappers
+- syscall wrappers for extended attribute interfaces
+- ioperm/iopl syscall wrappers on archs that support these operations
+
+bug fixes:
+- dlsym RTLD_NEXT library search order was wrong
+- multiple dlopen pathname and library name handling errors
+- potential race condition in detached thread exit
+- broken internal-lock-handling code not updated for futex-based __lock
+- sem_trywait spurious EAGAIN errors arising from CAS failures
+- workaround kernel bug in cmsghdr size_t vs socklen_t issue (64-bit)
+- getservby* crash on null protocol argument
+- logic error skipping failed interfaces in if_nameindex
+- various minor header/declaration related issues
+
+arm-specific bug fixes:
+- broken crti/crtn startup code when gcc crtbegin/end files are linked
+- sigsetjmp tail call optimization failure broke the function
+- incorrect little-endian assumptions in atomic.h functions
+- use of blx instruction in asm (not supported on pre-v5 arm)
+
+build system:
+- only use expensive -ffloat-store cflag on archs/compilers that need it
+- make musl-gcc wrapper support -lgcc (mainly for self-hosting)
