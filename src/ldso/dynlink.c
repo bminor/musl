@@ -487,6 +487,9 @@ static void reloc_all(struct dso *p)
 	for (; p; p=p->next) {
 		if (p->relocated) continue;
 		decode_vec(p->dynv, dyn, DYN_CNT);
+#ifdef NEED_ARCH_RELOCS
+		do_arch_relocs(p, head);
+#endif
 		do_relocs(p, (void *)(p->base+dyn[DT_JMPREL]), dyn[DT_PLTRELSZ],
 			2+(dyn[DT_PLTREL]==DT_RELA));
 		do_relocs(p, (void *)(p->base+dyn[DT_REL]), dyn[DT_RELSZ], 2);
