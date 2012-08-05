@@ -143,7 +143,7 @@ static void *find_sym(struct dso *dso, const char *s, int need_def)
 	return def;
 }
 
-static void do_relocs(unsigned char *base, size_t *rel, size_t rel_size, size_t stride, Sym *syms, char *strings, struct dso *dso)
+static void do_relocs(unsigned char *base, size_t *rel, size_t rel_size, size_t stride, Sym *syms, char *strings)
 {
 	Sym *sym;
 	const char *name;
@@ -160,12 +160,12 @@ static void do_relocs(unsigned char *base, size_t *rel, size_t rel_size, size_t 
 		if (sym_index) {
 			sym = syms + sym_index;
 			name = strings + sym->st_name;
-			ctx = IS_COPY(type) ? dso->next : dso;
+			ctx = IS_COPY(type) ? head->next : head;
 			sym_val = (size_t)find_sym(ctx, name, IS_PLT(type));
 			if (!sym_val && sym->st_info>>4 != STB_WEAK) {
 				snprintf(errbuf, sizeof errbuf,
 					"Error relocating %s: %s: symbol not found",
-					dso->name, name);
+					"???", name);
 				if (runtime) longjmp(rtld_fail, 1);
 				dprintf(2, "%s\n", errbuf);
 				_exit(127);
@@ -485,11 +485,11 @@ static void reloc_all(struct dso *p)
 		if (p->relocated) continue;
 		decode_vec(p->dynv, dyn, DYN_CNT);
 		do_relocs(p->base, (void *)(p->base+dyn[DT_JMPREL]), dyn[DT_PLTRELSZ],
-			2+(dyn[DT_PLTREL]==DT_RELA), p->syms, p->strings, head);
+			2+(dyn[DT_PLTREL]==DT_RELA), p->syms, p->strings);
 		do_relocs(p->base, (void *)(p->base+dyn[DT_REL]), dyn[DT_RELSZ],
-			2, p->syms, p->strings, head);
+			2, p->syms, p->strings);
 		do_relocs(p->base, (void *)(p->base+dyn[DT_RELA]), dyn[DT_RELASZ],
-			3, p->syms, p->strings, head);
+			3, p->syms, p->strings);
 		p->relocated = 1;
 	}
 }
