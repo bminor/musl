@@ -22,8 +22,6 @@ static char errbuf[128];
 
 #ifdef SHARED
 
-#include "reloc.h"
-
 #if ULONG_MAX == 0xffffffff
 typedef Elf32_Ehdr Ehdr;
 typedef Elf32_Phdr Phdr;
@@ -67,6 +65,8 @@ struct dso {
 	char *shortname;
 	char buf[];
 };
+
+#include "reloc.h"
 
 void __init_ssp(size_t *);
 
