@@ -35,7 +35,7 @@ void __reloc_self(int c, size_t *a, size_t *dynv, size_t *got)
 	for (a=got; n; a++, n--) *a += (size_t)base;
 }
 
-static void do_relocs(unsigned char *base, size_t *rel, size_t rel_size, size_t stride, Sym *syms, char *strings, struct dso *dso);
+static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stride);
 
 static void do_arch_relocs(struct dso *this, struct dso *head)
 {
@@ -65,7 +65,7 @@ static void do_arch_relocs(struct dso *this, struct dso *head)
 		rel[0] = got;
 		rel[1] = sym-this->syms << 8 | R_MIPS_JUMP_SLOT;
 		*(size_t *)(base+got) = 0;
-		do_relocs(base, rel, sizeof rel, 2, this->syms, this->strings, head);
+		do_relocs(this, rel, sizeof rel, 2);
 	}
 }
 
