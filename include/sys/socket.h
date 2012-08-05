@@ -34,8 +34,11 @@ struct linger
 #define SHUT_WD 1
 #define SHUT_RDWR 2
 
+#ifndef SOCK_STREAM
 #define SOCK_STREAM    1
 #define SOCK_DGRAM     2
+#endif
+
 #define SOCK_RAW       3
 #define SOCK_RDM       4
 #define SOCK_SEQPACKET 5

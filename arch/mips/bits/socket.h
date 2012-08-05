@@ -15,3 +15,6 @@ struct cmsghdr
 	int cmsg_level;
 	int cmsg_type;
 };
+
+#define SOCK_STREAM    2
+#define SOCK_DGRAM     1
