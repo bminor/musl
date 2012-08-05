@@ -105,9 +105,12 @@ static uint32_t hash(const char *s0)
 	return h & 0xfffffff;
 }
 
-static Sym *lookup(const char *s, uint32_t h, Sym *syms, uint32_t *hashtab, char *strings)
+static Sym *lookup(const char *s, uint32_t h, struct dso *dso)
 {
 	size_t i;
+	Sym *syms = dso->syms;
+	uint32_t *hashtab = dso->hashtab;
+	char *strings = dso->strings;
 	for (i=hashtab[2+h%hashtab[0]]; i; i=hashtab[2+hashtab[0]+i]) {
 		if (!strcmp(s, strings+syms[i].st_name))
 			return syms+i;
@@ -128,7 +131,7 @@ static void *find_sym(struct dso *dso, const char *s, int need_def)
 	for (; dso; dso=dso->next) {
 		Sym *sym;
 		if (!dso->global) continue;
-		sym = lookup(s, h, dso->syms, dso->hashtab, dso->strings);
+		sym = lookup(s, h, dso);
 		if (sym && (!need_def || sym->st_shndx) && sym->st_value
 		 && (1<<(sym->st_info&0xf) & OK_TYPES)
 		 && (1<<(sym->st_info>>4) & OK_BINDS)) {
@@ -788,12 +791,11 @@ static void *do_dlsym(struct dso *p, const char *s, void *ra)
 		return res;
 	}
 	h = hash(s);
-	sym = lookup(s, h, p->syms, p->hashtab, p->strings);
+	sym = lookup(s, h, p);
 	if (sym && sym->st_value && (1<<(sym->st_info&0xf) & OK_TYPES))
 		return p->base + sym->st_value;
 	if (p->deps) for (i=0; p->deps[i]; i++) {
-		sym = lookup(s, h, p->deps[i]->syms,
-			p->deps[i]->hashtab, p->deps[i]->strings);
+		sym = lookup(s, h, p);
 		if (sym && sym->st_value && (1<<(sym->st_info&0xf) & OK_TYPES))
 			return p->deps[i]->base + sym->st_value;
 	}
