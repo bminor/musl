@@ -174,6 +174,8 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 				_exit(127);
 			}
 			sym_size = sym->st_size;
+		} else {
+			sym_val = sym_size = 0;
 		}
 		do_single_reloc(reloc_addr, type, sym_val, sym_size, base, rel[2]);
 	}
@@ -688,9 +690,11 @@ void *__dynlink(int argc, char **argv)
 	 * all memory used by the dynamic linker. */
 	runtime = 1;
 
+#ifndef DYNAMIC_IS_RO
 	for (i=0; app->dynv[i]; i+=2)
 		if (app->dynv[i]==DT_DEBUG)
 			app->dynv[i+1] = (size_t)&debug;
+#endif
 	debug.ver = 1;
 	debug.bp = _dl_debug_state;
 	debug.head = head;
