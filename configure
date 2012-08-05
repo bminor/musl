@@ -275,10 +275,6 @@ printf "warning: disabling dynamic linking support\n"
 shared=no
 }
 
-test "$ARCH" = "mips" && {
-printf "warning: disabling dynamic linking support on mips (not yet supported)\n"
-shared=no
-}
 
 
 printf "creating config.mak... "
