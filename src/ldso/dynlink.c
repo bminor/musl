@@ -803,7 +803,7 @@ static void *do_dlsym(struct dso *p, const char *s, void *ra)
 	if (sym && sym->st_value && (1<<(sym->st_info&0xf) & OK_TYPES))
 		return p->base + sym->st_value;
 	if (p->deps) for (i=0; p->deps[i]; i++) {
-		sym = lookup(s, h, p);
+		sym = lookup(s, h, p->deps[i]);
 		if (sym && sym->st_value && (1<<(sym->st_info&0xf) & OK_TYPES))
 			return p->deps[i]->base + sym->st_value;
 	}
