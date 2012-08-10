@@ -1014,11 +1014,8 @@ char *__crypt_des(const char *key, const char *setting, char *output)
 	 * likely that any alignment related issues would be detected.
 	 */
 	p = _crypt_extended_r_uut(test_key, test_setting, test_buf);
-	if (p && !strcmp(p, test_hash))
+	if (p && !strcmp(p, test_hash) && retval)
 		return retval;
 
-	/*
-	 * Should not happen.
-	 */
-	return NULL;
+	return (setting[0]=='*') ? "x" : "*";
 }
