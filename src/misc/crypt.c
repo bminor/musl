@@ -6,6 +6,6 @@ char *__crypt_r(const char *, const char *, struct crypt_data *);
 char *crypt(const char *key, const char *salt)
 {
 	/* Note: update this size when we add more hash types */
-	static char buf[21];
+	static char buf[64];
 	return __crypt_r(key, salt, (struct crypt_data *)buf);
 }
