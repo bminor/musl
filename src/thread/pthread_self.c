@@ -8,7 +8,8 @@ weak_alias(dummy, __pthread_tsd_main);
 
 static int init_main_thread()
 {
-	__syscall(SYS_rt_sigprocmask, SIG_UNBLOCK, SIGPT_SET, 0, 8);
+	__syscall(SYS_rt_sigprocmask, SIG_UNBLOCK,
+		SIGPT_SET, 0, __SYSCALL_SSLEN);
 	if (__set_thread_area(&main_thread) < 0) return -1;
 	main_thread.canceldisable = libc.canceldisable;
 	main_thread.tsd = (void **)__pthread_tsd_main;

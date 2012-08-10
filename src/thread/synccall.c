@@ -61,7 +61,8 @@ void __synccall(void (*func)(void *), void *ctx)
 
 	pthread_rwlock_wrlock(&lock);
 
-	__syscall(SYS_rt_sigprocmask, SIG_BLOCK, (uint64_t[]){-1}, &oldmask, 8);
+	__syscall(SYS_rt_sigprocmask, SIG_BLOCK, SIGALL_SET,
+		&oldmask, __SYSCALL_SSLEN);
 
 	sem_init(&chaindone, 0, 0);
 	sem_init(&chainlock, 0, 1);
@@ -93,7 +94,8 @@ void __synccall(void (*func)(void *), void *ctx)
 	sa.sa_handler = SIG_IGN;
 	__libc_sigaction(SIGSYNCCALL, &sa, 0);
 
-	__syscall(SYS_rt_sigprocmask, SIG_SETMASK, &oldmask, 0, 8);
+	__syscall(SYS_rt_sigprocmask, SIG_SETMASK,
+		&oldmask, 0, __SYSCALL_SSLEN);
 
 	pthread_rwlock_unlock(&lock);
 }

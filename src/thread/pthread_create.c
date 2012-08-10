@@ -38,7 +38,8 @@ void pthread_exit(void *result)
 	if (self->detached && self->map_base) {
 		if (self->detached == 2)
 			__syscall(SYS_set_tid_address, 0);
-		__syscall(SYS_rt_sigprocmask, SIG_BLOCK, (uint64_t[]){-1},0,8);
+		__syscall(SYS_rt_sigprocmask, SIG_BLOCK,
+			SIGALL_SET, 0, __SYSCALL_SSLEN);
 		__unmapself(self->map_base, self->map_size);
 	}
 
@@ -61,7 +62,8 @@ static int start(void *p)
 {
 	pthread_t self = p;
 	if (self->unblock_cancel)
-		__syscall(SYS_rt_sigprocmask, SIG_UNBLOCK, SIGPT_SET, 0, 8);
+		__syscall(SYS_rt_sigprocmask, SIG_UNBLOCK,
+			SIGPT_SET, 0, __SYSCALL_SSLEN);
 	pthread_exit(self->start(self->start_arg));
 	return 0;
 }

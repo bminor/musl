@@ -51,7 +51,8 @@ static void install_handler()
 		.sa_flags = SA_SIGINFO | SA_RESTART
 	};
 	__libc_sigaction(SIGTIMER, &sa, 0);
-	__syscall(SYS_rt_sigprocmask, SIG_UNBLOCK, SIGTIMER_SET, 0, 8);
+	__syscall(SYS_rt_sigprocmask, SIG_UNBLOCK,
+		SIGTIMER_SET, 0, __SYSCALL_SSLEN);
 }
 
 static void *start(void *arg)

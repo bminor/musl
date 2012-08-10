@@ -90,9 +90,12 @@ struct __timer {
 #define SIGCANCEL 33
 #define SIGSYNCCALL 34
 
-#define SIGPT_SET ((sigset_t *)(unsigned long [1+(sizeof(long)==4)]){ \
+#define SIGALL_SET ((sigset_t *)(const unsigned long long [2]){ -1,-1 })
+#define SIGPT_SET \
+	((sigset_t *)(const unsigned long [__SYSCALL_SSLEN/sizeof(long)]){ \
 	[sizeof(long)==4] = 3UL<<(32*(sizeof(long)>4)) })
-#define SIGTIMER_SET ((sigset_t *)(unsigned long [1+(sizeof(long)==4)]){ \
+#define SIGTIMER_SET \
+	((sigset_t *)(const unsigned long [__SYSCALL_SSLEN/sizeof(long)]){ \
 	 0x80000000 })
 
 pthread_t __pthread_self_init(void);

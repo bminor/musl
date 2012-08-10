@@ -4,5 +4,5 @@
 
 int sigsuspend(const sigset_t *mask)
 {
-	return syscall_cp(SYS_rt_sigsuspend, mask, 8);
+	return syscall_cp(SYS_rt_sigsuspend, mask, __SYSCALL_SSLEN);
 }
