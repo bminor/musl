@@ -57,7 +57,7 @@ struct __FILE_s {
 	int waiters;
 	void *cookie;
 	off_t off;
-	void *dummy4;
+	char *getln_buf;
 	void *mustbezero_2;
 	unsigned char *shend;
 	off_t shlim, shcnt;

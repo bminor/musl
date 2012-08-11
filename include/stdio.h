@@ -172,6 +172,10 @@ int getw(FILE *);
 int putw(int, FILE *);
 #endif
 
+#ifdef _BSD_SOURCE
+char *fgetln(FILE *, size_t *);
+#endif
+
 #ifdef _GNU_SOURCE
 int asprintf(char **, const char *, ...);
 int vasprintf(char **, const char *, va_list);
