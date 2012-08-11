@@ -3,14 +3,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-static wchar_t *naive_wcsstr(const wchar_t *h, const wchar_t *n)
-{
-	size_t i;
-	for (i=0; n[i] && h[i]; i++)
-	for (   ; n[i] != h[i]; h++, i=0);
-	return n[i] ? 0 : (wchar_t *)h;
-}
-
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #define MIN(a,b) ((a)<(b)?(a):(b))
 
@@ -111,7 +103,6 @@ wchar_t *wcsstr(const wchar_t *h, const wchar_t *n)
 	h = wcschr(h, *n);
 	if (!h || !n[1]) return (wchar_t *)h;
 	if (!h[1]) return 0;
-	if (!n[2] || !n[3] || !n[4]) return naive_wcsstr(h, n);
 
 	return twoway_wcsstr(h, n);
 }
