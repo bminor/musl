@@ -25,16 +25,6 @@ static char *fourbyte_strstr(const unsigned char *h, const unsigned char *n)
 	return *h ? (char *)h-3 : 0;
 }
 
-#if 0
-static char *naive_strstr(const char *h, const char *n)
-{
-	size_t i;
-	for (i=0; n[i] && h[i]; i++)
-	for (   ; n[i] != h[i]; h++, i=0);
-	return n[i] ? 0 : (char *)h;
-}
-#endif
-
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #define MIN(a,b) ((a)<(b)?(a):(b))
 
