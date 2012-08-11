@@ -27,6 +27,7 @@ static inline int a_cas(volatile int *p, int t, int s)
 	int dummy;
 	__asm__ __volatile__(
 		".set push\n"
+		".set mips2\n"
 		".set noreorder\n"
 		"1:	ll %0, 0(%2)\n"
 		"	bne %0, %3, 1f\n"
@@ -56,6 +57,7 @@ static inline int a_swap(volatile int *x, int v)
 	int old, dummy;
 	__asm__ __volatile__(
 		".set push\n"
+		".set mips2\n"
 		".set noreorder\n"
 		"1:	ll %0, 0(%2)\n"
 		"	addu %1, %3, $0\n"
@@ -73,6 +75,7 @@ static inline int a_fetch_add(volatile int *x, int v)
 	int old, dummy;
 	__asm__ __volatile__(
 		".set push\n"
+		".set mips2\n"
 		".set noreorder\n"
 		"1:	ll %0, 0(%2)\n"
 		"	addu %1, %0, %3\n"
@@ -90,6 +93,7 @@ static inline void a_inc(volatile int *x)
 	int dummy;
 	__asm__ __volatile__(
 		".set push\n"
+		".set mips2\n"
 		".set noreorder\n"
 		"1:	ll %0, 0(%1)\n"
 		"	addu %0, %0, 1\n"
@@ -106,6 +110,7 @@ static inline void a_dec(volatile int *x)
 	int dummy;
 	__asm__ __volatile__(
 		".set push\n"
+		".set mips2\n"
 		".set noreorder\n"
 		"1:	ll %0, 0(%1)\n"
 		"	subu %0, %0, 1\n"
@@ -122,6 +127,7 @@ static inline void a_store(volatile int *p, int x)
 	int dummy;
 	__asm__ __volatile__(
 		".set push\n"
+		".set mips2\n"
 		".set noreorder\n"
 		"1:	ll %0, 0(%1)\n"
 		"	addu %0, %2, $0\n"
@@ -147,6 +153,7 @@ static inline void a_and(volatile int *p, int v)
 	int dummy;
 	__asm__ __volatile__(
 		".set push\n"
+		".set mips2\n"
 		".set noreorder\n"
 		"1:	ll %0, 0(%1)\n"
 		"	and %0, %0, %2\n"
@@ -163,6 +170,7 @@ static inline void a_or(volatile int *p, int v)
 	int dummy;
 	__asm__ __volatile__(
 		".set push\n"
+		".set mips2\n"
 		".set noreorder\n"
 		"1:	ll %0, 0(%1)\n"
 		"	or %0, %0, %2\n"
