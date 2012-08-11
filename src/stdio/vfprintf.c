@@ -430,7 +430,7 @@ static int getint(char **s) {
 static int printf_core(FILE *f, const char *fmt, va_list *ap, union arg *nl_arg, int *nl_type)
 {
 	char *a, *z, *s=(char *)fmt;
-	unsigned l10n=0, litpct, fl;
+	unsigned l10n=0, fl;
 	int w, p;
 	union arg arg;
 	int argpos;
@@ -455,9 +455,7 @@ static int printf_core(FILE *f, const char *fmt, va_list *ap, union arg *nl_arg,
 
 		/* Handle literal text and %% format specifiers */
 		for (a=s; *s && *s!='%'; s++);
-		litpct = strspn(s, "%")/2; /* Optimize %%%% runs */
-		z = s+litpct;
-		s += 2*litpct;
+		for (z=s; s[0]=='%' && s[1]=='%'; z++, s+=2);
 		l = z-a;
 		if (f) out(f, a, l);
 		if (l) continue;
