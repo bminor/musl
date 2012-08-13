@@ -54,6 +54,10 @@ int scandir(const char *, struct dirent ***, int (*)(const struct dirent *), int
 int versionsort(const struct dirent **, const struct dirent **);
 #endif
 
+#ifdef _BSD_SOURCE
+int getdents(int, struct dirent *, size_t);
+#endif
+
 #if defined(_LARGEFILE64_SOURCE) || defined(_GNU_SOURCE)
 #define dirent64 dirent
 #define readdir64 readdir
@@ -63,6 +67,9 @@ int versionsort(const struct dirent **, const struct dirent **);
 #define versionsort64 versionsort
 #define off64_t off_t
 #define ino64_t ino_t
+#ifdef _BSD_SOURCE
+#define getdents64 getdents
+#endif
 #endif
 
 #ifdef __cplusplus
