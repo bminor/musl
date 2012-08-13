@@ -400,6 +400,10 @@ long double exp10l(long double);
 double      pow10(double);
 float       pow10f(float);
 long double pow10l(long double);
+
+double      significand(double);
+float       significandf(float);
+long double significandl(long double);
 #endif
 
 #ifdef __cplusplus
