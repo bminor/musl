@@ -403,7 +403,6 @@ long double pow10l(long double);
 
 double      significand(double);
 float       significandf(float);
-long double significandl(long double);
 #endif
 
 #ifdef __cplusplus
