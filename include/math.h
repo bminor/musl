@@ -330,6 +330,11 @@ double      trunc(double);
 float       truncf(float);
 long double truncl(long double);
 
+
+#if defined(_XOPEN_SOURCE) || defined(_BSD_SOURCE)
+#define MAXFLOAT        3.40282347e+38F
+#endif
+
 #if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 #define M_E             2.7182818284590452354   /* e */
 #define M_LOG2E         1.4426950408889634074   /* log_2 e */
@@ -344,13 +349,7 @@ long double truncl(long double);
 #define M_2_SQRTPI      1.12837916709551257390  /* 2/sqrt(pi) */
 #define M_SQRT2         1.41421356237309504880  /* sqrt(2) */
 #define M_SQRT1_2       0.70710678118654752440  /* 1/sqrt(2) */
-#endif
 
-#if defined(_XOPEN_SOURCE)
-#define MAXFLOAT        3.40282347e+38F
-#endif
-
-#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
 extern int signgam;
 
 double      j0(double);
@@ -362,47 +361,49 @@ double      y1(double);
 double      yn(int, double);
 #endif
 
-#ifdef _GNU_SOURCE
-#define HUGE        3.40282347e+38F
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+#define HUGE            3.40282347e+38F
+
 double      scalb(double, double);
 float       scalbf(float, float);
-long double scalbl(long double, long double);
+
+double      significand(double);
+float       significandf(float);
+
+double      lgamma_r(double, int*);
+float       lgammaf_r(float, int*);
+
+float       j0f(float);
+float       j1f(float);
+float       jnf(int, float);
+
+float       y0f(float);
+float       y1f(float);
+float       ynf(int, float);
+#endif
+
+#ifdef _GNU_SOURCE
+long double lgammal_r(long double, int*);
+
+long double j0l(long double);
+long double j1l(long double);
+long double jnl(int, long double);
+
+long double y0l(long double);
+long double y1l(long double);
+long double ynl(int, long double);
 
 void        sincos(double, double*, double*);
 void        sincosf(float, float*, float*);
 void        sincosl(long double, long double*, long double*);
 
-double      gamma(double);
-float       gammaf(float);
-long double gammal(long double);
-
-double      lgamma_r(double, int*);
-float       lgammaf_r(float, int*);
-long double lgammal_r(long double, int*);
-
-float       j0f(float);
-long double j0l(long double);
-float       j1f(float);
-long double j1l(long double);
-float       jnf(int, float);
-long double jnl(int, long double);
-
-float       y0f(float);
-long double y0l(long double);
-float       y1f(float);
-long double y1l(long double);
-float       ynf(int, float);
-long double ynl(int, long double);
-
 double      exp10(double);
 float       exp10f(float);
 long double exp10l(long double);
+
 double      pow10(double);
 float       pow10f(float);
 long double pow10l(long double);
-
-double      significand(double);
-float       significandf(float);
 #endif
 
 #ifdef __cplusplus
