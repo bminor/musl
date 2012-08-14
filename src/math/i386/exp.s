@@ -69,18 +69,18 @@ exp:
 exp2:
 	fldl 4(%esp)
 1:	pushl $0x467ff000
-	flds (%esp)
+	flds (%esp)       # 16380
 	xorl %eax,%eax
 	pushl $0x80000000
 	push %eax
 	fld %st(1)
 	fabs
-	fucom %st(1)
+	fucomp %st(1)
 	fnstsw
 	fstp %st(0)
-	fstp %st(0)
 	sahf
-	ja 2f
+	ja 3f             # |x| > 16380
+	jp 2f             # x is nan (avoid invalid except in fistp)
 	fld %st(0)
 	fistpl 8(%esp)
 	fildl 8(%esp)
@@ -90,30 +90,27 @@ exp2:
 	add %eax,8(%esp)
 	f2xm1
 	fld1
-	faddp
-	fldt (%esp)
+	faddp             # 2^(x-rint(x))
+	fldt (%esp)       # 2^rint(x)
 	fmulp
 	fstp %st(1)
-	add $12,%esp
+2:	add $12,%esp
 	ret
 
-2:	fld %st(0)
+3:	fld %st(0)
 	fstpt (%esp)
-	mov 9(%esp),%ah
-	and $0x7f,%ah
-	cmp $0x7f,%ah
-	jne 1f
-	decb 9(%esp)
-	fstp %st(0)
-	fldt (%esp)
-1:	fld %st(0)
-	frndint
-	fxch %st(1)
-	fsub %st(1)
-	f2xm1
 	fld1
-	faddp
-	fscale
+	mov 8(%esp),%ax
+	and $0x7fff,%ax
+	cmp $0x7fff,%ax
+	je 1f             # x = +-inf
+	fld %st(1)
+	frndint
+	fxch %st(2)
+	fsub %st(2)       # st(0)=x-rint(x), st(1)=1, st(2)=rint(x)
+	f2xm1
+	faddp             # 2^(x-rint(x))
+1:	fscale
 	fstp %st(1)
 	add $12,%esp
 	ret
