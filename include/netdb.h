@@ -118,21 +118,30 @@ struct protoent *getprotoent (void);
 struct protoent *getprotobyname (const char *);
 struct protoent *getprotobynumber (int);
 
-#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
-const char *hstrerror(int);
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE) || defined(_POSIX_SOURCE) \
+ || (defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE < 200809L) \
+ || (defined(_XOPEN_SOURCE) && _XOPEN_SOURCE < 700)
 struct hostent *gethostbyname (const char *);
-int gethostbyname_r(const char *, struct hostent *, char *, size_t, struct hostent **, int *);
-int gethostbyname2_r(const char *, int, struct hostent *, char *, size_t, struct hostent **, int *);
-struct hostent *gethostbyname2(const char *, int);
 struct hostent *gethostbyaddr (const void *, socklen_t, int);
-int gethostbyaddr_r(const void *, socklen_t, int, struct hostent *, char *, size_t, struct hostent **, int *);
-int getservbyport_r(int, const char *, struct servent *, char *, size_t, struct servent **);
-int getservbyname_r(const char *, const char *, struct servent *, char *, size_t, struct servent **);
 #ifdef __GNUC__
 __attribute__((const))
 #endif
 int *__h_errno_location(void);
 #define h_errno (*__h_errno_location())
+#define HOST_NOT_FOUND 1
+#define TRY_AGAIN      2
+#define NO_RECOVERY    3
+#define NO_DATA        4
+#endif
+
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+const char *hstrerror(int);
+int gethostbyname_r(const char *, struct hostent *, char *, size_t, struct hostent **, int *);
+int gethostbyname2_r(const char *, int, struct hostent *, char *, size_t, struct hostent **, int *);
+struct hostent *gethostbyname2(const char *, int);
+int gethostbyaddr_r(const void *, socklen_t, int, struct hostent *, char *, size_t, struct hostent **, int *);
+int getservbyport_r(int, const char *, struct servent *, char *, size_t, struct servent **);
+int getservbyname_r(const char *, const char *, struct servent *, char *, size_t, struct servent **);
 #define EAI_NODATA     -5
 #define EAI_ADDRFAMILY -9
 #define EAI_INPROGRESS -100
@@ -143,10 +152,6 @@ int *__h_errno_location(void);
 #define EAI_IDN_ENCODE -105
 #define NI_MAXHOST 255
 #define NI_MAXSERV 32
-#define HOST_NOT_FOUND 1
-#define TRY_AGAIN      2
-#define NO_RECOVERY    3
-#define NO_DATA        4
 #endif
 
 

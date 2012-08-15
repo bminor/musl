@@ -144,6 +144,12 @@ void encrypt(char *, int);
 void swab(const void *, void *, ssize_t);
 #endif
 
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE) \
+ || (defined(_XOPEN_SOURCE) && _XOPEN_SOURCE < 700)
+int usleep(unsigned);
+unsigned ualarm(unsigned, unsigned);
+#endif
+
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 #define L_SET 0
 #define L_INCR 1
@@ -157,8 +163,6 @@ int getpagesize(void);
 int getdtablesize(void);
 int sethostname(const char *, size_t);
 int getdomainname(char *, size_t);
-int usleep(unsigned);
-unsigned ualarm(unsigned, unsigned);
 int setgroups(size_t, const gid_t []);
 char *getpass(const char *);
 int daemon(int, int);
