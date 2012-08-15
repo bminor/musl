@@ -20,6 +20,9 @@ ssize_t flistxattr(int filedes, char *, size_t);
 int setxattr(const char *, const char *, const void *, size_t, int);
 int lsetxattr(const char *, const char *, const void *, size_t, int);
 int fsetxattr(int, const char *, const void *, size_t, int);
+int removexattr(const char *, const char *);
+int lremovexattr(const char *, const char *);
+int fremovexattr(int, const char *);
 
 #ifdef __cplusplus
 }

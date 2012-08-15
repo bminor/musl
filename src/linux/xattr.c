@@ -45,3 +45,18 @@ int fsetxattr(int filedes, const char *name, const void *value, size_t size, int
 {
 	return syscall(SYS_fsetxattr, filedes, name, value, size, flags);
 }
+
+int removexattr(const char *path, const char *name)
+{
+	return syscall(SYS_removexattr, path, name);
+}
+
+int lremovexattr(const char *path, const char *name)
+{
+	return syscall(SYS_lremovexattr, path, name);
+}
+
+int fremovexattr(int fd, const char *name)
+{
+	return syscall(SYS_fremovexattr, fd, name);
+}
