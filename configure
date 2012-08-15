@@ -33,6 +33,7 @@ Optional features:
 Some influential environment variables:
   CC                      C compiler command [detected]
   CFLAGS                  C compiler flags [-Os -pipe ...]
+  CROSS_COMPILE           prefix for cross compiler and tools [none]
 
 Use these variables to override the choices made by configure.
 
@@ -126,6 +127,7 @@ CC=*) CC=${arg#*=} ;;
 CFLAGS=*) CFLAGS=${arg#*=} ;;
 CPPFLAGS=*) CPPFLAGS=${arg#*=} ;;
 LDFLAGS=*) LDFLAGS=${arg#*=} ;;
+CROSS_COMPILE=*) CROSS_COMPILE=${arg#*=} ;;
 *=*) ;;
 *) target=$arg ;;
 esac
@@ -155,9 +157,9 @@ trap 'rm "$tmpc"' EXIT INT QUIT TERM HUP
 # Find a C compiler to use
 #
 printf "checking for C compiler... "
-trycc gcc
-trycc c99
-trycc cc
+trycc ${CROSS_COMPILE}gcc
+trycc ${CROSS_COMPILE}c99
+trycc ${CROSS_COMPILE}cc
 printf "%s\n" "$CC"
 test -n "$CC" || { echo "$0: cannot find a C compiler" ; exit 1 ; }
 
@@ -297,6 +299,7 @@ CFLAGS= $CFLAGS_AUTO $CFLAGS
 CFLAGS_C99FSE = $CFLAGS_C99FSE
 CPPFLAGS = $CPPFLAGS
 LDFLAGS = $LDFLAGS_AUTO $LDFLAGS
+CROSS_COMPILE = $CROSS_COMPILE
 EOF
 test "x$static" = xno && echo "STATIC_LIBS ="
 test "x$shared" = xno && echo "SHARED_LIBS ="
