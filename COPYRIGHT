@@ -43,8 +43,13 @@ and labelled as such. All have been licensed under extremely
 permissive terms. See the comments in the individual files for
 details.
 
-The implementation of DES for crypt (src/misc/crypt.c) is Copyright ©
-1994 David Burren. It is licensed under a BSD license.
+The implementation of DES for crypt (src/misc/crypt_des.c) is
+Copyright © 1994 David Burren. It is licensed under a BSD license.
+
+The implementation of blowfish crypt (src/misc/crypt_blowfish.c) was
+originally written by Solar Designer and placed into the public
+domain. The code also comes with a fallback permissive license for use
+in jurisdictions that may not recognize the public domain.
 
 The smoothsort implementation (src/stdlib/qsort.c) is Copyright © 2011
 Valentin Ochs and is licensed under an MIT-style license.
@@ -59,6 +64,11 @@ The x86_64 port was written by Nicholas J. Kain. Several files (crt)
 were released into the public domain; others are licensed under the
 standard MIT license terms at the top of this file. See individual
 files for their copyright status.
+
+The mips port was originally written by Richard Pennington for use in
+the ellcc project. The original code was adapted by Rich Felker for
+build system and code conventions during upstream integration. It is
+licensed under the standard MIT terms.
 
 All files which have no copyright comments are original works
 Copyright © 2005-2012 Rich Felker, the main author of this library.
