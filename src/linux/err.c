@@ -5,13 +5,13 @@
 
 void vwarn(const char *fmt, va_list ap)
 {
-	vfprintf(stderr, fmt, ap);
+	if (fmt) vfprintf(stderr, fmt, ap);
 	perror("");
 }
 
 void vwarnx(const char *fmt, va_list ap)
 {
-	vfprintf(stderr, fmt, ap);
+	if (fmt) vfprintf(stderr, fmt, ap);
 	putc('\n', stderr);
 }
 
