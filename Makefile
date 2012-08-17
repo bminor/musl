@@ -54,7 +54,7 @@ LDSO_PATHNAME = $(syslibdir)/ld-musl-$(ARCH).so.1
 
 all: $(ALL_LIBS) $(ALL_TOOLS)
 
-install: $(ALL_LIBS:lib/%=$(DESTDIR)$(libdir)/%) $(ALL_INCLUDES:include/%=$(DESTDIR)$(includedir)/%) $(ALL_TOOLS:tools/%=$(DESTDIR)$(bindir)/%) $(if $(SHARED_LIBS),$(DESTDIR)$(LDSO_PATHNAME),)
+install: install-libs install-headers install-tools
 
 clean:
 	rm -f crt/*.o
@@ -133,6 +133,14 @@ $(DESTDIR)$(LDSO_PATHNAME): $(DESTDIR)$(syslibdir)
 $(DESTDIR)$(syslibdir):
 	install -d -m 755 $(DESTDIR)$(syslibdir)
 
+install-libs: $(ALL_LIBS:lib/%=$(DESTDIR)$(libdir)/%) $(if $(SHARED_LIBS),$(DESTDIR)$(LDSO_PATHNAME),)
+
+install-headers: $(ALL_INCLUDES:include/%=$(DESTDIR)$(includedir)/%)
+
+install-tools: $(ALL_TOOLS:tools/%=$(DESTDIR)$(bindir)/%)
+
+
+
 .PRECIOUS: $(CRT_LIBS:lib/%=crt/%)
 
-.PHONY: all clean install
+.PHONY: all clean install install-libs install-headers install-tools
