@@ -199,11 +199,11 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 		}
 		if (carry) {
 			rp += 9;
+			a = (a-1 & MASK);
 			if (a == z) {
 				z = (z-1 & MASK);
 				x[z-1 & MASK] |= x[z];
 			}
-			a = (a-1 & MASK);
 			x[a] = carry;
 		}
 	}
