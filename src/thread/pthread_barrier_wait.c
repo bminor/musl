@@ -1,22 +1,7 @@
 #include "pthread_impl.h"
 
-static int vmlock[2];
-
-void __vm_lock(int inc)
-{
-	for (;;) {
-		int v = vmlock[0];
-		if (inc*v < 0) __wait(vmlock, vmlock+1, v, 1);
-		else if (a_cas(vmlock, v, v+inc)==v) break;
-	}
-}
-
-void __vm_unlock(void)
-{
-	int inc = vmlock[0]>0 ? -1 : 1;
-	if (a_fetch_add(vmlock, inc)==-inc && vmlock[1])
-		__wake(vmlock, -1, 1);
-}
+void __vm_lock_impl(int);
+void __vm_unlock_impl(void);
 
 static int pshared_barrier_wait(pthread_barrier_t *b)
 {
@@ -41,7 +26,7 @@ static int pshared_barrier_wait(pthread_barrier_t *b)
 			__wait(&b->_b_count, &b->_b_waiters2, v, 0);
 	}
 
-	__vm_lock(+1);
+	__vm_lock_impl(+1);
 
 	/* Ensure all threads have a vm lock before proceeding */
 	if (a_fetch_add(&b->_b_count, -1)==1-limit) {
@@ -62,7 +47,7 @@ static int pshared_barrier_wait(pthread_barrier_t *b)
 	if (v==INT_MIN+1 || (v==1 && w))
 		__wake(&b->_b_lock, 1, 0);
 
-	__vm_unlock();
+	__vm_unlock_impl();
 
 	return ret;
 }
