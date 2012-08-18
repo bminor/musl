@@ -76,6 +76,7 @@ static int rtld_used;
 static int ssp_used;
 static int runtime;
 static int ldd_mode;
+static int ldso_fail;
 static jmp_buf rtld_fail;
 static pthread_rwlock_t lock;
 static struct debug debug;
@@ -171,7 +172,8 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 					dso->name, name);
 				if (runtime) longjmp(rtld_fail, 1);
 				dprintf(2, "%s\n", errbuf);
-				_exit(127);
+				ldso_fail = 1;
+				continue;
 			}
 			sym_size = sym->st_size;
 		} else {
@@ -450,7 +452,8 @@ static void load_deps(struct dso *p)
 					p->strings + p->dynv[i+1], p->name);
 				if (runtime) longjmp(rtld_fail, 1);
 				dprintf(2, "%s\n", errbuf);
-				_exit(127);
+				ldso_fail = 1;
+				continue;
 			}
 			if (runtime) {
 				tmp = realloc(*deps, sizeof(*tmp)*(ndeps+2));
@@ -682,6 +685,7 @@ void *__dynlink(int argc, char **argv)
 	reloc_all(app->next);
 	reloc_all(app);
 
+	if (ldso_fail) _exit(127);
 	if (ldd_mode) _exit(0);
 
 	/* Switch to runtime mode: any further failures in the dynamic
