@@ -19,7 +19,7 @@ First, some prerequisites:
   you don't need threads or POSIX 2008 features, even 2.4 is probably
   okay.
 
-- A supported CPU architecture (currently i386, x86_64, or arm).
+- A supported CPU architecture (currently i386, x86_64, arm, or mips).
 
 - If you want to use dynamic linking, it's recommended that you have
   permissions to write to /lib and /etc. Otherwise your binaries will
