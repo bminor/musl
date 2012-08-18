@@ -677,3 +677,32 @@ arm-specific bug fixes:
 build system:
 - only use expensive -ffloat-store cflag on archs/compilers that need it
 - make musl-gcc wrapper support -lgcc (mainly for self-hosting)
+
+
+
+0.9.4 release notes
+
+new features:
+- blowfish crypt
+- dynamic linking on mips
+- arm hard float support
+- BSD fgetln function in stdio
+- minor header improvements for compatibility
+- support for CROSS_COMPILE variable to configure
+- legacy significand function
+- better support for SUSv3-targeted programs
+
+performance:
+- assembly (string ops based) memcpy for i386 and x86_64
+- reduce printf overhead
+
+bug fixes:
+- failure of strtod, etc. to process extremely long strings correctly
+- read overrun in wcsstr for short needles
+- various major mips issues that prevented most software from working
+- erroneous floating point exception behavior in i386/x86_64 exp asm
+- crashes on null arguments to legacy err.h functions
+- various header file/type issues
+- extremely rare/obscure race condition with robust mutexes
+- crypt now never returns null (most programs don't check, then crash)
+- missing xattr remove functions
