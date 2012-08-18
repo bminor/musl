@@ -34,12 +34,12 @@ _start:
 
 	add $sp, $sp, 16
 	li $6, -1
-1:	lw $4, ($sp)
-	lw $5, 4($sp)
+	lw $4, ($sp)
+1:	lw $5, 4($sp)
 	bne $5, $6, 2f
 	nop
 	addu $sp, $sp, 4
-	addu $4, $4, -4
+	addu $4, $4, -1
 	b 1b
 	nop
 2:	sw $4, ($sp)
