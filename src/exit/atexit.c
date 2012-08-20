@@ -21,9 +21,8 @@ void __funcs_on_exit()
 	int i;
 	void (*func)(void *), *arg;
 	LOCK(lock);
-	for (; head; head=head->next) {
-		for (i=COUNT-1; i>=0 && !head->f[i]; i--);
-		if (i<0) continue;
+	for (; head; head=head->next) for (i=COUNT-1; i>=0; i--) {
+		if (!head->f[i]) continue;
 		func = head->f[i];
 		arg = head->a[i];
 		head->f[i] = 0;
