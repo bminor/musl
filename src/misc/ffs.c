@@ -1,9 +1,7 @@
 #include <strings.h>
+#include "atomic.h"
 
 int ffs(int i)
 {
-	unsigned int j = i;
-	for (i=1; j && !(j&1); j>>=1, i++);
-	if (j) return i;
-	return 0;
+	return i ? a_ctz_l(i)+1 : 0;
 }
