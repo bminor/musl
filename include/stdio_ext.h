@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#include <stdio.h>
+
 #define FSETLOCKING_QUERY 0
 #define FSETLOCKING_INTERNAL 1
 #define FSETLOCKING_BYCALLER 2
