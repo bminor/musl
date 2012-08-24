@@ -5,6 +5,11 @@ extern "C" {
 #endif
 
 #define __NEED_size_t
+#define __NEED_pid_t
+#define __NEED_time_t
+#ifdef _GNU_SOURCE
+#define __NEED_struct_timespec
+#endif
 #include <bits/alltypes.h>
 
 #include <sys/ipc.h>
@@ -58,8 +63,6 @@ int semget(key_t, int, int);
 int semop(int, struct sembuf *, size_t);
 
 #ifdef _GNU_SOURCE
-#define __NEED_struct_timespec
-#include <bits/alltypes.h>
 int semtimedop(int, struct sembuf *, size_t, const struct timespec *);
 #endif
 
