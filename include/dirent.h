@@ -7,6 +7,9 @@ extern "C" {
 
 #define __NEED_ino_t
 #define __NEED_off_t
+#ifdef _BSD_SOURCE
+#define __NEED_size_t
+#endif
 
 #include <bits/alltypes.h>
 
