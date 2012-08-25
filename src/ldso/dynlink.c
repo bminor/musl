@@ -701,9 +701,8 @@ void *__dynlink(int argc, char **argv)
 	decode_dyn(app);
 
 	/* Attach to vdso, if provided by the kernel */
-	for (i=0; auxv[i]; i+=2) {
-		size_t vdso_base = auxv[i+1];
-		if (auxv[i] != AT_SYSINFO_EHDR) continue;
+	if (search_vec(auxv, aux, AT_SYSINFO_EHDR)) {
+		size_t vdso_base = *aux;
 		ehdr = (void *)vdso_base;
 		phdr = (void *)(vdso_base + ehdr->e_phoff);
 		for (i=ehdr->e_phnum; i; i--, phdr=(void *)((char *)phdr + ehdr->e_phentsize)) {
@@ -717,7 +716,6 @@ void *__dynlink(int argc, char **argv)
 		decode_dyn(vdso);
 		vdso->prev = lib;
 		lib->next = vdso;
-		break;
 	}
 
 	/* Initial dso chain consists only of the app. We temporarily
