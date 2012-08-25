@@ -81,6 +81,7 @@ static int ldso_fail;
 static jmp_buf rtld_fail;
 static pthread_rwlock_t lock;
 static struct debug debug;
+static size_t *auxv;
 
 struct debug *_dl_debug_addr = &debug;
 
@@ -603,7 +604,7 @@ void _dl_debug_state(void)
 
 void *__dynlink(int argc, char **argv)
 {
-	size_t *auxv, aux[AUX_CNT] = {0};
+	size_t aux[AUX_CNT] = {0};
 	size_t i;
 	Phdr *phdr;
 	Ehdr *ehdr;
@@ -837,6 +838,8 @@ void *dlopen(const char *file, int mode)
 			p->deps[i]->global = 1;
 		p->global = 1;
 	}
+
+	if (ssp_used) __init_ssp(auxv);
 
 	_dl_debug_state();
 

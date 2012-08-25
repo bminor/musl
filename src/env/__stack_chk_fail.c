@@ -14,7 +14,8 @@ void __init_ssp(size_t *auxv)
 	for (i=0; auxv[i] && auxv[i]!=AT_RANDOM; i+=2);
 	if (auxv[i]) memcpy(&canary, (void *)auxv[i+1], sizeof canary);
 	else canary = (uintptr_t)&canary * 1103515245;
-	__stack_chk_guard = self->canary = canary;
+	a_cas_l(&__stack_chk_guard, 0, canary);
+	self->canary = __stack_chk_guard;
 }
 
 void __stack_chk_fail(void)
