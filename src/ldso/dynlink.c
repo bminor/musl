@@ -877,7 +877,7 @@ static void *do_dlsym(struct dso *p, const char *s, void *ra)
 	if (p->deps) for (i=0; p->deps[i]; i++) {
 		if (p->deps[i]->ghashtab) {
 			if (!gh) gh = gnu_hash(s);
-			sym = gnu_lookup(s, h, p->deps[i]);
+			sym = gnu_lookup(s, gh, p->deps[i]);
 		} else {
 			if (!h) h = sysv_hash(s);
 			sym = sysv_lookup(s, h, p->deps[i]);
