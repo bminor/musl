@@ -268,7 +268,7 @@ fi
 
 # Some patched GCC builds have these defaults messed up...
 tryflag CFLAGS_AUTO -fno-stack-protector
-tryldflag LDFLAGS_AUTO -Wl,--hash-style=sysv
+tryldflag LDFLAGS_AUTO -Wl,--hash-style=both
 
 # Disable dynamic linking if ld is broken and can't do -Bsymbolic-functions
 LDFLAGS_DUMMY=

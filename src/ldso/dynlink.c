@@ -53,6 +53,7 @@ struct dso {
 	int refcnt;
 	Sym *syms;
 	uint32_t *hashtab;
+	uint32_t *ghashtab;
 	char *strings;
 	unsigned char *map;
 	size_t map_len;
@@ -95,7 +96,15 @@ static void decode_vec(size_t *v, size_t *a, size_t cnt)
 	}
 }
 
-static uint32_t hash(const char *s0)
+static int search_vec(size_t *v, size_t *r, size_t key)
+{
+	for (; v[0]!=key; v+=2)
+		if (!v[0]) return 0;
+	*r = v[1];
+	return 1;
+}
+
+static uint32_t sysv_hash(const char *s0)
 {
 	const unsigned char *s = (void *)s0;
 	uint_fast32_t h = 0;
@@ -106,7 +115,16 @@ static uint32_t hash(const char *s0)
 	return h & 0xfffffff;
 }
 
-static Sym *lookup(const char *s, uint32_t h, struct dso *dso)
+static uint32_t gnu_hash(const char *s0)
+{
+	const unsigned char *s = (void *)s0;
+	uint_fast32_t h = 5381;
+	for (; *s; s++)
+		h = h*33 + *s;
+	return h;
+}
+
+static Sym *sysv_lookup(const char *s, uint32_t h, struct dso *dso)
 {
 	size_t i;
 	Sym *syms = dso->syms;
@@ -119,20 +137,61 @@ static Sym *lookup(const char *s, uint32_t h, struct dso *dso)
 	return 0;
 }
 
+static Sym *gnu_lookup(const char *s, uint32_t h1, struct dso *dso)
+{
+	Sym *sym;
+	char *strings;
+	uint32_t *hashtab = dso->ghashtab;
+	uint32_t nbuckets = hashtab[0];
+	uint32_t *buckets = hashtab + 4 + hashtab[2]*(sizeof(size_t)/4);
+	uint32_t h2;
+	uint32_t *hashval;
+	uint32_t n = buckets[h1 % nbuckets];
+
+	if (!n) return 0;
+
+	strings = dso->strings;
+	sym = dso->syms + n;
+	hashval = buckets + nbuckets + (n - hashtab[1]);
+
+	for (h1 |= 1; ; sym++) {
+		h2 = *hashval++;
+		if ((h1 == (h2|1)) && !strcmp(s, strings + sym->st_name))
+			return sym;
+		if (h2 & 1) break;
+	}
+
+	return 0;
+}
+
 #define OK_TYPES (1<<STT_NOTYPE | 1<<STT_OBJECT | 1<<STT_FUNC | 1<<STT_COMMON)
 #define OK_BINDS (1<<STB_GLOBAL | 1<<STB_WEAK)
 
 static void *find_sym(struct dso *dso, const char *s, int need_def)
 {
-	uint32_t h = hash(s);
+	uint32_t h = 0, gh = 0;
 	void *def = 0;
-	if (h==0x6b366be && !strcmp(s, "dlopen")) rtld_used = 1;
-	if (h==0x6b3afd && !strcmp(s, "dlsym")) rtld_used = 1;
-	if (h==0x595a4cc && !strcmp(s, "__stack_chk_fail")) ssp_used = 1;
+	if (dso->ghashtab) {
+		gh = gnu_hash(s);
+		if (gh == 0xf9040207 && !strcmp(s, "dlopen")) rtld_used = 1;
+		if (gh == 0xf4dc4ae && !strcmp(s, "dlsym")) rtld_used = 1;
+		if (gh == 0x1f4039c9 && !strcmp(s, "__stack_chk_fail")) ssp_used = 1;
+	} else {
+		h = sysv_hash(s);
+		if (h == 0x6b366be && !strcmp(s, "dlopen")) rtld_used = 1;
+		if (h == 0x6b3afd && !strcmp(s, "dlsym")) rtld_used = 1;
+		if (h == 0x595a4cc && !strcmp(s, "__stack_chk_fail")) ssp_used = 1;
+	}
 	for (; dso; dso=dso->next) {
 		Sym *sym;
 		if (!dso->global) continue;
-		sym = lookup(s, h, dso);
+		if (dso->ghashtab) {
+			if (!gh) gh = gnu_hash(s);
+			sym = gnu_lookup(s, gh, dso);
+		} else {
+			if (!h) h = sysv_hash(s);
+			sym = sysv_lookup(s, h, dso);
+		}
 		if (sym && (!need_def || sym->st_shndx) && sym->st_value
 		 && (1<<(sym->st_info&0xf) & OK_TYPES)
 		 && (1<<(sym->st_info>>4) & OK_BINDS)) {
@@ -325,8 +384,11 @@ static void decode_dyn(struct dso *p)
 	size_t dyn[DYN_CNT] = {0};
 	decode_vec(p->dynv, dyn, DYN_CNT);
 	p->syms = (void *)(p->base + dyn[DT_SYMTAB]);
-	p->hashtab = (void *)(p->base + dyn[DT_HASH]);
 	p->strings = (void *)(p->base + dyn[DT_STRTAB]);
+	if (dyn[0]&(1<<DT_HASH))
+		p->hashtab = (void *)(p->base + dyn[DT_HASH]);
+	if (search_vec(p->dynv, dyn, DT_GNU_HASH))
+		p->ghashtab = (void *)(p->base + *dyn);
 }
 
 static struct dso *load_library(const char *name)
@@ -788,7 +850,7 @@ end:
 static void *do_dlsym(struct dso *p, const char *s, void *ra)
 {
 	size_t i;
-	uint32_t h;
+	uint32_t h = 0, gh = 0;
 	Sym *sym;
 	if (p == RTLD_NEXT) {
 		for (p=head; p && (unsigned char *)ra-p->map>p->map_len; p=p->next);
@@ -802,12 +864,23 @@ static void *do_dlsym(struct dso *p, const char *s, void *ra)
 		if (!res) goto failed;
 		return res;
 	}
-	h = hash(s);
-	sym = lookup(s, h, p);
+	if (p->ghashtab) {
+		gh = gnu_hash(s);
+		sym = gnu_lookup(s, gh, p);
+	} else {
+		h = sysv_hash(s);
+		sym = sysv_lookup(s, h, p);
+	}
 	if (sym && sym->st_value && (1<<(sym->st_info&0xf) & OK_TYPES))
 		return p->base + sym->st_value;
 	if (p->deps) for (i=0; p->deps[i]; i++) {
-		sym = lookup(s, h, p->deps[i]);
+		if (p->deps[i]->ghashtab) {
+			if (!gh) gh = gnu_hash(s);
+			sym = gnu_lookup(s, h, p->deps[i]);
+		} else {
+			if (!h) h = sysv_hash(s);
+			sym = sysv_lookup(s, h, p->deps[i]);
+		}
 		if (sym && sym->st_value && (1<<(sym->st_info&0xf) & OK_TYPES))
 			return p->deps[i]->base + sym->st_value;
 	}
