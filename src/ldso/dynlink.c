@@ -613,6 +613,7 @@ void *__dynlink(int argc, char **argv)
 	struct dso *const lib = builtin_dsos+1;
 	struct dso *const vdso = builtin_dsos+2;
 	char *env_preload=0;
+	size_t vdso_base;
 
 	/* Find aux vector just past environ[] */
 	for (i=argc+1; argv[i]; i++)
@@ -701,8 +702,7 @@ void *__dynlink(int argc, char **argv)
 	decode_dyn(app);
 
 	/* Attach to vdso, if provided by the kernel */
-	if (search_vec(auxv, aux, AT_SYSINFO_EHDR)) {
-		size_t vdso_base = *aux;
+	if (search_vec(auxv, &vdso_base, AT_SYSINFO_EHDR)) {
 		ehdr = (void *)vdso_base;
 		phdr = (void *)(vdso_base + ehdr->e_phoff);
 		for (i=ehdr->e_phnum; i; i--, phdr=(void *)((char *)phdr + ehdr->e_phentsize)) {
