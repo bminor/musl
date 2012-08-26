@@ -90,7 +90,9 @@ int putc(int, FILE *);
 int putchar(int);
 
 char *fgets(char *, int, FILE *);
+#if __STDC_VERSION__ < 201112L
 char *gets(char *);
+#endif
 
 int fputs(const char *, FILE *);
 int puts(const char *);

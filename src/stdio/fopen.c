@@ -5,7 +5,6 @@ FILE *fopen(const char *filename, const char *mode)
 	FILE *f;
 	int fd;
 	int flags;
-	int plus = !!strchr(mode, '+');
 
 	/* Check for valid initial mode character */
 	if (!strchr("rwa", *mode)) {
@@ -14,9 +13,10 @@ FILE *fopen(const char *filename, const char *mode)
 	}
 
 	/* Compute the flags to pass to open() */
-	if (plus) flags = O_RDWR;
+	if (strchr(mode, '+')) flags = O_RDWR;
 	else if (*mode == 'r') flags = O_RDONLY;
 	else flags = O_WRONLY;
+	if (strchr(mode, 'x')) flags |= O_EXCL;
 	if (*mode != 'r') flags |= O_CREAT;
 	if (*mode == 'w') flags |= O_TRUNC;
 	if (*mode == 'a') flags |= O_APPEND;
