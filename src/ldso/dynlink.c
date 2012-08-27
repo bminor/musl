@@ -572,7 +572,7 @@ static void free_all(struct dso *p)
 	struct dso *n;
 	while (p) {
 		n = p->next;
-		if (p->map) free(p);
+		if (p->map && p!=libc && p!=head) free(p);
 		p = n;
 	}
 }
