@@ -18,6 +18,16 @@ char  *dlerror(void);
 void  *dlopen(const char *, int);
 void  *dlsym(void *, const char *);
 
+#ifdef _GNU_SOURCE
+typedef struct {
+	const char *dli_fname;
+	void *dli_fbase;
+	const char *dli_sname;
+	void *dli_saddr;
+} Dl_info;
+int dladdr(void *, Dl_info *);
+#endif
+
 #ifdef __cplusplus
 }
 #endif

@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -584,6 +585,22 @@ static size_t find_dyn(Phdr *ph, size_t cnt, size_t stride)
 	return 0;
 }
 
+static void find_map_range(Phdr *ph, size_t cnt, size_t stride, struct dso *p)
+{
+	size_t min_addr = -1, max_addr = 0;
+	for (; cnt--; ph = (void *)((char *)ph + stride)) {
+		if (ph->p_type != PT_LOAD) continue;
+		if (ph->p_vaddr < min_addr)
+			min_addr = ph->p_vaddr;
+		if (ph->p_vaddr+ph->p_memsz > max_addr)
+			max_addr = ph->p_vaddr+ph->p_memsz;
+	}
+	min_addr &= -PAGE_SIZE;
+	max_addr = (max_addr + PAGE_SIZE-1) & -PAGE_SIZE;
+	p->map = p->base + min_addr;
+	p->map_len = max_addr - min_addr;
+}
+
 static void do_init_fini(struct dso *p)
 {
 	size_t dyn[DYN_CNT] = {0};
@@ -647,6 +664,8 @@ void *__dynlink(int argc, char **argv)
 	lib->name = lib->shortname = "libc.so";
 	lib->global = 1;
 	ehdr = (void *)lib->base;
+	find_map_range((void *)(aux[AT_BASE]+ehdr->e_phoff),
+		ehdr->e_phnum, ehdr->e_phentsize, lib);
 	lib->dynv = (void *)(lib->base + find_dyn(
 		(void *)(aux[AT_BASE]+ehdr->e_phoff),
 		ehdr->e_phnum, ehdr->e_phentsize));
@@ -666,6 +685,8 @@ void *__dynlink(int argc, char **argv)
 		app->name = argv[0];
 		app->dynv = (void *)(app->base + find_dyn(
 			(void *)aux[AT_PHDR], aux[AT_PHNUM], aux[AT_PHENT]));
+		find_map_range((void *)aux[AT_PHDR],
+			aux[AT_PHNUM], aux[AT_PHENT], app);
 	} else {
 		int fd;
 		char *ldname = argv[0];
@@ -891,6 +912,67 @@ failed:
 	return 0;
 }
 
+int __dladdr(void *addr, Dl_info *info)
+{
+	struct dso *p;
+	Sym *sym;
+	uint32_t nsym;
+	char *strings;
+	size_t i;
+	void *best = 0;
+	char *bestname;
+
+	pthread_rwlock_rdlock(&lock);
+	for (p=head; p && (unsigned char *)addr-p->map>p->map_len; p=p->next);
+	pthread_rwlock_unlock(&lock);
+
+	if (!p) return 0;
+
+	sym = p->syms;
+	strings = p->strings;
+	if (p->hashtab) {
+		nsym = p->hashtab[1];
+	} else {
+		uint32_t *buckets;
+		uint32_t *hashval;
+		buckets = p->ghashtab + 4 + (p->ghashtab[2]*sizeof(size_t)/4);
+		sym += p->ghashtab[1];
+		for (i = 0; i < p->ghashtab[0]; i++) {
+			if (buckets[i] > nsym)
+				nsym = buckets[i];
+		}
+		if (nsym) {
+			nsym -= p->ghashtab[1];
+			hashval = buckets + p->ghashtab[0] + nsym;
+			do nsym++;
+			while (!(*hashval++ & 1));
+		}
+	}
+
+	for (; nsym; nsym--, sym++) {
+		if (sym->st_shndx && sym->st_value
+		 && (1<<(sym->st_info&0xf) & OK_TYPES)
+		 && (1<<(sym->st_info>>4) & OK_BINDS)) {
+			void *symaddr = p->base + sym->st_value;
+			if (symaddr > addr || symaddr < best)
+				continue;
+			best = symaddr;
+			bestname = strings + sym->st_name;
+			if (addr == symaddr)
+				break;
+		}
+	}
+
+	if (!best) return 0;
+
+	info->dli_fname = p->name;
+	info->dli_fbase = p->base;
+	info->dli_sname = bestname;
+	info->dli_saddr = best;
+
+	return 1;
+}
+
 void *__dlsym(void *p, const char *s, void *ra)
 {
 	void *res;
@@ -905,6 +987,10 @@ void *dlopen(const char *file, int mode)
 	return 0;
 }
 void *__dlsym(void *p, const char *s, void *ra)
+{
+	return 0;
+}
+int __dladdr (void *addr, Dl_info *info)
 {
 	return 0;
 }
