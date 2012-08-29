@@ -911,7 +911,7 @@ static char *_crypt_extended_r_uut(const char *_key, const char *_setting, char 
 				return NULL;
 			count |= value << (i - 1) * 6;
 		}
-		if (!count)
+		if (!count || count > 262143)
 			return NULL;
 
 		for (i = 5, salt = 0; i < 9; i++) {
