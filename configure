@@ -226,14 +226,23 @@ test "x$debug" = xyes && CFLAGS_AUTO="-g"
 tryflag CFLAGS_AUTO -pipe
 
 #
-# If debugging is disabled, omit bloated DWARF2 unwind tables & frame ptr
+# If debugging is disabled, omit frame pointer. Modern GCC does this
+# anyway on most archs even when debugging is enabled since the frame
+# pointer is no longer needed for debugging.
 #
 if fnmatch '-g*|*\ -g*' "$CFLAGS_AUTO $CFLAGS" ; then :
 else 
-tryflag CFLAGS_AUTO -fno-unwind-tables
-tryflag CFLAGS_AUTO -fno-asynchronous-unwind-tables
 tryflag CFLAGS_AUTO -fomit-frame-pointer
 fi
+
+#
+# Modern GCC wants to put DWARF tables (used for debugging and
+# unwinding) in the loaded part of the program where they are
+# unstrippable. These options force them back to debug sections (and
+# cause them not to get generated at all if debugging is off).
+#
+tryflag CFLAGS_AUTO -fno-unwind-tables
+tryflag CFLAGS_AUTO -fno-asynchronous-unwind-tables
 
 #
 # Some optimization levels add bloated alignment that hurt performance
