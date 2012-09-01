@@ -17,7 +17,7 @@ extern "C" {
 #define POLLWRBAND 0x200
 #define POLLMSG    0x400
 
-typedef unsigned int nfds_t;
+typedef unsigned long nfds_t;
 
 struct pollfd
 {
