@@ -5,7 +5,7 @@
 
 #define __SYSCALL_SSLEN 8
 
-static inline long __syscall0(long __n)
+static __inline long __syscall0(long __n)
 {
 	unsigned long __ret;
 	__asm__ __volatile__ ("int $128" : "=a"(__ret) : "a"(__n) : "memory");
@@ -14,42 +14,42 @@ static inline long __syscall0(long __n)
 
 #ifndef __PIC__
 
-static inline long __syscall1(long __n, long __a1)
+static __inline long __syscall1(long __n, long __a1)
 {
 	unsigned long __ret;
 	__asm__ __volatile__ ("int $128" : "=a"(__ret) : "a"(__n), "b"(__a1) : "memory");
 	return __ret;
 }
 
-static inline long __syscall2(long __n, long __a1, long __a2)
+static __inline long __syscall2(long __n, long __a1, long __a2)
 {
 	unsigned long __ret;
 	__asm__ __volatile__ ("int $128" : "=a"(__ret) : "a"(__n), "b"(__a1), "c"(__a2) : "memory");
 	return __ret;
 }
 
-static inline long __syscall3(long __n, long __a1, long __a2, long __a3)
+static __inline long __syscall3(long __n, long __a1, long __a2, long __a3)
 {
 	unsigned long __ret;
 	__asm__ __volatile__ ("int $128" : "=a"(__ret) : "a"(__n), "b"(__a1), "c"(__a2), "d"(__a3) : "memory");
 	return __ret;
 }
 
-static inline long __syscall4(long __n, long __a1, long __a2, long __a3, long __a4)
+static __inline long __syscall4(long __n, long __a1, long __a2, long __a3, long __a4)
 {
 	unsigned long __ret;
 	__asm__ __volatile__ ("int $128" : "=a"(__ret) : "a"(__n), "b"(__a1), "c"(__a2), "d"(__a3), "S"(__a4) : "memory");
 	return __ret;
 }
 
-static inline long __syscall5(long __n, long __a1, long __a2, long __a3, long __a4, long __a5)
+static __inline long __syscall5(long __n, long __a1, long __a2, long __a3, long __a4, long __a5)
 {
 	unsigned long __ret;
 	__asm__ __volatile__ ("int $128" : "=a"(__ret) : "a"(__n), "b"(__a1), "c"(__a2), "d"(__a3), "S"(__a4), "D"(__a5) : "memory");
 	return __ret;
 }
 
-static inline long __syscall6(long __n, long __a1, long __a2, long __a3, long __a4, long __a5, long __a6)
+static __inline long __syscall6(long __n, long __a1, long __a2, long __a3, long __a4, long __a5, long __a6)
 {
 	unsigned long __ret;
 	__asm__ __volatile__ ("pushl %7 ; pushl %%ebp ; mov 4(%%esp),%%ebp ; int $128 ; popl %%ebp ; popl %%ecx"
@@ -59,7 +59,7 @@ static inline long __syscall6(long __n, long __a1, long __a2, long __a3, long __
 
 #else
 
-static inline long __syscall1(long __n, long __a1)
+static __inline long __syscall1(long __n, long __a1)
 {
 	unsigned long __ret;
 	__asm__ __volatile__ ("xchg %2,%%ebx ; int $128 ; xchg %2,%%ebx"
@@ -67,7 +67,7 @@ static inline long __syscall1(long __n, long __a1)
 	return __ret;
 }
 
-static inline long __syscall2(long __n, long __a1, long __a2)
+static __inline long __syscall2(long __n, long __a1, long __a2)
 {
 	unsigned long __ret;
 	__asm__ __volatile__ ("xchg %2,%%ebx ; int $128 ; xchg %2,%%ebx"
@@ -75,7 +75,7 @@ static inline long __syscall2(long __n, long __a1, long __a2)
 	return __ret;
 }
 
-static inline long __syscall3(long __n, long __a1, long __a2, long __a3)
+static __inline long __syscall3(long __n, long __a1, long __a2, long __a3)
 {
 	unsigned long __ret;
 	__asm__ __volatile__ ("xchg %2,%%ebx ; int $128 ; xchg %2,%%ebx"
@@ -83,7 +83,7 @@ static inline long __syscall3(long __n, long __a1, long __a2, long __a3)
 	return __ret;
 }
 
-static inline long __syscall4(long __n, long __a1, long __a2, long __a3, long __a4)
+static __inline long __syscall4(long __n, long __a1, long __a2, long __a3, long __a4)
 {
 	unsigned long __ret;
 	__asm__ __volatile__ ("xchg %2,%%ebx ; int $128 ; xchg %2,%%ebx"
@@ -92,7 +92,7 @@ static inline long __syscall4(long __n, long __a1, long __a2, long __a3, long __
 }
 
 #if 0
-static inline long __syscall5(long __n, long __a1, long __a2, long __a3, long __a4, long __a5)
+static __inline long __syscall5(long __n, long __a1, long __a2, long __a3, long __a4, long __a5)
 {
 	unsigned long __ret;
 	__asm__ __volatile__ ("pushl %2 ; pushl %%ebx ; mov 4(%%esp),%%ebx ; int $128 ; popl %%ebx ; popl %%ecx"
@@ -100,13 +100,13 @@ static inline long __syscall5(long __n, long __a1, long __a2, long __a3, long __
 	return __ret;
 }
 #else
-static inline long __syscall5(long __n, long __a1, long __a2, long __a3, long __a4, long __a5)
+static __inline long __syscall5(long __n, long __a1, long __a2, long __a3, long __a4, long __a5)
 {
 	return (__syscall)(__n, __a1, __a2, __a3, __a4, __a5);
 }
 #endif
 
-static inline long __syscall6(long __n, long __a1, long __a2, long __a3, long __a4, long __a5, long __a6)
+static __inline long __syscall6(long __n, long __a1, long __a2, long __a3, long __a4, long __a5, long __a6)
 {
 	return (__syscall)(__n, __a1, __a2, __a3, __a4, __a5, __a6);
 }

@@ -3,21 +3,21 @@
 
 #define __SYSCALL_SSLEN 8
 
-static inline long __syscall0(long __n)
+static __inline long __syscall0(long __n)
 {
 	unsigned long __ret;
 	__asm__ __volatile__ ("syscall" : "=a"(__ret) : "a"(__n) : "rcx", "r11", "memory");
 	return __ret;
 }
 
-static inline long __syscall1(long __n, long __a1)
+static __inline long __syscall1(long __n, long __a1)
 {
 	unsigned long __ret;
 	__asm__ __volatile__ ("syscall" : "=a"(__ret) : "a"(__n), "D"(__a1) : "rcx", "r11", "memory");
 	return __ret;
 }
 
-static inline long __syscall2(long __n, long __a1, long __a2)
+static __inline long __syscall2(long __n, long __a1, long __a2)
 {
 	unsigned long __ret;
 	__asm__ __volatile__ ("syscall" : "=a"(__ret) : "a"(__n), "D"(__a1), "S"(__a2)
@@ -25,7 +25,7 @@ static inline long __syscall2(long __n, long __a1, long __a2)
 	return __ret;
 }
 
-static inline long __syscall3(long __n, long __a1, long __a2, long __a3)
+static __inline long __syscall3(long __n, long __a1, long __a2, long __a3)
 {
 	unsigned long __ret;
 	__asm__ __volatile__ ("syscall" : "=a"(__ret) : "a"(__n), "D"(__a1), "S"(__a2),
@@ -33,7 +33,7 @@ static inline long __syscall3(long __n, long __a1, long __a2, long __a3)
 	return __ret;
 }
 
-static inline long __syscall4(long __n, long __a1, long __a2, long __a3, long __a4)
+static __inline long __syscall4(long __n, long __a1, long __a2, long __a3, long __a4)
 {
 	unsigned long __ret;
 	register long __r10 __asm__("r10") = __a4;
@@ -42,7 +42,7 @@ static inline long __syscall4(long __n, long __a1, long __a2, long __a3, long __
 	return __ret;
 }
 
-static inline long __syscall5(long __n, long __a1, long __a2, long __a3, long __a4, long __a5)
+static __inline long __syscall5(long __n, long __a1, long __a2, long __a3, long __a4, long __a5)
 {
 	unsigned long __ret;
 	register long __r10 __asm__("r10") = __a4;
@@ -52,7 +52,7 @@ static inline long __syscall5(long __n, long __a1, long __a2, long __a3, long __
 	return __ret;
 }
 
-static inline long __syscall6(long __n, long __a1, long __a2, long __a3, long __a4, long __a5, long __a6)
+static __inline long __syscall6(long __n, long __a1, long __a2, long __a3, long __a4, long __a5, long __a6)
 {
 	unsigned long __ret;
 	register long __r10 __asm__("r10") = __a4;

@@ -4,6 +4,10 @@
 extern "C" {
 #endif
 
+#if __STDC_VERSION__ >= 199901L || defined(__cplusplus)
+#define __inline inline
+#endif
+
 long __syscall_ret(unsigned long);
 long __syscall(long, ...);
 long syscall(long, ...);
