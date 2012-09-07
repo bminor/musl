@@ -14,7 +14,7 @@ weak_alias(dummy, __funcs_on_exit);
 weak_alias(dummy, __flush_on_exit);
 weak_alias(dummy, __seek_on_exit);
 
-void exit(int code)
+_Noreturn void exit(int code)
 {
 	static int lock;
 

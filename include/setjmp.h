@@ -5,6 +5,13 @@
 extern "C" {
 #endif
 
+#if __STDC_VERSION__ >= 201112L
+#elif defined(__GNUC__)
+#define _Noreturn __attribute__((__noreturn__))
+#else
+#define _Noreturn
+#endif
+
 #include <bits/setjmp.h>
 
 
@@ -29,7 +36,7 @@ void _longjmp (jmp_buf, int);
 
 
 int setjmp (jmp_buf);
-void longjmp (jmp_buf, int);
+_Noreturn void longjmp (jmp_buf, int);
 
 #define setjmp setjmp
 #define longjmp longjmp

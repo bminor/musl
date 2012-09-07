@@ -11,6 +11,13 @@ extern "C" {
 #define __restrict
 #endif
 
+#if __STDC_VERSION__ >= 201112L
+#elif defined(__GNUC__)
+#define _Noreturn __attribute__((__noreturn__))
+#else
+#define _Noreturn
+#endif
+
 #undef NULL
 #ifdef __cplusplus
 #define NULL 0
@@ -46,12 +53,12 @@ void *realloc (void *, size_t);
 void free (void *);
 void *aligned_alloc(size_t alignment, size_t size);
 
-void abort (void);
+_Noreturn void abort (void);
 int atexit (void (*) (void));
-void exit (int);
-void _Exit (int);
+_Noreturn void exit (int);
+_Noreturn void _Exit (int);
 int at_quick_exit (void (*) (void));
-void quick_exit (int);
+_Noreturn void quick_exit (int);
 
 char *getenv (const char *);
 

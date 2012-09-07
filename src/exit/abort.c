@@ -2,7 +2,7 @@
 #include <signal.h>
 #include "syscall.h"
 
-void abort(void)
+_Noreturn void abort(void)
 {
 	raise(SIGABRT);
 	raise(SIGKILL);
