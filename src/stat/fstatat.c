@@ -2,7 +2,7 @@
 #include "syscall.h"
 #include "libc.h"
 
-int fstatat(int fd, const char *path, struct stat *buf, int flag)
+int fstatat(int fd, const char *restrict path, struct stat *restrict buf, int flag)
 {
 	return syscall(SYS_fstatat, fd, path, buf, flag);
 }

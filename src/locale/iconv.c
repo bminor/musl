@@ -139,7 +139,7 @@ static void put_32(unsigned char *s, unsigned c, int e)
 #define mbrtowc_utf8 mbrtowc
 #define wctomb_utf8 wctomb
 
-size_t iconv(iconv_t cd0, char **in, size_t *inb, char **out, size_t *outb)
+size_t iconv(iconv_t cd0, char **restrict in, size_t *restrict inb, char **restrict out, size_t *restrict outb)
 {
 	size_t x=0;
 	unsigned long cd = (unsigned long)cd0;

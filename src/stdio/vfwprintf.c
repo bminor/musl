@@ -336,7 +336,7 @@ static int wprintf_core(FILE *f, const wchar_t *fmt, va_list *ap, union arg *nl_
 	return 1;
 }
 
-int vfwprintf(FILE *f, const wchar_t *fmt, va_list ap)
+int vfwprintf(FILE *restrict f, const wchar_t *restrict fmt, va_list ap)
 {
 	va_list ap2;
 	int nl_type[NL_ARGMAX] = {0};

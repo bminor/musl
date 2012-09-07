@@ -4,9 +4,15 @@
 extern "C" {
 #endif
 
+#if __STDC_VERSION__ >= 199901L
+#define __restrict restrict
+#elif !defined(__GNUC__)
+#define __restrict
+#endif
+
 #include <sys/select.h>
 
-int gettimeofday (struct timeval *, void *);
+int gettimeofday (struct timeval *__restrict, void *__restrict);
 
 #if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) \
  || defined(_BSD_SOURCE)
@@ -22,7 +28,7 @@ struct itimerval
 };
 
 int getitimer (int, struct itimerval *);
-int setitimer (int, const struct itimerval *, struct itimerval *);
+int setitimer (int, const struct itimerval *__restrict, struct itimerval *__restrict);
 int utimes (const char *, const struct timeval [2]);
 
 #endif

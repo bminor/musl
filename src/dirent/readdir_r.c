@@ -5,7 +5,7 @@
 #include "__dirent.h"
 #include "libc.h"
 
-int readdir_r(DIR *dir, struct dirent *buf, struct dirent **result)
+int readdir_r(DIR *restrict dir, struct dirent *restrict buf, struct dirent **restrict result)
 {
 	struct dirent *de;
 	int errno_save = errno;

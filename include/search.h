@@ -5,6 +5,13 @@
 extern "C" {
 #endif
 
+#if __STDC_VERSION__ >= 199901L
+#define __restrict restrict
+#elif !defined(__GNUC__)
+#define __restrict
+#endif
+
+
 #define __NEED_size_t
 #include <bits/alltypes.h>
 
@@ -28,7 +35,7 @@ void *lsearch(const void *, void *, size_t *, size_t,
 void *lfind(const void *, const void *, size_t *, size_t,
 	int (*)(const void *, const void *));
 
-void *tdelete(const void *, void **, int(*)(const void *, const void *));
+void *tdelete(const void *__restrict, void **__restrict, int(*)(const void *, const void *));
 void *tfind(const void *, void *const *, int(*)(const void *, const void *));
 void *tsearch(const void *, void **, int (*)(const void *, const void *));
 void twalk(const void *, void (*)(const void *, VISIT, int));

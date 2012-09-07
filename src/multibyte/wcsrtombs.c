@@ -11,7 +11,7 @@
 
 #include "internal.h"
 
-size_t wcsrtombs(char *s, const wchar_t **ws, size_t n, mbstate_t *st)
+size_t wcsrtombs(char *restrict s, const wchar_t **restrict ws, size_t n, mbstate_t *restrict st)
 {
 	const wchar_t *ws2;
 	char buf[4];

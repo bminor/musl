@@ -8,9 +8,9 @@
 #include <arpa/inet.h>
 #include "__dns.h"
 
-int getnameinfo(const struct sockaddr *sa, socklen_t sl,
-	char *node, socklen_t nodelen,
-	char *serv, socklen_t servlen,
+int getnameinfo(const struct sockaddr *restrict sa, socklen_t sl,
+	char *restrict node, socklen_t nodelen,
+	char *restrict serv, socklen_t servlen,
 	int flags)
 {
 	char buf[256];

@@ -7,7 +7,7 @@
 /* Locking is not necessary because, in the event of failure, the stream
  * passed to freopen is invalid as soon as freopen is called. */
 
-FILE *freopen(const char *filename, const char *mode, FILE *f)
+FILE *freopen(const char *restrict filename, const char *restrict mode, FILE *restrict f)
 {
 	int fl;
 	FILE *f2;

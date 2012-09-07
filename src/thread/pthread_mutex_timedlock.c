@@ -1,6 +1,6 @@
 #include "pthread_impl.h"
 
-int pthread_mutex_timedlock(pthread_mutex_t *m, const struct timespec *at)
+int pthread_mutex_timedlock(pthread_mutex_t *restrict m, const struct timespec *restrict at)
 {
 	int r, t;
 

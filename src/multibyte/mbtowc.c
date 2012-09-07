@@ -11,7 +11,7 @@
 
 #include "internal.h"
 
-int mbtowc(wchar_t *wc, const char *s, size_t n)
+int mbtowc(wchar_t *restrict wc, const char *restrict s, size_t n)
 {
 	mbstate_t st = { 0 };
 	n = mbrtowc(wc, s, n, &st);

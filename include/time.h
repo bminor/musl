@@ -5,6 +5,12 @@
 extern "C" {
 #endif
 
+#if __STDC_VERSION__ >= 199901L
+#define __restrict restrict
+#elif !defined(__GNUC__)
+#define __restrict
+#endif
+
 #undef NULL
 #ifdef __cplusplus
 #define NULL 0
@@ -48,7 +54,7 @@ clock_t clock (void);
 time_t time (time_t *);
 double difftime (time_t, time_t);
 time_t mktime (struct tm *);
-size_t strftime (char *, size_t, const char *, const struct tm *);
+size_t strftime (char *__restrict, size_t, const char *__restrict, const struct tm *__restrict);
 struct tm *gmtime (const time_t *);
 struct tm *localtime (const time_t *);
 char *asctime (const struct tm *);
@@ -61,11 +67,11 @@ char *ctime (const time_t *);
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) \
  || defined(_BSD_SOURCE)
 
-size_t strftime_l (char *, size_t, const char *, const struct tm *, locale_t);
+size_t strftime_l (char *  __restrict, size_t, const char *  __restrict, const struct tm *  __restrict, locale_t);
 
-struct tm *gmtime_r (const time_t *, struct tm *);
-struct tm *localtime_r (const time_t *, struct tm *);
-char *asctime_r (const struct tm *, char *);
+struct tm *gmtime_r (const time_t *__restrict, struct tm *__restrict);
+struct tm *localtime_r (const time_t *__restrict, struct tm *__restrict);
+char *asctime_r (const struct tm *__restrict, char *__restrict);
 char *ctime_r (const time_t *, char *);
 
 void tzset (void);
@@ -91,9 +97,9 @@ int clock_nanosleep (clockid_t, int, const struct timespec *, struct timespec *)
 int clock_getcpuclockid (pid_t, clockid_t *);
 
 struct sigevent;
-int timer_create (clockid_t, struct sigevent *, timer_t *);
+int timer_create (clockid_t, struct sigevent *__restrict, timer_t *__restrict);
 int timer_delete (timer_t);
-int timer_settime (timer_t, int, const struct itimerspec *, struct itimerspec *);
+int timer_settime (timer_t, int, const struct itimerspec *__restrict, struct itimerspec *__restrict);
 int timer_gettime (timer_t, struct itimerspec *);
 int timer_getoverrun (timer_t);
 
@@ -101,7 +107,7 @@ int timer_getoverrun (timer_t);
 
 
 #if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
-char *strptime (const char *, const char *, struct tm *);
+char *strptime (const char *__restrict, const char *__restrict, struct tm *__restrict);
 extern int daylight;
 extern long timezone;
 extern char *tzname[2];

@@ -1,6 +1,6 @@
 #include "pthread_impl.h"
 
-int pthread_attr_getstack(const pthread_attr_t *a, void **addr, size_t *size)
+int pthread_attr_getstack(const pthread_attr_t *restrict a, void **restrict addr, size_t *restrict size)
 {
 	if (!a->_a_stackaddr)
 		return EINVAL;

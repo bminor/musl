@@ -5,6 +5,12 @@
 extern "C" {
 #endif
 
+#if __STDC_VERSION__ >= 199901L
+#define __restrict restrict
+#elif !defined(__GNUC__)
+#define __restrict
+#endif
+
 #define __NEED_ino_t
 #define __NEED_off_t
 #ifdef _BSD_SOURCE
@@ -30,7 +36,7 @@ int            closedir(DIR *);
 DIR           *fdopendir(int);
 DIR           *opendir(const char *);
 struct dirent *readdir(DIR *);
-int            readdir_r(DIR *, struct dirent *, struct dirent **);
+int            readdir_r(DIR *__restrict, struct dirent *__restrict, struct dirent **__restrict);
 void           rewinddir(DIR *);
 void           seekdir(DIR *, long);
 long           telldir(DIR *);

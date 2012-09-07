@@ -8,7 +8,7 @@
 
 const char *__langinfo(nl_item);
 
-size_t strftime(char *s, size_t n, const char *f, const struct tm *tm)
+size_t strftime(char *restrict s, size_t n, const char *restrict f, const struct tm *restrict tm)
 {
 	nl_item item;
 	int val;

@@ -3,7 +3,7 @@
 #include "syscall.h"
 #include "libc.h"
 
-int sigtimedwait(const sigset_t *mask, siginfo_t *si, const struct timespec *timeout)
+int sigtimedwait(const sigset_t *restrict mask, siginfo_t *restrict si, const struct timespec *restrict timeout)
 {
 	int ret;
 	do ret = syscall_cp(SYS_rt_sigtimedwait, mask,

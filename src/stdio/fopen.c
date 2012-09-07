@@ -1,6 +1,6 @@
 #include "stdio_impl.h"
 
-FILE *fopen(const char *filename, const char *mode)
+FILE *fopen(const char *restrict filename, const char *restrict mode)
 {
 	FILE *f;
 	int fd;

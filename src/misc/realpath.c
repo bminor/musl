@@ -6,7 +6,7 @@
 #include <errno.h>
 #include <unistd.h>
 
-char *realpath(const char *filename, char *resolved)
+char *realpath(const char *restrict filename, char *restrict resolved)
 {
 	int fd;
 	ssize_t r;

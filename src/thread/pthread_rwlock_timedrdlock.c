@@ -1,6 +1,6 @@
 #include "pthread_impl.h"
 
-int pthread_rwlock_timedrdlock(pthread_rwlock_t *rw, const struct timespec *at)
+int pthread_rwlock_timedrdlock(pthread_rwlock_t *restrict rw, const struct timespec *restrict at)
 {
 	int r, t;
 	while ((r=pthread_rwlock_tryrdlock(rw))==EBUSY) {

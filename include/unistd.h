@@ -5,6 +5,12 @@
 extern "C" {
 #endif
 
+#if __STDC_VERSION__ >= 199901L
+#define __restrict restrict
+#elif !defined(__GNUC__)
+#define __restrict
+#endif
+
 #define STDIN_FILENO  0
 #define STDOUT_FILENO 1
 #define STDERR_FILENO 2
@@ -52,8 +58,8 @@ int link(const char *, const char *);
 int linkat(int, const char *, int, const char *, int);
 int symlink(const char *, const char *);
 int symlinkat(const char *, int, const char *);
-ssize_t readlink(const char *, char *, size_t);
-ssize_t readlinkat(int, const char *, char *, size_t);
+ssize_t readlink(const char *__restrict, char *__restrict, size_t);
+ssize_t readlinkat(int, const char *__restrict, char *__restrict, size_t);
 int unlink(const char *);
 int unlinkat(int, const char *, int);
 int rmdir(const char *);
@@ -141,7 +147,7 @@ void sync(void);
 pid_t setpgrp(void);
 char *crypt(const char *, const char *);
 void encrypt(char *, int);
-void swab(const void *, void *, ssize_t);
+void swab(const void *__restrict, void *__restrict, ssize_t);
 #endif
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE) \

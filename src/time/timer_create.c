@@ -76,7 +76,7 @@ static void *start(void *arg)
 	return 0;
 }
 
-int timer_create(clockid_t clk, struct sigevent *evp, timer_t *res)
+int timer_create(clockid_t clk, struct sigevent *restrict evp, timer_t *restrict res)
 {
 	static pthread_once_t once = PTHREAD_ONCE_INIT;
 	pthread_t td;

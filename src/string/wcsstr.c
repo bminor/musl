@@ -93,7 +93,7 @@ static wchar_t *twoway_wcsstr(const wchar_t *h, const wchar_t *n)
 	}
 }
 
-wchar_t *wcsstr(const wchar_t *h, const wchar_t *n)
+wchar_t *wcsstr(const wchar_t *restrict h, const wchar_t *restrict n)
 {
 	/* Return immediately on empty needle or haystack */
 	if (!n[0]) return (wchar_t *)h;

@@ -5,6 +5,12 @@
 extern "C" {
 #endif
 
+#if __STDC_VERSION__ >= 199901L
+#define __restrict restrict
+#elif !defined(__GNUC__)
+#define __restrict
+#endif
+
 #define __NEED_fsblkcnt_t
 #define __NEED_fsfilcnt_t
 #include <bits/alltypes.h>
@@ -26,7 +32,7 @@ struct statvfs {
 	int __reserved[6];
 };
 
-int statvfs (const char *, struct statvfs *);
+int statvfs (const char *__restrict, struct statvfs *__restrict);
 int fstatvfs (int, struct statvfs *);
 
 #define ST_RDONLY 1

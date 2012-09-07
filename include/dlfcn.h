@@ -5,6 +5,12 @@
 extern "C" {
 #endif
 
+#if __STDC_VERSION__ >= 199901L
+#define __restrict restrict
+#elif !defined(__GNUC__)
+#define __restrict
+#endif
+
 #define RTLD_LAZY   1
 #define RTLD_NOW    2
 #define RTLD_GLOBAL 256
@@ -16,7 +22,7 @@ extern "C" {
 int    dlclose(void *);
 char  *dlerror(void);
 void  *dlopen(const char *, int);
-void  *dlsym(void *, const char *);
+void  *dlsym(void *__restrict, const char *__restrict);
 
 #ifdef _GNU_SOURCE
 typedef struct {

@@ -39,7 +39,7 @@ static void fixup(struct statvfs *out, const struct statfs *in)
 	out->f_namemax = in->f_namelen;
 }
 
-int statvfs(const char *path, struct statvfs *buf)
+int statvfs(const char *restrict path, struct statvfs *restrict buf)
 {
 	struct statfs kbuf;
 	if (__statfs(path, &kbuf)<0) return -1;

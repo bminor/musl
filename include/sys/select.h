@@ -4,6 +4,12 @@
 extern "C" {
 #endif
 
+#if __STDC_VERSION__ >= 199901L
+#define __restrict restrict
+#elif !defined(__GNUC__)
+#define __restrict
+#endif
+
 #define __NEED_size_t
 #define __NEED_time_t
 #define __NEED_suseconds_t
@@ -27,8 +33,8 @@ typedef struct
 #define FD_CLR(d, s)   ((s)->fds_bits[(d)/(8*sizeof(long))] &= ~(1UL<<((d)%(8*sizeof(long)))))
 #define FD_ISSET(d, s) !!((s)->fds_bits[(d)/(8*sizeof(long))] & (1UL<<((d)%(8*sizeof(long)))))
 
-int select (int, fd_set *, fd_set *, fd_set *, struct timeval *);
-int pselect (int, fd_set *, fd_set *, fd_set *, const struct timespec *, const sigset_t *);
+int select (int, fd_set *__restrict, fd_set *__restrict, fd_set *__restrict, struct timeval *__restrict);
+int pselect (int, fd_set *__restrict, fd_set *__restrict, fd_set *__restrict, const struct timespec *__restrict, const sigset_t *__restrict);
 
 
 #ifdef __cplusplus

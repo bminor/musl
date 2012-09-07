@@ -16,17 +16,17 @@ static long double strtox(const char *s, char **p, int prec)
 	return y;
 }
 
-float strtof(const char *s, char **p)
+float strtof(const char *restrict s, char **restrict p)
 {
 	return strtox(s, p, 0);
 }
 
-double strtod(const char *s, char **p)
+double strtod(const char *restrict s, char **restrict p)
 {
 	return strtox(s, p, 1);
 }
 
-long double strtold(const char *s, char **p)
+long double strtold(const char *restrict s, char **restrict p)
 {
 	return strtox(s, p, 2);
 }

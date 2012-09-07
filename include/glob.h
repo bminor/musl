@@ -5,6 +5,12 @@
 extern "C" {
 #endif
 
+#if __STDC_VERSION__ >= 199901L
+#define __restrict restrict
+#elif !defined(__GNUC__)
+#define __restrict
+#endif
+
 #define __NEED_size_t
 
 #include <bits/alltypes.h>
@@ -17,7 +23,7 @@ typedef struct {
 	void *__dummy2[5];
 } glob_t;
 
-int  glob(const char *, int, int (*)(const char *, int), glob_t *);
+int  glob(const char *__restrict, int, int (*)(const char *, int), glob_t *__restrict);
 void globfree(glob_t *);
 
 #define GLOB_ERR      0x01

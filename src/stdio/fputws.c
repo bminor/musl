@@ -1,6 +1,6 @@
 #include "stdio_impl.h"
 
-int fputws(const wchar_t *ws, FILE *f)
+int fputws(const wchar_t *restrict ws, FILE *restrict f)
 {
 	unsigned char buf[BUFSIZ];
 	size_t l=0;

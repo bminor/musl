@@ -1,6 +1,6 @@
 #include "stdio_impl.h"
 
-size_t __fwritex(const unsigned char *s, size_t l, FILE *f)
+size_t __fwritex(const unsigned char *restrict s, size_t l, FILE *restrict f)
 {
 	size_t i=0;
 
@@ -24,7 +24,7 @@ size_t __fwritex(const unsigned char *s, size_t l, FILE *f)
 	return l+i;
 }
 
-size_t fwrite(const void *src, size_t size, size_t nmemb, FILE *f)
+size_t fwrite(const void *restrict src, size_t size, size_t nmemb, FILE *restrict f)
 {
 	size_t k, l = size*nmemb;
 	if (!l) return l;

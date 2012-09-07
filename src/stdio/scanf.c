@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-int scanf(const char *fmt, ...)
+int scanf(const char *restrict fmt, ...)
 {
 	int ret;
 	va_list ap;

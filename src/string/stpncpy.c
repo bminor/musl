@@ -9,7 +9,7 @@
 #define HIGHS (ONES * (UCHAR_MAX/2+1))
 #define HASZERO(x) ((x)-ONES & ~(x) & HIGHS)
 
-char *__stpncpy(char *d, const char *s, size_t n)
+char *__stpncpy(char *restrict d, const char *restrict s, size_t n)
 {
 	size_t *wd;
 	const size_t *ws;

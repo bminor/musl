@@ -2,7 +2,7 @@
 
 #include "__time.h"
 
-struct tm *localtime_r(const time_t *t, struct tm *result)
+struct tm *localtime_r(const time_t *restrict t, struct tm *restrict result)
 {
 	__tzset();
 	__time_to_tm(*t - __timezone, result);

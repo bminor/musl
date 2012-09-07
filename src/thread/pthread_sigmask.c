@@ -3,7 +3,7 @@
 #include <pthread.h>
 #include "syscall.h"
 
-int pthread_sigmask(int how, const sigset_t *set, sigset_t *old)
+int pthread_sigmask(int how, const sigset_t *restrict set, sigset_t *restrict old)
 {
 	int ret;
 	if ((unsigned)how - SIG_BLOCK > 2U) return EINVAL;

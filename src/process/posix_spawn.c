@@ -8,11 +8,11 @@
 
 extern char **environ;
 
-int __posix_spawnx(pid_t *res, const char *path,
+int __posix_spawnx(pid_t *restrict res, const char *restrict path,
 	int (*exec)(const char *, char *const *),
 	const posix_spawn_file_actions_t *fa,
-	const posix_spawnattr_t *attr,
-	char *const argv[], char *const envp[])
+	const posix_spawnattr_t *restrict attr,
+	char *const argv[restrict], char *const envp[restrict])
 {
 	pid_t pid;
 	sigset_t oldmask;
@@ -89,10 +89,10 @@ int __posix_spawnx(pid_t *res, const char *path,
 	return 0;
 }
 
-int posix_spawn(pid_t *res, const char *path,
+int posix_spawn(pid_t *restrict res, const char *restrict path,
 	const posix_spawn_file_actions_t *fa,
-	const posix_spawnattr_t *attr,
-	char *const argv[], char *const envp[])
+	const posix_spawnattr_t *restrict attr,
+	char *const argv[restrict], char *const envp[restrict])
 {
 	return __posix_spawnx(res, path, execv, fa, attr, argv, envp);
 }

@@ -2,7 +2,7 @@
 #include "syscall.h"
 #include "libc.h"
 
-int pselect(int n, fd_set *rfds, fd_set *wfds, fd_set *efds, const struct timespec *ts, const sigset_t *mask)
+int pselect(int n, fd_set *restrict rfds, fd_set *restrict wfds, fd_set *restrict efds, const struct timespec *restrict ts, const sigset_t *restrict mask)
 {
 	long data[2] = { (long)mask, __SYSCALL_SSLEN };
 	struct timespec ts_tmp;

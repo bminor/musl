@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-int fscanf(FILE *f, const char *fmt, ...)
+int fscanf(FILE *restrict f, const char *restrict fmt, ...)
 {
 	int ret;
 	va_list ap;

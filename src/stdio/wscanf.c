@@ -2,7 +2,7 @@
 #include <stdarg.h>
 #include <wchar.h>
 
-int wscanf(const wchar_t *fmt, ...)
+int wscanf(const wchar_t *restrict fmt, ...)
 {
 	int ret;
 	va_list ap;

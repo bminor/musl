@@ -2,7 +2,7 @@
 
 wint_t __fgetwc_unlocked(FILE *);
 
-wchar_t *fgetws(wchar_t *s, int n, FILE *f)
+wchar_t *fgetws(wchar_t *restrict s, int n, FILE *restrict f)
 {
 	wchar_t *p = s;
 

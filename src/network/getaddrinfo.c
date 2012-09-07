@@ -47,7 +47,7 @@ struct aibuf {
 /* Extra slots needed for storing canonical name */
 #define EXTRA ((256+sizeof(struct aibuf)-1)/sizeof(struct aibuf))
 
-int getaddrinfo(const char *host, const char *serv, const struct addrinfo *hint, struct addrinfo **res)
+int getaddrinfo(const char *restrict host, const char *restrict serv, const struct addrinfo *restrict hint, struct addrinfo **restrict res)
 {
 	int flags = hint ? hint->ai_flags : 0;
 	int family = hint ? hint->ai_family : AF_UNSPEC;

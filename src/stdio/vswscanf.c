@@ -23,7 +23,7 @@ static size_t wstring_read(FILE *f, unsigned char *buf, size_t len)
 	return 1;
 }
 
-int vswscanf(const wchar_t *s, const wchar_t *fmt, va_list ap)
+int vswscanf(const wchar_t *restrict s, const wchar_t *restrict fmt, va_list ap)
 {
 	unsigned char buf[256];
 	FILE f = {

@@ -5,6 +5,12 @@
 extern "C" {
 #endif
 
+#if __STDC_VERSION__ >= 199901L
+#define __restrict restrict
+#elif !defined(__GNUC__)
+#define __restrict
+#endif
+
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) \
  || defined(_BSD_SOURCE)
@@ -165,16 +171,16 @@ int sigaddset(sigset_t *, int);
 int sigdelset(sigset_t *, int);
 int sigismember(const sigset_t *, int);
 
-int sigprocmask(int, const sigset_t *, sigset_t *);
+int sigprocmask(int, const sigset_t *__restrict, sigset_t *__restrict);
 int sigsuspend(const sigset_t *);
-int sigaction(int, const struct sigaction *, struct sigaction *);
+int sigaction(int, const struct sigaction *__restrict, struct sigaction *__restrict);
 int sigpending(sigset_t *);
-int sigwait(const sigset_t *, int *);
-int sigwaitinfo(const sigset_t *, siginfo_t *);
-int sigtimedwait(const sigset_t *, siginfo_t *, const struct timespec *);
+int sigwait(const sigset_t *__restrict, int *__restrict);
+int sigwaitinfo(const sigset_t *__restrict, siginfo_t *__restrict);
+int sigtimedwait(const sigset_t *__restrict, siginfo_t *__restrict, const struct timespec *__restrict);
 int sigqueue(pid_t, int, const union sigval);
 
-int pthread_sigmask(int, const sigset_t *, sigset_t *);
+int pthread_sigmask(int, const sigset_t *__restrict, sigset_t *__restrict);
 int pthread_kill(pthread_t, int);
 
 void psiginfo(const siginfo_t *, const char *);
@@ -184,7 +190,7 @@ void psignal(int, const char *);
 
 #if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
 int killpg(pid_t, int);
-int sigaltstack(const stack_t *, stack_t *);
+int sigaltstack(const stack_t *__restrict, stack_t *__restrict);
 int sighold(int);
 int sigignore(int);
 int siginterrupt(int, int);

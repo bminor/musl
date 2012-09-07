@@ -2,7 +2,7 @@
 #include <time.h>
 #include <string.h>
 
-size_t wcsftime(wchar_t *wcs, size_t n, const wchar_t *f, const struct tm *tm)
+size_t wcsftime(wchar_t *restrict wcs, size_t n, const wchar_t *restrict f, const struct tm *restrict tm)
 {
 	size_t k, n0=n;
 	char out[100], in[4];

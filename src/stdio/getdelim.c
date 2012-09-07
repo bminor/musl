@@ -2,7 +2,7 @@
 
 #define MIN(a,b) ((a)<(b) ? (a) : (b))
 
-ssize_t getdelim(char **s, size_t *n, int delim, FILE *f)
+ssize_t getdelim(char **restrict s, size_t *restrict n, int delim, FILE *restrict f)
 {
 	char *tmp;
 	unsigned char *z;

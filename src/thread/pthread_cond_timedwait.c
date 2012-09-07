@@ -36,7 +36,7 @@ static void cleanup(void *p)
 	pthread_mutex_lock(cm->m);
 }
 
-int pthread_cond_timedwait(pthread_cond_t *c, pthread_mutex_t *m, const struct timespec *ts)
+int pthread_cond_timedwait(pthread_cond_t *restrict c, pthread_mutex_t *restrict m, const struct timespec *restrict ts)
 {
 	struct cm cm = { .c=c, .m=m };
 	int r, e=0, seq;

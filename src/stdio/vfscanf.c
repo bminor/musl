@@ -71,7 +71,7 @@ static int readwc(int c, wchar_t **wcs, mbstate_t *st)
 	return 0;
 }
 
-int vfscanf(FILE *f, const char *fmt, va_list ap)
+int vfscanf(FILE *restrict f, const char *restrict fmt, va_list ap)
 {
 	int width;
 	int size;

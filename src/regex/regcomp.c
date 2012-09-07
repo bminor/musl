@@ -3091,7 +3091,7 @@ tre_ast_to_tnfa(tre_ast_node_t *node, tre_tnfa_transition_t *transitions,
 
 
 int
-regcomp(regex_t *preg, const char *regex, int cflags)
+regcomp(regex_t *restrict preg, const char *restrict regex, int cflags)
 {
   tre_stack_t *stack;
   tre_ast_node_t *tree, *tmp_ast_l, *tmp_ast_r;

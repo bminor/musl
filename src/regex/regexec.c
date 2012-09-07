@@ -977,8 +977,8 @@ tre_fill_pmatch(size_t nmatch, regmatch_t pmatch[], int cflags,
 */
 
 int
-regexec(const regex_t *preg, const char *string,
-	  size_t nmatch, regmatch_t pmatch[], int eflags)
+regexec(const regex_t *restrict preg, const char *restrict string,
+	  size_t nmatch, regmatch_t pmatch[restrict], int eflags)
 {
   tre_tnfa_t *tnfa = (void *)preg->TRE_REGEX_T_FIELD;
   reg_errcode_t status;

@@ -64,7 +64,7 @@ static void *wait_thread(void *p)
 	return 0;
 }
 
-int lio_listio(int mode, struct aiocb *const cbs[], int cnt, struct sigevent *sev)
+int lio_listio(int mode, struct aiocb *restrict const cbs[restrict], int cnt, struct sigevent *restrict sev)
 {
 	int i, ret;
 	struct lio_state *st=0;
@@ -81,7 +81,7 @@ int lio_listio(int mode, struct aiocb *const cbs[], int cnt, struct sigevent *se
 		}
 		st->cnt = cnt;
 		st->sev = sev;
-		memcpy(st->cbs, cbs, cnt*sizeof *cbs);
+		memcpy(st->cbs, (void*) cbs, cnt*sizeof *cbs);
 	}
 
 	for (i=0; i<cnt; i++) {

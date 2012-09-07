@@ -7,7 +7,7 @@
 #include <string.h>
 #include <strings.h>
 
-char *strptime(const char *s, const char *f, struct tm *tm)
+char *strptime(const char *restrict s, const char *restrict f, struct tm *restrict tm)
 {
 	int i, w, neg, adj, min, range, *dest;
 	const char *ex;

@@ -5,7 +5,7 @@
 
 const char *__langinfo(nl_item);
 
-char *__asctime(const struct tm *tm, char *buf)
+char *__asctime(const struct tm *restrict tm, char *restrict buf)
 {
 	/* FIXME: change __langinfo to __C_langinfo once we have locales */
 	if (snprintf(buf, 26, "%.3s %.3s%3d %.2d:%.2d:%.2d %d\n",

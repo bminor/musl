@@ -47,17 +47,17 @@ static long double wcstox(const wchar_t *s, wchar_t **p, int prec)
 	return y;
 }
 
-float wcstof(const wchar_t *s, wchar_t **p)
+float wcstof(const wchar_t *restrict s, wchar_t **restrict p)
 {
 	return wcstox(s, p, 0);
 }
 
-double wcstod(const wchar_t *s, wchar_t **p)
+double wcstod(const wchar_t *restrict s, wchar_t **restrict p)
 {
 	return wcstox(s, p, 1);
 }
 
-long double wcstold(const wchar_t *s, wchar_t **p)
+long double wcstold(const wchar_t *restrict s, wchar_t **restrict p)
 {
 	return wcstox(s, p, 2);
 }

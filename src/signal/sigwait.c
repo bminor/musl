@@ -1,7 +1,7 @@
 #include <signal.h>
 #include <stddef.h>
 
-int sigwait(const sigset_t *mask, int *sig)
+int sigwait(const sigset_t *restrict mask, int *restrict sig)
 {
 	siginfo_t si;
 	if (sigtimedwait(mask, &si, NULL) < 0)

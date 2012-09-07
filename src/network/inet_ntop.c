@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 
-const char *inet_ntop(int af, const void *a0, char *s, socklen_t l)
+const char *inet_ntop(int af, const void *restrict a0, char *restrict s, socklen_t l)
 {
 	const unsigned char *a = a0;
 	int i, j, max, best;

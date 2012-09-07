@@ -10,7 +10,7 @@ static size_t sn_write(FILE *f, const unsigned char *s, size_t l)
 	return l;
 }
 
-int vsnprintf(char *s, size_t n, const char *fmt, va_list ap)
+int vsnprintf(char *restrict s, size_t n, const char *restrict fmt, va_list ap)
 {
 	int r;
 	char b;

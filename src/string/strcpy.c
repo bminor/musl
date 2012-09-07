@@ -2,7 +2,7 @@
 
 char *__stpcpy(char *, const char *);
 
-char *strcpy(char *dest, const char *src)
+char *strcpy(char *restrict dest, const char *restrict src)
 {
 #if 1
 	__stpcpy(dest, src);

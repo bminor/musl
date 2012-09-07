@@ -67,7 +67,7 @@ static int mclose(FILE *m)
 	return 0;
 }
 
-FILE *fmemopen(void *buf, size_t size, const char *mode)
+FILE *fmemopen(void *restrict buf, size_t size, const char *restrict mode)
 {
 	FILE *f;
 	struct cookie *c;

@@ -6,7 +6,7 @@ static void cleanup(void *p)
 	a_dec(p);
 }
 
-int sem_timedwait(sem_t *sem, const struct timespec *at)
+int sem_timedwait(sem_t *restrict sem, const struct timespec *restrict at)
 {
 	while (sem_trywait(sem)) {
 		int r;

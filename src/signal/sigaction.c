@@ -11,7 +11,7 @@ void __restore(), __restore_rt();
 static pthread_t dummy(void) { return 0; }
 weak_alias(dummy, __pthread_self_def);
 
-int __libc_sigaction(int sig, const struct sigaction *sa, struct sigaction *old)
+int __libc_sigaction(int sig, const struct sigaction *restrict sa, struct sigaction *restrict old)
 {
 	struct k_sigaction ksa;
 	if (sa) {
@@ -31,7 +31,7 @@ int __libc_sigaction(int sig, const struct sigaction *sa, struct sigaction *old)
 	return 0;
 }
 
-int __sigaction(int sig, const struct sigaction *sa, struct sigaction *old)
+int __sigaction(int sig, const struct sigaction *restrict sa, struct sigaction *restrict old)
 {
 	if (sig-32U < 3) {
 		errno = EINVAL;

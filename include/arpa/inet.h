@@ -5,6 +5,12 @@
 extern "C" {
 #endif
 
+#if __STDC_VERSION__ >= 199901L
+#define __restrict restrict
+#elif !defined(__GNUC__)
+#define __restrict
+#endif
+
 #include <netinet/in.h>
 #include <inttypes.h>
 
@@ -24,8 +30,8 @@ uint16_t ntohs(uint16_t);
 
 in_addr_t inet_addr (const char *);
 char *inet_ntoa (struct in_addr);
-int inet_pton (int, const char *, void *);
-const char *inet_ntop (int, const void *, char *, socklen_t);
+int inet_pton (int, const char *__restrict, void *__restrict);
+const char *inet_ntop (int, const void *__restrict, char *__restrict, socklen_t);
 
 int inet_aton (const char *, struct in_addr *); /* nonstandard but widely used */
 

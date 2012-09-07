@@ -10,16 +10,22 @@ extern "C" {
 #define __NEED_wchar_t
 #include <bits/alltypes.h>
 
+#if __STDC_VERSION__ >= 199901L
+#define __restrict restrict
+#elif !defined(__GNUC__)
+#define __restrict
+#endif
+
 typedef struct { intmax_t quot, rem; } imaxdiv_t;
 
 intmax_t imaxabs(intmax_t);
 imaxdiv_t imaxdiv(intmax_t, intmax_t);
 
-intmax_t strtoimax(const char *, char **, int);
-uintmax_t strtoumax(const char *, char **, int);
+intmax_t strtoimax(const char *__restrict, char **__restrict, int);
+uintmax_t strtoumax(const char *__restrict, char **__restrict, int);
 
-intmax_t wcstoimax(const wchar_t *, wchar_t **, int);
-uintmax_t wcstoumax(const wchar_t *, wchar_t **, int);
+intmax_t wcstoimax(const wchar_t *__restrict, wchar_t **__restrict, int);
+uintmax_t wcstoumax(const wchar_t *__restrict, wchar_t **__restrict, int);
 
 #if !defined __cplusplus || defined __STDC_FORMAT_MACROS
 

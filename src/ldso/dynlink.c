@@ -973,7 +973,7 @@ int __dladdr(void *addr, Dl_info *info)
 	return 1;
 }
 
-void *__dlsym(void *p, const char *s, void *ra)
+void *__dlsym(void *restrict p, const char *restrict s, void *restrict ra)
 {
 	void *res;
 	pthread_rwlock_rdlock(&lock);
@@ -986,7 +986,7 @@ void *dlopen(const char *file, int mode)
 {
 	return 0;
 }
-void *__dlsym(void *p, const char *s, void *ra)
+void *__dlsym(void *restrict p, const char *restrict s, void *restrict ra)
 {
 	return 0;
 }

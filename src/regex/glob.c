@@ -156,7 +156,7 @@ static int sort(const void *a, const void *b)
 	return strcmp(*(const char **)a, *(const char **)b);
 }
 
-int glob(const char *pat, int flags, int (*errfunc)(const char *path, int err), glob_t *g)
+int glob(const char *restrict pat, int flags, int (*errfunc)(const char *path, int err), glob_t *restrict g)
 {
 	const char *p=pat, *d;
 	struct match head = { .next = NULL }, *tail = &head;

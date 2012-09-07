@@ -5,6 +5,12 @@
 extern "C" {
 #endif
 
+#if __STDC_VERSION__ >= 199901L
+#define __restrict restrict
+#elif !defined(__GNUC__)
+#define __restrict
+#endif
+
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 #define __NEED_size_t
 #endif
@@ -55,9 +61,9 @@ struct addrinfo
 #define EAI_SYSTEM     -11
 #define EAI_OVERFLOW   -12
 
-int getaddrinfo (const char *, const char *, const struct addrinfo *, struct addrinfo **);
+int getaddrinfo (const char *__restrict, const char *__restrict, const struct addrinfo *__restrict, struct addrinfo **__restrict);
 void freeaddrinfo (struct addrinfo *);
-int getnameinfo (const struct sockaddr *, socklen_t, char *, socklen_t, char *, socklen_t, int);
+int getnameinfo (const struct sockaddr *__restrict, socklen_t, char *__restrict, socklen_t, char *__restrict, socklen_t, int);
 const char *gai_strerror(int);
 
 

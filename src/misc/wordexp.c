@@ -147,7 +147,7 @@ static int do_wordexp(const char *s, wordexp_t *we, int flags)
 	return err;
 }
 
-int wordexp(const char *s, wordexp_t *we, int flags)
+int wordexp(const char *restrict s, wordexp_t *restrict we, int flags)
 {
 	int r, cs;
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
