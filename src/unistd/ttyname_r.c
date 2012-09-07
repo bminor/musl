@@ -15,5 +15,8 @@ int ttyname_r(int fd, char *name, size_t size)
 
 	if (l < 0) return errno;
 	else if (l == size) return ERANGE;
-	else return 0;
+	else {
+		name[l] = 0;
+		return 0;
+	}
 }
