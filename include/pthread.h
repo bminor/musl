@@ -10,6 +10,13 @@ extern "C" {
 #define __restrict
 #endif
 
+#if __STDC_VERSION__ >= 201112L
+#elif defined(__GNUC__)
+#define _Noreturn __attribute__((__noreturn__))
+#else
+#define _Noreturn
+#endif
+
 #define __NEED_time_t
 #define __NEED_clockid_t
 #define __NEED_struct_timespec
@@ -79,7 +86,7 @@ extern "C" {
 
 int pthread_create(pthread_t *__restrict, const pthread_attr_t *__restrict, void *(*)(void *), void *__restrict);
 int pthread_detach(pthread_t);
-void pthread_exit(void *);
+_Noreturn void pthread_exit(void *);
 int pthread_join(pthread_t, void **);
 
 #ifdef __GNUC__

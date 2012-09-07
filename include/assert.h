@@ -1,5 +1,12 @@
 #undef assert
 
+#if __STDC_VERSION__ >= 201112L
+#elif defined(__GNUC__)
+#define _Noreturn __attribute__((__noreturn__))
+#else
+#define _Noreturn
+#endif
+
 #ifdef NDEBUG
 #define	assert(x) (void)0
 #else
@@ -10,7 +17,7 @@
 extern "C" {
 #endif
 
-void __assert_fail (const char *, const char *, int, const char *);
+_Noreturn void __assert_fail (const char *, const char *, int, const char *);
 
 #ifdef __cplusplus
 }

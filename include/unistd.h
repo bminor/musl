@@ -11,6 +11,13 @@ extern "C" {
 #define __restrict
 #endif
 
+#if __STDC_VERSION__ >= 201112L
+#elif defined(__GNUC__)
+#define _Noreturn __attribute__((__noreturn__))
+#else
+#define _Noreturn
+#endif
+
 #define STDIN_FILENO  0
 #define STDOUT_FILENO 1
 #define STDERR_FILENO 2
@@ -90,7 +97,7 @@ int execl(const char *, const char *, ...);
 int execvp(const char *, char *const []);
 int execlp(const char *, const char *, ...);
 int fexecve(int, char *const [], char *const []);
-void _exit(int);
+_Noreturn void _exit(int);
 
 pid_t getpid(void);
 pid_t getppid(void);

@@ -1,6 +1,13 @@
 #ifndef _ERR_H
 #define _ERR_H
 
+#if __STDC_VERSION__ >= 201112L
+#elif defined(__GNUC__)
+#define _Noreturn __attribute__((__noreturn__))
+#else
+#define _Noreturn
+#endif
+
 #include <stdarg.h>
 
 #ifdef __cplusplus
@@ -12,10 +19,10 @@ void vwarn(const char *, va_list);
 void warnx(const char *, ...);
 void vwarnx(const char *, va_list);
 
-void err(int, const char *, ...);
-void verr(int, const char *, va_list);
-void errx(int, const char *, ...);
-void verrx(int, const char *, va_list);
+_Noreturn void err(int, const char *, ...);
+_Noreturn void verr(int, const char *, va_list);
+_Noreturn void errx(int, const char *, ...);
+_Noreturn void verrx(int, const char *, va_list);
 
 #ifdef __cplusplus
 }

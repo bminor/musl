@@ -15,13 +15,13 @@ void vwarnx(const char *fmt, va_list ap)
 	putc('\n', stderr);
 }
 
-void verr(int status, const char *fmt, va_list ap)
+_Noreturn void verr(int status, const char *fmt, va_list ap)
 {
 	vwarn(fmt, ap);
 	exit(status);
 }
 
-void verrx(int status, const char *fmt, va_list ap)
+_Noreturn void verrx(int status, const char *fmt, va_list ap)
 {
 	vwarnx(fmt, ap);
 	exit(status);
@@ -43,7 +43,7 @@ void warnx(const char *fmt, ...)
 	va_end(ap);
 }
 
-void err(int status, const char *fmt, ...)
+_Noreturn void err(int status, const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
@@ -51,7 +51,7 @@ void err(int status, const char *fmt, ...)
 	va_end(ap);
 }
 
-void errx(int status, const char *fmt, ...)
+_Noreturn void errx(int status, const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
