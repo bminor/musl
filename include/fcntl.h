@@ -130,6 +130,7 @@ ssize_t readahead(int, off_t, size_t);
 int sync_file_range(int, off_t, off_t, unsigned);
 ssize_t vmsplice(int, const struct iovec *, size_t, unsigned);
 ssize_t splice(int, off_t *, int, off_t *, size_t, unsigned);
+ssize_t tee(int, int, size_t, unsigned);
 #define loff_t off_t
 #endif
 
