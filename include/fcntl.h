@@ -118,12 +118,16 @@ struct f_owner_ex {
 };
 #define FALLOC_FL_KEEP_SIZE 1
 #define FALLOC_FL_PUNCH_HOLE 2
+#define SYNC_FILE_RANGE_WAIT_BEFORE 1
+#define SYNC_FILE_RANGE_WRITE 2
+#define SYNC_FILE_RANGE_WAIT_AFTER 4
 #define SPLICE_F_MOVE 1
 #define SPLICE_F_NONBLOCK 2
 #define SPLICE_F_MORE 4
 #define SPLICE_F_GIFT 8
 int fallocate(int, int, off_t, off_t);
 ssize_t readahead(int, off_t, size_t);
+int sync_file_range(int, off_t, off_t, unsigned);
 ssize_t vmsplice(int, const struct iovec *, size_t, unsigned);
 ssize_t splice(int, off_t *, int, off_t *, size_t, unsigned);
 #define loff_t off_t
