@@ -71,6 +71,7 @@ uint32_t ntohl(uint32_t);
 uint16_t ntohs(uint16_t);
 
 #define IPPROTO_IP       0
+#define IPPROTO_HOPOPTS  0
 #define IPPROTO_ICMP     1
 #define IPPROTO_IGMP     2
 #define IPPROTO_IPIP     4
