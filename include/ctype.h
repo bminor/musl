@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#include <features.h>
+
 int   isalnum(int);
 int   isalpha(int);
 int   isblank(int);

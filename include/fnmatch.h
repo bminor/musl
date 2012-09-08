@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#include <features.h>
+
 #define	FNM_PATHNAME 0x1
 #define	FNM_NOESCAPE 0x2
 #define	FNM_PERIOD   0x4

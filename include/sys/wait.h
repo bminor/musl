@@ -4,6 +4,8 @@
 extern "C" {
 #endif
 
+#include <features.h>
+
 #include <signal.h>
 
 #define __NEED_pid_t

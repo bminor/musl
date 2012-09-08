@@ -4,6 +4,8 @@
 extern "C" {
 #endif
 
+#include <features.h>
+
 #include <signal.h>
 
 #ifdef _GNU_SOURCE

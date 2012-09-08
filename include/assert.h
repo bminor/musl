@@ -1,11 +1,6 @@
-#undef assert
+#include <features.h>
 
-#if __STDC_VERSION__ >= 201112L
-#elif defined(__GNUC__)
-#define _Noreturn __attribute__((__noreturn__))
-#else
-#define _Noreturn
-#endif
+#undef assert
 
 #ifdef NDEBUG
 #define	assert(x) (void)0

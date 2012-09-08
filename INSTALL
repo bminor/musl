@@ -76,14 +76,9 @@ musl-gcc hello.c
 ./a.out
 
 To configure autoconf-based program to compile and link against musl,
-you may wish to use:
+set the CC variable to musl-gcc when running configure, as in:
 
-CC="musl-gcc -D_GNU_SOURCE" ./configure ...
-
-Correctly-written build systems should not need -D_GNU_SOURCE as part
-of $CC, but many programs do not use feature-test macros correctly and
-simply assume the compiler will automatically give them the kitchen
-sink, so the above command is an easy workaround.
+CC=musl-gcc ./configure ...
 
 You will probably also want to use --prefix when building libraries to
 ensure that they are installed under the musl prefix and not in the
@@ -140,9 +135,3 @@ dynamic linker (program interpreter) is /lib/ld-musl-$ARCH.so.1. If
 you're using static linking only, you might instead check the symbols
 and look for anything suspicious that would indicate your old glibc or
 uClibc was used.
-
-When building programs against musl, you may still want to ensure the
-appropriate feature test macros get defined, as in:
-
-CC="gcc -D_GNU_SOURCE" ./configure ...
-

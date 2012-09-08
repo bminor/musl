@@ -1,6 +1,8 @@
 #ifndef _NETINET_TCP_H
 #define _NETINET_TCP_H
 
+#include <features.h>
+
 #define TCP_NODELAY 1
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 #include <sys/types.h>

@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#include <features.h>
+
 #define __NEED_id_t
 #define __NEED_time_t
 #define __NEED_struct_timeval

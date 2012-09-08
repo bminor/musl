@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#include <features.h>
+
 struct utsname
 {
 	char sysname[65];

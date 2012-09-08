@@ -1,6 +1,8 @@
 #ifndef _LIMITS_H
 #define _LIMITS_H
 
+#include <features.h>
+
 /* Most limits are system-specific */
 
 #include <bits/limits.h>

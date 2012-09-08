@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#include <features.h>
+
 #undef NULL
 #ifdef __cplusplus
 #define NULL 0

@@ -5,9 +5,7 @@
 extern "C" {
 #endif
 
-#if __STDC_VERSION__ >= 199901L || defined(__cplusplus)
-#define __inline inline
-#endif
+#include <features.h>
 
 #define __NEED_float_t
 #define __NEED_double_t

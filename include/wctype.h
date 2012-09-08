@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#include <features.h>
+
 #define __NEED_wint_t
 #define __NEED_wctrans_t
 #define __NEED_wctype_t

@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#include <features.h>
+
 #include <sys/statvfs.h>
 
 typedef struct {

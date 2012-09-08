@@ -4,6 +4,8 @@
 extern "C" {
 #endif
 
+#include <features.h>
+
 #define __NEED_uid_t
 #define __NEED_gid_t
 #define __NEED_mode_t

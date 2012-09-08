@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#include <features.h>
+
 #define __NEED_pid_t
 
 #include <bits/alltypes.h>

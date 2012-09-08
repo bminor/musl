@@ -5,11 +5,7 @@
 extern "C" {
 #endif
 
-#if __STDC_VERSION__ >= 199901L
-#define __restrict restrict
-#elif !defined(__GNUC__)
-#define __restrict
-#endif
+#include <features.h>
 
 #define RTLD_LAZY   1
 #define RTLD_NOW    2

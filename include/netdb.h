@@ -5,11 +5,7 @@
 extern "C" {
 #endif
 
-#if __STDC_VERSION__ >= 199901L
-#define __restrict restrict
-#elif !defined(__GNUC__)
-#define __restrict
-#endif
+#include <features.h>
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 #define __NEED_size_t
