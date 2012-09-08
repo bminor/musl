@@ -1,13 +1,7 @@
 #ifndef _ERR_H
 #define _ERR_H
 
-#if __STDC_VERSION__ >= 201112L
-#elif defined(__GNUC__)
-#define _Noreturn __attribute__((__noreturn__))
-#else
-#define _Noreturn
-#endif
-
+#include <features.h>
 #include <stdarg.h>
 
 #ifdef __cplusplus
