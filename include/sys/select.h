@@ -4,11 +4,7 @@
 extern "C" {
 #endif
 
-#if __STDC_VERSION__ >= 199901L
-#define __restrict restrict
-#elif !defined(__GNUC__)
-#define __restrict
-#endif
+#include <features.h>
 
 #define __NEED_size_t
 #define __NEED_time_t

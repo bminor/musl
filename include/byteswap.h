@@ -1,11 +1,8 @@
 #ifndef _BYTESWAP_H
 #define _BYTESWAP_H
 
+#include <features.h>
 #include <stdint.h>
-
-#if __STDC_VERSION__ >= 199901L || defined(__cplusplus)
-#define __inline inline
-#endif
 
 static __inline uint16_t __bswap_16(uint16_t __x)
 {

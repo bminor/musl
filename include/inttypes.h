@@ -5,16 +5,11 @@
 extern "C" {
 #endif
 
+#include <features.h>
 #include <stdint.h>
 
 #define __NEED_wchar_t
 #include <bits/alltypes.h>
-
-#if __STDC_VERSION__ >= 199901L
-#define __restrict restrict
-#elif !defined(__GNUC__)
-#define __restrict
-#endif
 
 typedef struct { intmax_t quot, rem; } imaxdiv_t;
 

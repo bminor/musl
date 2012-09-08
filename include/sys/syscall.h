@@ -4,9 +4,7 @@
 extern "C" {
 #endif
 
-#if __STDC_VERSION__ >= 199901L || defined(__cplusplus)
-#define __inline inline
-#endif
+#include <features.h>
 
 long __syscall_ret(unsigned long);
 long __syscall(long, ...);
