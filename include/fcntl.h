@@ -123,6 +123,7 @@ struct f_owner_ex {
 #define SPLICE_F_MORE 4
 #define SPLICE_F_GIFT 8
 int fallocate(int, int, off_t, off_t);
+ssize_t readahead(int, off_t, size_t);
 ssize_t vmsplice(int, const struct iovec *, size_t, unsigned);
 ssize_t splice(int, off_t *, int, off_t *, size_t, unsigned);
 #define loff_t off_t
