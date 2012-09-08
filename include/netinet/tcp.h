@@ -4,9 +4,6 @@
 #include <features.h>
 
 #define TCP_NODELAY 1
-#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
-#include <sys/types.h>
-#include <sys/socket.h>
 #define TCP_MAXSEG	 2
 #define TCP_CORK	 3
 #define TCP_KEEPIDLE	 4
@@ -20,6 +17,10 @@
 #define	TCP_QUICKACK	 12
 #define TCP_CONGESTION	 13
 #define TCP_MD5SIG	 14
+
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+#include <sys/types.h>
+#include <sys/socket.h>
 #endif
 
 #endif
