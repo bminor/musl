@@ -11,6 +11,10 @@ extern "C" {
 #define __NEED_ssize_t
 #define __NEED_struct_iovec
 
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+#define __NEED_off_t
+#endif
+
 #ifdef _GNU_SOURCE
 #define __NEED_pid_t
 #endif
@@ -19,6 +23,11 @@ extern "C" {
 
 ssize_t readv (int, const struct iovec *, int);
 ssize_t writev (int, const struct iovec *, int);
+
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+ssize_t preadv (int, const struct iovec *, int, off_t);
+ssize_t pwritev (int, const struct iovec *, int, off_t);
+#endif
 
 #ifdef _GNU_SOURCE
 ssize_t process_vm_writev(pid_t, const struct iovec *, unsigned long, const struct iovec *, unsigned long, unsigned long);
