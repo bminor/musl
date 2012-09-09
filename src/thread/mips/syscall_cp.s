@@ -7,7 +7,7 @@ __syscall_cp_asm:
 __cp_begin:
 	lw      $4, 0($4)
 	bne     $4, $0, 2f
-	move    $10, $5
+	move    $25, $5
 	move    $4, $6
 	move    $5, $7
 	lw      $6, 16($sp)
@@ -17,7 +17,7 @@ __cp_begin:
 	subu    $sp, $sp, 32
 	sw      $8, 16($sp)
 	sw      $9, 20($sp)
-	move    $2, $10
+	move    $2, $25
 	syscall
 .global __cp_end
 __cp_end:
