@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-#incluce <features.h>
+#include <features.h>
 
 #define POLLIN     0x001
 #define POLLPRI    0x002
