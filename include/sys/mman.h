@@ -33,6 +33,7 @@ void *mremap (void *, size_t, size_t, int, ...);
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 int madvise (void *, size_t, int);
+int mincore (void *, size_t, unsigned char *);
 #endif
 
 int shm_open (const char *, int, mode_t);
