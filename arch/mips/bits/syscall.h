@@ -1,50 +1,3 @@
-#define __SYSCALL_LL_E(x) \
-((union { long long ll; long l[2]; }){ .ll = x }).l[0], \
-((union { long long ll; long l[2]; }){ .ll = x }).l[1]
-#define __SYSCALL_LL_O(x) 0, __SYSCALL_LL_E((x))
-
-#define __SYSCALL_SSLEN 16
-
-long (__syscall)(long, ...);
-
-static __inline long __syscall0(long n)
-{
-	return (__syscall)(n);
-}
-
-static __inline long __syscall1(long n, long a)
-{
-	return (__syscall)(n, a);
-}
-
-static __inline long __syscall2(long n, long a, long b)
-{
-	return (__syscall)(n, a, b);
-}
-
-static __inline long __syscall3(long n, long a, long b, long c)
-{
-	return (__syscall)(n, a, b, c);
-}
-
-static __inline long __syscall4(long n, long a, long b, long c, long d)
-{
-	return (__syscall)(n, a, b, c, d);
-}
-
-static __inline long __syscall5(long n, long a, long b, long c, long d, long e)
-{
-	return (__syscall)(n, a, b, c, d, e);
-}
-
-static __inline long __syscall6(long n, long a, long b, long c, long d, long e, long f)
-{
-	return (__syscall)(n, a, b, c, d, e, f);
-}
-
-#define __socketcall(nm,a,b,c,d,e,f) syscall(SYS_##nm, a, b, c, d, e, f)
-#define __socketcall_cp(nm,a,b,c,d,e,f) syscall_cp(SYS_##nm, a, b, c, d, e, f)
-
 #define __NR_syscall                 4000
 #define __NR_exit                    4001
 #define __NR_fork                    4002
@@ -415,26 +368,6 @@ static __inline long __syscall6(long n, long a, long b, long c, long d, long e, 
 #define __NR_setns                   4344
 #define __NR_process_vm_readv        4345
 #define __NR_process_vm_writev       4346
-
-/* fixup legacy 32-bit-vs-lfs64 junk */
-#undef __NR_fcntl
-#undef __NR_getdents
-#undef __NR_ftruncate
-#undef __NR_truncate
-#undef __NR_stat
-#undef __NR_fstat
-#undef __NR_lstat
-#undef __NR_statfs
-#undef __NR_fstatfs
-#define __NR_fcntl __NR_fcntl64
-#define __NR_getdents __NR_getdents64
-#define __NR_ftruncate __NR_ftruncate64
-#define __NR_truncate __NR_truncate64
-#define __NR_stat __NR_stat64
-#define __NR_fstat __NR_fstat64
-#define __NR_lstat __NR_lstat64
-#define __NR_statfs __NR_statfs64
-#define __NR_fstatfs __NR_fstatfs64
 
 
 /* Repeated with SYS_ prefix */
@@ -808,23 +741,3 @@ static __inline long __syscall6(long n, long a, long b, long c, long d, long e, 
 #define SYS_setns                   4344
 #define SYS_process_vm_readv        4345
 #define SYS_process_vm_writev       4346
-
-/* fixup legacy 32-bit-vs-lfs64 junk */
-#undef SYS_fcntl
-#undef SYS_getdents
-#undef SYS_ftruncate
-#undef SYS_truncate
-#undef SYS_stat
-#undef SYS_fstat
-#undef SYS_lstat
-#undef SYS_statfs
-#undef SYS_fstatfs
-#define SYS_fcntl SYS_fcntl64
-#define SYS_getdents SYS_getdents64
-#define SYS_ftruncate SYS_ftruncate64
-#define SYS_truncate SYS_truncate64
-#define SYS_stat SYS_stat64
-#define SYS_fstat SYS_fstat64
-#define SYS_lstat SYS_lstat64
-#define SYS_statfs SYS_statfs64
-#define SYS_fstatfs SYS_fstatfs64
