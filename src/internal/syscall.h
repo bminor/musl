@@ -14,9 +14,10 @@ long __syscall_cp(long, long, long, long, long, long, long);
 #define __syscall4(n,a,b,c,d) __syscall4(n,(long)(a),(long)(b),(long)(c),(long)(d))
 #define __syscall5(n,a,b,c,d,e) __syscall5(n,(long)(a),(long)(b),(long)(c),(long)(d),(long)(e))
 #define __syscall6(n,a,b,c,d,e,f) __syscall6(n,(long)(a),(long)(b),(long)(c),(long)(d),(long)(e),(long)(f))
+#define __syscall7(n,a,b,c,d,e,f,g) (__syscall)(n,(long)(a),(long)(b),(long)(c),(long)(d),(long)(e),(long)(f),(long)g)
 
-#define __SYSCALL_NARGS_X(a,b,c,d,e,f,g,n,...) n
-#define __SYSCALL_NARGS(...) __SYSCALL_NARGS_X(__VA_ARGS__,6,5,4,3,2,1,0)
+#define __SYSCALL_NARGS_X(a,b,c,d,e,f,g,h,n,...) n
+#define __SYSCALL_NARGS(...) __SYSCALL_NARGS_X(__VA_ARGS__,7,6,5,4,3,2,1,0)
 #define __SYSCALL_CONCAT_X(a,b) a##b
 #define __SYSCALL_CONCAT(a,b) __SYSCALL_CONCAT_X(a,b)
 #define __SYSCALL_DISP(b,...) __SYSCALL_CONCAT(b,__SYSCALL_NARGS(__VA_ARGS__))(__VA_ARGS__)
