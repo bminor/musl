@@ -131,6 +131,9 @@ static __inline long __syscall6(long __n, long __a1, long __a2, long __a3, long 
 #define __SC_getsockopt  15
 #define __SC_sendmsg     16
 #define __SC_recvmsg     17
+#define __SC_accept4     18
+#define __SC_recvmmsg    19
+#define __SC_sendmmsg    20
 
 #define __socketcall(nm,a,b,c,d,e,f) syscall(SYS_socketcall, __SC_##nm, \
     ((long [6]){ (long)a, (long)b, (long)c, (long)d, (long)e, (long)f }))

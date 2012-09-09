@@ -255,6 +255,10 @@ int sockatmark (int);
 #define SHUT_WR 1
 #define SHUT_RDWR 2
 
+#ifdef _GNU_SOURCE
+int accept4(int, struct sockaddr *__restrict, socklen_t *__restrict, int);
+#endif
+
 #ifdef __cplusplus
 }
 #endif
