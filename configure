@@ -34,6 +34,7 @@ Some influential environment variables:
   CC                      C compiler command [detected]
   CFLAGS                  C compiler flags [-Os -pipe ...]
   CROSS_COMPILE           prefix for cross compiler and tools [none]
+  LIBCC                   compiler runtime library [detected]
 
 Use these variables to override the choices made by configure.
 
@@ -128,6 +129,7 @@ CFLAGS=*) CFLAGS=${arg#*=} ;;
 CPPFLAGS=*) CPPFLAGS=${arg#*=} ;;
 LDFLAGS=*) LDFLAGS=${arg#*=} ;;
 CROSS_COMPILE=*) CROSS_COMPILE=${arg#*=} ;;
+LIBCC=*) LIBCC=${arg#*=} ;;
 *=*) ;;
 *) target=$arg ;;
 esac
@@ -286,6 +288,10 @@ printf "warning: disabling dynamic linking support\n"
 shared=no
 }
 
+# Find compiler runtime library
+test -z "$LIBCC" && tryldflag LIBCC -lgcc && tryldflag LIBCC -lgcc_eh
+test -z "$LIBCC" && tryldflag LIBCC -lcompiler_rt
+printf "using compiler runtime libraries: %s\n" "$LIBCC"
 
 
 printf "creating config.mak... "
@@ -309,6 +315,7 @@ CFLAGS_C99FSE = $CFLAGS_C99FSE
 CPPFLAGS = $CPPFLAGS
 LDFLAGS = $LDFLAGS_AUTO $LDFLAGS
 CROSS_COMPILE = $CROSS_COMPILE
+LIBCC = $LIBCC
 EOF
 test "x$static" = xno && echo "STATIC_LIBS ="
 test "x$shared" = xno && echo "SHARED_LIBS ="
