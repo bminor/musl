@@ -4,6 +4,6 @@
 
 int ppoll(struct pollfd *fds, nfds_t n, const struct timespec *to, const sigset_t *mask)
 {
-	struct timespec tmp = *to;
-	return syscall_cp(SYS_ppoll, fds, n, &tmp, mask);
+	return syscall_cp(SYS_ppoll, fds, n,
+		to ? (struct timespec []){*to} : 0, mask);
 }
