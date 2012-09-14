@@ -8,6 +8,8 @@
 
 extern char **environ;
 
+pid_t __vfork(void);
+
 int __posix_spawnx(pid_t *restrict res, const char *restrict path,
 	int (*exec)(const char *, char *const *),
 	const posix_spawn_file_actions_t *fa,
@@ -22,7 +24,7 @@ int __posix_spawnx(pid_t *restrict res, const char *restrict path,
 	if (!attr) attr = &dummy_attr;
 
 	sigprocmask(SIG_BLOCK, (void *)(uint64_t []){-1}, &oldmask);
-	pid = __syscall(SYS_fork);
+	pid = __vfork();
 
 	if (pid) {
 		sigprocmask(SIG_SETMASK, &oldmask, 0);
