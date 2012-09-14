@@ -37,7 +37,7 @@ int openat(int, const char *, int, ...);
 int posix_fadvise(int, off_t, off_t, int);
 int posix_fallocate(int, off_t, off_t);
 
-#define O_ACCMODE 03
+#define O_ACCMODE (O_RDWR|O_SEARCH)
 #define O_RDONLY  00
 #define O_WRONLY  01
 #define O_RDWR    02

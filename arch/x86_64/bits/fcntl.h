@@ -10,12 +10,14 @@
 #define O_DIRECTORY 0200000
 #define O_NOFOLLOW  0400000
 #define O_CLOEXEC  02000000
+#define O_SEARCH  010000000
 
 #define O_ASYNC      020000
 #define O_DIRECT     040000
 #define O_LARGEFILE       0
 #define O_NOATIME  01000000
 #define O_NDELAY O_NONBLOCK
+#define O_PATH    010000000
 
 #define F_DUPFD  0
 #define F_GETFD  1
