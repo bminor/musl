@@ -9,6 +9,10 @@
 #include "atomic.h"
 #include "pthread_impl.h"
 
+#if defined(__GNUC__) && defined(__PIC__)
+#define inline inline __attribute__((always_inline))
+#endif
+
 uintptr_t __brk(uintptr_t);
 void *__mmap(void *, size_t, int, int, int, off_t);
 int __munmap(void *, size_t);
@@ -58,20 +62,20 @@ static struct {
 
 /* Synchronization tools */
 
-static void lock(volatile int *lk)
+static inline void lock(volatile int *lk)
 {
 	if (!libc.threads_minus_1) return;
 	while(a_swap(lk, 1)) __wait(lk, lk+1, 1, 1);
 }
 
-static void unlock(volatile int *lk)
+static inline void unlock(volatile int *lk)
 {
 	if (!libc.threads_minus_1) return;
 	a_store(lk, 0);
 	if (lk[1]) __wake(lk, 1, 1);
 }
 
-static void lock_bin(int i)
+static inline void lock_bin(int i)
 {
 	if (libc.threads_minus_1)
 		lock(mal.bins[i].lock);
@@ -79,7 +83,7 @@ static void lock_bin(int i)
 		mal.bins[i].head = mal.bins[i].tail = BIN_TO_CHUNK(i);
 }
 
-static void unlock_bin(int i)
+static inline void unlock_bin(int i)
 {
 	if (!libc.threads_minus_1) return;
 	unlock(mal.bins[i].lock);
