@@ -706,3 +706,35 @@ bug fixes:
 - extremely rare/obscure race condition with robust mutexes
 - crypt now never returns null (most programs don't check, then crash)
 - missing xattr remove functions
+
+
+
+0.9.5 release notes
+
+compatibility and headers:
+- POSIX+XSI+BSD features enabled by default with no macros defined
+- most programs can now be built without adding -D_GNU_SOURCE
+- added C99 restrict keyword where required in all prototypes
+- greater C89 compatibility
+- cleaner, more-compatible public syscall.h
+- many other header fixes
+- support for compiling musl with clang/llvm
+
+new features:
+- sha 256/512 password hash functions in crypt
+- GNU hash support in dynamic linker
+- partial C11 coverage
+- dladdr function added
+- dynamic linker reports all errors instead of exiting on first error
+- syscall wrappers added for most remaining linux syscalls
+- provide POSIX O_SEARCH open mode using linux O_PATH
+
+bug fixes:
+- most atexit functions were being skipped when exiting
+- some BSD functions were not being exposed under _BSD_SOURCE
+- issues loading ssp-protected DSO into non-ssp program with dlopen
+
+debloating:
+- eliminate .eh_frame (10-15% loaded size bloat)
+- optimal inline syscall asm for ARM and MIPS
+- no longer force -O3 for shared libs
