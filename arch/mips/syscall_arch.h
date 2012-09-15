@@ -11,7 +11,7 @@
 	register long r2 __asm__("$2"); \
 	__asm__ __volatile__ ( \
 	"addu $2,$0,%2 ; syscall" \
-	: "=&r"(r2), "=r"(r7) : "ir"(n), __VA_ARGS__, "r"(r2) \
+	: "=&r"(r2), "=r"(r7) : "ir"(n), __VA_ARGS__, "0"(r2), "1"(r7) \
 	: "$1", "$3", "$8", "$9", "$10", "$11", "$12", "$13", \
 	  "$14", "$15", "$24", "$25", "hi", "lo", "memory"); \
 	return r7 ? -r2 : r2; \
@@ -53,7 +53,7 @@ static inline long __syscall4(long n, long a, long b, long c, long d)
 	register long r5 __asm__("$5") = b;
 	register long r6 __asm__("$6") = c;
 	register long r7 __asm__("$7") = d;
-	__asm_syscall("r"(r4), "r"(r5), "r"(r6), "r"(r7));
+	__asm_syscall("r"(r4), "r"(r5), "r"(r6));
 }
 
 #else
