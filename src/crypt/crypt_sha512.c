@@ -193,7 +193,7 @@ static char *to64(char *s, unsigned int u, int n)
 #define SALT_MAX 16
 #define ROUNDS_DEFAULT 5000
 #define ROUNDS_MIN 1000
-#define ROUNDS_MAX 20000
+#define ROUNDS_MAX 9999999
 
 /* hash n bytes of the repeated md message digest */
 static void hashmd(struct sha512 *s, unsigned int n, const void *md)
