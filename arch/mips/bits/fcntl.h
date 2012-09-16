@@ -16,6 +16,7 @@
 #define O_CLOEXEC  02000000
 #define O_PATH    010000000
 #define O_SEARCH  010000000
+#define O_EXEC    010000000
 
 #define O_NDELAY O_NONBLOCK
 

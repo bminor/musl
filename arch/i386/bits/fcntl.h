@@ -11,6 +11,7 @@
 #define O_NOFOLLOW  0400000
 #define O_CLOEXEC  02000000
 #define O_SEARCH  010000000
+#define O_EXEC    010000000
 
 #define O_ASYNC      020000
 #define O_DIRECT     040000
