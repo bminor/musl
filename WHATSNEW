@@ -738,3 +738,14 @@ debloating:
 - eliminate .eh_frame (10-15% loaded size bloat)
 - optimal inline syscall asm for ARM and MIPS
 - no longer force -O3 for shared libs
+
+
+
+0.9.6 release notes
+
+bug fixes:
+- serious breakage in definition of O_ACCMODE mask (missing a bit)
+
+new features:
+- O_EXEC open mode
+- md5 crypt hash function
