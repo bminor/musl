@@ -10,6 +10,10 @@ extern "C" {
 #define __NEED_size_t
 #define __NEED_off_t
 
+#if defined(_GNU_SOURCE)
+#define __NEED_ssize_t
+#endif
+
 #include <bits/alltypes.h>
 
 #include <bits/mman.h>
@@ -29,6 +33,7 @@ int munlockall (void);
 
 #ifdef _GNU_SOURCE
 void *mremap (void *, size_t, size_t, int, ...);
+int remap_file_pages (void *, size_t, int, ssize_t, int);
 #endif
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)

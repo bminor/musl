@@ -184,6 +184,7 @@ int getresgid(gid_t *, gid_t *, gid_t *);
 char *get_current_dir_name(void);
 int pipe2(int [2], int);
 int dup3(int, int, int);
+void syncfs(int);
 #endif
 
 #if defined(_LARGEFILE64_SOURCE) || defined(_GNU_SOURCE)

@@ -5,6 +5,10 @@
 extern "C" {
 #endif
 
+#define __NEED_clockid_t
+
+#include <bits/alltypes.h>
+
 #include <sys/time.h>
 
 struct ntptimeval {
@@ -83,6 +87,7 @@ struct timex {
 #define MAXTC		6
 
 int adjtimex(struct timex *);
+int clock_adjtime(clockid_t, struct timex *);
 
 #ifdef __cplusplus
 }
