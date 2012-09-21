@@ -112,7 +112,7 @@ lib/musl-gcc.specs: tools/musl-gcc.specs.sh config.mak
 	sh $< "$(includedir)" "$(libdir)" "$(LDSO_PATHNAME)" > $@
 
 tools/musl-gcc: config.mak
-	printf '#!/bin/sh\nexec gcc "$$@" -specs "%s/musl-gcc.specs"\n' "$(libdir)" > $@
+	printf '#!/bin/sh\nexec "$${REALGCC:-gcc}" "$$@" -specs "%s/musl-gcc.specs"\n' "$(libdir)" > $@
 	chmod +x $@
 
 $(DESTDIR)$(bindir)/%: tools/%
