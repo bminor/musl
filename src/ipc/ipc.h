@@ -9,5 +9,3 @@
 #define IPCOP_shmdt     22
 #define IPCOP_shmget    23
 #define IPCOP_shmctl    24
-
-#define IPC_MODERN   0x100
