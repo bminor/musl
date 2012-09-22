@@ -3,10 +3,6 @@
 #include "syscall.h"
 #include "ipc.h"
 
-#ifndef IPC_64
-#define IPC_64 0
-#endif
-
 int semctl(int id, int num, int cmd, ...)
 {
 	long arg;
