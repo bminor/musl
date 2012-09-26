@@ -4,12 +4,11 @@
 char *dirname(char *s)
 {
 	size_t i;
-	if (!s || !*s || !strchr(s, '/')) return ".";
+	if (!s || !*s) return ".";
 	i = strlen(s)-1;
-	for (; i&&s[i]=='/'; i--);
-	for (; i&&s[i-1]!='/'; i--);
-	for (; i&&s[i-1]=='/'; i--);
-	if (!i && *s=='/') i++;
-	s[i] = 0;
+	for (; s[i]=='/'; i--) if (!i) return "/";
+	for (; s[i]!='/'; i--) if (!i) return ".";
+	for (; s[i]=='/'; i--) if (!i) return "/";
+	s[i+1] = 0;
 	return s;
 }
