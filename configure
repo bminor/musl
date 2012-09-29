@@ -202,6 +202,7 @@ arm*) ARCH=arm ;;
 i?86*) ARCH=i386 ;;
 x86_64*) ARCH=x86_64 ;;
 mips-*|mipsel-*) ARCH=mips ;;
+microblaze-*) ARCH=microblaze ;;
 unknown) fail "$0: unable to detect target arch; try $0 --target=..." ;;
 *) fail "$0: unknown or unsupported target \"$target\"" ;;
 esac
