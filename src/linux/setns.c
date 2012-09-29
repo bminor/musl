@@ -5,5 +5,5 @@
 
 int setns(int fd, int nstype)
 {
-        return syscall(SYS_setns, fd, nstype);
+	return syscall(SYS_setns, fd, nstype);
 }
