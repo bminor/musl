@@ -51,8 +51,7 @@ static void __openlog(const char *ident, int opt, int facility)
 
 	if (!(opt & LOG_NDELAY) || log_fd>=0) return;
 
-	log_fd = socket(AF_UNIX, SOCK_DGRAM, 0);
-	fcntl(log_fd, F_SETFD, FD_CLOEXEC);
+	log_fd = socket(AF_UNIX, SOCK_DGRAM|SOCK_CLOEXEC, 0);
 }
 
 void openlog(const char *ident, int opt, int facility)
