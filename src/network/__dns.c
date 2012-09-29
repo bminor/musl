@@ -91,7 +91,7 @@ int __dns_doqueries(unsigned char *dest, const char *name, int *rr, int rrcnt)
 
 	/* Get local address and open/bind a socket */
 	sa.sin.sin_family = family;
-	fd = socket(family, SOCK_DGRAM, 0);
+	fd = socket(family, SOCK_DGRAM|SOCK_CLOEXEC|SOCK_NONBLOCK, 0);
 
 	pthread_cleanup_push(cleanup, (void *)(intptr_t)fd);
 	pthread_setcancelstate(cs, 0);
@@ -100,8 +100,6 @@ int __dns_doqueries(unsigned char *dest, const char *name, int *rr, int rrcnt)
 		errcode = EAI_SYSTEM;
 		goto out;
 	}
-	/* Nonblocking to work around Linux UDP select bug */
-	fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK);
 
 	pfd.fd = fd;
 	pfd.events = POLLIN;

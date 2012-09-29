@@ -19,7 +19,7 @@ char *realpath(const char *restrict filename, char *restrict resolved)
 		return 0;
 	}
 
-	fd = open(filename, O_RDONLY|O_NONBLOCK);
+	fd = open(filename, O_RDONLY|O_NONBLOCK|O_CLOEXEC);
 	if (fd < 0) return 0;
 	snprintf(buf, sizeof buf, "/proc/self/fd/%d", fd);
 

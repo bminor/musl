@@ -376,7 +376,7 @@ static int path_open(const char *name, const char *search, char *buf, size_t buf
 		z = strchr(s, ':');
 		l = z ? z-s : strlen(s);
 		snprintf(buf, buf_size, "%.*s/%s", l, s, name);
-		if ((fd = open(buf, O_RDONLY))>=0) return fd;
+		if ((fd = open(buf, O_RDONLY|O_CLOEXEC))>=0) return fd;
 		s += l;
 	}
 }
@@ -423,7 +423,7 @@ static struct dso *load_library(const char *name)
 	}
 	if (strchr(name, '/')) {
 		pathname = name;
-		fd = open(name, O_RDONLY);
+		fd = open(name, O_RDONLY|O_CLOEXEC);
 	} else {
 		/* Search for the name to see if it's already loaded */
 		for (p=head->next; p; p=p->next) {
