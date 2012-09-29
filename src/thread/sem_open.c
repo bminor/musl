@@ -71,7 +71,7 @@ sem_t *sem_open(const char *name, int flags, ...)
 			errno = EINVAL;
 			return SEM_FAILED;
 		}
-		sem_init(&newsem, 0, value);
+		sem_init(&newsem, 1, value);
 		clock_gettime(CLOCK_REALTIME, &ts);
 		snprintf(tmp, sizeof(tmp), "/dev/shm/%p-%p-%d-%d",
 			&name, name, (int)getpid(), (int)ts.tv_nsec);
