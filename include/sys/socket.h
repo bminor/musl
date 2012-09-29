@@ -235,6 +235,7 @@ int bind (int, const struct sockaddr *, socklen_t);
 int connect (int, const struct sockaddr *, socklen_t);
 int listen (int, int);
 int accept (int, struct sockaddr *__restrict, socklen_t *__restrict);
+int accept4(int, struct sockaddr *__restrict, socklen_t *__restrict, int);
 
 int getsockname (int, struct sockaddr *__restrict, socklen_t *__restrict);
 int getpeername (int, struct sockaddr *__restrict, socklen_t *__restrict);
@@ -254,10 +255,6 @@ int sockatmark (int);
 #define SHUT_RD 0
 #define SHUT_WR 1
 #define SHUT_RDWR 2
-
-#ifdef _GNU_SOURCE
-int accept4(int, struct sockaddr *__restrict, socklen_t *__restrict, int);
-#endif
 
 #ifdef __cplusplus
 }
