@@ -75,9 +75,9 @@ sem_t *sem_open(const char *name, int flags, ...)
 		clock_gettime(CLOCK_REALTIME, &ts);
 		snprintf(tmp, sizeof(tmp), "/dev/shm/%p-%p-%d-%d",
 			&name, name, (int)getpid(), (int)ts.tv_nsec);
-		tfd = open(tmp, O_CREAT|O_EXCL|O_RDWR, mode);
+		tfd = open(tmp, O_CREAT|O_EXCL|O_RDWR|O_CLOEXEC, mode);
 		if (tfd<0) return SEM_FAILED;
-		dir = open("/dev/shm", O_DIRECTORY|O_RDONLY);
+		dir = open("/dev/shm", O_DIRECTORY|O_RDONLY|O_CLOEXEC);
 		if (dir<0 || write(tfd,&newsem,sizeof newsem)!=sizeof newsem) {
 			if (dir >= 0) close(dir);
 			close(tfd);
