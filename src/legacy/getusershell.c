@@ -17,7 +17,7 @@ void endusershell(void)
 
 void setusershell(void)
 {
-	if (!f) f = fopen("/etc/shells", "rb");
+	if (!f) f = fopen("/etc/shells", "rbe");
 	if (!f) f = fmemopen((void *)defshells, sizeof defshells - 1, "rb");
 }
 

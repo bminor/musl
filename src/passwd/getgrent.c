@@ -15,7 +15,7 @@ struct group *getgrent()
 	static char *line, **mem;
 	static struct group gr;
 	size_t size=0, nmem=0;
-	if (!f) f = fopen("/etc/group", "rb");
+	if (!f) f = fopen("/etc/group", "rbe");
 	if (!f) return 0;
 	return __getgrent_a(f, &gr, &line, &size, &mem, &nmem);
 }

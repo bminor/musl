@@ -22,7 +22,7 @@ struct tm *getdate(const char *s)
 		goto out;
 	}
 
-	f = fopen(datemsk, "r");
+	f = fopen(datemsk, "rbe");
 	if (!f) {
 		if (errno == ENOMEM) getdate_err = 6;
 		else getdate_err = 2;

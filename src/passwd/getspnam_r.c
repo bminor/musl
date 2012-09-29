@@ -46,7 +46,7 @@ int getspnam_r(const char *name, struct spwd *sp, char *buf, size_t size, struct
 	if (snprintf(path, sizeof path, "/etc/tcb/%s/shadow", name) >= sizeof path)
 		return EINVAL;
 
-	fd = open(path, O_RDONLY|O_NOFOLLOW|O_NONBLOCK);
+	fd = open(path, O_RDONLY|O_NOFOLLOW|O_NONBLOCK|O_CLOEXEC);
 	if (fd >= 0) {
 		struct stat st = { 0 };
 		errno = EINVAL;
@@ -57,7 +57,7 @@ int getspnam_r(const char *name, struct spwd *sp, char *buf, size_t size, struct
 			return errno;
 		}
 	} else {
-		f = fopen("/etc/shadow", "rb");
+		f = fopen("/etc/shadow", "rbe");
 		if (!f) return errno;
 	}
 

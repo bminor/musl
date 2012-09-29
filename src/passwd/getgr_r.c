@@ -16,7 +16,7 @@ static int getgr_r(const char *name, gid_t gid, struct group *gr, char *buf, siz
 
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
 
-	f = fopen("/etc/group", "rb");
+	f = fopen("/etc/group", "rbe");
 	if (!f) {
 		rv = errno;
 		goto done;

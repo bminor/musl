@@ -13,7 +13,7 @@ static int getpw_r(const char *name, uid_t uid, struct passwd *pw, char *buf, si
 
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
 
-	f = fopen("/etc/passwd", "rb");
+	f = fopen("/etc/passwd", "rbe");
 	if (!f) {
 		rv = errno;
 		goto done;
