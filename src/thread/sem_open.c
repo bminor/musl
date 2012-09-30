@@ -29,7 +29,7 @@ sem_t *sem_open(const char *name, int flags, ...)
 	va_list ap;
 	mode_t mode;
 	unsigned value;
-	int fd, i, e, slot, first=1, cnt;
+	int fd, i, e, slot, first=1, cnt, cs;
 	sem_t newsem;
 	void *map;
 	char tmp[64];
@@ -74,6 +74,8 @@ sem_t *sem_open(const char *name, int flags, ...)
 		return SEM_FAILED;
 	}
 
+	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
+
 	for (;;) {
 		/* If exclusive mode is not requested, try opening an
 		 * existing file first and fall back to creation. */
@@ -83,16 +85,16 @@ sem_t *sem_open(const char *name, int flags, ...)
 				if ((map = mmap(0, sizeof(sem_t), PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0)) == MAP_FAILED ||
 				    fstat(fd, &st) < 0) {
 					close(fd);
-					return SEM_FAILED;
+					goto fail;
 				}
 				close(fd);
 				break;
 			}
 			if (errno != ENOENT)
-				return SEM_FAILED;
+				goto fail;
 		}
 		if (!(flags & O_CREAT))
-			return SEM_FAILED;
+			goto fail;
 		if (first) {
 			first = 0;
 			va_start(ap, flags);
@@ -101,7 +103,7 @@ sem_t *sem_open(const char *name, int flags, ...)
 			va_end(ap);
 			if (value > SEM_VALUE_MAX) {
 				errno = EINVAL;
-				return SEM_FAILED;
+				goto fail;
 			}
 			sem_init(&newsem, 1, value);
 		}
@@ -112,13 +114,13 @@ sem_t *sem_open(const char *name, int flags, ...)
 		fd = open(tmp, O_CREAT|O_EXCL|FLAGS, mode);
 		if (fd < 0) {
 			if (errno == EEXIST) continue;
-			return SEM_FAILED;
+			goto fail;
 		}
 		if (write(fd, &newsem, sizeof newsem) != sizeof newsem || fstat(fd, &st) < 0 ||
 		    (map = mmap(0, sizeof(sem_t), PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0)) == MAP_FAILED) {
 			close(fd);
 			unlink(tmp);
-			return SEM_FAILED;
+			goto fail;
 		}
 		close(fd);
 		if (link(tmp, name) == 0) break;
@@ -128,7 +130,7 @@ sem_t *sem_open(const char *name, int flags, ...)
 		 * otherwise, next iteration will try to open the
 		 * existing file. */
 		if (e != EEXIST || flags == (O_CREAT|O_EXCL))
-			return SEM_FAILED;
+			goto fail;
 	}
 
 	/* See if the newly mapped semaphore is already mapped. If
@@ -138,16 +140,20 @@ sem_t *sem_open(const char *name, int flags, ...)
 	for (i=0; i<SEM_NSEMS_MAX && semtab[i].ino != st.st_ino; i++);
 	if (i<SEM_NSEMS_MAX) {
 		munmap(map, sizeof(sem_t));
-		semtab[i].refcnt++;
-		UNLOCK(lock);
-		return semtab[i].sem;
+		semtab[slot].sem = 0;
+		slot = i;
+		map = semtab[i].sem;
 	}
-	semtab[slot].refcnt = 1;
+	semtab[slot].refcnt++;
 	semtab[slot].sem = map;
 	semtab[slot].ino = st.st_ino;
 	UNLOCK(lock);
-
+	pthread_setcancelstate(cs, 0);
 	return map;
+
+fail:
+	pthread_setcancelstate(cs, 0);
+	return SEM_FAILED;
 }
 
 int sem_close(sem_t *sem)
