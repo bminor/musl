@@ -3,8 +3,15 @@
 #include <getopt.h>
 #include <stdio.h>
 
+extern int __optpos, __optreset;
+
 static int __getopt_long(int argc, char *const *argv, const char *optstring, const struct option *longopts, int *idx, int longonly)
 {
+	if (!optind || __optreset) {
+		__optreset = 0;
+		__optpos = 0;
+		optind = 1;
+	}
 	if (optind >= argc || !argv[optind] || argv[optind][0] != '-') return -1;
 	if ((longonly && argv[optind][1]) ||
 		(argv[optind][1] == '-' && argv[optind][2]))

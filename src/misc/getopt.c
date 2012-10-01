@@ -3,10 +3,13 @@
 #include <string.h>
 #include <limits.h>
 #include <stdlib.h>
+#include "libc.h"
 
 char *optarg;
-int optind=1, opterr=1, optopt;
-static int optpos;
+int optind=1, opterr=1, optopt, __optpos, __optreset=0;
+
+#define optpos __optpos
+weak_alias(__optreset, optreset);
 
 int getopt(int argc, char * const argv[], const char *optstring)
 {
@@ -14,6 +17,12 @@ int getopt(int argc, char * const argv[], const char *optstring)
 	wchar_t c, d;
 	int k, l;
 	char *optchar;
+
+	if (!optind || __optreset) {
+		__optreset = 0;
+		__optpos = 0;
+		optind = 1;
+	}
 
 	if (optind >= argc || !argv[optind] || argv[optind][0] != '-' || !argv[optind][1])
 		return -1;
