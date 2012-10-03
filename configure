@@ -248,6 +248,13 @@ tryflag CFLAGS_AUTO -fno-unwind-tables
 tryflag CFLAGS_AUTO -fno-asynchronous-unwind-tables
 
 #
+# The GNU toolchain defaults to assuming unmarked files need an
+# executable stack, potentially exposing vulnerabilities in programs
+# linked with such object files. Fix this.
+#
+tryflag CFLAGS_AUTO -Wa,--noexecstack
+
+#
 # Some optimization levels add bloated alignment that hurt performance
 #
 tryflag CFLAGS_AUTO -falign-functions=1
