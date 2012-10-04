@@ -17,6 +17,9 @@
 #include <pthread.h>
 #include <ctype.h>
 #include <dlfcn.h>
+#include "pthread_impl.h"
+#include "libc.h"
+#undef libc
 
 static int errflag;
 static char errbuf[128];
@@ -788,6 +791,8 @@ void *__dynlink(int argc, char **argv)
 	debug.state = 0;
 	_dl_debug_state();
 
+	/* Stand-in until real TLS support is added to dynamic linker */
+	__libc.tls_size = sizeof(struct pthread) + 4*sizeof(size_t);
 	if (ssp_used) __init_ssp(auxv);
 
 	do_init_fini(tail);
@@ -800,6 +805,11 @@ void *__dynlink(int argc, char **argv)
 
 	errno = 0;
 	return (void *)aux[AT_ENTRY];
+}
+
+void *__copy_tls(unsigned char *mem, size_t cnt)
+{
+	return mem;
 }
 
 void *dlopen(const char *file, int mode)

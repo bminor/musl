@@ -84,6 +84,8 @@ static void init_file_lock(FILE *f)
 	if (f && f->lock<0) f->lock = 0;
 }
 
+void *__copy_tls(unsigned char *, size_t);
+
 int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attr, void *(*entry)(void *), void *restrict arg)
 {
 	int ret;
@@ -92,6 +94,8 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attr,
 	struct pthread *self = pthread_self(), *new;
 	unsigned char *map, *stack, *tsd;
 	unsigned flags = 0x7d8f00;
+	size_t tls_cnt = libc.tls_cnt;
+	size_t tls_size = libc.tls_size;
 
 	if (!self) return ENOSYS;
 	if (!libc.threaded) {
@@ -109,15 +113,24 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attr,
 	} else {
 		if (attr) {
 			guard = ROUND(attr->_a_guardsize + DEFAULT_GUARD_SIZE);
-			size = guard + ROUND(attr->_a_stacksize + DEFAULT_STACK_SIZE);
+			size = guard + ROUND(attr->_a_stacksize
+				+ DEFAULT_STACK_SIZE + tls_size);
 		}
 		size += __pthread_tsd_size;
-		map = mmap(0, size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, -1, 0);
-		if (map == MAP_FAILED) return EAGAIN;
-		if (guard) mprotect(map, guard, PROT_NONE);
+		if (guard) {
+			map = mmap(0, size, PROT_NONE, MAP_PRIVATE|MAP_ANON, -1, 0);
+			if (map == MAP_FAILED) return EAGAIN;
+			if (mprotect(map+guard, size-guard, PROT_READ|PROT_WRITE)) {
+				munmap(map, size);
+				return EAGAIN;
+			}
+		} else {
+			map = mmap(0, size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, -1, 0);
+			if (map == MAP_FAILED) return EAGAIN;
+		}
 		tsd = map + size - __pthread_tsd_size;
 	}
-	new = (void *)(tsd - sizeof *new - PAGE_SIZE%sizeof *new);
+	new = __copy_tls(tsd - tls_size, tls_cnt);
 	new->map_base = map;
 	new->map_size = size;
 	new->pid = self->pid;

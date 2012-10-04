@@ -16,6 +16,7 @@ struct __libc {
 	int canceldisable;
 	FILE *ofl_head;
 	int ofl_lock[2];
+	volatile size_t tls_size, tls_cnt;
 };
 
 extern size_t __hwcap;

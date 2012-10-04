@@ -1,5 +1,6 @@
 #include "libc.h"
 
+void __init_tls(size_t *);
 void __init_security(size_t *);
 
 int __libc_start_main(
@@ -15,6 +16,7 @@ int __libc_start_main(
 	libc.ldso_fini = ldso_fini;
 	libc.fini = fini;
 
+	__init_tls((void *)auxv);
 	__init_security((void *)auxv);
 
 	/* Execute constructors (static) linked into the application */
