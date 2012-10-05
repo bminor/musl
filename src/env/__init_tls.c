@@ -7,13 +7,14 @@
 #ifndef SHARED
 
 static void *image;
-static size_t len, bss, align;
+static size_t len, size, align;
 
 void *__copy_tls(unsigned char *mem, size_t cnt)
 {
+	mem += -size & (4*sizeof(size_t)-1);
 	mem += ((uintptr_t)image - (uintptr_t)mem) & (align-1);
 	memcpy(mem, image, len);
-	return mem + len + bss;
+	return mem + size;
 }
 
 static void *simple(void *p)
@@ -53,13 +54,12 @@ void __init_tls(size_t *auxv)
 	}
 	if (!tls_phdr) return;
 
-	libc.tls_size = len+bss+align+4*sizeof(size_t)+sizeof(struct pthread);
+	libc.tls_size = size+align+8*sizeof(size_t)+sizeof(struct pthread);
 
 	image = (void *)(base + tls_phdr->p_vaddr);
 	len = tls_phdr->p_filesz;
-	bss = tls_phdr->p_memsz - len;
+	size = tls_phdr->p_memsz;
 	align = tls_phdr->p_align;
-	if (align < 4*sizeof(size_t)) align = 4*sizeof(size_t);
 	mem = __mmap(0, libc.tls_size, PROT_READ|PROT_WRITE,
 		MAP_ANONYMOUS|MAP_PRIVATE, -1, 0);
 	if (mem == MAP_FAILED) a_crash();

@@ -67,6 +67,8 @@ struct dso {
 	char relocated;
 	char constructed;
 	struct dso **deps;
+	void *tls_image;
+	size_t tls_len, tls_size, tls_align, tls_id;
 	char *shortname;
 	char buf[];
 };
@@ -74,6 +76,7 @@ struct dso {
 #include "reloc.h"
 
 void __init_ssp(size_t *);
+void *__install_initial_tls(void *);
 
 static struct dso *head, *tail, *libc;
 static char *env_path, *sys_path, *r_path;
@@ -86,6 +89,7 @@ static jmp_buf rtld_fail;
 static pthread_rwlock_t lock;
 static struct debug debug;
 static size_t *auxv;
+static size_t tls_cnt, tls_size;
 
 struct debug *_dl_debug_addr = &debug;
 
@@ -278,7 +282,7 @@ static void reclaim_gaps(unsigned char *base, Phdr *ph, size_t phent, size_t phc
 	}
 }
 
-static void *map_library(int fd, size_t *lenp, unsigned char **basep, size_t *dynp)
+static void *map_library(int fd, struct dso *dso)
 {
 	Ehdr buf[(896+sizeof(Ehdr))/sizeof(Ehdr)];
 	size_t phsize;
@@ -290,6 +294,7 @@ static void *map_library(int fd, size_t *lenp, unsigned char **basep, size_t *dy
 	unsigned prot;
 	unsigned char *map, *base;
 	size_t dyn;
+	size_t tls_image=0;
 	size_t i;
 
 	ssize_t l = read(fd, buf, sizeof buf);
@@ -306,6 +311,12 @@ static void *map_library(int fd, size_t *lenp, unsigned char **basep, size_t *dy
 	for (i=eh->e_phnum; i; i--, ph=(void *)((char *)ph+eh->e_phentsize)) {
 		if (ph->p_type == PT_DYNAMIC)
 			dyn = ph->p_vaddr;
+		if (ph->p_type == PT_TLS) {
+			tls_image = ph->p_vaddr;
+			dso->tls_align = ph->p_align;
+			dso->tls_len = ph->p_filesz;
+			dso->tls_size = ph->p_memsz;
+		}
 		if (ph->p_type != PT_LOAD) continue;
 		if (ph->p_vaddr < addr_min) {
 			addr_min = ph->p_vaddr;
@@ -360,9 +371,11 @@ static void *map_library(int fd, size_t *lenp, unsigned char **basep, size_t *dy
 		}
 	if (!runtime) reclaim_gaps(base, (void *)((char *)buf + eh->e_phoff),
 		eh->e_phentsize, eh->e_phnum);
-	*lenp = map_len;
-	*basep = base;
-	*dynp = dyn;
+	dso->map = map;
+	dso->map_len = map_len;
+	dso->base = base;
+	dso->dynv = (void *)(base+dyn);
+	if (dso->tls_size) dso->tls_image = (void *)(base+tls_image);
 	return map;
 error:
 	munmap(map, map_len);
@@ -402,7 +415,7 @@ static struct dso *load_library(const char *name)
 	const char *pathname;
 	unsigned char *base, *map;
 	size_t dyno, map_len;
-	struct dso *p;
+	struct dso *p, temp_dso = {0};
 	int fd;
 	struct stat st;
 
@@ -469,21 +482,21 @@ static struct dso *load_library(const char *name)
 			return p;
 		}
 	}
-	map = map_library(fd, &map_len, &base, &dyno);
+	map = map_library(fd, &temp_dso);
 	close(fd);
 	if (!map) return 0;
-	p = calloc(1, sizeof *p + strlen(pathname) + 1);
+	p = malloc(sizeof *p + strlen(pathname) + 1);
 	if (!p) {
 		munmap(map, map_len);
 		return 0;
 	}
-
-	p->map = map;
-	p->map_len = map_len;
-	p->base = base;
-	p->dynv = (void *)(base + dyno);
+	memcpy(p, &temp_dso, sizeof temp_dso);
 	decode_dyn(p);
-
+	if (p->tls_image) {
+		p->tls_id = ++tls_cnt;
+		tls_size += p->tls_size + p->tls_align + 8*sizeof(size_t) - 1
+			& -4*sizeof(size_t);
+	}
 	p->dev = st.st_dev;
 	p->ino = st.st_ino;
 	p->refcnt = 1;
@@ -622,6 +635,25 @@ void _dl_debug_state(void)
 {
 }
 
+void *__copy_tls(unsigned char *mem, size_t cnt)
+{
+	struct dso *p;
+	void **dtv = (void *)mem;
+	dtv[0] = (void *)cnt;
+	mem = (void *)(dtv + cnt + 1);
+	for (p=tail; p; p=p->prev) {
+		if (p->tls_id-1 >= cnt) continue;
+		mem += -p->tls_len & (4*sizeof(size_t)-1);
+		mem += ((uintptr_t)p->tls_image - (uintptr_t)mem)
+			& (p->tls_align-1);
+		dtv[p->tls_id] = mem;
+		memcpy(mem, p->tls_image, p->tls_len);
+		mem += p->tls_size;
+	}
+	((pthread_t)mem)->dtv = dtv;
+	return mem;
+}
+
 void *__dynlink(int argc, char **argv)
 {
 	size_t aux[AUX_CNT] = {0};
@@ -676,6 +708,7 @@ void *__dynlink(int argc, char **argv)
 
 	if (aux[AT_PHDR]) {
 		size_t interp_off = 0;
+		size_t tls_image = 0;
 		/* Find load address of the main program, via AT_PHDR vs PT_PHDR. */
 		phdr = (void *)aux[AT_PHDR];
 		for (i=aux[AT_PHNUM]; i; i--, phdr=(void *)((char *)phdr + aux[AT_PHENT])) {
@@ -683,7 +716,14 @@ void *__dynlink(int argc, char **argv)
 				app->base = (void *)(aux[AT_PHDR] - phdr->p_vaddr);
 			else if (phdr->p_type == PT_INTERP)
 				interp_off = (size_t)phdr->p_vaddr;
+			else if (phdr->p_type == PT_TLS) {
+				tls_image = phdr->p_vaddr;
+				app->tls_len = phdr->p_filesz;
+				app->tls_size = phdr->p_memsz;
+				app->tls_align = phdr->p_align;
+			}
 		}
+		if (app->tls_size) app->tls_image = (char *)app->base + tls_image;
 		if (interp_off) lib->name = (char *)app->base + interp_off;
 		app->name = argv[0];
 		app->dynv = (void *)(app->base + find_dyn(
@@ -709,7 +749,7 @@ void *__dynlink(int argc, char **argv)
 			_exit(1);
 		}
 		runtime = 1;
-		ehdr = (void *)map_library(fd, &app->map_len, &app->base, &dyno);
+		ehdr = (void *)map_library(fd, app);
 		if (!ehdr) {
 			dprintf(2, "%s: %s: Not a valid dynamic program\n", ldname, argv[0]);
 			_exit(1);
@@ -718,8 +758,12 @@ void *__dynlink(int argc, char **argv)
 		close(fd);
 		lib->name = ldname;
 		app->name = argv[0];
-		app->dynv = (void *)(app->base + dyno);
 		aux[AT_ENTRY] = ehdr->e_entry;
+	}
+	if (app->tls_size) {
+		app->tls_id = ++tls_cnt;
+		tls_size += app->tls_size+app->tls_align + 8*sizeof(size_t)-1
+			& -4*sizeof(size_t);
 	}
 	app->global = 1;
 	app->constructed = 1;
@@ -791,8 +835,19 @@ void *__dynlink(int argc, char **argv)
 	debug.state = 0;
 	_dl_debug_state();
 
-	/* Stand-in until real TLS support is added to dynamic linker */
-	__libc.tls_size = sizeof(struct pthread) + 4*sizeof(size_t);
+	tls_size += sizeof(struct pthread) + 4*sizeof(size_t);
+	__libc.tls_size = tls_size;
+	__libc.tls_cnt = tls_cnt;
+	if (tls_cnt) {
+		void *mem = mmap(0, __libc.tls_size, PROT_READ|PROT_WRITE,
+			MAP_ANONYMOUS|MAP_PRIVATE, -1, 0);
+		if (mem==MAP_FAILED ||
+		    !__install_initial_tls(__copy_tls(mem, tls_cnt))) {
+			dprintf(2, "%s: Error getting %zu bytes thread-local storage: %m\n",
+				argv[0], tls_size);
+			_exit(127);
+		}
+	}
 	if (ssp_used) __init_ssp(auxv);
 
 	do_init_fini(tail);
@@ -805,11 +860,6 @@ void *__dynlink(int argc, char **argv)
 
 	errno = 0;
 	return (void *)aux[AT_ENTRY];
-}
-
-void *__copy_tls(unsigned char *mem, size_t cnt)
-{
-	return mem;
 }
 
 void *dlopen(const char *file, int mode)
