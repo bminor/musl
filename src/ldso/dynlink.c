@@ -80,7 +80,6 @@ void *__install_initial_tls(void *);
 
 static struct dso *head, *tail, *libc;
 static char *env_path, *sys_path, *r_path;
-static int rtld_used;
 static int ssp_used;
 static int runtime;
 static int ldd_mode;
@@ -182,13 +181,9 @@ static void *find_sym(struct dso *dso, const char *s, int need_def)
 	void *def = 0;
 	if (dso->ghashtab) {
 		gh = gnu_hash(s);
-		if (gh == 0xf9040207 && !strcmp(s, "dlopen")) rtld_used = 1;
-		if (gh == 0xf4dc4ae && !strcmp(s, "dlsym")) rtld_used = 1;
 		if (gh == 0x1f4039c9 && !strcmp(s, "__stack_chk_fail")) ssp_used = 1;
 	} else {
 		h = sysv_hash(s);
-		if (h == 0x6b366be && !strcmp(s, "dlopen")) rtld_used = 1;
-		if (h == 0x6b3afd && !strcmp(s, "dlsym")) rtld_used = 1;
 		if (h == 0x595a4cc && !strcmp(s, "__stack_chk_fail")) ssp_used = 1;
 	}
 	for (; dso; dso=dso->next) {
@@ -861,12 +856,6 @@ void *__dynlink(int argc, char **argv)
 	if (ssp_used) __init_ssp(auxv);
 
 	do_init_fini(tail);
-
-	if (!rtld_used) {
-		free_all(head);
-		free(sys_path);
-		reclaim((void *)builtin_dsos, 0, sizeof builtin_dsos);
-	}
 
 	errno = 0;
 	return (void *)aux[AT_ENTRY];
