@@ -6,7 +6,11 @@
 #define IS_COPY(x) ((x)==R_MIPS_COPY)
 #define IS_PLT(x) 1
 
-static inline void do_single_reloc(size_t *reloc_addr, int type, size_t sym_val, size_t sym_size, unsigned char *base_addr, size_t addend)
+static inline void do_single_reloc(
+	struct dso *self, unsigned char *base_addr,
+	size_t *reloc_addr, int type, size_t addend,
+	Sym *sym, size_t sym_size,
+	struct symdef def, size_t sym_val)
 {
 	switch(type) {
 	case R_MIPS_JUMP_SLOT:

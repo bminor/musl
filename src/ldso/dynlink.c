@@ -68,9 +68,14 @@ struct dso {
 	char constructed;
 	struct dso **deps;
 	void *tls_image;
-	size_t tls_len, tls_size, tls_align, tls_id;
+	size_t tls_len, tls_size, tls_align, tls_id, tls_offset;
 	char *shortname;
 	char buf[];
+};
+
+struct symdef {
+	Sym *sym;
+	struct dso *dso;
 };
 
 #include "reloc.h"
@@ -172,13 +177,13 @@ static Sym *gnu_lookup(const char *s, uint32_t h1, struct dso *dso)
 	return 0;
 }
 
-#define OK_TYPES (1<<STT_NOTYPE | 1<<STT_OBJECT | 1<<STT_FUNC | 1<<STT_COMMON)
+#define OK_TYPES (1<<STT_NOTYPE | 1<<STT_OBJECT | 1<<STT_FUNC | 1<<STT_COMMON | 1<<STT_TLS)
 #define OK_BINDS (1<<STB_GLOBAL | 1<<STB_WEAK)
 
-static void *find_sym(struct dso *dso, const char *s, int need_def)
+static struct symdef find_sym(struct dso *dso, const char *s, int need_def)
 {
 	uint32_t h = 0, gh = 0;
-	void *def = 0;
+	struct symdef def = {0};
 	if (dso->ghashtab) {
 		gh = gnu_hash(s);
 		if (gh == 0x1f4039c9 && !strcmp(s, "__stack_chk_fail")) ssp_used = 1;
@@ -199,8 +204,9 @@ static void *find_sym(struct dso *dso, const char *s, int need_def)
 		if (sym && (!need_def || sym->st_shndx) && sym->st_value
 		 && (1<<(sym->st_info&0xf) & OK_TYPES)
 		 && (1<<(sym->st_info>>4) & OK_BINDS)) {
-			if (def && sym->st_info>>4 == STB_WEAK) continue;
-			def = dso->base + sym->st_value;
+			if (def.sym && sym->st_info>>4 == STB_WEAK) continue;
+			def.sym = sym;
+			def.dso = dso;
 			if (sym->st_info>>4 == STB_GLOBAL) break;
 		}
 	}
@@ -214,22 +220,20 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 	char *strings = dso->strings;
 	Sym *sym;
 	const char *name;
-	size_t sym_val, sym_size;
-	size_t *reloc_addr;
 	void *ctx;
 	int type;
 	int sym_index;
+	struct symdef def;
 
 	for (; rel_size; rel+=stride, rel_size-=stride*sizeof(size_t)) {
-		reloc_addr = (void *)(base + rel[0]);
 		type = R_TYPE(rel[1]);
 		sym_index = R_SYM(rel[1]);
 		if (sym_index) {
 			sym = syms + sym_index;
 			name = strings + sym->st_name;
 			ctx = IS_COPY(type) ? head->next : head;
-			sym_val = (size_t)find_sym(ctx, name, IS_PLT(type));
-			if (!sym_val && sym->st_info>>4 != STB_WEAK) {
+			def = find_sym(ctx, name, IS_PLT(type));
+			if (!def.sym && sym->st_info>>4 != STB_WEAK) {
 				snprintf(errbuf, sizeof errbuf,
 					"Error relocating %s: %s: symbol not found",
 					dso->name, name);
@@ -238,11 +242,14 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 				ldso_fail = 1;
 				continue;
 			}
-			sym_size = sym->st_size;
 		} else {
-			sym_val = sym_size = 0;
+			sym = 0;
+			def.sym = 0;
+			def.dso = 0;
 		}
-		do_single_reloc(reloc_addr, type, sym_val, sym_size, base, rel[2]);
+		do_single_reloc(dso, base, (void *)(base + rel[0]), type,
+			stride>2 ? rel[2] : 0, sym, sym?sym->st_size:0, def,
+			def.sym?(size_t)(def.dso->base+def.sym->st_value):0);
 	}
 }
 
@@ -816,8 +823,37 @@ void *__dynlink(int argc, char **argv)
 	if (env_preload) load_preload(env_preload);
 	load_deps(app);
 	make_global(app);
+
+	/* Make an initial pass setting up TLS before performing relocs.
+	 * This provides the TP-based offset of each DSO's TLS for
+	 * use in TP-relative relocations. After relocations, we need
+	 * to copy the TLS images again in case they had relocs. */
+	tls_size += sizeof(struct pthread) + 4*sizeof(size_t);
+	__libc.tls_size = tls_size;
+	__libc.tls_cnt = tls_cnt;
+	if (tls_cnt) {
+		struct dso *p;
+		void *mem = mmap(0, __libc.tls_size, PROT_READ|PROT_WRITE,
+			MAP_ANONYMOUS|MAP_PRIVATE, -1, 0);
+		if (mem==MAP_FAILED ||
+		    !__install_initial_tls(__copy_tls(mem, tls_cnt))) {
+			dprintf(2, "%s: Error getting %zu bytes thread-local storage: %m\n",
+				argv[0], tls_size);
+			_exit(127);
+		}
+		for (p=head; p; p=p->next) {
+			if (!p->tls_id) continue;
+			p->tls_offset = (char *)__pthread_self()
+				- (char *)__pthread_self()->dtv[p->tls_id];
+		}
+	}
+
 	reloc_all(app->next);
 	reloc_all(app);
+
+	/* The initial DTV is located at the base of the memory
+	 * allocated for TLS. Repeat copying TLS to pick up relocs. */
+	if (tls_cnt) __copy_tls((void *)__pthread_self()->dtv, tls_cnt);
 
 	if (ldso_fail) _exit(127);
 	if (ldd_mode) _exit(0);
@@ -840,19 +876,6 @@ void *__dynlink(int argc, char **argv)
 	debug.state = 0;
 	_dl_debug_state();
 
-	tls_size += sizeof(struct pthread) + 4*sizeof(size_t);
-	__libc.tls_size = tls_size;
-	__libc.tls_cnt = tls_cnt;
-	if (tls_cnt) {
-		void *mem = mmap(0, __libc.tls_size, PROT_READ|PROT_WRITE,
-			MAP_ANONYMOUS|MAP_PRIVATE, -1, 0);
-		if (mem==MAP_FAILED ||
-		    !__install_initial_tls(__copy_tls(mem, tls_cnt))) {
-			dprintf(2, "%s: Error getting %zu bytes thread-local storage: %m\n",
-				argv[0], tls_size);
-			_exit(127);
-		}
-	}
 	if (ssp_used) __init_ssp(auxv);
 
 	do_init_fini(tail);
@@ -933,17 +956,14 @@ static void *do_dlsym(struct dso *p, const char *s, void *ra)
 	size_t i;
 	uint32_t h = 0, gh = 0;
 	Sym *sym;
-	if (p == RTLD_NEXT) {
-		for (p=head; p && (unsigned char *)ra-p->map>p->map_len; p=p->next);
-		if (!p) p=head;
-		void *res = find_sym(p->next, s, 0);
-		if (!res) goto failed;
-		return res;
-	}
-	if (p == head || p == RTLD_DEFAULT) {
-		void *res = find_sym(head, s, 0);
-		if (!res) goto failed;
-		return res;
+	if (p == head || p == RTLD_DEFAULT || p == RTLD_NEXT) {
+		if (p == RTLD_NEXT) {
+			for (p=head; p && (unsigned char *)ra-p->map>p->map_len; p=p->next);
+			if (!p) p=head;
+		}
+		struct symdef def = find_sym(p->next, s, 0);
+		if (!def.sym) goto failed;
+		return def.dso->base + def.sym->st_value;
 	}
 	if (p->ghashtab) {
 		gh = gnu_hash(s);

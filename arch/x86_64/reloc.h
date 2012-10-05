@@ -7,7 +7,11 @@
 #define IS_COPY(x) ((x)==R_X86_64_COPY)
 #define IS_PLT(x) ((x)==R_X86_64_JUMP_SLOT)
 
-static inline void do_single_reloc(size_t *reloc_addr, int type, size_t sym_val, size_t sym_size, unsigned char *base_addr, size_t addend)
+static inline void do_single_reloc(
+	struct dso *self, unsigned char *base_addr,
+	size_t *reloc_addr, int type, size_t addend,
+	Sym *sym, size_t sym_size,
+	struct symdef def, size_t sym_val)
 {
 	switch(type) {
 	case R_X86_64_GLOB_DAT:
@@ -26,6 +30,17 @@ static inline void do_single_reloc(size_t *reloc_addr, int type, size_t sym_val,
 		break;
 	case R_X86_64_COPY:
 		memcpy(reloc_addr, (void *)sym_val, sym_size);
+		break;
+	case R_X86_64_TLS_DTPMOD64:
+		*reloc_addr = def.dso ? def.dso->tls_id : self->tls_id;
+		break;
+	case R_X86_64_TLS_DTPOFF64:
+		*reloc_addr = def.sym->st_value + addend;
+		break;
+	case R_X86_64_TLS_TPOFF64:
+		*reloc_addr = (def.sym
+			? def.sym->st_value - def.dso->tls_offset
+			: 0 - self->tls_offset) + addend;
 		break;
 	}
 }
