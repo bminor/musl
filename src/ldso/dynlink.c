@@ -72,6 +72,7 @@ struct dso {
 	void **new_dtv;
 	unsigned char *new_tls;
 	int new_dtv_idx, new_tls_idx;
+	struct dso *fini_next;
 	char *shortname;
 	char buf[];
 };
@@ -86,7 +87,7 @@ struct symdef {
 void __init_ssp(size_t *);
 void *__install_initial_tls(void *);
 
-static struct dso *head, *tail, *libc;
+static struct dso *head, *tail, *libc, *fini_head;
 static char *env_path, *sys_path, *r_path;
 static int ssp_used;
 static int runtime;
@@ -97,6 +98,7 @@ static pthread_rwlock_t lock;
 static struct debug debug;
 static size_t *auxv;
 static size_t tls_cnt, tls_size;
+static pthread_mutex_t init_fini_lock = { ._m_type = PTHREAD_MUTEX_RECURSIVE };
 
 struct debug *_dl_debug_addr = &debug;
 
@@ -642,18 +644,37 @@ static void find_map_range(Phdr *ph, size_t cnt, size_t stride, struct dso *p)
 	p->map_len = max_addr - min_addr;
 }
 
+static void do_fini()
+{
+	struct dso *p;
+	size_t dyn[DYN_CNT] = {0};
+	for (p=fini_head; p; p=p->fini_next) {
+		if (!p->constructed) continue;
+		decode_vec(p->dynv, dyn, DYN_CNT);
+		((void (*)(void))(p->base + dyn[DT_FINI]))();
+	}
+}
+
 static void do_init_fini(struct dso *p)
 {
 	size_t dyn[DYN_CNT] = {0};
+	int need_locking = __libc.threads_minus_1;
+	/* Allow recursive calls that arise when a library calls
+	 * dlopen from one of its constructors, but block any
+	 * other threads until all ctors have finished. */
+	if (need_locking) pthread_mutex_lock(&init_fini_lock);
 	for (; p; p=p->prev) {
-		if (p->constructed) return;
+		if (p->constructed) continue;
+		p->constructed = 1;
 		decode_vec(p->dynv, dyn, DYN_CNT);
-		if (dyn[0] & (1<<DT_FINI))
-			atexit((void (*)(void))(p->base + dyn[DT_FINI]));
+		if (dyn[0] & (1<<DT_FINI)) {
+			p->fini_next = fini_head;
+			fini_head = p;
+		}
 		if (dyn[0] & (1<<DT_INIT))
 			((void (*)(void))(p->base + dyn[DT_INIT]))();
-		p->constructed = 1;
 	}
+	if (need_locking) pthread_mutex_unlock(&init_fini_lock);
 }
 
 void _dl_debug_state(void)
@@ -932,6 +953,7 @@ void *__dynlink(int argc, char **argv)
 
 	if (ssp_used) __init_ssp(auxv);
 
+	atexit(do_fini);
 	do_init_fini(tail);
 
 	errno = 0;
@@ -1007,11 +1029,11 @@ void *dlopen(const char *file, int mode)
 	if (ssp_used) __init_ssp(auxv);
 
 	_dl_debug_state();
-
-	do_init_fini(tail);
+	orig_tail = tail;
 end:
 	__release_ptc();
 	pthread_rwlock_unlock(&lock);
+	if (p) do_init_fini(orig_tail);
 	pthread_setcancelstate(cs, 0);
 	return p;
 }
