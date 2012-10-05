@@ -22,7 +22,7 @@
 
 struct pthread {
 	struct pthread *self;
-	void *dtv, *unused1, *unused2;
+	void **dtv, *unused1, *unused2;
 	uintptr_t sysinfo;
 	uintptr_t canary;
 	pid_t tid, pid;

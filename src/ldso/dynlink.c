@@ -654,6 +654,16 @@ void *__copy_tls(unsigned char *mem, size_t cnt)
 	return mem;
 }
 
+void *__tls_get_addr(size_t *p)
+{
+	pthread_t self = __pthread_self();
+	if ((size_t)self->dtv[0] < p[0]) {
+		// FIXME: obtain new DTV and TLS from the DSO
+		a_crash();
+	}
+	return (char *)self->dtv[p[0]] + p[1];
+}
+
 void *__dynlink(int argc, char **argv)
 {
 	size_t aux[AUX_CNT] = {0};
