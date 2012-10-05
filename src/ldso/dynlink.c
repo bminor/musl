@@ -886,7 +886,7 @@ void *__dynlink(int argc, char **argv)
 
 void *dlopen(const char *file, int mode)
 {
-	struct dso *volatile p, *orig_tail = tail, *next;
+	struct dso *volatile p, *orig_tail, *next;
 	size_t i;
 	int cs;
 
@@ -894,6 +894,8 @@ void *dlopen(const char *file, int mode)
 
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
 	pthread_rwlock_wrlock(&lock);
+
+	orig_tail = tail;
 
 	if (setjmp(rtld_fail)) {
 		/* Clean up anything new that was (partially) loaded */
