@@ -31,13 +31,13 @@ static inline void do_single_reloc(
 	case R_X86_64_COPY:
 		memcpy(reloc_addr, (void *)sym_val, sym_size);
 		break;
-	case R_X86_64_TLS_DTPMOD64:
+	case R_X86_64_DTPMOD64:
 		*reloc_addr = def.dso ? def.dso->tls_id : self->tls_id;
 		break;
-	case R_X86_64_TLS_DTPOFF64:
+	case R_X86_64_DTPOFF64:
 		*reloc_addr = def.sym->st_value + addend;
 		break;
-	case R_X86_64_TLS_TPOFF64:
+	case R_X86_64_TPOFF64:
 		*reloc_addr = (def.sym
 			? def.sym->st_value - def.dso->tls_offset
 			: 0 - self->tls_offset) + addend;
