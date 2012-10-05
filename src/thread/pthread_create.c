@@ -4,8 +4,8 @@
 static void dummy_0()
 {
 }
-weak_alias(dummy_0, __synccall_lock);
-weak_alias(dummy_0, __synccall_unlock);
+weak_alias(dummy_0, __acquire_ptc);
+weak_alias(dummy_0, __release_ptc);
 weak_alias(dummy_0, __pthread_tsd_run_dtors);
 
 _Noreturn void pthread_exit(void *result)
@@ -84,7 +84,7 @@ static void init_file_lock(FILE *f)
 	if (f && f->lock<0) f->lock = 0;
 }
 
-void *__copy_tls(unsigned char *, size_t);
+void *__copy_tls(unsigned char *);
 
 int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attr, void *(*entry)(void *), void *restrict arg)
 {
@@ -94,8 +94,6 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attr,
 	struct pthread *self = pthread_self(), *new;
 	unsigned char *map, *stack, *tsd;
 	unsigned flags = 0x7d8f00;
-	size_t tls_cnt = libc.tls_cnt;
-	size_t tls_size = libc.tls_size;
 
 	if (!self) return ENOSYS;
 	if (!libc.threaded) {
@@ -107,6 +105,8 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attr,
 		libc.threaded = 1;
 	}
 
+	__acquire_ptc();
+
 	if (attr && attr->_a_stackaddr) {
 		map = 0;
 		tsd = (void *)(attr->_a_stackaddr-__pthread_tsd_size & -16);
@@ -114,7 +114,7 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attr,
 		if (attr) {
 			guard = ROUND(attr->_a_guardsize + DEFAULT_GUARD_SIZE);
 			size = guard + ROUND(attr->_a_stacksize
-				+ DEFAULT_STACK_SIZE + tls_size);
+				+ DEFAULT_STACK_SIZE + libc.tls_size);
 		}
 		size += __pthread_tsd_size;
 		if (guard) {
@@ -130,7 +130,7 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attr,
 		}
 		tsd = map + size - __pthread_tsd_size;
 	}
-	new = __copy_tls(tsd - tls_size, tls_cnt);
+	new = __copy_tls(tsd - libc.tls_size);
 	new->map_base = map;
 	new->map_size = size;
 	new->pid = self->pid;
@@ -147,12 +147,10 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attr,
 	new->canary = self->canary ^ (uintptr_t)&new;
 	stack = (void *)new;
 
-	__synccall_lock();
-
 	a_inc(&libc.threads_minus_1);
 	ret = __clone(start, stack, flags, new, &new->tid, new, &new->tid);
 
-	__synccall_unlock();
+	__release_ptc();
 
 	if (ret < 0) {
 		a_dec(&libc.threads_minus_1);

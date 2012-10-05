@@ -69,6 +69,9 @@ struct dso {
 	struct dso **deps;
 	void *tls_image;
 	size_t tls_len, tls_size, tls_align, tls_id, tls_offset;
+	void **new_dtv;
+	unsigned char *new_tls;
+	int new_dtv_idx, new_tls_idx;
 	char *shortname;
 	char buf[];
 };
@@ -420,6 +423,8 @@ static struct dso *load_library(const char *name)
 	struct dso *p, temp_dso = {0};
 	int fd;
 	struct stat st;
+	size_t alloc_size;
+	int n_th = 0;
 
 	/* Catch and block attempts to reload the implementation itself */
 	if (name[0]=='l' && name[1]=='i' && name[2]=='b') {
@@ -487,18 +492,27 @@ static struct dso *load_library(const char *name)
 	map = map_library(fd, &temp_dso);
 	close(fd);
 	if (!map) return 0;
-	p = malloc(sizeof *p + strlen(pathname) + 1);
+
+	/* Allocate storage for the new DSO. When there is TLS, this
+	 * storage must include a reservation for all pre-existing
+	 * threads to obtain copies of both the new TLS, and an
+	 * extended DTV capable of storing an additional slot for
+	 * the newly-loaded DSO. */
+	alloc_size = sizeof *p + strlen(pathname) + 1;
+	if (runtime && temp_dso.tls_image) {
+		size_t per_th = temp_dso.tls_size + temp_dso.tls_align
+			+ sizeof(void *) * (tls_cnt+3);
+		n_th = __libc.threads_minus_1 + 1;
+		if (n_th > SSIZE_MAX / per_th) alloc_size = SIZE_MAX;
+		else alloc_size += n_th * per_th;
+	}
+	p = calloc(1, alloc_size);
 	if (!p) {
 		munmap(map, map_len);
 		return 0;
 	}
 	memcpy(p, &temp_dso, sizeof temp_dso);
 	decode_dyn(p);
-	if (p->tls_image) {
-		p->tls_id = ++tls_cnt;
-		tls_size += p->tls_size + p->tls_align + 8*sizeof(size_t) - 1
-			& -4*sizeof(size_t);
-	}
 	p->dev = st.st_dev;
 	p->ino = st.st_ino;
 	p->refcnt = 1;
@@ -506,6 +520,14 @@ static struct dso *load_library(const char *name)
 	strcpy(p->name, pathname);
 	/* Add a shortname only if name arg was not an explicit pathname. */
 	if (pathname != name) p->shortname = strrchr(p->name, '/')+1;
+	if (p->tls_image) {
+		p->tls_id = ++tls_cnt;
+		tls_size += p->tls_size + p->tls_align + 8*sizeof(size_t) - 1
+			& -4*sizeof(size_t);
+		p->new_dtv = (void *)(-sizeof(size_t) &
+			(uintptr_t)(p->name+strlen(p->name)+sizeof(size_t)));
+		p->new_tls = (void *)(p->new_dtv + n_th*(tls_cnt+1));
+	}
 
 	tail->next = p;
 	p->prev = tail;
@@ -637,14 +659,14 @@ void _dl_debug_state(void)
 {
 }
 
-void *__copy_tls(unsigned char *mem, size_t cnt)
+void *__copy_tls(unsigned char *mem)
 {
 	struct dso *p;
 	void **dtv = (void *)mem;
-	dtv[0] = (void *)cnt;
-	mem = (void *)(dtv + cnt + 1);
+	dtv[0] = (void *)tls_cnt;
+	mem = (void *)(dtv + tls_cnt + 1);
 	for (p=tail; p; p=p->prev) {
-		if (p->tls_id-1 >= cnt) continue;
+		if (!p->tls_id) continue;
 		mem += -p->tls_len & (4*sizeof(size_t)-1);
 		mem += ((uintptr_t)p->tls_image - (uintptr_t)mem)
 			& (p->tls_align-1);
@@ -656,14 +678,46 @@ void *__copy_tls(unsigned char *mem, size_t cnt)
 	return mem;
 }
 
-void *__tls_get_addr(size_t *p)
+void *__tls_get_addr(size_t *v)
 {
 	pthread_t self = __pthread_self();
-	if ((size_t)self->dtv[0] < p[0]) {
-		// FIXME: obtain new DTV and TLS from the DSO
-		a_crash();
+	if (self->dtv && v[0]<=(size_t)self->dtv[0] && self->dtv[v[0]])
+		return (char *)self->dtv[v[0]]+v[1];
+
+	/* Block signals to make accessing new TLS async-signal-safe */
+	sigset_t set;
+	sigfillset(&set);
+	pthread_sigmask(SIG_BLOCK, &set, &set);
+	if (self->dtv && v[0]<=(size_t)self->dtv[0] && self->dtv[v[0]]) {
+		pthread_sigmask(SIG_SETMASK, &set, 0);
+		return (char *)self->dtv[v[0]]+v[1];
 	}
-	return (char *)self->dtv[p[0]] + p[1];
+
+	/* This is safe without any locks held because, if the caller
+	 * is able to request the Nth entry of the DTV, the DSO list
+	 * must be valid at least that far out and it was synchronized
+	 * at program startup or by an already-completed call to dlopen. */
+	struct dso *p;
+	for (p=head; p->tls_id != v[0]; p=p->next);
+
+	/* Get new DTV space from new DSO if needed */
+	if (!self->dtv || v[0] > (size_t)self->dtv[0]) {
+		void **newdtv = p->new_dtv +
+			(v[0]+1)*sizeof(void *)*a_fetch_add(&p->new_dtv_idx,1);
+		if (self->dtv) memcpy(newdtv, self->dtv,
+			((size_t)self->dtv[0]+1) * sizeof(void *));
+		newdtv[0] = (void *)v[0];
+		self->dtv = newdtv;
+	}
+
+	/* Get new TLS memory from new DSO */
+	unsigned char *mem = p->new_tls +
+		(p->tls_size + p->tls_align) * a_fetch_add(&p->new_tls_idx,1);
+	mem += ((uintptr_t)p->tls_image - (uintptr_t)mem) & (p->tls_align-1);
+	self->dtv[v[0]] = mem;
+	memcpy(mem, p->tls_image, p->tls_size);
+	pthread_sigmask(SIG_SETMASK, &set, 0);
+	return mem + v[1];
 }
 
 void *__dynlink(int argc, char **argv)
@@ -830,13 +884,12 @@ void *__dynlink(int argc, char **argv)
 	 * to copy the TLS images again in case they had relocs. */
 	tls_size += sizeof(struct pthread) + 4*sizeof(size_t);
 	__libc.tls_size = tls_size;
-	__libc.tls_cnt = tls_cnt;
 	if (tls_cnt) {
 		struct dso *p;
 		void *mem = mmap(0, __libc.tls_size, PROT_READ|PROT_WRITE,
 			MAP_ANONYMOUS|MAP_PRIVATE, -1, 0);
 		if (mem==MAP_FAILED ||
-		    !__install_initial_tls(__copy_tls(mem, tls_cnt))) {
+		    !__install_initial_tls(__copy_tls(mem))) {
 			dprintf(2, "%s: Error getting %zu bytes thread-local storage: %m\n",
 				argv[0], tls_size);
 			_exit(127);
@@ -853,7 +906,7 @@ void *__dynlink(int argc, char **argv)
 
 	/* The initial DTV is located at the base of the memory
 	 * allocated for TLS. Repeat copying TLS to pick up relocs. */
-	if (tls_cnt) __copy_tls((void *)__pthread_self()->dtv, tls_cnt);
+	if (tls_cnt) __copy_tls((void *)__pthread_self()->dtv);
 
 	if (ldso_fail) _exit(127);
 	if (ldd_mode) _exit(0);
@@ -887,6 +940,7 @@ void *__dynlink(int argc, char **argv)
 void *dlopen(const char *file, int mode)
 {
 	struct dso *volatile p, *orig_tail, *next;
+	size_t orig_tls_cnt;
 	size_t i;
 	int cs;
 
@@ -894,12 +948,15 @@ void *dlopen(const char *file, int mode)
 
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
 	pthread_rwlock_wrlock(&lock);
+	__inhibit_ptc();
 
+	p = 0;
+	orig_tls_cnt = tls_cnt;
 	orig_tail = tail;
 
 	if (setjmp(rtld_fail)) {
 		/* Clean up anything new that was (partially) loaded */
-		if (p->deps) for (i=0; p->deps[i]; i++)
+		if (p && p->deps) for (i=0; p->deps[i]; i++)
 			if (p->deps[i]->global < 0)
 				p->deps[i]->global = 0;
 		for (p=orig_tail->next; p; p=next) {
@@ -908,6 +965,8 @@ void *dlopen(const char *file, int mode)
 			free(p->deps);
 			free(p);
 		}
+		tls_cnt = orig_tls_cnt;
+		tls_size = __libc.tls_size;
 		tail = orig_tail;
 		tail->next = 0;
 		p = 0;
@@ -942,12 +1001,15 @@ void *dlopen(const char *file, int mode)
 		p->global = 1;
 	}
 
+	__libc.tls_size = tls_size;
+
 	if (ssp_used) __init_ssp(auxv);
 
 	_dl_debug_state();
 
 	do_init_fini(tail);
 end:
+	__release_ptc();
 	pthread_rwlock_unlock(&lock);
 	pthread_setcancelstate(cs, 0);
 	return p;

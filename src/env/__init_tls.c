@@ -9,7 +9,7 @@
 static void *image;
 static size_t len, size, align;
 
-void *__copy_tls(unsigned char *mem, size_t cnt)
+void *__copy_tls(unsigned char *mem)
 {
 	mem += -size & (4*sizeof(size_t)-1);
 	mem += ((uintptr_t)image - (uintptr_t)mem) & (align-1);
@@ -64,7 +64,7 @@ void __init_tls(size_t *auxv)
 		MAP_ANONYMOUS|MAP_PRIVATE, -1, 0);
 	if (mem == MAP_FAILED) a_crash();
 
-	if (!__install_initial_tls(__copy_tls(mem, 0))) a_crash();
+	if (!__install_initial_tls(__copy_tls(mem))) a_crash();
 }
 #else
 void __init_tls(size_t *auxv) { }

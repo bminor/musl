@@ -111,8 +111,9 @@ int __timedwait(volatile int *, int, clockid_t, const struct timespec *, void (*
 void __wait(volatile int *, volatile int *, int, int);
 void __wake(volatile int *, int, int);
 
-void __synccall_lock();
-void __synccall_unlock();
+void __acquire_ptc();
+void __release_ptc();
+void __inhibit_ptc();
 
 #define DEFAULT_STACK_SIZE 81920
 #define DEFAULT_GUARD_SIZE PAGE_SIZE
