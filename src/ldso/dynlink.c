@@ -483,7 +483,8 @@ static struct dso *load_library(const char *name)
 			/* If this library was previously loaded with a
 			 * pathname but a search found the same inode,
 			 * setup its shortname so it can be found by name. */
-			if (!p->shortname) p->shortname = strrchr(p->name, '/')+1;
+			if (!p->shortname && pathname != name)
+				p->shortname = strrchr(p->name, '/')+1;
 			close(fd);
 			p->refcnt++;
 			return p;
