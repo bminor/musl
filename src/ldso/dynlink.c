@@ -40,6 +40,9 @@ typedef Elf64_Sym Sym;
 #define R_SYM(x) ((x)>>32)
 #endif
 
+#define MAXP2(a,b) (-(-(a)&-(b)))
+#define ALIGN(x,y) ((x)+(y)-1 & -(y))
+
 struct debug {
 	int ver;
 	void *head;
@@ -97,7 +100,7 @@ static jmp_buf rtld_fail;
 static pthread_rwlock_t lock;
 static struct debug debug;
 static size_t *auxv;
-static size_t tls_cnt, tls_size;
+static size_t tls_cnt, tls_offset, tls_start, tls_align = 4*sizeof(size_t);
 static pthread_mutex_t init_fini_lock = { ._m_type = PTHREAD_MUTEX_RECURSIVE };
 
 struct debug *_dl_debug_addr = &debug;
@@ -525,8 +528,11 @@ static struct dso *load_library(const char *name)
 	if (pathname != name) p->shortname = strrchr(p->name, '/')+1;
 	if (p->tls_image) {
 		p->tls_id = ++tls_cnt;
-		tls_size += p->tls_size + p->tls_align + 8*sizeof(size_t) - 1
-			& -4*sizeof(size_t);
+		tls_align = MAXP2(tls_align, p->tls_align);
+		tls_offset += p->tls_size + p->tls_align - 1;
+		tls_offset -= (tls_offset + (uintptr_t)p->tls_image)
+			& (p->tls_align-1);
+		p->tls_offset = tls_offset;
 		p->new_dtv = (void *)(-sizeof(size_t) &
 			(uintptr_t)(p->name+strlen(p->name)+sizeof(size_t)));
 		p->new_tls = (void *)(p->new_dtv + n_th*(tls_cnt+1));
@@ -683,21 +689,26 @@ void _dl_debug_state(void)
 
 void *__copy_tls(unsigned char *mem)
 {
+	pthread_t td;
 	struct dso *p;
+
+	if (!tls_cnt) return mem;
+
 	void **dtv = (void *)mem;
 	dtv[0] = (void *)tls_cnt;
-	mem = (void *)(dtv + tls_cnt + 1);
-	for (p=tail; p; p=p->prev) {
+
+	mem += __libc.tls_size - sizeof(struct pthread);
+	mem -= (uintptr_t)mem & (tls_align-1);
+	mem -= tls_start;
+	td = (pthread_t)mem;
+
+	for (p=head; p; p=p->next) {
 		if (!p->tls_id) continue;
-		mem += -p->tls_len & (4*sizeof(size_t)-1);
-		mem += ((uintptr_t)p->tls_image - (uintptr_t)mem)
-			& (p->tls_align-1);
-		dtv[p->tls_id] = mem;
-		memcpy(mem, p->tls_image, p->tls_len);
-		mem += p->tls_size;
+		dtv[p->tls_id] = mem - p->tls_offset;
+		memcpy(dtv[p->tls_id], p->tls_image, p->tls_len);
 	}
-	((pthread_t)mem)->dtv = dtv;
-	return mem;
+	td->dtv = dtv;
+	return td;
 }
 
 void *__tls_get_addr(size_t *v)
@@ -737,9 +748,16 @@ void *__tls_get_addr(size_t *v)
 		(p->tls_size + p->tls_align) * a_fetch_add(&p->new_tls_idx,1);
 	mem += ((uintptr_t)p->tls_image - (uintptr_t)mem) & (p->tls_align-1);
 	self->dtv[v[0]] = mem;
-	memcpy(mem, p->tls_image, p->tls_size);
+	memcpy(mem, p->tls_image, p->tls_len);
 	pthread_sigmask(SIG_SETMASK, &set, 0);
 	return mem + v[1];
+}
+
+static void update_tls_size()
+{
+	size_t below_tp = (1+tls_cnt) * sizeof(void *) + tls_offset;
+	size_t above_tp = sizeof(struct pthread) + tls_start + tls_align;
+	__libc.tls_size = ALIGN(below_tp + above_tp, tls_align);
 }
 
 void *__dynlink(int argc, char **argv)
@@ -849,9 +867,11 @@ void *__dynlink(int argc, char **argv)
 		aux[AT_ENTRY] = ehdr->e_entry;
 	}
 	if (app->tls_size) {
-		app->tls_id = ++tls_cnt;
-		tls_size += app->tls_size+app->tls_align + 8*sizeof(size_t)-1
-			& -4*sizeof(size_t);
+		app->tls_id = tls_cnt = 1;
+		tls_offset = app->tls_offset = app->tls_size;
+		tls_start = -((uintptr_t)app->tls_image + app->tls_size)
+			& (app->tls_align-1);
+		tls_align = MAXP2(tls_align, app->tls_align);
 	}
 	app->global = 1;
 	app->constructed = 1;
@@ -900,12 +920,10 @@ void *__dynlink(int argc, char **argv)
 	load_deps(app);
 	make_global(app);
 
-	/* Make an initial pass setting up TLS before performing relocs.
-	 * This provides the TP-based offset of each DSO's TLS for
-	 * use in TP-relative relocations. After relocations, we need
-	 * to copy the TLS images again in case they had relocs. */
-	tls_size += sizeof(struct pthread) + 4*sizeof(size_t);
-	__libc.tls_size = tls_size;
+	reloc_all(app->next);
+	reloc_all(app);
+
+	update_tls_size();
 	if (tls_cnt) {
 		struct dso *p;
 		void *mem = mmap(0, __libc.tls_size, PROT_READ|PROT_WRITE,
@@ -913,22 +931,10 @@ void *__dynlink(int argc, char **argv)
 		if (mem==MAP_FAILED ||
 		    !__install_initial_tls(__copy_tls(mem))) {
 			dprintf(2, "%s: Error getting %zu bytes thread-local storage: %m\n",
-				argv[0], tls_size);
+				argv[0], __libc.tls_size);
 			_exit(127);
 		}
-		for (p=head; p; p=p->next) {
-			if (!p->tls_id) continue;
-			p->tls_offset = (char *)__pthread_self()
-				- (char *)__pthread_self()->dtv[p->tls_id];
-		}
 	}
-
-	reloc_all(app->next);
-	reloc_all(app);
-
-	/* The initial DTV is located at the base of the memory
-	 * allocated for TLS. Repeat copying TLS to pick up relocs. */
-	if (tls_cnt) __copy_tls((void *)__pthread_self()->dtv);
 
 	if (ldso_fail) _exit(127);
 	if (ldd_mode) _exit(0);
@@ -963,7 +969,7 @@ void *__dynlink(int argc, char **argv)
 void *dlopen(const char *file, int mode)
 {
 	struct dso *volatile p, *orig_tail, *next;
-	size_t orig_tls_cnt;
+	size_t orig_tls_cnt, orig_tls_offset, orig_tls_align;
 	size_t i;
 	int cs;
 
@@ -975,6 +981,8 @@ void *dlopen(const char *file, int mode)
 
 	p = 0;
 	orig_tls_cnt = tls_cnt;
+	orig_tls_offset = tls_offset;
+	orig_tls_align = tls_align;
 	orig_tail = tail;
 
 	if (setjmp(rtld_fail)) {
@@ -989,7 +997,8 @@ void *dlopen(const char *file, int mode)
 			free(p);
 		}
 		tls_cnt = orig_tls_cnt;
-		tls_size = __libc.tls_size;
+		tls_offset = orig_tls_offset;
+		tls_align = orig_tls_align;
 		tail = orig_tail;
 		tail->next = 0;
 		p = 0;
@@ -1024,7 +1033,7 @@ void *dlopen(const char *file, int mode)
 		p->global = 1;
 	}
 
-	__libc.tls_size = tls_size;
+	update_tls_size();
 
 	if (ssp_used) __init_ssp(auxv);
 
