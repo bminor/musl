@@ -209,14 +209,20 @@ static struct symdef find_sym(struct dso *dso, const char *s, int need_def)
 			if (!h) h = sysv_hash(s);
 			sym = sysv_lookup(s, h, dso);
 		}
-		if (sym && (!need_def || sym->st_shndx) && sym->st_value
-		 && (1<<(sym->st_info&0xf) & OK_TYPES)
-		 && (1<<(sym->st_info>>4) & OK_BINDS)) {
-			if (def.sym && sym->st_info>>4 == STB_WEAK) continue;
-			def.sym = sym;
-			def.dso = dso;
-			if (sym->st_info>>4 == STB_GLOBAL) break;
-		}
+		if (!sym) continue;
+		if (!sym->st_shndx)
+			if (need_def || (sym->st_info&0xf) == STT_TLS)
+				continue;
+		if (!sym->st_value)
+			if ((sym->st_info&0xf) != STT_TLS)
+				continue;
+		if (!(1<<(sym->st_info&0xf) & OK_TYPES)) continue;
+		if (!(1<<(sym->st_info>>4) & OK_BINDS)) continue;
+
+		if (def.sym && sym->st_info>>4 == STB_WEAK) continue;
+		def.sym = sym;
+		def.dso = dso;
+		if (sym->st_info>>4 == STB_GLOBAL) break;
 	}
 	return def;
 }
