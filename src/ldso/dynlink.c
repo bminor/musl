@@ -533,6 +533,11 @@ static struct dso *load_library(const char *name)
 	/* Add a shortname only if name arg was not an explicit pathname. */
 	if (pathname != name) p->shortname = strrchr(p->name, '/')+1;
 	if (p->tls_image) {
+		if (!__pthread_self_init()) {
+			free(p);
+			munmap(map, map_len);
+			return 0;
+		}
 		p->tls_id = ++tls_cnt;
 		tls_align = MAXP2(tls_align, p->tls_align);
 		tls_offset += p->tls_size + p->tls_align - 1;
