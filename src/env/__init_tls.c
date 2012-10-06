@@ -11,10 +11,23 @@ static size_t len, size, align;
 
 void *__copy_tls(unsigned char *mem)
 {
-	mem += -size & (4*sizeof(size_t)-1);
-	mem += ((uintptr_t)image - (uintptr_t)mem) & (align-1);
+	pthread_t td;
+	if (!image) return mem;
+	void **dtv = (void *)mem;
+	dtv[0] = (void *)1;
+	mem += __libc.tls_size - sizeof(struct pthread);
+	mem -= (uintptr_t)mem & (align-1);
+	td = (pthread_t)mem;
+	td->dtv = dtv;
+	mem -= size;
+	dtv[1] = mem;
 	memcpy(mem, image, len);
-	return mem + size;
+	return td;
+}
+
+void *__tls_get_addr(size_t *v)
+{
+	return (char *)__pthread_self()->dtv[1]+v[1];
 }
 
 static void *simple(void *p)
@@ -54,12 +67,16 @@ void __init_tls(size_t *auxv)
 	}
 	if (!tls_phdr) return;
 
-	libc.tls_size = size+align+8*sizeof(size_t)+sizeof(struct pthread);
-
 	image = (void *)(base + tls_phdr->p_vaddr);
 	len = tls_phdr->p_filesz;
 	size = tls_phdr->p_memsz;
 	align = tls_phdr->p_align;
+
+	size += (-size - (uintptr_t)image) & (align-1);
+	if (align < 4*sizeof(size_t)) align = 4*sizeof(size_t);
+
+	libc.tls_size = 2*sizeof(void *)+size+align+sizeof(struct pthread);
+
 	mem = __mmap(0, libc.tls_size, PROT_READ|PROT_WRITE,
 		MAP_ANONYMOUS|MAP_PRIVATE, -1, 0);
 	if (mem == MAP_FAILED) a_crash();
