@@ -730,8 +730,7 @@ void *__tls_get_addr(size_t *v)
 
 	/* Block signals to make accessing new TLS async-signal-safe */
 	sigset_t set;
-	sigfillset(&set);
-	pthread_sigmask(SIG_BLOCK, &set, &set);
+	pthread_sigmask(SIG_BLOCK, SIGALL_SET, &set);
 	if (self->dtv && v[0]<=(size_t)self->dtv[0] && self->dtv[v[0]]) {
 		pthread_sigmask(SIG_SETMASK, &set, 0);
 		return (char *)self->dtv[v[0]]+v[1];
