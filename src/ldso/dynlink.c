@@ -105,7 +105,7 @@ static pthread_mutex_t init_fini_lock = { ._m_type = PTHREAD_MUTEX_RECURSIVE };
 
 struct debug *_dl_debug_addr = &debug;
 
-#define AUX_CNT 24
+#define AUX_CNT 38
 #define DYN_CNT 34
 
 static void decode_vec(size_t *v, size_t *a, size_t cnt)
@@ -967,7 +967,7 @@ void *__dynlink(int argc, char **argv)
 	debug.state = 0;
 	_dl_debug_state();
 
-	if (ssp_used) __init_ssp(auxv);
+	if (ssp_used) __init_ssp((void *)aux[AT_RANDOM]);
 
 	atexit(do_fini);
 	do_init_fini(tail);

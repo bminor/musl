@@ -144,7 +144,7 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attr,
 		flags -= 0x200000;
 	}
 	new->unblock_cancel = self->cancel;
-	new->canary = self->canary ^ (uintptr_t)&new;
+	new->canary = self->canary;
 	stack = (void *)new;
 
 	a_inc(&libc.threads_minus_1);

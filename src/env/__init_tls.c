@@ -46,19 +46,14 @@ typedef Elf32_Phdr Phdr;
 typedef Elf64_Phdr Phdr;
 #endif
 
-#define AUX_CNT 6
-
-void __init_tls(size_t *auxv)
+void __init_tls(size_t *aux)
 {
-	size_t i, aux[AUX_CNT] = { 0 };
 	unsigned char *p, *mem;
 	size_t n, d;
 	Phdr *phdr, *tls_phdr=0;
 	size_t base = 0;
 
-	for (; auxv[0]; auxv+=2) if (auxv[0]<AUX_CNT) aux[auxv[0]] = auxv[1];
-	p = (void *)aux[AT_PHDR];
-	for (p=(void *)aux[AT_PHDR]; aux[AT_PHNUM]--; p+=aux[AT_PHENT]) {
+	for (p=(void *)aux[AT_PHDR],n=aux[AT_PHNUM]; n; n--,p+=aux[AT_PHENT]) {
 		phdr = (void *)p;
 		if (phdr->p_type == PT_PHDR)
 			base = aux[AT_PHDR] - phdr->p_vaddr;
@@ -79,8 +74,6 @@ void __init_tls(size_t *auxv)
 
 	mem = __mmap(0, libc.tls_size, PROT_READ|PROT_WRITE,
 		MAP_ANONYMOUS|MAP_PRIVATE, -1, 0);
-	if (mem == MAP_FAILED) a_crash();
-
 	if (!__install_initial_tls(__copy_tls(mem))) a_crash();
 }
 #else
