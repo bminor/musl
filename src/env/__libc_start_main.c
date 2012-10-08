@@ -8,7 +8,7 @@ void __init_security(size_t *);
 
 void __init_libc(char **envp)
 {
-	size_t i, *auxv, aux[AUX_CNT];
+	size_t i, *auxv, aux[AUX_CNT] = { 0 };
 	__environ = envp;
 	for (i=0; envp[i]; i++);
 	libc.auxv = auxv = (void *)(envp+i+1);
