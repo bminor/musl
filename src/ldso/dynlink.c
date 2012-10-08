@@ -533,7 +533,7 @@ static struct dso *load_library(const char *name)
 	/* Add a shortname only if name arg was not an explicit pathname. */
 	if (pathname != name) p->shortname = strrchr(p->name, '/')+1;
 	if (p->tls_image) {
-		if (!__pthread_self_init()) {
+		if (runtime && !__pthread_self_init()) {
 			free(p);
 			munmap(map, map_len);
 			return 0;
