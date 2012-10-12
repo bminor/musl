@@ -8,110 +8,51 @@
 static inline long __syscall0(long n)
 {
 	unsigned long __ret;
-	__asm__ __volatile__ ("int $128" : "=a"(__ret) : "a"(n) : "memory");
+	__asm__ __volatile__ ("call __vsyscall" : "=a"(__ret) : "a"(n) : "memory");
 	return __ret;
 }
-
-#ifndef __PIC__
 
 static inline long __syscall1(long n, long a1)
 {
 	unsigned long __ret;
-	__asm__ __volatile__ ("int $128" : "=a"(__ret) : "a"(n), "b"(a1) : "memory");
+	__asm__ __volatile__ ("call __vsyscall" : "=a"(__ret) : "a"(n), "d"(a1) : "memory");
 	return __ret;
 }
 
 static inline long __syscall2(long n, long a1, long a2)
 {
 	unsigned long __ret;
-	__asm__ __volatile__ ("int $128" : "=a"(__ret) : "a"(n), "b"(a1), "c"(a2) : "memory");
+	__asm__ __volatile__ ("call __vsyscall" : "=a"(__ret) : "a"(n), "d"(a1), "c"(a2) : "memory");
 	return __ret;
 }
 
 static inline long __syscall3(long n, long a1, long a2, long a3)
 {
 	unsigned long __ret;
-	__asm__ __volatile__ ("int $128" : "=a"(__ret) : "a"(n), "b"(a1), "c"(a2), "d"(a3) : "memory");
+	__asm__ __volatile__ ("call __vsyscall" : "=a"(__ret) : "a"(n), "d"(a1), "c"(a2), "D"(a3) : "memory");
 	return __ret;
 }
 
 static inline long __syscall4(long n, long a1, long a2, long a3, long a4)
 {
 	unsigned long __ret;
-	__asm__ __volatile__ ("int $128" : "=a"(__ret) : "a"(n), "b"(a1), "c"(a2), "d"(a3), "S"(a4) : "memory");
+	__asm__ __volatile__ ("call __vsyscall" : "=a"(__ret) : "a"(n), "d"(a1), "c"(a2), "D"(a3), "S"(a4) : "memory");
 	return __ret;
 }
 
 static inline long __syscall5(long n, long a1, long a2, long a3, long a4, long a5)
 {
 	unsigned long __ret;
-	__asm__ __volatile__ ("int $128" : "=a"(__ret) : "a"(n), "b"(a1), "c"(a2), "d"(a3), "S"(a4), "D"(a5) : "memory");
+	__asm__ __volatile__ ("push %6 ; call __vsyscall ; add $4,%%esp" : "=a"(__ret) : "a"(n), "d"(a1), "c"(a2), "D"(a3), "S"(a4), "g"(a5) : "memory");
 	return __ret;
 }
 
 static inline long __syscall6(long n, long a1, long a2, long a3, long a4, long a5, long a6)
 {
 	unsigned long __ret;
-	__asm__ __volatile__ ("pushl %7 ; pushl %%ebp ; mov 4(%%esp),%%ebp ; int $128 ; popl %%ebp ; popl %%ecx"
-		: "=a"(__ret) : "a"(n), "b"(a1), "c"(a2), "d"(a3), "S"(a4), "D"(a5), "g"(a6) : "memory");
+	__asm__ __volatile__ ("push %6 ; call __vsyscall6 ; add $4,%%esp" : "=a"(__ret) : "a"(n), "d"(a1), "c"(a2), "D"(a3), "S"(a4), "g"((long[]){a5, a6}) : "memory");
 	return __ret;
 }
-
-#else
-
-static inline long __syscall1(long n, long a1)
-{
-	unsigned long __ret;
-	__asm__ __volatile__ ("xchg %2,%%ebx ; int $128 ; xchg %2,%%ebx"
-		: "=a"(__ret) : "a"(n), "d"(a1) : "memory");
-	return __ret;
-}
-
-static inline long __syscall2(long n, long a1, long a2)
-{
-	unsigned long __ret;
-	__asm__ __volatile__ ("xchg %2,%%ebx ; int $128 ; xchg %2,%%ebx"
-		: "=a"(__ret) : "a"(n), "d"(a1), "c"(a2) : "memory");
-	return __ret;
-}
-
-static inline long __syscall3(long n, long a1, long a2, long a3)
-{
-	unsigned long __ret;
-	__asm__ __volatile__ ("xchg %2,%%ebx ; int $128 ; xchg %2,%%ebx"
-		: "=a"(__ret) : "a"(n), "S"(a1), "c"(a2), "d"(a3) : "memory");
-	return __ret;
-}
-
-static inline long __syscall4(long n, long a1, long a2, long a3, long a4)
-{
-	unsigned long __ret;
-	__asm__ __volatile__ ("xchg %2,%%ebx ; int $128 ; xchg %2,%%ebx"
-		: "=a"(__ret) : "a"(n), "D"(a1), "c"(a2), "d"(a3), "S"(a4) : "memory");
-	return __ret;
-}
-
-#if 0
-static inline long __syscall5(long n, long a1, long a2, long a3, long a4, long a5)
-{
-	unsigned long __ret;
-	__asm__ __volatile__ ("pushl %2 ; pushl %%ebx ; mov 4(%%esp),%%ebx ; int $128 ; popl %%ebx ; popl %%ecx"
-		: "=a"(__ret) : "a"(n), "g"(a1), "c"(a2), "d"(a3), "S"(a4), "D"(a5) : "memory");
-	return __ret;
-}
-#else
-static inline long __syscall5(long n, long a1, long a2, long a3, long a4, long a5)
-{
-	return (__syscall)(n, a1, a2, a3, a4, a5);
-}
-#endif
-
-static inline long __syscall6(long n, long a1, long a2, long a3, long a4, long a5, long a6)
-{
-	return (__syscall)(n, a1, a2, a3, a4, a5, a6);
-}
-
-#endif
 
 
 #define __SC_socket      1

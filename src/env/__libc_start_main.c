@@ -6,6 +6,8 @@ void __init_security(size_t *);
 
 #define AUX_CNT 38
 
+extern size_t __hwcap, __sysinfo;
+
 void __init_libc(char **envp)
 {
 	size_t i, *auxv, aux[AUX_CNT] = { 0 };
@@ -14,6 +16,7 @@ void __init_libc(char **envp)
 	libc.auxv = auxv = (void *)(envp+i+1);
 	for (i=0; auxv[i]; i+=2) if (auxv[i]<AUX_CNT) aux[auxv[i]] = auxv[i+1];
 	__hwcap = aux[AT_HWCAP];
+	__sysinfo = aux[AT_SYSINFO];
 
 	__init_tls(aux);
 	__init_security(aux);
