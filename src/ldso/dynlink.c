@@ -99,7 +99,7 @@ static jmp_buf rtld_fail;
 static pthread_rwlock_t lock;
 static struct debug debug;
 static size_t *auxv;
-static size_t tls_cnt, tls_offset, tls_start, tls_align = 4*sizeof(size_t);
+static size_t tls_cnt, tls_offset, tls_align = 4*sizeof(size_t);
 static pthread_mutex_t init_fini_lock = { ._m_type = PTHREAD_MUTEX_RECURSIVE };
 
 struct debug *_dl_debug_addr = &debug;
@@ -699,7 +699,6 @@ void *__copy_tls(unsigned char *mem)
 
 	mem += libc.tls_size - sizeof(struct pthread);
 	mem -= (uintptr_t)mem & (tls_align-1);
-	mem -= tls_start;
 	td = (pthread_t)mem;
 
 	for (p=head; p; p=p->next) {
@@ -755,7 +754,7 @@ void *__tls_get_addr(size_t *v)
 static void update_tls_size()
 {
 	size_t below_tp = (1+tls_cnt) * sizeof(void *) + tls_offset;
-	size_t above_tp = sizeof(struct pthread) + tls_start + tls_align;
+	size_t above_tp = sizeof(struct pthread) + tls_align;
 	libc.tls_size = ALIGN(below_tp + above_tp, tls_align);
 }
 
@@ -867,9 +866,9 @@ void *__dynlink(int argc, char **argv)
 	}
 	if (app->tls_size) {
 		app->tls_id = tls_cnt = 1;
-		tls_offset = app->tls_offset = app->tls_size;
-		tls_start = -((uintptr_t)app->tls_image + app->tls_size)
-			& (app->tls_align-1);
+		tls_offset = app->tls_offset = app->tls_size
+			+ ( -((uintptr_t)app->tls_image + app->tls_size)
+			& (app->tls_align-1) );
 		tls_align = MAXP2(tls_align, app->tls_align);
 	}
 	app->global = 1;
