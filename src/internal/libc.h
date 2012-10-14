@@ -21,7 +21,7 @@ struct __libc {
 
 extern size_t __hwcap;
 
-#if !defined(__PIC__) || 100*__GNUC__+__GNUC_MINOR__ >= 303 || defined(__PCC__) || defined(__TINYC__)
+#if !defined(__PIC__) || (100*__GNUC__+__GNUC_MINOR__ >= 303 && !defined(__PCC__))
 
 #ifdef __PIC__
 #if __GNUC__ < 4
