@@ -19,7 +19,6 @@
 #include <dlfcn.h>
 #include "pthread_impl.h"
 #include "libc.h"
-#undef libc
 
 static int errflag;
 static char errbuf[128];
@@ -90,7 +89,7 @@ struct symdef {
 void __init_ssp(size_t *);
 void *__install_initial_tls(void *);
 
-static struct dso *head, *tail, *libc, *fini_head;
+static struct dso *head, *tail, *ldso, *fini_head;
 static char *env_path, *sys_path, *r_path;
 static int ssp_used;
 static int runtime;
@@ -446,12 +445,12 @@ static struct dso *load_library(const char *name)
 			size_t l = z-name;
 			for (rp=reserved; *rp && memcmp(name+3, rp, l-3); rp+=strlen(rp)+1);
 			if (*rp) {
-				if (!libc->prev) {
-					tail->next = libc;
-					libc->prev = tail;
-					tail = libc->next ? libc->next : libc;
+				if (!ldso->prev) {
+					tail->next = ldso;
+					ldso->prev = tail;
+					tail = ldso->next ? ldso->next : ldso;
 				}
-				return libc;
+				return ldso;
 			}
 		}
 	}
@@ -514,7 +513,7 @@ static struct dso *load_library(const char *name)
 	if (runtime && temp_dso.tls_image) {
 		size_t per_th = temp_dso.tls_size + temp_dso.tls_align
 			+ sizeof(void *) * (tls_cnt+3);
-		n_th = __libc.threads_minus_1 + 1;
+		n_th = libc.threads_minus_1 + 1;
 		if (n_th > SSIZE_MAX / per_th) alloc_size = SIZE_MAX;
 		else alloc_size += n_th * per_th;
 	}
@@ -665,7 +664,7 @@ static void do_fini()
 static void do_init_fini(struct dso *p)
 {
 	size_t dyn[DYN_CNT] = {0};
-	int need_locking = __libc.threads_minus_1;
+	int need_locking = libc.threads_minus_1;
 	/* Allow recursive calls that arise when a library calls
 	 * dlopen from one of its constructors, but block any
 	 * other threads until all ctors have finished. */
@@ -698,7 +697,7 @@ void *__copy_tls(unsigned char *mem)
 	void **dtv = (void *)mem;
 	dtv[0] = (void *)tls_cnt;
 
-	mem += __libc.tls_size - sizeof(struct pthread);
+	mem += libc.tls_size - sizeof(struct pthread);
 	mem -= (uintptr_t)mem & (tls_align-1);
 	mem -= tls_start;
 	td = (pthread_t)mem;
@@ -757,7 +756,7 @@ static void update_tls_size()
 {
 	size_t below_tp = (1+tls_cnt) * sizeof(void *) + tls_offset;
 	size_t above_tp = sizeof(struct pthread) + tls_start + tls_align;
-	__libc.tls_size = ALIGN(below_tp + above_tp, tls_align);
+	libc.tls_size = ALIGN(below_tp + above_tp, tls_align);
 }
 
 void *__dynlink(int argc, char **argv)
@@ -899,7 +898,7 @@ void *__dynlink(int argc, char **argv)
 	 * restore the initial chain in preparation for loading third
 	 * party libraries (preload/needed). */
 	head = tail = app;
-	libc = lib;
+	ldso = lib;
 	app->next = lib;
 	reloc_all(lib);
 	app->next = 0;
@@ -926,12 +925,12 @@ void *__dynlink(int argc, char **argv)
 	update_tls_size();
 	if (tls_cnt) {
 		struct dso *p;
-		void *mem = mmap(0, __libc.tls_size, PROT_READ|PROT_WRITE,
+		void *mem = mmap(0, libc.tls_size, PROT_READ|PROT_WRITE,
 			MAP_ANONYMOUS|MAP_PRIVATE, -1, 0);
 		if (mem==MAP_FAILED ||
 		    !__install_initial_tls(__copy_tls(mem))) {
 			dprintf(2, "%s: Error getting %zu bytes thread-local storage: %m\n",
-				argv[0], __libc.tls_size);
+				argv[0], libc.tls_size);
 			_exit(127);
 		}
 	}
