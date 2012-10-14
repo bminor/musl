@@ -627,16 +627,6 @@ static void reloc_all(struct dso *p)
 	}
 }
 
-static void free_all(struct dso *p)
-{
-	struct dso *n;
-	while (p) {
-		n = p->next;
-		if (p->map && p!=libc && p!=head) free(p);
-		p = n;
-	}
-}
-
 static size_t find_dyn(Phdr *ph, size_t cnt, size_t stride)
 {
 	for (; cnt--; ph = (void *)((char *)ph + stride))
