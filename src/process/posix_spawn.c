@@ -5,8 +5,15 @@
 #include <fcntl.h>
 #include "syscall.h"
 #include "fdop.h"
+#include "libc.h"
 
 extern char **environ;
+
+static void dummy_0()
+{
+}
+weak_alias(dummy_0, __acquire_ptc);
+weak_alias(dummy_0, __release_ptc);
 
 pid_t __vfork(void);
 
@@ -24,7 +31,10 @@ int __posix_spawnx(pid_t *restrict res, const char *restrict path,
 	if (!attr) attr = &dummy_attr;
 
 	sigprocmask(SIG_BLOCK, (void *)(uint64_t []){-1}, &oldmask);
+
+	__acquire_ptc();
 	pid = __vfork();
+	__release_ptc();
 
 	if (pid) {
 		sigprocmask(SIG_SETMASK, &oldmask, 0);
