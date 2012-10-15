@@ -1,12 +1,16 @@
 static inline struct pthread *__pthread_self()
 {
-	struct pthread *self;
 #ifdef __clang__
-	__asm__ __volatile__ (".word 0x7c03e83b ; move %0, $3" : "=r" (self) : : "$3" );
+	char *tp;
+	__asm__ __volatile__ (".word 0x7c03e83b ; move %0, $3" : "=r" (tp) : : "$3" );
 #else
-	__asm__ __volatile__ (".word 0x7c03e83b" : "=v" (self) );
+	register char *tp __asm__("$3");
+	__asm__ __volatile__ (".word 0x7c03e83b" : "=r" (tp) );
 #endif
-	return self;
+	return (pthread_t)(tp - 0x7000 - sizeof(struct pthread));
 }
+
+#define TLS_ABOVE_TP
+#define TP_ADJ(p) ((char *)(p) + sizeof(struct pthread) + 0x7000)
 
 #define CANCEL_REG_IP (3-(union {int __i; char __b;}){1}.__b)

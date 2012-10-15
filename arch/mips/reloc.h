@@ -23,6 +23,17 @@ static inline void do_single_reloc(
 	case R_MIPS_COPY:
 		memcpy(reloc_addr, (void *)sym_val, sym_size);
 		break;
+	case R_MIPS_TLS_DTPMOD32:
+		*reloc_addr = def.dso ? def.dso->tls_id : self->tls_id;
+		break;
+	case R_MIPS_TLS_DTPREL32:
+		*reloc_addr += def.sym->st_value;
+		break;
+	case R_MIPS_TLS_TPREL32:
+		*reloc_addr += def.sym
+			? def.sym->st_value + def.dso->tls_offset - 0x7000
+			: self->tls_offset - 0x7000;
+		break;
 	}
 }
 

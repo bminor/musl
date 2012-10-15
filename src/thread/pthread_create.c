@@ -147,7 +147,7 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attr,
 	new->canary = self->canary;
 
 	a_inc(&libc.threads_minus_1);
-	ret = __clone(start, stack, flags, new, &new->tid, new, &new->tid);
+	ret = __clone(start, stack, flags, new, &new->tid, TP_ADJ(new), &new->tid);
 
 	__release_ptc();
 

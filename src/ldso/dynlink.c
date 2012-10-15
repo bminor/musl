@@ -539,10 +539,16 @@ static struct dso *load_library(const char *name)
 		}
 		p->tls_id = ++tls_cnt;
 		tls_align = MAXP2(tls_align, p->tls_align);
+#ifdef TLS_ABOVE_TP
+		p->tls_offset = tls_offset + ( (tls_align-1) &
+			-(tls_offset + (uintptr_t)p->tls_image) );
+		tls_offset += p->tls_size;
+#else
 		tls_offset += p->tls_size + p->tls_align - 1;
 		tls_offset -= (tls_offset + (uintptr_t)p->tls_image)
 			& (p->tls_align-1);
 		p->tls_offset = tls_offset;
+#endif
 		p->new_dtv = (void *)(-sizeof(size_t) &
 			(uintptr_t)(p->name+strlen(p->name)+sizeof(size_t)));
 		p->new_tls = (void *)(p->new_dtv + n_th*(tls_cnt+1));
@@ -697,6 +703,18 @@ void *__copy_tls(unsigned char *mem)
 	void **dtv = (void *)mem;
 	dtv[0] = (void *)tls_cnt;
 
+#ifdef TLS_ABOVE_TP
+	mem += sizeof(void *) * (tls_cnt+1);
+	mem += -((uintptr_t)mem + sizeof(struct pthread)) & (tls_align-1);
+	td = (pthread_t)mem;
+	mem += sizeof(struct pthread);
+
+	for (p=head; p; p=p->next) {
+		if (!p->tls_id) continue;
+		dtv[p->tls_id] = mem + p->tls_offset;
+		memcpy(dtv[p->tls_id], p->tls_image, p->tls_len);
+	}
+#else
 	mem += libc.tls_size - sizeof(struct pthread);
 	mem -= (uintptr_t)mem & (tls_align-1);
 	td = (pthread_t)mem;
@@ -706,6 +724,7 @@ void *__copy_tls(unsigned char *mem)
 		dtv[p->tls_id] = mem - p->tls_offset;
 		memcpy(dtv[p->tls_id], p->tls_image, p->tls_len);
 	}
+#endif
 	td->dtv = dtv;
 	return td;
 }
@@ -753,9 +772,12 @@ void *__tls_get_addr(size_t *v)
 
 static void update_tls_size()
 {
-	size_t below_tp = (1+tls_cnt) * sizeof(void *) + tls_offset;
-	size_t above_tp = sizeof(struct pthread) + tls_align;
-	libc.tls_size = ALIGN(below_tp + above_tp, tls_align);
+	libc.tls_size = ALIGN(
+		(1+tls_cnt) * sizeof(void *) +
+		tls_offset +
+		sizeof(struct pthread) +
+		tls_align * 2,
+	tls_align);
 }
 
 void *__dynlink(int argc, char **argv)
@@ -866,9 +888,16 @@ void *__dynlink(int argc, char **argv)
 	}
 	if (app->tls_size) {
 		app->tls_id = tls_cnt = 1;
+#ifdef TLS_ABOVE_TP
+		app->tls_offset = 0;
+		tls_offset = app->tls_size
+			+ ( -((uintptr_t)app->tls_image + app->tls_size)
+			& (app->tls_align-1) );
+#else
 		tls_offset = app->tls_offset = app->tls_size
 			+ ( -((uintptr_t)app->tls_image + app->tls_size)
 			& (app->tls_align-1) );
+#endif
 		tls_align = MAXP2(tls_align, app->tls_align);
 	}
 	app->global = 1;

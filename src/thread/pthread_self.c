@@ -10,7 +10,7 @@ static int init_main_thread()
 {
 	__syscall(SYS_rt_sigprocmask, SIG_UNBLOCK,
 		SIGPT_SET, 0, __SYSCALL_SSLEN);
-	if (__set_thread_area(main_thread) < 0) return -1;
+	if (__set_thread_area(TP_ADJ(main_thread)) < 0) return -1;
 	main_thread->canceldisable = libc.canceldisable;
 	main_thread->tsd = (void **)__pthread_tsd_main;
 	main_thread->errno_ptr = __errno_location();

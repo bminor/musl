@@ -34,8 +34,8 @@ static inline void do_single_reloc(
 		break;
 	case R_ARM_TLS_TPOFF32:
 		*reloc_addr += def.sym
-			? def.sym->st_value - def.dso->tls_offset
-			: 0 - self->tls_offset;
+			? def.sym->st_value + def.dso->tls_offset + 8
+			: self->tls_offset + 8;
 		break;
 	}
 }

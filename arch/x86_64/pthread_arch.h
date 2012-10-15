@@ -5,5 +5,6 @@ static inline struct pthread *__pthread_self()
 	return self;
 }
 
-#define CANCEL_REG_SP 15
+#define TP_ADJ(p) (p)
+
 #define CANCEL_REG_IP 16

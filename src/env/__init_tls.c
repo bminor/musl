@@ -15,11 +15,18 @@ void *__copy_tls(unsigned char *mem)
 	if (!image) return mem;
 	void **dtv = (void *)mem;
 	dtv[0] = (void *)1;
+#ifdef TLS_ABOVE_TP
+	mem += sizeof(void *) * 2;
+	mem += -((uintptr_t)mem + sizeof(struct pthread)) & (align-1);
+	td = (pthread_t)mem;
+	mem += sizeof(struct pthread);
+#else
 	mem += __libc.tls_size - sizeof(struct pthread);
 	mem -= (uintptr_t)mem & (align-1);
 	td = (pthread_t)mem;
 	td->dtv = dtv;
 	mem -= size;
+#endif
 	dtv[1] = mem;
 	memcpy(mem, image, len);
 	return td;
@@ -33,7 +40,7 @@ void *__tls_get_addr(size_t *v)
 static void *simple(void *p)
 {
 	*(void **)p = p;
-	return __set_thread_area(p) ? 0 : p;
+	return __set_thread_area(TP_ADJ(p)) ? 0 : p;
 }
 
 weak_alias(simple, __install_initial_tls);
