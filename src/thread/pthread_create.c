@@ -130,7 +130,7 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attr,
 		}
 		tsd = map + size - __pthread_tsd_size;
 	}
-	new = __copy_tls(tsd - libc.tls_size);
+	new = __copy_tls(stack = tsd - libc.tls_size);
 	new->map_base = map;
 	new->map_size = size;
 	new->pid = self->pid;
@@ -145,7 +145,6 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attr,
 	}
 	new->unblock_cancel = self->cancel;
 	new->canary = self->canary;
-	stack = (void *)new;
 
 	a_inc(&libc.threads_minus_1);
 	ret = __clone(start, stack, flags, new, &new->tid, new, &new->tid);
