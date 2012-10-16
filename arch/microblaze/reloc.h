@@ -24,6 +24,12 @@ static inline void do_single_reloc(
 	case R_MICROBLAZE_COPY:
 		memcpy(reloc_addr, (void *)sym_val, sym_size);
 		break;
+	case R_MICROBLAZE_TLSDTPMOD32:
+		*reloc_addr = def.dso ? def.dso->tls_id : self->tls_id;
+		break;
+	case R_MICROBLAZE_TLSDTPREL32:
+		*reloc_addr = def.sym->st_value + addend;
+		break;
 	}
 }
 
