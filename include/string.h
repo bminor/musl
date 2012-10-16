@@ -95,6 +95,7 @@ int strcasecmp_l (const char *, const char *, locale_t);
 int strncasecmp_l (const char *, const char *, size_t, locale_t);
 char *strchrnul(const char *, int);
 char *strcasestr(const char *, const char *);
+void *memmem(const void *, size_t, const void *, size_t);
 void *memrchr(const void *, int, size_t);
 void *mempcpy(void *, const void *, size_t);
 #ifndef __cplusplus
