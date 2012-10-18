@@ -4,7 +4,7 @@ __syscall_cp_asm:
 .global __cp_begin
 __cp_begin:
 	lwi     r5, r5, 0
-	bnei    r5, __cancel
+	bnei    r5, __cancel@PLT
 	addi    r12, r6, 0
 	add     r5, r7, r0
 	add     r6, r8, r0

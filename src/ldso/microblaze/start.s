@@ -8,11 +8,11 @@ _start:
 	mfs     r7, rpc
 	addi    r7, r7, _GLOBAL_OFFSET_TABLE_+8
 	addi    r7, r7, _DYNAMIC@GOTOFF
-	brlid   r15, __reloc_self
+	brlid   r15, __reloc_self@PLT
 	nop
 
 	lwi     r5, r1, 0
-	brlid   r15, __dynlink
+	brlid   r15, __dynlink@PLT
 	addi    r6, r1, 4
 
 	lwi     r4, r1, 0
