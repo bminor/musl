@@ -4,7 +4,9 @@
 #include <errno.h>
 #include <limits.h>
 
-int execvp(const char *file, char *const argv[])
+extern char **environ;
+
+int __execvpe(const char *file, char *const argv[], char *const envp[])
 {
 	const char *p, *z, *path = getenv("PATH");
 	size_t l, k;
@@ -13,7 +15,7 @@ int execvp(const char *file, char *const argv[])
 	if (!*file) return -1;
 
 	if (strchr(file, '/'))
-		return execv(file, argv);
+		return execve(file, argv, envp);
 
 	if (!path) path = "/usr/local/bin:/bin:/usr/bin";
 	k = strnlen(file, NAME_MAX+1);
@@ -34,9 +36,14 @@ int execvp(const char *file, char *const argv[])
 		memcpy(b, p, z-p);
 		b[z-p] = '/';
 		memcpy(b+(z-p)+(z>p), file, k+1);
-		execv(b, argv);
+		execve(b, argv, envp);
 		if (errno != ENOENT) return -1;
 		if (!*z++) break;
 	}
 	return -1;
+}
+
+int execvp(const char *file, char *const argv[])
+{
+	return __execvpe(file, argv, environ);
 }
