@@ -1,18 +1,22 @@
+#include <fcntl.h>
 #include "stdio_impl.h"
+#include "pthread_impl.h"
 #include "syscall.h"
 
-static inline void nc_close(int fd)
+static void dummy_0()
 {
-	__syscall(SYS_close, fd);
 }
-#define close(x) nc_close(x)
+weak_alias(dummy_0, __acquire_ptc);
+weak_alias(dummy_0, __release_ptc);
+
+pid_t __vfork(void);
 
 FILE *popen(const char *cmd, const char *mode)
 {
-	int p[2];
-	int op;
+	int p[2], op, i;
 	pid_t pid;
 	FILE *f;
+	sigset_t old;
 	const char *modes = "rw", *mi = strchr(modes, *mode);
 
 	if (mi) {
@@ -22,29 +26,45 @@ FILE *popen(const char *cmd, const char *mode)
 		return 0;
 	}
 	
-	if (pipe(p)) return NULL;
+	if (pipe2(p, O_CLOEXEC)) return NULL;
 	f = fdopen(p[op], mode);
 	if (!f) {
-		close(p[0]);
-		close(p[1]);
+		__syscall(SYS_close, p[0]);
+		__syscall(SYS_close, p[1]);
 		return NULL;
 	}
+
+	sigprocmask(SIG_BLOCK, SIGALL_SET, &old);
 	
-	pid = fork();
-	switch (pid) {
-	case -1:
-		fclose(f);
-		close(p[0]);
-		close(p[1]);
-		return NULL;
-	case 0:
-		if (dup2(p[1-op], 1-op) < 0) _exit(127);
-		if (p[0] != 1-op) close(p[0]);
-		if (p[1] != 1-op) close(p[1]);
-		execl("/bin/sh", "sh", "-c", cmd, (char *)0);
-		_exit(127);
+	__acquire_ptc();
+	pid = __vfork();
+	__release_ptc();
+
+	if (pid) {
+		__syscall(SYS_close, p[1-op]);
+		sigprocmask(SIG_BLOCK, SIGALL_SET, &old);
+		if (pid < 0) {
+			fclose(f);
+			return 0;
+		}
+		f->pipe_pid = pid;
+		return f;
 	}
-	close(p[1-op]);
-	f->pipe_pid = pid;
-	return f;
+
+	/* See notes in system.c for why this is needed. */
+	for (i=1; i<=8*__SYSCALL_SSLEN; i++) {
+		struct sigaction sa;
+		__libc_sigaction(i, 0, &sa);
+		if (sa.sa_handler!=SIG_IGN && sa.sa_handler!=SIG_DFL) {
+			sa.sa_handler = SIG_DFL;
+			__libc_sigaction(i, &sa, 0);
+		}
+	}
+	if (dup2(p[1-op], 1-op) < 0) _exit(127);
+	fcntl(1-op, F_SETFD, 0);
+	if (p[0] != 1-op) __syscall(SYS_close, p[0]);
+	if (p[1] != 1-op) __syscall(SYS_close, p[1]);
+	sigprocmask(SIG_SETMASK, &old, 0);
+	execl("/bin/sh", "sh", "-c", cmd, (char *)0);
+	_exit(127);
 }

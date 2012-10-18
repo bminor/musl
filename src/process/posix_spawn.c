@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <fcntl.h>
 #include "syscall.h"
+#include "pthread_impl.h"
 #include "fdop.h"
 #include "libc.h"
 
@@ -30,7 +31,7 @@ int __posix_spawnx(pid_t *restrict res, const char *restrict path,
 
 	if (!attr) attr = &dummy_attr;
 
-	sigprocmask(SIG_BLOCK, (void *)(uint64_t []){-1}, &oldmask);
+	sigprocmask(SIG_BLOCK, SIGALL_SET, &oldmask);
 
 	__acquire_ptc();
 	pid = __vfork();
@@ -43,14 +44,14 @@ int __posix_spawnx(pid_t *restrict res, const char *restrict path,
 		return 0;
 	}
 
-	for (i=1; i<=64; i++) {
+	for (i=1; i<=8*__SYSCALL_SSLEN; i++) {
 		struct sigaction sa;
-		sigaction(i, 0, &sa);
-		if (sa.sa_handler!=SIG_IGN ||
+		__libc_sigaction(i, 0, &sa);
+		if (sa.sa_handler!=SIG_DFL && (sa.sa_handler!=SIG_IGN ||
 		    ((attr->__flags & POSIX_SPAWN_SETSIGDEF)
-		     && sigismember(&attr->__def, i) )) {
+		     && sigismember(&attr->__def, i) ))) {
 			sa.sa_handler = SIG_DFL;
-			sigaction(i, &sa, 0);
+			__libc_sigaction(i, &sa, 0);
 		}
 	}
 
