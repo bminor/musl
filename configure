@@ -58,7 +58,7 @@ else eval "fnmatch '*/' \"\${$1}\"" && eval "$1=\${$1%/}" ; fi
 tryflag () {
 printf "checking whether compiler accepts %s... " "$2"
 echo "typedef int x;" > "$tmpc"
-if "$CC" "$2" -c -o /dev/null "$tmpc" 2>/dev/null ; then
+if $CC "$2" -c -o /dev/null "$tmpc" 2>/dev/null ; then
 printf "yes\n"
 eval "$1=\"\${$1} \$2\""
 eval "$1=\${$1# }"
@@ -72,7 +72,7 @@ fi
 tryldflag () {
 printf "checking whether linker accepts %s... " "$2"
 echo "typedef int x;" > "$tmpc"
-if "$CC" -nostdlib -shared "$2" -o /dev/null "$tmpc" 2>/dev/null ; then
+if $CC -nostdlib -shared "$2" -o /dev/null "$tmpc" 2>/dev/null ; then
 printf "yes\n"
 eval "$1=\"\${$1} \$2\""
 eval "$1=\${$1# }"
@@ -170,7 +170,7 @@ test -n "$CC" || { echo "$0: cannot find a C compiler" ; exit 1 ; }
 #
 if test -z "$wrapper" ; then
 printf "checking whether compiler is gcc... "
-if fnmatch '*gcc\ version*' "$("$CC" -v 2>&1)" ; then
+if fnmatch '*gcc\ version*' "$($CC -v 2>&1)" ; then
 echo yes
 printf "checking whether to build musl-gcc wrapper... "
 wrapper=yes
@@ -191,7 +191,7 @@ fi
 # Find the target architecture
 #
 printf "checking target system type... "
-test -n "$target" || target=$("$CC" -dumpmachine 2>/dev/null) || target=unknown
+test -n "$target" || target=$($CC -dumpmachine 2>/dev/null) || target=unknown
 printf "%s\n" "$target"
 
 #
