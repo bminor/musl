@@ -38,9 +38,9 @@ FILE *popen(const char *cmd, const char *mode)
 	
 	__acquire_ptc();
 	pid = __vfork();
-	__release_ptc();
 
 	if (pid) {
+		__release_ptc();
 		__syscall(SYS_close, p[1-op]);
 		sigprocmask(SIG_BLOCK, SIGALL_SET, &old);
 		if (pid < 0) {

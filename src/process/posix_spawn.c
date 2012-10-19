@@ -35,9 +35,9 @@ int __posix_spawnx(pid_t *restrict res, const char *restrict path,
 
 	__acquire_ptc();
 	pid = __vfork();
-	__release_ptc();
 
 	if (pid) {
+		__release_ptc();
 		sigprocmask(SIG_SETMASK, &oldmask, 0);
 		if (pid < 0) return -pid;
 		*res = pid;

@@ -29,7 +29,8 @@ int system(const char *cmd)
 
 	__acquire_ptc();
 	pid = __vfork();
-	__release_ptc();
+
+	if (pid) __release_ptc();
 
 	if (pid > 0) {
 		sigset_t new = old;
