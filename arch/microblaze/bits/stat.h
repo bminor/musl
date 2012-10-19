@@ -11,9 +11,10 @@ struct stat
 	uid_t st_uid;
 	gid_t st_gid;
 	dev_t st_rdev;
-	int __st_rdev_padding;
+	long long __st_rdev_padding;
 	off_t st_size;
 	blksize_t st_blksize;
+	int __st_blksize_padding;
 	blkcnt_t st_blocks;
 	struct timespec st_atim;
 	struct timespec st_mtim;
