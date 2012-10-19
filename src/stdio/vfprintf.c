@@ -200,7 +200,7 @@ static int fmt_fp(FILE *f, long double y, int w, int p, int fl, int t)
 	char ebuf0[3*sizeof(int)], *ebuf=&ebuf0[3*sizeof(int)], *estr;
 
 	pl=1;
-	if (y<0 || 1/y<0) {
+	if (signbit(y)) {
 		y=-y;
 	} else if (fl & MARK_POS) {
 		prefix+=3;
