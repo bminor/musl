@@ -5,7 +5,7 @@
 
 # r5, r6, r7, r8, r9, r10, stack
 # fn, st, fl, ar, pt, tl, ct
-# fl, st, pt, tl, ctx
+# fl, st, __, pt, ct, tl
 
 __clone:
 clone:
@@ -15,8 +15,7 @@ clone:
 	swi     r8, r6, 4
 
 	ori     r5, r7, 0
-	ori     r7, r9, 0
-	ori     r8, r10, 0
+	ori     r8, r9, 0
 	lwi     r9, r1, 28
 	ori     r12, r0, 120
 
