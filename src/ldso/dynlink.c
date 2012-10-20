@@ -1080,11 +1080,14 @@ static void *do_dlsym(struct dso *p, const char *s, void *ra)
 	uint32_t h = 0, gh = 0;
 	Sym *sym;
 	if (p == head || p == RTLD_DEFAULT || p == RTLD_NEXT) {
-		if (p == RTLD_NEXT) {
+		if (p == RTLD_DEFAULT) {
+			p = head;
+		} else if (p == RTLD_NEXT) {
 			for (p=head; p && (unsigned char *)ra-p->map>p->map_len; p=p->next);
 			if (!p) p=head;
+			p = p->next;
 		}
-		struct symdef def = find_sym(p->next, s, 0);
+		struct symdef def = find_sym(p, s, 0);
 		if (!def.sym) goto failed;
 		return def.dso->base + def.sym->st_value;
 	}
