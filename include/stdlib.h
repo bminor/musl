@@ -86,16 +86,15 @@ size_t wcstombs (char *__restrict, const wchar_t *__restrict, size_t);
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) \
  || defined(_BSD_SOURCE)
 
-#ifndef WEXITSTATUS
+#define WNOHANG    1
+#define WUNTRACED  2
+
 #define WEXITSTATUS(s) (((s) & 0xff00) >> 8)
 #define WTERMSIG(s) ((s) & 0x7f)
 #define WSTOPSIG(s) WEXITSTATUS(s)
-#define WCOREDUMP(s) ((s) & 0x80)
 #define WIFEXITED(s) (!WTERMSIG(s))
 #define WIFSTOPPED(s) (((s) & 0xff) == 0x7f)
 #define WIFSIGNALED(s) (((signed char) (((s) & 0x7f) + 1) >> 1) > 0)
-#define WIFCONTINUED(s) ((s) == 0xffff)
-#endif
 
 int posix_memalign (void **, size_t, size_t);
 int setenv (const char *, const char *, int);
@@ -142,6 +141,8 @@ void lcong48 (unsigned short [7]);
 char *mktemp (char *);
 void *valloc (size_t);
 void *memalign(size_t, size_t);
+#define WCOREDUMP(s) ((s) & 0x80)
+#define WIFCONTINUED(s) ((s) == 0xffff)
 #endif
 
 #ifdef _GNU_SOURCE
