@@ -9,14 +9,14 @@ char **__env_map;
 int __putenv(char *s, int a)
 {
 	int i=0, j=0;
-	char *end = strchr(s, '=');
-	size_t l = end-s+1;
+	char *z = strchr(s, '=');
 	char **newenv = 0;
 	char **newmap = 0;
 	static char **oldenv;
-	
-	if (!end || l == 1) return -1;
-	for (; __environ[i] && memcmp(s, __environ[i], l); i++);
+
+	if (!z) return unsetenv(s);
+	if (z==s) return -1;
+	for (; __environ[i] && memcmp(s, __environ[i], z-s+1); i++);
 	if (a) {
 		if (!__env_map) {
 			__env_map = calloc(2, sizeof(char *));
