@@ -414,7 +414,7 @@ static long double hexfloat(FILE *f, int bits, int emin, int sign, int pok)
 long double __floatscan(FILE *f, int prec, int pok)
 {
 	int sign = 1;
-	int i;
+	size_t i;
 	int bits;
 	int emin;
 	int c;
@@ -455,6 +455,24 @@ long double __floatscan(FILE *f, int prec, int pok)
 	if (!i) for (i=0; i<3 && (c|32)=="nan"[i]; i++)
 		if (i<2) c = shgetc(f);
 	if (i==3) {
+		if (shgetc(f) != '(') {
+			shunget(f);
+			return NAN;
+		}
+		for (i=1; ; i++) {
+			c = shgetc(f);
+			if (c-'0'<10U || c-'A'<26U || c-'a'<26U || c=='_')
+				continue;
+			if (c==')') return NAN;
+			shunget(f);
+			if (!pok) {
+				errno = EINVAL;
+				shlim(f, 0);
+				return 0;
+			}
+			while (i--) shunget(f);
+			return NAN;
+		}
 		return NAN;
 	}
 
