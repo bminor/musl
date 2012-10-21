@@ -42,7 +42,7 @@ FILE *popen(const char *cmd, const char *mode)
 	if (pid) {
 		__release_ptc();
 		__syscall(SYS_close, p[1-op]);
-		sigprocmask(SIG_BLOCK, SIGALL_SET, &old);
+		sigprocmask(SIG_SETMASK, &old, 0);
 		if (pid < 0) {
 			fclose(f);
 			return 0;
