@@ -7,24 +7,27 @@
 /* Locking is not necessary because, in the event of failure, the stream
  * passed to freopen is invalid as soon as freopen is called. */
 
+int __dup3(int, int, int);
+
 FILE *freopen(const char *restrict filename, const char *restrict mode, FILE *restrict f)
 {
-	int fl;
+	int fl = __fmodeflags(mode);
 	FILE *f2;
 
 	fflush(f);
 
 	if (!filename) {
-		f2 = fopen("/dev/null", mode);
-		if (!f2) goto fail;
-		fl = __syscall(SYS_fcntl, f2->fd, F_GETFL, 0);
+		if (fl&O_CLOEXEC)
+			__syscall(SYS_fcntl, f->fd, F_SETFD, FD_CLOEXEC);
+		fl &= ~(O_CREAT|O_EXCL|O_CLOEXEC);
 		if (syscall(SYS_fcntl, f->fd, F_SETFL, fl) < 0)
-			goto fail2;
+			goto fail;
+		return f;
 	} else {
 		f2 = fopen(filename, mode);
 		if (!f2) goto fail;
-		if (syscall(SYS_dup2, f2->fd, f->fd) < 0)
-			goto fail2;
+		if (f2->fd == f->fd) f2->fd = -1; /* avoid closing in fclose */
+		else if (__dup3(f2->fd, f->fd, fl&O_CLOEXEC)<0) goto fail2;
 	}
 
 	f->flags = (f->flags & F_PERM) | f2->flags;

@@ -13,14 +13,7 @@ FILE *fopen(const char *restrict filename, const char *restrict mode)
 	}
 
 	/* Compute the flags to pass to open() */
-	if (strchr(mode, '+')) flags = O_RDWR;
-	else if (*mode == 'r') flags = O_RDONLY;
-	else flags = O_WRONLY;
-	if (strchr(mode, 'x')) flags |= O_EXCL;
-	if (strchr(mode, 'e')) flags |= O_CLOEXEC;
-	if (*mode != 'r') flags |= O_CREAT;
-	if (*mode == 'w') flags |= O_TRUNC;
-	if (*mode == 'a') flags |= O_APPEND;
+	flags = __fmodeflags(mode);
 
 	fd = syscall_cp(SYS_open, filename, flags|O_LARGEFILE, 0666);
 	if (fd < 0) return 0;

@@ -87,6 +87,7 @@ size_t __fwritex(const unsigned char *, size_t, FILE *);
 int __putc_unlocked(int, FILE *);
 
 FILE *__fdopen(int, const char *);
+int __fmodeflags(const char *);
 
 #define OFLLOCK() LOCK(libc.ofl_lock)
 #define OFLUNLOCK() UNLOCK(libc.ofl_lock)
