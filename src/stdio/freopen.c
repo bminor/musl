@@ -17,8 +17,8 @@ FILE *freopen(const char *restrict filename, const char *restrict mode, FILE *re
 	if (!filename) {
 		f2 = fopen("/dev/null", mode);
 		if (!f2) goto fail;
-		fl = syscall(SYS_fcntl, f2->fd, F_GETFL, 0);
-		if (fl < 0 || syscall(SYS_fcntl, f->fd, F_SETFL, fl) < 0)
+		fl = __syscall(SYS_fcntl, f2->fd, F_GETFL, 0);
+		if (syscall(SYS_fcntl, f->fd, F_SETFL, fl) < 0)
 			goto fail2;
 	} else {
 		f2 = fopen(filename, mode);
