@@ -1,9 +1,11 @@
 #ifndef _INTERNAL_SYSCALL_H
 #define _INTERNAL_SYSCALL_H
 
-long __syscall_ret(unsigned long);
-long __syscall(long, ...);
-long __syscall_cp(long, long, long, long, long, long, long);
+#if defined(__PIC__) && (100*__GNUC__+__GNUC_MINOR__ >= 303)
+__attribute__((visibility("protected")))
+#endif
+long __syscall_ret(unsigned long), __syscall(long, ...),
+	__syscall_cp(long, long, long, long, long, long, long);
 
 #include <sys/syscall.h>
 #include "syscall_arch.h"

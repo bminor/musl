@@ -46,10 +46,10 @@ extern struct __libc *__libc_loc(void) __attribute__((const));
 
 
 /* Designed to avoid any overhead in non-threaded processes */
-void __lock(volatile int *);
-void __unlock(volatile int *);
-int __lockfile(FILE *);
-void __unlockfile(FILE *);
+void __lock(volatile int *) ATTR_LIBC_VISIBILITY;
+void __unlock(volatile int *) ATTR_LIBC_VISIBILITY;
+int __lockfile(FILE *) ATTR_LIBC_VISIBILITY;
+void __unlockfile(FILE *) ATTR_LIBC_VISIBILITY;
 #define LOCK(x) (libc.threads_minus_1 ? (__lock(x),1) : ((void)(x),1))
 #define UNLOCK(x) (libc.threads_minus_1 ? (__unlock(x),1) : ((void)(x),1))
 
