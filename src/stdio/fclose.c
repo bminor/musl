@@ -3,9 +3,12 @@
 int fclose(FILE *f)
 {
 	int r;
-	int perm = f->flags & F_PERM;
+	int perm;
+	
+	/* This lock is not paired with any unlock. */
+	FLOCK(f);
 
-	if (!perm) {
+	if (!(perm = f->flags & F_PERM)) {
 		OFLLOCK();
 		if (f->prev) f->prev->next = f->next;
 		if (f->next) f->next->prev = f->prev;

@@ -4,7 +4,10 @@
 
 int ferror(FILE *f)
 {
-	return !!(f->flags & F_ERR);
+	FLOCK(f);
+	int ret = !!(f->flags & F_ERR);
+	FUNLOCK(f);
+	return ret;
 }
 
 weak_alias(ferror, ferror_unlocked);
