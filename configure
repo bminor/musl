@@ -269,8 +269,8 @@ tryflag CFLAGS_AUTO -falign-jumps=1
 # work anyway (issues with atomic ops).
 #
 if test "$ARCH" = "i386" ; then
-fnmatch '-march=*|*\ -march=*' "$CFLAGS" || tryflag CFLAGS_AUTO -march=i486
-fnmatch '-mtune=*|*\ -mtune=*' "$CFLAGS" || tryflag CFLAGS_AUTO -mtune=generic
+fnmatch '-march=*|*\ -march=*' "$CFLAGS" || tryldflag CFLAGS_AUTO -march=i486
+fnmatch '-mtune=*|*\ -mtune=*' "$CFLAGS" || tryldflag CFLAGS_AUTO -mtune=generic
 fi
 
 if test "x$warnings" = xyes ; then
