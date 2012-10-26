@@ -299,6 +299,7 @@ shared=no
 # Find compiler runtime library
 test -z "$LIBCC" && tryldflag LIBCC -lgcc && tryldflag LIBCC -lgcc_eh
 test -z "$LIBCC" && tryldflag LIBCC -lcompiler_rt
+test -z "$LIBCC" && tryldflag LIBCC -lpcc
 printf "using compiler runtime libraries: %s\n" "$LIBCC"
 
 
