@@ -5,34 +5,67 @@ musl may be installed either as an alternate C library alongside the
 existing libraries on a system, or as the primary C library for a new
 or existing musl-based system.
 
-First, some prerequisites:
-
-- A C99 compiler with gcc-style inline assembly support, support for
-  weak aliases, and support for building stand-alone assembly files.
-  gcc 3.x and 4.x are known to work. pcc and LLVM/clang may work but
-  are untested, and pcc is known to have some bugs.
-
-- GNU make
-
-- Linux, preferably 2.6.22 or later. Older versions are known to have
-  serious bugs that will make some interfaces non-conformant, but if
-  you don't need threads or POSIX 2008 features, even 2.4 is probably
-  okay.
-
-- A supported CPU architecture (currently i386, x86_64, arm, or mips).
-
-- If you want to use dynamic linking, it's recommended that you have
-  permissions to write to /lib and /etc. Otherwise your binaries will
-  have to use a nonstandard dynamic linker path.
+This document covers the prerequisites and procedures for compiling
+and installation.
 
 
 
-== Option 1: Installing musl as an alternate C library ==
+==== Build Prerequisites ====
+
+The only build-time prerequisites for musl are GNU Make and a
+freestanding C99 compiler toolchain targeting the desired instruction
+set architecture and ABI, with support for gcc-style inline assembly,
+weak aliases, and stand-alone assembly source files.
+
+The system used to build musl does not need to be Linux-based, nor do
+the Linux kernel headers need to be available.
+
+If support for dynamic linking is desired, some further requriements
+are placed on the compiler and linker. In particular, the linker must
+support the -Bsymbolic-functions option.
+
+At present, GCC 4.6 or later is the recommended compiler for building
+musl. Any earlier version of GCC with full C99 support should also
+work, but may be subject to minor floating point conformance issues on
+i386 targets. Sufficiently recent versions of PCC and LLVM/clang are
+also believed to work, but have not been tested as heavily; prior to
+Fall 2012, both had known bugs that affected musl.
+
+
+
+=== Supported Targets ====
+
+musl can be built for the following CPU instruction set architecture
+and ABI combinations:
+
+- i386 (requires 387 math and 486 cmpxchg instructions)
+- x86_64
+- arm (EABI)
+- mips (o32 ABI, requires fpu or float emulation in kernel)
+- microblaze (requires a cpu with lwx/swx instructions)
+
+For architectures with both little- and big-endian options, both are
+supported unless otherwise noted.
+
+In general, musl assumes the availability of all Linux syscall
+interfaces available in Linux 2.6.0. Some programs that do not use
+threads or other modern functionality may be able to run on 2.4.x
+kernels. Other kernels (such as BSD) that provide a Linux-compatible
+syscall ABI should also work but have not been extensively tested.
+
+
+
+==== Option 1: Installing musl as an alternate C library ====
 
 In this setup, musl and any third-party libraries linked to musl will
 reside under an alternate prefix such as /usr/local/musl or /opt/musl.
 A wrapper script for gcc, called musl-gcc, can be used in place of gcc
 to compile and link programs and libraries against musl.
+
+(Note: There are not yet corresponding wrapper scripts for other
+compilers, so if you wish to compile and link against musl using
+another compiler, you are responsible for providing the correct
+options to override the default include and library search paths.)
 
 To install musl as an alternate libc, follow these steps:
 
@@ -92,7 +125,7 @@ source/build tree.
 
 
 
-== Option 2: Installing musl as the primary C library ==
+==== Option 2: Installing musl as the primary C library ====
 
 In this setup, you will need an existing compiler/toolchain. It
 shouldnt matter whether it was configured for glibc, uClibc, musl, or

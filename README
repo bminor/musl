@@ -8,7 +8,7 @@ musl is an alternative to glibc, eglibc, uClibc, dietlibc, and klibc.
 For reasons why one might prefer musl, please see the FAQ and libc
 comparison chart on the project website,
 
-    http://www.etalabs.net/musl/
+    http://www.musl-libc.org/
 
 For installation instructions, see the INSTALL file.
 
@@ -19,22 +19,23 @@ license status of code included in musl (standard MIT license).
 
 Greetings!
 
-With the 0.9.0 release, musl has reached a milestone in completeness
-and compatibility. All interfaces in ISO C99 and POSIX 2008 base exist
-in musl, along with a number of non-standardized interfaces based on
-GNU and BSD libraries and syscall interfaces for Linux-kernel-specific
-functions. Some interfaces lack obscure or rarely-used functionality
-needed for strict conformance, but the vast majority of interfaces go
-above and beyond the requirements for conformance, often promising
-success where other implementations can fail under resource exhaustion
-or other corner-case conditions.
+The 0.9.x release series for musl features interface coverage for all
+interfaces defined in ISO C99 and POSIX 2008 base, along with a number
+of non-standardized interfaces for compatibility with Linux, BSD, and
+glibc functionality. As the release series progresses, we are
+gradually adding support for incomplete functionality in existing
+interfaces, additional functions that are deemed to be important due
+to their use in real-world software, and support for new library and
+language features in C11 such as thread-local storage, which is now
+supported on all targets. In addition, support for additional target
+cpu architectures is being added.
 
-At this point, hundreds of packages have been successfully built
-against musl - either out-of-the-box or with minor patches to address
-portability errors - ranging from low-level system utilities and
-network daemons to major gui applications. Testing has been conducted
-using three separate test frameworks and numerous additional
-standalone test cases to verify the correctness of the implementation.
+The number of packages build successfully against musl - either
+out-of-the-box or with minor patches to address portability errors -
+has exceeded 5000 and is steadily growing. In addition to application
+compatibility testing, unit testing has been conducted using three
+separate test frameworks and numerous additional standalone test cases
+to verify the correctness of the implementation.
 
 Included with this package is a gcc wrapper script (musl-gcc) which
 allows you to build musl-linked programs using an existing gcc 3.x or
