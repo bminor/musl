@@ -1,6 +1,6 @@
 #include "stdio_impl.h"
 
-int fgetc(FILE *f)
+int getc(FILE *f)
 {
 	int c;
 	if (f->lock < 0 || !__lockfile(f))
@@ -9,3 +9,5 @@ int fgetc(FILE *f)
 	__unlockfile(f);
 	return c;
 }
+
+weak_alias(getc, _IO_getc);
