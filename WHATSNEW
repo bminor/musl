@@ -749,3 +749,34 @@ bug fixes:
 new features:
 - O_EXEC open mode
 - md5 crypt hash function
+
+
+
+0.9.7 release notes
+
+new features:
+- thread-local storage (__thread/_Thread_local)
+- microblaze port
+- getopt option parsing reset support
+- vsyscall (sysenter, etc.) support on i386 (faster syscalls)
+- memmem function (GNU extension)
+- mips fenv support
+- accept "nan(n-char-sequence)" in strtod/scanf family functions
+- configure now supports compiling with pcc
+
+quality and correctness improvements:
+- close-on-exec flag for all library-internal file descriptors
+- cancellation-safety and corner-case overhaul in shm_open/sem_open
+- close EINTR vs EINPROGRESS issue
+- mark binaries as not requiring executable stack
+- better gdb compatibility in dynamic linker
+- support recursive dlopen (dlopen called from constructors)
+- posix_spawn/system/popen no longer momentarily double commit charge
+- all stdio functions wait for locks
+
+bug fixes:
+- broken sysvipc *ctl functions on 64-bit archs
+- broken shmdt on some archs
+- getaddrinfo failure with port "0"
+- dirname handling of trailing slash
+- vfork race in posix_spawn
