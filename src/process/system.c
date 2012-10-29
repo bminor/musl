@@ -13,6 +13,7 @@ weak_alias(dummy_0, __acquire_ptc);
 weak_alias(dummy_0, __release_ptc);
 
 pid_t __vfork(void);
+void __testcancel(void);
 
 int system(const char *cmd)
 {
@@ -20,6 +21,8 @@ int system(const char *cmd)
 	sigset_t old;
 	struct sigaction sa = { .sa_handler = SIG_IGN }, oldint, oldquit;
 	int status = -1, i;
+
+	__testcancel();
 
 	if (!cmd) return 1;
 
