@@ -121,8 +121,8 @@ struct protoent *getprotobyname (const char *);
 struct protoent *getprotobynumber (int);
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE) || defined(_POSIX_SOURCE) \
- || (defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE < 200809L) \
- || (defined(_XOPEN_SOURCE) && _XOPEN_SOURCE < 700)
+ || (defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE+0 < 200809L) \
+ || (defined(_XOPEN_SOURCE) && _XOPEN_SOURCE+0 < 700)
 struct hostent *gethostbyname (const char *);
 struct hostent *gethostbyaddr (const void *, socklen_t, int);
 #ifdef __GNUC__
