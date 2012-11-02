@@ -435,7 +435,7 @@ static struct dso *load_library(const char *name)
 	char buf[2*NAME_MAX+2];
 	const char *pathname;
 	unsigned char *base, *map;
-	size_t dyno, map_len;
+	size_t map_len;
 	struct dso *p, temp_dso = {0};
 	int fd;
 	struct stat st;
@@ -866,7 +866,7 @@ void *__dynlink(int argc, char **argv)
 	} else {
 		int fd;
 		char *ldname = argv[0];
-		size_t dyno, l = strlen(ldname);
+		size_t l = strlen(ldname);
 		if (l >= 3 && !strcmp(ldname+l-3, "ldd")) ldd_mode = 1;
 		*argv++ = (void *)-1;
 		if (argv[0] && !strcmp(argv[0], "--")) *argv++ = (void *)-1;
@@ -962,7 +962,6 @@ void *__dynlink(int argc, char **argv)
 
 	update_tls_size();
 	if (tls_cnt) {
-		struct dso *p;
 		void *mem = mmap(0, libc.tls_size, PROT_READ|PROT_WRITE,
 			MAP_ANONYMOUS|MAP_PRIVATE, -1, 0);
 		if (mem==MAP_FAILED ||

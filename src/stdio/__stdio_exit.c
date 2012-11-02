@@ -8,7 +8,7 @@ weak_alias(dummy_file, __stderr_used);
 static void close_file(FILE *f)
 {
 	if (!f) return;
-	FLOCK(f);
+	FFINALLOCK(f);
 	if (f->wpos > f->wbase) f->write(f, 0, 0);
 	if (f->rpos < f->rend) f->seek(f, f->rpos-f->rend, SEEK_CUR);
 }

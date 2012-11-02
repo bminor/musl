@@ -5,8 +5,7 @@ int fclose(FILE *f)
 	int r;
 	int perm;
 	
-	/* This lock is not paired with any unlock. */
-	FLOCK(f);
+	FFINALLOCK(f);
 
 	if (!(perm = f->flags & F_PERM)) {
 		OFLLOCK();
