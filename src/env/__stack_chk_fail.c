@@ -8,7 +8,6 @@ uintptr_t __stack_chk_guard;
 
 void __init_ssp(void *entropy)
 {
-	size_t i;
 	pthread_t self = __pthread_self_init();
 	uintptr_t canary;
 	if (entropy) memcpy(&canary, entropy, sizeof canary);

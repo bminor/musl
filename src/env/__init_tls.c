@@ -56,7 +56,7 @@ typedef Elf64_Phdr Phdr;
 void __init_tls(size_t *aux)
 {
 	unsigned char *p, *mem;
-	size_t n, d;
+	size_t n;
 	Phdr *phdr, *tls_phdr=0;
 	size_t base = 0;
 
