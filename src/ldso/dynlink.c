@@ -102,7 +102,6 @@ static int ldso_fail;
 static jmp_buf rtld_fail;
 static pthread_rwlock_t lock;
 static struct debug debug;
-static size_t *auxv;
 static size_t tls_cnt, tls_offset, tls_align = 4*sizeof(size_t);
 static pthread_mutex_t init_fini_lock = { ._m_type = PTHREAD_MUTEX_RECURSIVE };
 
@@ -798,6 +797,7 @@ void *__dynlink(int argc, char **argv)
 	struct dso *const vdso = builtin_dsos+2;
 	char *env_preload=0;
 	size_t vdso_base;
+	size_t *auxv;
 
 	/* Find aux vector just past environ[] */
 	for (i=argc+1; argv[i]; i++)
@@ -1071,7 +1071,7 @@ void *dlopen(const char *file, int mode)
 
 	update_tls_size();
 
-	if (ssp_used) __init_ssp(auxv);
+	if (ssp_used) __init_ssp(libc.auxv);
 
 	_dl_debug_state();
 	orig_tail = tail;
