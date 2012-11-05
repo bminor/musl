@@ -47,8 +47,10 @@ struct linger
 #define SOCK_DCCP      6
 #define SOCK_PACKET    10
 
+#ifndef SOCK_CLOEXEC
 #define SOCK_CLOEXEC   02000000
 #define SOCK_NONBLOCK  04000
+#endif
 
 #define PF_UNSPEC       0
 #define PF_LOCAL        1
@@ -126,6 +128,7 @@ struct linger
 #define AF_ALG          PF_ALG
 #define AF_MAX          PF_MAX
 
+#ifndef SO_DEBUG
 #define SO_DEBUG        1
 #define SO_REUSEADDR    2
 #define SO_TYPE         3
@@ -147,6 +150,8 @@ struct linger
 #define SO_SNDLOWAT     19
 #define SO_RCVTIMEO     20
 #define SO_SNDTIMEO     21
+#endif
+
 
 #define SO_SECURITY_AUTHENTICATION              22
 #define SO_SECURITY_ENCRYPTION_TRANSPORT        23
@@ -163,7 +168,9 @@ struct linger
 
 #define SO_ACCEPTCONN           30
 
+#ifndef SOL_SOCKET
 #define SOL_SOCKET      1
+#endif
 
 #define SOL_RAW         255
 #define SOL_DECNET      261

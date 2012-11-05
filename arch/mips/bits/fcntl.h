@@ -26,14 +26,14 @@
 #define F_GETFL  3
 #define F_SETFL  4
 
-#define F_SETOWN 8
-#define F_GETOWN 9
+#define F_SETOWN 24
+#define F_GETOWN 23
 #define F_SETSIG 10
 #define F_GETSIG 11
 
-#define F_GETLK 12
-#define F_SETLK 13
-#define F_SETLKW 14
+#define F_GETLK 33
+#define F_SETLK 34
+#define F_SETLKW 35
 
 #define F_SETOWN_EX 15
 #define F_GETOWN_EX 16
