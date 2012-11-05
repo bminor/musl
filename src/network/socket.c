@@ -6,7 +6,8 @@
 int socket(int domain, int type, int protocol)
 {
 	int s = socketcall(socket, domain, type, protocol, 0, 0, 0);
-	if (s<0 && errno==EINVAL && (type&(SOCK_CLOEXEC|SOCK_NONBLOCK))) {
+	if (s<0 && (errno==EINVAL || errno==EPROTONOSUPPORT)
+	    && (type&(SOCK_CLOEXEC|SOCK_NONBLOCK))) {
 		s = socketcall(socket, domain,
 			type & ~(SOCK_CLOEXEC|SOCK_NONBLOCK),
 			protocol, 0, 0, 0);
