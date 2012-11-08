@@ -8,8 +8,9 @@ dlsym:
 	move $6, $ra
 	lw $25, %call16(__dlsym)($gp)
 	addiu $sp, $sp, -16
-	jalr $25
 	sw $ra, 12($sp)
+	jalr $25
+	nop
 	lw $ra, 12($sp)
 	jr $ra
 	addiu $sp, $sp, 16
