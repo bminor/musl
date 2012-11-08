@@ -1,4 +1,9 @@
 #include "stdio_impl.h"
+#include <limits.h>
+#include <string.h>
+#include <errno.h>
+#include <stdint.h>
+#include <wchar.h>
 
 struct cookie {
 	wchar_t *ws;

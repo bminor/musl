@@ -1,4 +1,10 @@
 #include "stdio_impl.h"
+#include <stdlib.h>
+#include <termios.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <string.h>
 
 FILE *__fdopen(int fd, const char *mode)
 {

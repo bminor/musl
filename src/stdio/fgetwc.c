@@ -1,4 +1,6 @@
 #include "stdio_impl.h"
+#include <wchar.h>
+#include <errno.h>
 
 wint_t __fgetwc_unlocked(FILE *f)
 {

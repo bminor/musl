@@ -1,4 +1,6 @@
 #include "stdio_impl.h"
+#include <limits.h>
+#include <errno.h>
 
 off_t __ftello_unlocked(FILE *f)
 {

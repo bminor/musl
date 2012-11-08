@@ -1,4 +1,7 @@
 #include "stdio_impl.h"
+#include <errno.h>
+#include <string.h>
+#include <inttypes.h>
 
 struct cookie {
 	size_t pos, len, size;

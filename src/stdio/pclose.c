@@ -1,5 +1,6 @@
 #include "stdio_impl.h"
-#include "syscall.h"
+#include <errno.h>
+#include <unistd.h>
 
 int pclose(FILE *f)
 {

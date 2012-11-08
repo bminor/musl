@@ -1,4 +1,5 @@
 #include "stdio_impl.h"
+#include <sys/uio.h>
 #include <pthread.h>
 
 static void cleanup(void *p)

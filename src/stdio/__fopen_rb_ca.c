@@ -1,4 +1,6 @@
 #include "stdio_impl.h"
+#include <fcntl.h>
+#include <string.h>
 
 FILE *__fopen_rb_ca(const char *filename, FILE *f, unsigned char *buf, size_t len)
 {

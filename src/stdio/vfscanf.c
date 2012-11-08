@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <ctype.h>
@@ -9,6 +8,7 @@
 #include <errno.h>
 #include <math.h>
 #include <float.h>
+#include <inttypes.h>
 
 #include "stdio_impl.h"
 #include "shgetc.h"

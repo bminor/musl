@@ -2,23 +2,6 @@
 #define _STDIO_IMPL_H
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <stddef.h>
-#include <stdarg.h>
-#include <string.h>
-#include <inttypes.h>
-#include <wchar.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <limits.h>
-#include <errno.h>
-#include <termios.h>
-#include <sys/ioctl.h>
-#include <ctype.h>
-#include <sys/wait.h>
-#include <math.h>
-#include <float.h>
-#include <sys/uio.h>
 #include "syscall.h"
 #include "libc.h"
 

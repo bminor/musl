@@ -1,4 +1,5 @@
 #include "stdio_impl.h"
+#include <wchar.h>
 
 int fputws(const wchar_t *restrict ws, FILE *restrict f)
 {

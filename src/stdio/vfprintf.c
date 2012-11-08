@@ -1,4 +1,13 @@
 #include "stdio_impl.h"
+#include <errno.h>
+#include <ctype.h>
+#include <limits.h>
+#include <string.h>
+#include <stdarg.h>
+#include <wchar.h>
+#include <inttypes.h>
+#include <math.h>
+#include <float.h>
 
 /* Some useful macros */
 

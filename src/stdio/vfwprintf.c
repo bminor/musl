@@ -1,4 +1,11 @@
 #include "stdio_impl.h"
+#include <errno.h>
+#include <ctype.h>
+#include <limits.h>
+#include <string.h>
+#include <stdarg.h>
+#include <wchar.h>
+#include <inttypes.h>
 
 /* Convenient bit representation for modifier flags, which all fall
  * within 31 codepoints of the space character. */

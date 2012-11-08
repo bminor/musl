@@ -1,4 +1,8 @@
 #include "stdio_impl.h"
+#include <limits.h>
+#include <string.h>
+#include <errno.h>
+#include <stdint.h>
 
 static size_t sn_write(FILE *f, const unsigned char *s, size_t l)
 {

@@ -1,4 +1,5 @@
 #include "stdio_impl.h"
+#include <string.h>
 
 char *fgetln(FILE *f, size_t *plen)
 {

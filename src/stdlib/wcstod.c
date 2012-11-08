@@ -1,6 +1,7 @@
 #include "shgetc.h"
 #include "floatscan.h"
 #include "stdio_impl.h"
+#include <wctype.h>
 
 /* This read function heavily cheats. It knows:
  *  (1) len will always be 1

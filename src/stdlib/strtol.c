@@ -1,6 +1,9 @@
 #include "stdio_impl.h"
 #include "intscan.h"
 #include "shgetc.h"
+#include <inttypes.h>
+#include <limits.h>
+#include <ctype.h>
 
 static unsigned long long strtox(const char *s, char **p, int base, unsigned long long lim)
 {
