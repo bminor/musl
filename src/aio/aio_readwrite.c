@@ -1,5 +1,8 @@
 #include <aio.h>
 #include <fcntl.h>
+#include <errno.h>
+#include <unistd.h>
+#include <limits.h>
 #include "pthread_impl.h"
 
 static void dummy(void)

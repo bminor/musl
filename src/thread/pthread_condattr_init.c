@@ -2,6 +2,6 @@
 
 int pthread_condattr_init(pthread_condattr_t *a)
 {
-	memset(a, 0, sizeof *a);
+	*a = (pthread_condattr_t){0};
 	return 0;
 }

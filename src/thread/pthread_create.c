@@ -1,5 +1,6 @@
 #include "pthread_impl.h"
 #include "stdio_impl.h"
+#include <sys/mman.h>
 
 static void dummy_0()
 {

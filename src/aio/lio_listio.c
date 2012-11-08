@@ -1,5 +1,8 @@
 #include <aio.h>
 #include <errno.h>
+#include <limits.h>
+#include <unistd.h>
+#include <string.h>
 #include "pthread_impl.h"
 
 struct lio_state {

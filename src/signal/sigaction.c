@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <errno.h>
+#include <string.h>
 #include "syscall.h"
 #include "pthread_impl.h"
 #include "libc.h"

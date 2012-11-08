@@ -1,5 +1,6 @@
 #include "pthread_impl.h"
 #include <semaphore.h>
+#include <string.h>
 
 static struct chain {
 	struct chain *next;

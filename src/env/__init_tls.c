@@ -1,5 +1,7 @@
 #include <elf.h>
 #include <limits.h>
+#include <sys/mman.h>
+#include <string.h>
 #include "pthread_impl.h"
 #include "libc.h"
 #include "atomic.h"

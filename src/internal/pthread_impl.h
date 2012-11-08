@@ -2,17 +2,9 @@
 #define _PTHREAD_IMPL_H
 
 #include <pthread.h>
-#include <sched.h>
 #include <signal.h>
-#include <unistd.h>
-#include <sys/mman.h>
 #include <errno.h>
 #include <limits.h>
-#include <inttypes.h>
-#include <setjmp.h>
-#include <string.h>
-#include <time.h>
-#include <locale.h>
 #include "libc.h"
 #include "syscall.h"
 #include "atomic.h"

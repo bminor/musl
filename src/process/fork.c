@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <string.h>
 #include "syscall.h"
 #include "libc.h"
 #include "pthread_impl.h"

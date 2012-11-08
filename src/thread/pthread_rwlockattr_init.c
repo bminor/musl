@@ -2,6 +2,6 @@
 
 int pthread_rwlockattr_init(pthread_rwlockattr_t *a)
 {
-	memset(a, 0, sizeof *a);
+	*a = (pthread_rwlockattr_t){0};
 	return 0;
 }

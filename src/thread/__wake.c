@@ -1,4 +1,5 @@
 #include "pthread_impl.h"
+#include <limits.h>
 
 void __wake(volatile int *addr, int cnt, int priv)
 {

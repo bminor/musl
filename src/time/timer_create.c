@@ -1,4 +1,5 @@
 #include <time.h>
+#include <setjmp.h>
 #include "pthread_impl.h"
 
 struct ksigevent {
