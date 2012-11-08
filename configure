@@ -50,9 +50,8 @@ fnmatch () { eval "case \"\$2\" in $1) return 0 ;; *) return 1 ;; esac" ; }
 cmdexists () { type "$1" >/dev/null 2>&1 ; }
 trycc () { test -z "$CC" && cmdexists "$1" && CC=$1 ; }
 
-setdir () {
-if eval "test -z \"\${$1}\"" ; then eval "$1=\$2"
-else eval "fnmatch '*/' \"\${$1}\"" && eval "$1=\${$1%/}" ; fi
+stripdir () {
+while eval "fnmatch '*/' \"\${$1}\"" ; do eval "$1=\${$1%/}" ; done
 }
 
 tryflag () {
@@ -90,15 +89,15 @@ fi
 CFLAGS_C99FSE=
 CFLAGS_AUTO=
 LDFLAGS_AUTO=
-prefix=
-exec_prefix=
-bindir=
-libdir=
-includedir=
-syslibdir=
+prefix=/usr/local/musl
+exec_prefix='$(prefix)'
+bindir='$(exec_prefix)/bin'
+libdir='$(prefix)/lib'
+includedir='$(prefix)/include'
+syslibdir='/lib'
 target=
 debug=no
-warnings=
+warnings=no
 shared=yes
 static=yes
 
@@ -135,12 +134,9 @@ LIBCC=*) LIBCC=${arg#*=} ;;
 esac
 done
 
-setdir prefix /usr/local/musl
-setdir exec_prefix '$(prefix)'
-setdir bindir '$(exec_prefix)/bin'
-setdir libdir '$(prefix)/lib'
-setdir includedir '$(prefix)/include'
-setdir syslibdir '/lib'
+for i in prefix exec_prefix bindir libdir includedir syslibdir ; do
+stripdir $i
+done
 
 #
 # Get a temp filename we can use
