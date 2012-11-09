@@ -483,8 +483,8 @@ static struct dso *load_library(const char *name)
 					fclose(f);
 				}
 			}
-			if (sys_path) fd = path_open(name, sys_path, buf, sizeof buf);
-			else fd = path_open(name, "/lib:/usr/local/lib:/usr/lib", buf, sizeof buf);
+			if (!sys_path) sys_path = "/lib:/usr/local/lib:/usr/lib";
+			fd = path_open(name, sys_path, buf, sizeof buf);
 		}
 		pathname = buf;
 	}
