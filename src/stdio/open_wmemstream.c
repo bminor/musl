@@ -79,12 +79,13 @@ FILE *open_wmemstream(wchar_t **bufp, size_t *sizep)
 	f->seek = wms_seek;
 	f->close = wms_close;
 
-	if (!libc.threaded) {
-		f->lock = -1;
-		f->next = libc.ofl_head;
-		if (libc.ofl_head) libc.ofl_head->prev = f;
-		libc.ofl_head = f;
-	}
+	if (!libc.threaded) f->lock = -1;
+
+	OFLLOCK();
+	f->next = libc.ofl_head;
+	if (libc.ofl_head) libc.ofl_head->prev = f;
+	libc.ofl_head = f;
+	OFLUNLOCK();
 
 	return f;
 }

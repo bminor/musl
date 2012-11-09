@@ -108,12 +108,13 @@ FILE *fmemopen(void *restrict buf, size_t size, const char *restrict mode)
 	f->seek = mseek;
 	f->close = mclose;
 
-	if (!libc.threaded) {
-		f->lock = -1;
-		f->next = libc.ofl_head;
-		if (libc.ofl_head) libc.ofl_head->prev = f;
-		libc.ofl_head = f;
-	}
+	if (!libc.threaded) f->lock = -1;
+
+	OFLLOCK();
+	f->next = libc.ofl_head;
+	if (libc.ofl_head) libc.ofl_head->prev = f;
+	libc.ofl_head = f;
+	OFLUNLOCK();
 
 	return f;
 }
