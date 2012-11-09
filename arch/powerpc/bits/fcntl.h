@@ -12,8 +12,8 @@
 #define O_CLOEXEC  02000000
 
 #define O_ASYNC      020000
-#define O_DIRECT    0200000
-#define O_LARGEFILE 0400000
+#define O_DIRECT    0400000
+#define O_LARGEFILE 0200000
 #define O_NOATIME  01000000
 #define O_NDELAY O_NONBLOCK
 
@@ -31,3 +31,7 @@
 #define F_GETLK 12
 #define F_SETLK 13
 #define F_SETLKW 14
+
+#define F_SETOWN_EX 15
+#define F_GETOWN_EX 16
+
