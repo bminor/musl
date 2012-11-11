@@ -16,7 +16,8 @@ __vsyscall:
 	mov 12(%esp),%edi
 	push %eax
 	call 1f
-2:	pop %ebx
+2:	mov %ebx,%edx
+	pop %ebx
 	pop %ebx
 	pop %edi
 	ret
