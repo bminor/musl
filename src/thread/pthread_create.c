@@ -62,6 +62,15 @@ void __do_cleanup_pop(struct __ptcb *cb)
 static int start(void *p)
 {
 	pthread_t self = p;
+	if (self->startlock[0]) {
+		__wait(self->startlock, 0, 1, 1);
+		if (self->startlock[0]) {
+			self->detached = 2;
+			pthread_exit(0);
+		}
+		__syscall(SYS_rt_sigprocmask, SIG_SETMASK,
+			self->sigmask, 0, __SYSCALL_SSLEN);
+	}
 	if (self->unblock_cancel)
 		__syscall(SYS_rt_sigprocmask, SIG_UNBLOCK,
 			SIGPT_SET, 0, __SYSCALL_SSLEN);
@@ -95,6 +104,7 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attr,
 	struct pthread *self = pthread_self(), *new;
 	unsigned char *map, *stack, *tsd;
 	unsigned flags = 0x7d8f00;
+	int do_sched = 0;
 
 	if (!self) return ENOSYS;
 	if (!libc.threaded) {
@@ -144,6 +154,11 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attr,
 		new->detached = 1;
 		flags -= 0x200000;
 	}
+	if (attr && attr->_a_sched) {
+		do_sched = new->startlock[0] = 1;
+		__syscall(SYS_rt_sigprocmask, SIG_BLOCK,
+			SIGALL_SET, self->sigmask, __SYSCALL_SSLEN);
+	}
 	new->unblock_cancel = self->cancel;
 	new->canary = self->canary;
 
@@ -152,11 +167,25 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attr,
 
 	__release_ptc();
 
+	if (do_sched) {
+		__syscall(SYS_rt_sigprocmask, SIG_SETMASK,
+			new->sigmask, 0, __SYSCALL_SSLEN);
+	}
+
 	if (ret < 0) {
 		a_dec(&libc.threads_minus_1);
 		munmap(map, size);
 		return EAGAIN;
 	}
+
+	if (do_sched) {
+		ret = __syscall(SYS_sched_setscheduler, new->tid,
+			attr->_a_policy, &attr->_a_prio);
+		a_store(new->startlock, ret<0 ? 2 : 0);
+		__wake(new->startlock, 1, 1);
+		if (ret < 0) return -ret;
+	}
+
 	*res = new;
 	return 0;
 }

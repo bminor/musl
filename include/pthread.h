@@ -91,6 +91,10 @@ int pthread_setcanceltype(int, int *);
 void pthread_testcancel(void);
 int pthread_cancel(pthread_t);
 
+int pthread_getschedparam(pthread_t, int *__restrict, struct sched_param *__restrict);
+int pthread_setschedparam(pthread_t, int, const struct sched_param *);
+int pthread_setschedprio(pthread_t, int);
+
 int pthread_once(pthread_once_t *, void (*)(void));
 
 int pthread_mutex_init(pthread_mutex_t *__restrict, const pthread_mutexattr_t *__restrict);
