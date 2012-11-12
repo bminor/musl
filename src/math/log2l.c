@@ -108,8 +108,7 @@ static const long double S[4] = {
 
 long double log2l(long double x)
 {
-	long double z;
-	long double y;
+	long double y, z;
 	int e;
 
 	if (isnan(x))
