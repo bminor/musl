@@ -46,11 +46,6 @@
  *                      Relative error:
  * arithmetic   domain     # trials      peak         rms
  *    IEEE     -1.0, 9.0    100000      8.2e-20    2.5e-20
- *
- * ERROR MESSAGES:
- *
- * log singularity:  x-1 = 0; returns -INFINITY
- * log domain:       x-1 < 0; returns NAN
  */
 
 #include "libm.h"
@@ -123,8 +118,8 @@ long double log1pl(long double xm1)
 	/* Test for domain errors.  */
 	if (x <= 0.0) {
 		if (x == 0.0)
-			return -INFINITY;
-		return NAN;
+			return -1/x; /* -inf with divbyzero */
+		return 0/0.0f; /* nan with invalid */
 	}
 
 	/* Separate mantissa from exponent.
