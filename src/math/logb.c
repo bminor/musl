@@ -1,20 +1,17 @@
-#include <limits.h>
 #include "libm.h"
 
 /*
 special cases:
-	logb(+-0) = -inf
+	logb(+-0) = -inf, and raise divbyzero
 	logb(+-inf) = +inf
 	logb(nan) = nan
-these are calculated at runtime to raise fp exceptions
 */
 
-double logb(double x) {
-	int i = ilogb(x);
-
-	if (i == FP_ILOGB0)
-		return -1.0/fabs(x);
-	if (i == FP_ILOGBNAN || i == INT_MAX)
+double logb(double x)
+{
+	if (!isfinite(x))
 		return x * x;
-	return i;
+	if (x == 0)
+		return -1/(x+0);
+	return ilogb(x);
 }
