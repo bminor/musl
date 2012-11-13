@@ -117,12 +117,7 @@ double hypot(double x, double y)
 		t2 = a - t1;
 		w  = sqrt(t1*y1-(w*(-w)-(t1*y2+t2*b)));
 	}
-	if (k != 0) {
-		uint32_t high;
-		t1 = 1.0;
-		GET_HIGH_WORD(high, t1);
-		SET_HIGH_WORD(t1, high+(k<<20));
-		return t1*w;
-	}
+	if (k)
+		w = scalbn(w, k);
 	return w;
 }

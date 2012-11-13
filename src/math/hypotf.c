@@ -80,9 +80,7 @@ float hypotf(float x, float y)
 		t2 = a - t1;
 		w  = sqrtf(t1*y1-(w*(-w)-(t1*y2+t2*b)));
 	}
-	if (k != 0) {
-		SET_FLOAT_WORD(t1, 0x3f800000+(k<<23));
-		return t1*w;
-	}
+	if (k)
+		w = scalbnf(w, k);
 	return w;
 }
