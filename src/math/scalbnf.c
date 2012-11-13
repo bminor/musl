@@ -2,6 +2,8 @@
 
 float scalbnf(float x, int n)
 {
+	/* make sure result is stored as double on overflow or underflow */
+	volatile float z;
 	float scale;
 
 	if (n > 127) {
@@ -10,8 +12,10 @@ float scalbnf(float x, int n)
 		if (n > 127) {
 			x *= 0x1p127f;
 			n -= 127;
-			if (n > 127)
-				return x * 0x1p127f;
+			if (n > 127) {
+				z = x * 0x1p127f;
+				return z;
+			}
 		}
 	} else if (n < -126) {
 		x *= 0x1p-126f;
@@ -19,10 +23,13 @@ float scalbnf(float x, int n)
 		if (n < -126) {
 			x *= 0x1p-126f;
 			n += 126;
-			if (n < -126)
-				return x * 0x1p-126f;
+			if (n < -126) {
+				z = x * 0x1p-126f;
+				return z;
+			}
 		}
 	}
 	SET_FLOAT_WORD(scale, (uint32_t)(0x7f+n)<<23);
-	return x * scale;
+	z = x * scale;
+	return z;
 }
