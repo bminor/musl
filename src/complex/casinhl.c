@@ -8,7 +8,7 @@ long double complex casinhl(long double complex z)
 #else
 long double complex casinhl(long double complex z)
 {
-	z = casinl(cpackl(-cimagl(z), creall(z)));
-	return cpackl(cimagl(z), -creall(z));
+	z = casinl(CMPLXL(-cimagl(z), creall(z)));
+	return CMPLXL(cimagl(z), -creall(z));
 }
 #endif

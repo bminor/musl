@@ -2,6 +2,6 @@
 
 float complex csinf(float complex z)
 {
-	z = csinhf(cpackf(-cimagf(z), crealf(z)));
-	return cpackf(cimagf(z), -crealf(z));
+	z = csinhf(CMPLXF(-cimagf(z), crealf(z)));
+	return CMPLXF(cimagf(z), -crealf(z));
 }

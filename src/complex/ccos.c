@@ -4,5 +4,5 @@
 
 double complex ccos(double complex z)
 {
-	return ccosh(cpack(-cimag(z), creal(z)));
+	return ccosh(CMPLX(-cimag(z), creal(z)));
 }

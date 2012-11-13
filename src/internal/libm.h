@@ -170,25 +170,12 @@ long double __p1evll(long double, const long double *, int);
 #define STRICT_ASSIGN(type, lval, rval) ((lval) = (type)(rval))
 #endif
 
-
 /* complex */
 
-union dcomplex {
-	double complex z;
-	double a[2];
-};
-union fcomplex {
-	float complex z;
-	float a[2];
-};
-union lcomplex {
-	long double complex z;
-	long double a[2];
-};
-
-/* x + y*I is not supported properly by gcc */
-#define cpack(x,y) ((union dcomplex){.a={(x),(y)}}.z)
-#define cpackf(x,y) ((union fcomplex){.a={(x),(y)}}.z)
-#define cpackl(x,y) ((union lcomplex){.a={(x),(y)}}.z)
+#ifndef CMPLX
+#define CMPLX(x, y) __CMPLX(x, y, double)
+#define CMPLXF(x, y) __CMPLX(x, y, float)
+#define CMPLXL(x, y) __CMPLX(x, y, long double)
+#endif
 
 #endif

@@ -8,7 +8,7 @@ long double complex csinl(long double complex z)
 #else
 long double complex csinl(long double complex z)
 {
-	z = csinhl(cpackl(-cimagl(z), creall(z)));
-	return cpackl(cimagl(z), -creall(z));
+	z = csinhl(CMPLXL(-cimagl(z), creall(z)));
+	return CMPLXL(cimagl(z), -creall(z));
 }
 #endif

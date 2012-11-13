@@ -8,6 +8,6 @@ long double complex ccosl(long double complex z)
 #else
 long double complex ccosl(long double complex z)
 {
-	return ccoshl(cpackl(-cimagl(z), creall(z)));
+	return ccoshl(CMPLXL(-cimagl(z), creall(z)));
 }
 #endif

@@ -4,6 +4,6 @@
 
 double complex csin(double complex z)
 {
-	z = csinh(cpack(-cimag(z), creal(z)));
-	return cpack(cimag(z), -creal(z));
+	z = csinh(CMPLX(-cimag(z), creal(z)));
+	return CMPLX(cimag(z), -creal(z));
 }

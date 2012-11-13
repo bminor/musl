@@ -13,6 +13,6 @@ long double complex clogl(long double complex z)
 
 	r = cabsl(z);
 	phi = cargl(z);
-	return cpackl(logl(r), phi);
+	return CMPLXL(logl(r), phi);
 }
 #endif

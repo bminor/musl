@@ -9,6 +9,6 @@ long double complex cacoshl(long double complex z)
 long double complex cacoshl(long double complex z)
 {
 	z = cacosl(z);
-	return cpackl(-cimagl(z), creall(z));
+	return CMPLXL(-cimagl(z), creall(z));
 }
 #endif

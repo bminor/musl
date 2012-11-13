@@ -2,6 +2,6 @@
 
 float complex catanhf(float complex z)
 {
-	z = catanf(cpackf(-cimagf(z), crealf(z)));
-	return cpackf(cimagf(z), -crealf(z));
+	z = catanf(CMPLXF(-cimagf(z), crealf(z)));
+	return CMPLXF(cimagf(z), -crealf(z));
 }

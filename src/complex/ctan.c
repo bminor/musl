@@ -4,6 +4,6 @@
 
 double complex ctan(double complex z)
 {
-	z = ctanh(cpack(-cimag(z), creal(z)));
-	return cpack(cimag(z), -creal(z));
+	z = ctanh(CMPLX(-cimag(z), creal(z)));
+	return CMPLX(cimag(z), -creal(z));
 }

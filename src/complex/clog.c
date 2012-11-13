@@ -10,5 +10,5 @@ double complex clog(double complex z)
 
 	r = cabs(z);
 	phi = carg(z);
-	return cpack(log(r), phi);
+	return CMPLX(log(r), phi);
 }
