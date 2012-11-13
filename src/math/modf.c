@@ -1,5 +1,4 @@
-#include <math.h>
-#include <stdint.h>
+#include "libm.h"
 
 double modf(double x, double *iptr)
 {
@@ -33,5 +32,6 @@ double modf(double x, double *iptr)
 	}
 	u.n &= ~mask;
 	*iptr = u.x;
-	return x - *iptr;
+	STRICT_ASSIGN(double, x, x - *iptr);
+	return x;
 }

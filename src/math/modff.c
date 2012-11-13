@@ -1,5 +1,4 @@
-#include <math.h>
-#include <stdint.h>
+#include "libm.h"
 
 float modff(float x, float *iptr)
 {
@@ -33,5 +32,6 @@ float modff(float x, float *iptr)
 	}
 	u.n &= ~mask;
 	*iptr = u.x;
-	return x - *iptr;
+	STRICT_ASSIGN(float, x, x - *iptr);
+	return x;
 }
