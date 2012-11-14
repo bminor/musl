@@ -19,7 +19,7 @@ int fetestexcept(int mask)
 
 int fegetround(void)
 {
-	return 0;
+	return FE_TONEAREST;
 }
 
 int fesetround(int r)
