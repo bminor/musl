@@ -1,5 +1,5 @@
-        .global sigsetjmp
-        .type sigsetjmp,%function
+	.global sigsetjmp
+	.type sigsetjmp,%function
 sigsetjmp:
 	#int sigsetjmp(sigjmp_buf buf, int save)
 	#		r3		r4
