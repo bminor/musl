@@ -32,15 +32,6 @@
 #define BIAS            (LDBL_MAX_EXP - 1)
 #define MANH_SIZE       LDBL_MANH_SIZE
 
-/* Approximation thresholds. */
-#define ASIN_LINEAR     (BIAS - 32)     /* 2**-32 */
-#define ACOS_CONST      (BIAS - 65)     /* 2**-65 */
-#define ATAN_CONST      (BIAS + 65)     /* 2**65 */
-#define ATAN_LINEAR     (BIAS - 32)     /* 2**-32 */
-
-/* 0.95 */
-#define THRESH  ((0xe666666666666666ULL>>(64-(MANH_SIZE-1)))|LDBL_NBIT)
-
 /* Constants shared by the long double inverse trig functions. */
 #define pS0     __pS0
 #define pS1     __pS1
@@ -54,56 +45,24 @@
 #define qS3     __qS3
 #define qS4     __qS4
 #define qS5     __qS5
-#define atanhi  __atanhi
-#define atanlo  __atanlo
-#define aT      __aT
+#define pi_hi   __pi_hi
 #define pi_lo   __pi_lo
+#define pio2_hi __pio2_hi
+#define pio2_lo __pio2_lo
 
-#define pio2_hi atanhi[3]
-#define pio2_lo atanlo[3]
-#define pio4_hi atanhi[1]
+extern const long double pS0, pS1, pS2, pS3, pS4, pS5, pS6;
+extern const long double qS1, qS2, qS3, qS4, qS5;
+extern const long double pi_hi, pi_lo, pio2_hi, pio2_lo;
 
-#ifdef STRUCT_DECLS
-typedef struct longdouble {
-	uint64_t mant;
-	uint16_t expsign;
-} LONGDOUBLE;
-#else
-typedef long double LONGDOUBLE;
-#endif
-
-extern const LONGDOUBLE pS0, pS1, pS2, pS3, pS4, pS5, pS6;
-extern const LONGDOUBLE qS1, qS2, qS3, qS4, qS5;
-extern const LONGDOUBLE atanhi[], atanlo[], aT[];
-extern const LONGDOUBLE pi_lo;
-
-#ifndef STRUCT_DECLS
-static inline long double
-P(long double x)
+static long double P(long double x)
 {
-	return (x * (pS0 + x * (pS1 + x * (pS2 + x * (pS3 + x * \
-		(pS4 + x * (pS5 + x * pS6)))))));
+	return x * (pS0 + x * (pS1 + x * (pS2 + x * (pS3 +
+		x * (pS4 + x * (pS5 + x * pS6))))));
 }
 
-static inline long double
-Q(long double x)
+static long double Q(long double x)
 {
-	return (1.0 + x * (qS1 + x * (qS2 + x * (qS3 + x * (qS4 + x * qS5)))));
+	return 1.0 + x * (qS1 + x * (qS2 + x * (qS3 + x * (qS4 + x * qS5))));
 }
-
-static inline long double
-T_even(long double x)
-{
-	return (aT[0] + x * (aT[2] + x * (aT[4] + x * (aT[6] + x * \
-		(aT[8] + x * (aT[10] + x * aT[12]))))));
-}
-
-static inline long double
-T_odd(long double x)
-{
-	return (aT[1] + x * (aT[3] + x * (aT[5] + x * (aT[7] + x * \
-		(aT[9] + x * aT[11])))));
-}
-#endif
 
 #endif

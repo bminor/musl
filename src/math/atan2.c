@@ -39,6 +39,7 @@
 
 #include "libm.h"
 
+// FIXME
 static const volatile double
 tiny  = 1.0e-300;
 static const double

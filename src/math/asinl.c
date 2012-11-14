@@ -24,6 +24,10 @@ long double asinl(long double x)
 #elif (LDBL_MANT_DIG == 64 || LDBL_MANT_DIG == 113) && LDBL_MAX_EXP == 16384
 #include "__invtrigl.h"
 static const long double huge = 1.000e+300;
+static const long double pio4_hi = 7.85398163397448309628e-01L;
+#define ASIN_LINEAR     (BIAS - 32)     /* 2**-32 */
+/* 0.95 */
+#define THRESH  ((0xe666666666666666ULL>>(64-(MANH_SIZE-1)))|LDBL_NBIT)
 
 long double asinl(long double x)
 {

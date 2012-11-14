@@ -23,9 +23,7 @@ long double acosl(long double x)
 }
 #elif (LDBL_MANT_DIG == 64 || LDBL_MANT_DIG == 113) && LDBL_MAX_EXP == 16384
 #include "__invtrigl.h"
-
-static const long double
-pi = 3.14159265358979323846264338327950280e+00L;
+#define ACOS_CONST      (BIAS - 65)     /* 2**-65 */
 
 long double acosl(long double x)
 {
@@ -41,7 +39,8 @@ long double acosl(long double x)
 			if (expsign > 0)
 				return 0.0;  /* acos(1) = 0 */
 			else
-				return pi + 2.0 * pio2_lo;  /* acos(-1)= pi */
+				// FIXME
+				return pi_hi + 2.0 * pio2_lo;  /* acos(-1)= pi */
 		}
 		return (x - x) / (x - x);  /* acos(|x|>1) is NaN */
 	}
@@ -60,7 +59,7 @@ long double acosl(long double x)
 		s = sqrtl(z);
 		r = p / q;
 		w = r * s - pio2_lo;
-		return pi - 2.0 * (s + w);
+		return pi_hi - 2.0 * (s + w);
 	} else {                   /* x > 0.5 */
 		z = (1.0 - x) * 0.5;
 		s = sqrtl(z);
