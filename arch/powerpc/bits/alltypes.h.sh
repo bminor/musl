@@ -22,7 +22,7 @@ TYPEDEF long ptrdiff_t;
 TYPEDEF __builtin_va_list va_list;
 
 #ifndef __cplusplus
-TYPEDEF int wchar_t;
+TYPEDEF long wchar_t;
 #endif
 TYPEDEF int wint_t;
 TYPEDEF long wctrans_t;
