@@ -2,5 +2,5 @@
 
 float complex ccosf(float complex z)
 {
-	return ccoshf(cpackf(-cimagf(z), crealf(z)));
+	return ccoshf(CMPLXF(-cimagf(z), crealf(z)));
 }

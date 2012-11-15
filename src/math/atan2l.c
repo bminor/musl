@@ -24,10 +24,8 @@ long double atan2l(long double y, long double x)
 }
 #elif (LDBL_MANT_DIG == 64 || LDBL_MANT_DIG == 113) && LDBL_MAX_EXP == 16384
 #include "__invtrigl.h"
-static const volatile long double
-tiny = 1.0e-300;
-static const long double
-pi = 3.14159265358979323846264338327950280e+00L;
+// FIXME:
+static const volatile long double tiny = 1.0e-300;
 
 long double atan2l(long double y, long double x)
 {
@@ -55,9 +53,9 @@ long double atan2l(long double y, long double x)
 	if (expty==0 && ((uy.bits.manh&~LDBL_NBIT)|uy.bits.manl)==0) {
 		switch(m) {
 		case 0:
-		case 1: return y;        /* atan(+-0,+anything)=+-0 */
-		case 2: return  pi+tiny; /* atan(+0,-anything) = pi */
-		case 3: return -pi-tiny; /* atan(-0,-anything) =-pi */
+		case 1: return y;           /* atan(+-0,+anything)=+-0 */
+		case 2: return  pi_hi+tiny; /* atan(+0,-anything) = pi */
+		case 3: return -pi_hi-tiny; /* atan(-0,-anything) =-pi */
 		}
 	}
 	/* when x = 0 */
@@ -69,15 +67,15 @@ long double atan2l(long double y, long double x)
 			switch(m) {
 			case 0: return  pio2_hi*0.5+tiny; /* atan(+INF,+INF) */
 			case 1: return -pio2_hi*0.5-tiny; /* atan(-INF,+INF) */
-			case 2: return  1.5*pio2_hi+tiny; /*atan(+INF,-INF)*/
-			case 3: return -1.5*pio2_hi-tiny; /*atan(-INF,-INF)*/
+			case 2: return  1.5*pio2_hi+tiny; /* atan(+INF,-INF) */
+			case 3: return -1.5*pio2_hi-tiny; /* atan(-INF,-INF) */
 			}
 		} else {
 			switch(m) {
-			case 0: return  0.0;     /* atan(+...,+INF) */
-			case 1: return -0.0;     /* atan(-...,+INF) */
-			case 2: return  pi+tiny; /* atan(+...,-INF) */
-			case 3: return -pi-tiny; /* atan(-...,-INF) */
+			case 0: return  0.0;        /* atan(+...,+INF) */
+			case 1: return -0.0;        /* atan(-...,+INF) */
+			case 2: return  pi_hi+tiny; /* atan(+...,-INF) */
+			case 3: return -pi_hi-tiny; /* atan(-...,-INF) */
 			}
 		}
 	}
@@ -95,11 +93,11 @@ long double atan2l(long double y, long double x)
 	else                     /* safe to do y/x */
 		z = atanl(fabsl(y/x));
 	switch (m) {
-	case 0: return z;              /* atan(+,+) */
-	case 1: return -z;             /* atan(-,+) */
-	case 2: return pi - (z-pi_lo); /* atan(+,-) */
+	case 0: return z;               /* atan(+,+) */
+	case 1: return -z;              /* atan(-,+) */
+	case 2: return pi_hi-(z-pi_lo); /* atan(+,-) */
 	default: /* case 3 */
-		return (z-pi_lo) - pi; /* atan(-,-) */
+		return (z-pi_lo)-pi_hi; /* atan(-,-) */
 	}
 }
 #endif

@@ -9,6 +9,6 @@ float complex casinf(float complex z)
 
 	x = crealf(z);
 	y = cimagf(z);
-	w = cpackf(1.0 - (x - y)*(x + y), -2.0*x*y);
-	return clogf(cpackf(-y, x) + csqrtf(w));
+	w = CMPLXF(1.0 - (x - y)*(x + y), -2.0*x*y);
+	return clogf(CMPLXF(-y, x) + csqrtf(w));
 }

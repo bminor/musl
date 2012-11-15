@@ -36,7 +36,7 @@ double nexttoward(double x, long double y)
 	e = ux.bits>>52 & 0x7ff;
 	/* raise overflow if ux.value is infinite and x is finite */
 	if (e == 0x7ff)
-		return x + x;
+		FORCE_EVAL(x+x);
 	/* raise underflow if ux.value is subnormal or zero */
 	if (e == 0)
 		FORCE_EVAL(x*x + ux.value*ux.value);

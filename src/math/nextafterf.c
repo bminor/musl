@@ -26,7 +26,7 @@ float nextafterf(float x, float y)
 	e = ux.bits & 0x7f800000;
 	/* raise overflow if ux.value is infinite and x is finite */
 	if (e == 0x7f800000)
-		return x + x;
+		FORCE_EVAL(x+x);
 	/* raise underflow if ux.value is subnormal or zero */
 	if (e == 0)
 		FORCE_EVAL(x*x + ux.value*ux.value);

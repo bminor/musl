@@ -11,6 +11,6 @@ double complex casin(double complex z)
 
 	x = creal(z);
 	y = cimag(z);
-	w = cpack(1.0 - (x - y)*(x + y), -2.0*x*y);
-	return clog(cpack(-y, x) + csqrt(w));
+	w = CMPLX(1.0 - (x - y)*(x + y), -2.0*x*y);
+	return clog(CMPLX(-y, x) + csqrt(w));
 }

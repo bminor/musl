@@ -7,5 +7,5 @@
 double complex cacos(double complex z)
 {
 	z = casin(z);
-	return cpack(M_PI_2 - creal(z), -cimag(z));
+	return CMPLX(M_PI_2 - creal(z), -cimag(z));
 }

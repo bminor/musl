@@ -37,6 +37,7 @@
  */
 float fmaf(float x, float y, float z)
 {
+	#pragma STDC FENV_ACCESS ON
 	double xy, result;
 	uint32_t hr, lr;
 

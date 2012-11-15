@@ -44,13 +44,7 @@
  *
  *                      Relative error:
  * arithmetic   domain     # trials      peak         rms
- *    IEEE    -45,+MAXLOG   200,000     1.2e-19     2.5e-20
- *
- * ERROR MESSAGES:
- *
- *   message         condition      value returned
- * expm1l overflow   x > MAXLOG         MAXNUM
- *
+ *    IEEE    -45,+maxarg   200,000     1.2e-19     2.5e-20
  */
 
 #include "libm.h"
@@ -61,7 +55,6 @@ long double expm1l(long double x)
 	return expm1(x);
 }
 #elif LDBL_MANT_DIG == 64 && LDBL_MAX_EXP == 16384
-static const long double MAXLOGL = 1.1356523406294143949492E4L;
 
 /* exp(x) - 1 = x + 0.5 x^2 + x^3 P(x)/Q(x)
    -.5 ln 2  <  x  <  .5 ln 2
@@ -83,19 +76,20 @@ C1 = 6.93145751953125E-1L,
 C2 = 1.428606820309417232121458176568075500134E-6L,
 /* ln 2^-65 */
 minarg = -4.5054566736396445112120088E1L,
-huge = 0x1p10000L;
+/* ln 2^16384 */
+maxarg = 1.1356523406294143949492E4L;
 
 long double expm1l(long double x)
 {
 	long double px, qx, xx;
 	int k;
 
-	/* Overflow.  */
-	if (x > MAXLOGL)
-		return huge*huge;  /* overflow */
+	if (isnan(x))
+		return x;
+	if (x > maxarg)
+		return x*0x1p16383L; /* overflow, unless x==inf */
 	if (x == 0.0)
 		return x;
-	/* Minimum value.*/
 	if (x < minarg)
 		return -1.0;
 

@@ -8,7 +8,7 @@ long double complex ctanl(long double complex z)
 #else
 long double complex ctanl(long double complex z)
 {
-	z = ctanhl(cpackl(-cimagl(z), creall(z)));
-	return cpackl(cimagl(z), -creall(z));
+	z = ctanhl(CMPLXL(-cimagl(z), creall(z)));
+	return CMPLXL(cimagl(z), -creall(z));
 }
 #endif

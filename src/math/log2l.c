@@ -50,11 +50,6 @@
  * In the tests over the interval exp(+-10000), the logarithms
  * of the random arguments were uniformly distributed over
  * [-10000, +10000].
- *
- * ERROR MESSAGES:
- *
- * log singularity:  x = 0; returns -INFINITY
- * log domain:       x < 0; returns NAN
  */
 
 #include "libm.h"
@@ -113,8 +108,7 @@ static const long double S[4] = {
 
 long double log2l(long double x)
 {
-	volatile long double z;
-	long double y;
+	long double y, z;
 	int e;
 
 	if (isnan(x))
@@ -123,8 +117,8 @@ long double log2l(long double x)
 		return x;
 	if (x <= 0.0) {
 		if (x == 0.0)
-			return -INFINITY;
-		return NAN;
+			return -1/(x+0); /* -inf with divbyzero */
+		return 0/0.0f; /* nan with invalid */
 	}
 
 	/* separate mantissa from exponent */

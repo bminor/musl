@@ -157,38 +157,23 @@ long double __tanl(long double, long double, int);
 long double __polevll(long double, const long double *, int);
 long double __p1evll(long double, const long double *, int);
 
-// FIXME: not needed when -fexcess-precision=standard is supported (>=gcc4.5)
-/*
- * Attempt to get strict C99 semantics for assignment with non-C99 compilers.
- */
-#if 1
+#if 0
+/* Attempt to get strict C99 semantics for assignment with non-C99 compilers. */
 #define STRICT_ASSIGN(type, lval, rval) do {    \
         volatile type __v = (rval);             \
         (lval) = __v;                           \
 } while (0)
 #else
+/* Should work with -fexcess-precision=standard (>=gcc-4.5) or -ffloat-store */
 #define STRICT_ASSIGN(type, lval, rval) ((lval) = (type)(rval))
 #endif
 
-
 /* complex */
 
-union dcomplex {
-	double complex z;
-	double a[2];
-};
-union fcomplex {
-	float complex z;
-	float a[2];
-};
-union lcomplex {
-	long double complex z;
-	long double a[2];
-};
-
-/* x + y*I is not supported properly by gcc */
-#define cpack(x,y) ((union dcomplex){.a={(x),(y)}}.z)
-#define cpackf(x,y) ((union fcomplex){.a={(x),(y)}}.z)
-#define cpackl(x,y) ((union lcomplex){.a={(x),(y)}}.z)
+#ifndef CMPLX
+#define CMPLX(x, y) __CMPLX(x, y, double)
+#define CMPLXF(x, y) __CMPLX(x, y, float)
+#define CMPLXL(x, y) __CMPLX(x, y, long double)
+#endif
 
 #endif

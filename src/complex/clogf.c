@@ -8,5 +8,5 @@ float complex clogf(float complex z)
 
 	r = cabsf(z);
 	phi = cargf(z);
-	return cpackf(logf(r), phi);
+	return CMPLXF(logf(r), phi);
 }

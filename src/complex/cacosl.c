@@ -11,6 +11,6 @@ long double complex cacosl(long double complex z)
 long double complex cacosl(long double complex z)
 {
 	z = casinl(z);
-	return cpackl(PI_2 - creall(z), -cimagl(z));
+	return CMPLXL(PI_2 - creall(z), -cimagl(z));
 }
 #endif

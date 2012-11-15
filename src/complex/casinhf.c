@@ -2,6 +2,6 @@
 
 float complex casinhf(float complex z)
 {
-	z = casinf(cpackf(-cimagf(z), crealf(z)));
-	return cpackf(cimagf(z), -crealf(z));
+	z = casinf(CMPLXF(-cimagf(z), crealf(z)));
+	return CMPLXF(cimagf(z), -crealf(z));
 }
