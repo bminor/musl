@@ -16,6 +16,14 @@ _start:
 	bl      __dynlink
 	addi    1, 1, 16
 
+	lwz     4, 0(1)
+1:	addi    4, 4, -1
+	lwzu    5, 4(1)
+	cmpwi   5, -1
+	beq-    1b
+	addi    4, 4, 1
+	stwu    4, -4(1)
+
 	mtlr    3
 	li      3, 0
 	blr
