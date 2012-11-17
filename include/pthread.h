@@ -105,6 +105,9 @@ int pthread_mutex_timedlock(pthread_mutex_t *__restrict, const struct timespec *
 int pthread_mutex_destroy(pthread_mutex_t *);
 int pthread_mutex_consistent(pthread_mutex_t *);
 
+int pthread_mutex_getprioceiling(const pthread_mutex_t *__restrict, int *__restrict);
+int pthread_mutex_setprioceiling(pthread_mutex_t *__restrict, int, int *__restrict);
+
 int pthread_cond_init(pthread_cond_t *__restrict, const pthread_condattr_t *__restrict);
 int pthread_cond_destroy(pthread_cond_t *);
 int pthread_cond_wait(pthread_cond_t *__restrict, pthread_mutex_t *__restrict);
@@ -191,6 +194,8 @@ int pthread_atfork(void (*)(void), void (*)(void), void (*)(void));
 
 int pthread_getconcurrency(void);
 int pthread_setconcurrency(int);
+
+int pthread_getcpuclockid(pthread_t, clockid_t *);
 
 struct __ptcb {
 	void (*__f)(void *);
