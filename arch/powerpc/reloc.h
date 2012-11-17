@@ -16,21 +16,40 @@ static inline void do_single_reloc(
 	switch(type) {
 	case R_PPC_GLOB_DAT:
 	case R_PPC_JMP_SLOT:
-		*reloc_addr = sym_val;
-		break;
-	case R_PPC_REL32:
-		if (sym_val) *reloc_addr += sym_val;
-		else *reloc_addr += (size_t)base_addr;
+	case R_PPC_ADDR32:
+		*reloc_addr = sym_val + addend;
 		break;
 	case R_PPC_COPY:
 		memcpy(reloc_addr, (void *)sym_val, sym_size);
 		break;
 	case R_PPC_RELATIVE:
-		*reloc_addr += (size_t)base_addr;
+		*reloc_addr = (size_t)base_addr + addend;
 		break;
-	//case R_PPC64_DTPMOD64:  //R_X86_64_DTPMOD64:
-	case R_PPC_DTPMOD32:  //R_386_TLS_DTPMOD32:
+	case R_PPC_DTPMOD32:
 		*reloc_addr = def.dso ? def.dso->tls_id : self->tls_id;
 		break;
+	case R_PPC_DTPREL32:
+		*reloc_addr = def.sym->st_value + addend;
+		break;
+	case R_PPC_TPREL32:
+		*reloc_addr += def.sym
+			? def.sym->st_value + def.dso->tls_offset - 0x7000
+			: self->tls_offset - 0x7000;
+		break;
 	}
+}
+
+void __reloc_self(int c, size_t *a, size_t *dynv)
+{
+	char *base;
+	size_t t[20], n;
+	for (a+=c+1; *a; a++);
+	for (a++; *a; a+=2) if (*a<20) t[*a] = a[1];
+	base = (char *)t[AT_BASE];
+	if (!base) base = (char *)(t[AT_PHDR] & -4096);
+	for (a=dynv; *a; a+=2) if (*a<20) t[*a] = a[1];
+	n = t[DT_RELASZ];
+	for (a=(void *)(base+t[DT_RELA]); n; a+=3, n-=12)
+		if (a[1]%256 == R_PPC_RELATIVE)
+			*(size_t *)(base+a[0]) = (size_t)base + a[2];
 }
