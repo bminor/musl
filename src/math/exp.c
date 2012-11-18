@@ -80,7 +80,7 @@ P5   =  4.13813679705723846039e-08; /* 0x3E663769, 0x72BEA4D0 */
 
 double exp(double x)
 {
-	double hi, lo, c, z;
+	double hi, lo, c, xx;
 	int k, sign;
 	uint32_t hx;
 
@@ -92,24 +92,26 @@ double exp(double x)
 	if (hx >= 0x40862e42) {  /* if |x| >= 709.78... */
 		if (isnan(x))
 			return x;
+		if (hx == 0x7ff00000 && sign) /* -inf */
+			return 0;
 		if (x > 709.782712893383973096) {
 			/* overflow if x!=inf */
 			STRICT_ASSIGN(double, x, 0x1p1023 * x);
 			return x;
 		}
 		if (x < -745.13321910194110842) {
-			/* underflow if x!=-inf */
-			STRICT_ASSIGN(double, x, 0x1p-1000 / -x * 0x1p-1000);
+			/* underflow */
+			STRICT_ASSIGN(double, x, 0x1p-1000 * 0x1p-1000);
 			return x;
 		}
 	}
 
 	/* argument reduction */
 	if (hx > 0x3fd62e42) {  /* if |x| > 0.5 ln2 */
-		if (hx < 0x3ff0a2b2)  /* if |x| < 1.5 ln2 */
-			k = 1 - sign - sign; /* optimization */
-		else
+		if (hx >= 0x3ff0a2b2)  /* if |x| >= 1.5 ln2 */
 			k = (int)(invln2*x + half[sign]);
+		else
+			k = 1 - sign - sign;
 		hi = x - k*ln2hi;  /* k*ln2hi is exact here */
 		lo = k*ln2lo;
 		STRICT_ASSIGN(double, x, hi - lo);
@@ -124,9 +126,9 @@ double exp(double x)
 	}
 
 	/* x is now in primary range */
-	z = x*x;
-	c = x - z*(P1+z*(P2+z*(P3+z*(P4+z*P5))));
-	x = 1 + ((x*c/(2-c) - lo) + hi);
+	xx = x*x;
+	c = x - xx*(P1+xx*(P2+xx*(P3+xx*(P4+xx*P5))));
+	x = 1 + (x*c/(2-c) - lo + hi);
 	if (k == 0)
 		return x;
 	return scalbn(x, k);
