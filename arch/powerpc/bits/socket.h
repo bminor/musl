@@ -9,6 +9,13 @@ struct msghdr
 	unsigned msg_flags;
 };
 
+struct cmsghdr
+{
+	socklen_t cmsg_len;
+	int cmsg_level;
+	int cmsg_type;
+};
+
 #define SO_DEBUG        1
 #define SO_REUSEADDR    2
 #define SO_TYPE         3
