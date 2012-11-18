@@ -481,7 +481,7 @@ static struct dso *load_library(const char *name)
 					if (getline(&sys_path, (size_t[1]){0}, f) > 0) {
 						size_t l = strlen(sys_path);
 						if (l && sys_path[l-1]=='\n')
-							sys_path[-1] = 0;
+							sys_path[l-1] = 0;
 					}
 					fclose(f);
 				}
