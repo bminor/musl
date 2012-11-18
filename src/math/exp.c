@@ -25,7 +25,7 @@
  *      the interval [0,0.34658]:
  *      Write
  *          R(r**2) = r*(exp(r)+1)/(exp(r)-1) = 2 + r*r/6 - r**4/360 + ...
- *      We use a special Remes algorithm on [0,0.34658] to generate
+ *      We use a special Remez algorithm on [0,0.34658] to generate
  *      a polynomial of degree 5 to approximate R. The maximum error
  *      of this polynomial approximation is bounded by 2**-59. In
  *      other words,
@@ -36,15 +36,15 @@
  *          | 2.0+P1*z+...+P5*z   -  R(z) | <= 2
  *          |                             |
  *      The computation of exp(r) thus becomes
- *                             2*r
- *              exp(r) = 1 + -------
- *                            R - r
- *                                 r*R1(r)
+ *                              2*r
+ *              exp(r) = 1 + ----------
+ *                            R(r) - r
+ *                                 r*c(r)
  *                     = 1 + r + ----------- (for better accuracy)
- *                                2 - R1(r)
+ *                                2 - c(r)
  *      where
- *                               2       4             10
- *              R1(r) = r - (P1*r  + P2*r  + ... + P5*r   ).
+ *                              2       4             10
+ *              c(r) = r - (P1*r  + P2*r  + ... + P5*r   ).
  *
  *   3. Scale back to obtain exp(x):
  *      From step 1, we have
@@ -61,27 +61,16 @@
  *
  * Misc. info.
  *      For IEEE double
- *          if x >  7.09782712893383973096e+02 then exp(x) overflow
- *          if x < -7.45133219101941108420e+02 then exp(x) underflow
- *
- * Constants:
- * The hexadecimal values are the intended ones for the following
- * constants. The decimal values may be used, provided that the
- * compiler will convert from decimal to binary accurately enough
- * to produce the hexadecimal values shown.
+ *          if x >  709.782712893383973096 then exp(x) overflows
+ *          if x < -745.133219101941108420 then exp(x) underflows
  */
 
 #include "libm.h"
 
 static const double
-halF[2] = {0.5,-0.5,},
-huge    = 1.0e+300,
-o_threshold =  7.09782712893383973096e+02, /* 0x40862E42, 0xFEFA39EF */
-u_threshold = -7.45133219101941108420e+02, /* 0xc0874910, 0xD52D3051 */
-ln2HI[2]   = { 6.93147180369123816490e-01, /* 0x3fe62e42, 0xfee00000 */
-              -6.93147180369123816490e-01},/* 0xbfe62e42, 0xfee00000 */
-ln2LO[2]   = { 1.90821492927058770002e-10, /* 0x3dea39ef, 0x35793c76 */
-              -1.90821492927058770002e-10},/* 0xbdea39ef, 0x35793c76 */
+half[2] = {0.5,-0.5},
+ln2hi = 6.93147180369123816490e-01, /* 0x3fe62e42, 0xfee00000 */
+ln2lo = 1.90821492927058770002e-10, /* 0x3dea39ef, 0x35793c76 */
 invln2 = 1.44269504088896338700e+00, /* 0x3ff71547, 0x652b82fe */
 P1   =  1.66666666666666019037e-01, /* 0x3FC55555, 0x5555553E */
 P2   = -2.77777777770155933842e-03, /* 0xBF66C16C, 0x16BEBD93 */
@@ -89,68 +78,58 @@ P3   =  6.61375632143793436117e-05, /* 0x3F11566A, 0xAF25DE2C */
 P4   = -1.65339022054652515390e-06, /* 0xBEBBBD41, 0xC5D26BF1 */
 P5   =  4.13813679705723846039e-08; /* 0x3E663769, 0x72BEA4D0 */
 
-static const volatile double
-twom1000 = 9.33263618503218878990e-302; /* 2**-1000=0x01700000,0 */
-
 double exp(double x)
 {
-	double y,hi=0.0,lo=0.0,c,t,twopk;
-	int32_t k=0,xsb;
+	double hi, lo, c, xx;
+	int k, sign;
 	uint32_t hx;
 
 	GET_HIGH_WORD(hx, x);
-	xsb = (hx>>31)&1;  /* sign bit of x */
+	sign = hx>>31;
 	hx &= 0x7fffffff;  /* high word of |x| */
 
-	/* filter out non-finite argument */
-	if (hx >= 0x40862E42) {  /* if |x| >= 709.78... */
-		if (hx >= 0x7ff00000) {
-			uint32_t lx;
-	
-			GET_LOW_WORD(lx,x);
-			if (((hx&0xfffff)|lx) != 0)  /* NaN */
-				 return x+x;
-			return xsb==0 ? x : 0.0;  /* exp(+-inf)={inf,0} */
+	/* special cases */
+	if (hx >= 0x40862e42) {  /* if |x| >= 709.78... */
+		if (isnan(x))
+			return x;
+		if (hx == 0x7ff00000 && sign) /* -inf */
+			return 0;
+		if (x > 709.782712893383973096) {
+			/* overflow if x!=inf */
+			STRICT_ASSIGN(double, x, 0x1p1023 * x);
+			return x;
 		}
-		if (x > o_threshold)
-			return huge*huge; /* overflow */
-		if (x < u_threshold)
-			return twom1000*twom1000; /* underflow */
+		if (x < -745.13321910194110842) {
+			/* underflow */
+			STRICT_ASSIGN(double, x, 0x1p-1000 * 0x1p-1000);
+			return x;
+		}
 	}
 
 	/* argument reduction */
-	if (hx > 0x3fd62e42) {  /* if  |x| > 0.5 ln2 */
-		if (hx < 0x3FF0A2B2) {  /* and |x| < 1.5 ln2 */
-			hi = x-ln2HI[xsb];
-			lo = ln2LO[xsb];
-			k = 1 - xsb - xsb;
-		} else {
-			k  = (int)(invln2*x+halF[xsb]);
-			t  = k;
-			hi = x - t*ln2HI[0];  /* t*ln2HI is exact here */
-			lo = t*ln2LO[0];
-		}
+	if (hx > 0x3fd62e42) {  /* if |x| > 0.5 ln2 */
+		if (hx >= 0x3ff0a2b2)  /* if |x| >= 1.5 ln2 */
+			k = (int)(invln2*x + half[sign]);
+		else
+			k = 1 - sign - sign;
+		hi = x - k*ln2hi;  /* k*ln2hi is exact here */
+		lo = k*ln2lo;
 		STRICT_ASSIGN(double, x, hi - lo);
-	} else if(hx < 0x3e300000)  {  /* |x| < 2**-28 */
-		/* raise inexact */
-		if (huge+x > 1.0)
-			return 1.0+x;
-	} else
+	} else if (hx > 0x3e300000)  {  /* if |x| > 2**-28 */
 		k = 0;
+		hi = x;
+		lo = 0;
+	} else {
+		/* inexact if x!=0 */
+		FORCE_EVAL(0x1p1023 + x);
+		return 1 + x;
+	}
 
 	/* x is now in primary range */
-	t  = x*x;
-	if (k >= -1021)
-		INSERT_WORDS(twopk, 0x3ff00000+(k<<20), 0);
-	else
-		INSERT_WORDS(twopk, 0x3ff00000+((k+1000)<<20), 0);
-	c  = x - t*(P1+t*(P2+t*(P3+t*(P4+t*P5))));
+	xx = x*x;
+	c = x - xx*(P1+xx*(P2+xx*(P3+xx*(P4+xx*P5))));
+	x = 1 + (x*c/(2-c) - lo + hi);
 	if (k == 0)
-		return 1.0 - ((x*c)/(c-2.0) - x);
-	y = 1.0-((lo-(x*c)/(2.0-c))-hi);
-	if (k < -1021)
-		return y*twopk*twom1000;
-	if (k == 1024)
-		return y*2.0*0x1p1023;
-	return y*twopk;
+		return x;
+	return scalbn(x, k);
 }

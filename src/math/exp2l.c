@@ -30,7 +30,7 @@
 #if LDBL_MANT_DIG == 53 && LDBL_MAX_EXP == 1024
 long double exp2l(long double x)
 {
-	return exp2l(x);
+	return exp2(x);
 }
 #elif LDBL_MANT_DIG == 64 && LDBL_MAX_EXP == 16384
 
@@ -39,10 +39,6 @@ long double exp2l(long double x)
 
 #define BIAS    (LDBL_MAX_EXP - 1)
 #define EXPMASK (BIAS + LDBL_MAX_EXP)
-
-static const long double huge = 0x1p10000L;
-/* XXX Prevent gcc from erroneously constant folding this. */
-static const volatile long double twom10000 = 0x1p-10000L;
 
 static const double
 redux = 0x1.8p63 / TBLSIZE,
@@ -208,27 +204,28 @@ static const double tbl[TBLSIZE * 2] = {
 long double exp2l(long double x)
 {
 	union IEEEl2bits u, v;
-	long double r, twopk, twopkp10000, z;
+	long double r, z;
 	uint32_t hx, ix, i0;
-	int k;
+	union {uint32_t u; int32_t i;} k;
 
 	/* Filter out exceptional cases. */
 	u.e = x;
 	hx = u.xbits.expsign;
 	ix = hx & EXPMASK;
 	if (ix >= BIAS + 14) {  /* |x| >= 16384 or x is NaN */
-		if (ix == BIAS + LDBL_MAX_EXP) {
-			if (u.xbits.man != 1ULL << 63 || (hx & 0x8000) == 0)
-				return x + x;  /* x is +Inf or NaN */
-			return 0.0;  /* x is -Inf */
+		if (ix == EXPMASK) {
+			if (u.xbits.man == 1ULL << 63 && hx == 0xffff) /* -inf */
+				return 0;
+			return x;
 		}
-		if (x >= 16384)
-			return huge * huge;  /* overflow */
+		if (x >= 16384) {
+			x *= 0x1p16383L;
+			return x;
+		}
 		if (x <= -16446)
-			return twom10000 * twom10000;  /* underflow */
-	} else if (ix <= BIAS - 66) {  /* |x| < 0x1p-66 */
-		return 1.0 + x;
-	}
+			return 0x1p-10000L*0x1p-10000L;
+	} else if (ix < BIAS - 64)  /* |x| < 0x1p-64 */
+		return 1 + x;
 
 	/*
 	 * Reduce x, computing z, i0, and k. The low bits of x + redux
@@ -240,38 +237,22 @@ long double exp2l(long double x)
 	 * Then the low-order word of x + redux is 0x000abc12,
 	 * We split this into k = 0xabc and i0 = 0x12 (adjusted to
 	 * index into the table), then we compute z = 0x0.003456p0.
-	 *
-	 * XXX If the exponent is negative, the computation of k depends on
-	 *     '>>' doing sign extension.
 	 */
 	u.e = x + redux;
 	i0 = u.bits.manl + TBLSIZE / 2;
-	k = (int)i0 >> TBLBITS;
-	i0 = (i0 & (TBLSIZE - 1)) << 1;
+	k.u = i0 / TBLSIZE * TBLSIZE;
+	k.i /= TBLSIZE;
+	i0 %= TBLSIZE;
 	u.e -= redux;
 	z = x - u.e;
-	v.xbits.man = 1ULL << 63;
-	if (k >= LDBL_MIN_EXP) {
-		v.xbits.expsign = LDBL_MAX_EXP - 1 + k;
-		twopk = v.e;
-	} else {
-		v.xbits.expsign = LDBL_MAX_EXP - 1 + k + 10000;
-		twopkp10000 = v.e;
-	}
 
 	/* Compute r = exp2l(y) = exp2lt[i0] * p(z). */
-	long double t_hi = tbl[i0];
-	long double t_lo = tbl[i0 + 1];
+	long double t_hi = tbl[2*i0];
+	long double t_lo = tbl[2*i0 + 1];
 	/* XXX This gives > 1 ulp errors outside of FE_TONEAREST mode */
 	r = t_lo + (t_hi + t_lo) * z * (P1 + z * (P2 + z * (P3 + z * (P4
 	     + z * (P5 + z * P6))))) + t_hi;
 
-	/* Scale by 2**k. */
-	if (k >= LDBL_MIN_EXP) {
-		if (k == LDBL_MAX_EXP)
-			return r * 2.0 * 0x1p16383L;
-		return r * twopk;
-	}
-	return r * twopkp10000 * twom10000;
+	return scalbnl(r, k.i);
 }
 #endif

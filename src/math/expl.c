@@ -35,7 +35,7 @@
  *     x    k  f
  *    e  = 2  e.
  *
- * A Pade' form of degree 2/3 is used to approximate exp(f) - 1
+ * A Pade' form of degree 5/6 is used to approximate exp(f) - 1
  * in the basic range [-0.5 ln 2, 0.5 ln 2].
  *
  *
@@ -86,42 +86,37 @@ static const long double Q[4] = {
  2.0000000000000000000897E0L,
 };
 static const long double
-C1 = 6.9314575195312500000000E-1L,
-C2 = 1.4286068203094172321215E-6L,
-MAXLOGL = 1.1356523406294143949492E4L,
-MINLOGL = -1.13994985314888605586758E4L,
-LOG2EL = 1.4426950408889634073599E0L;
+LN2HI = 6.9314575195312500000000E-1L,
+LN2LO = 1.4286068203094172321215E-6L,
+LOG2E = 1.4426950408889634073599E0L;
 
 long double expl(long double x)
 {
 	long double px, xx;
-	int n;
+	int k;
 
 	if (isnan(x))
 		return x;
-	if (x > MAXLOGL)
-		return INFINITY;
-	if (x < MINLOGL)
-		return 0.0;
+	if (x > 11356.5234062941439488L) /* x > ln(2^16384 - 0.5) */
+		return x * 0x1p16383L;
+	if (x < -11399.4985314888605581L) /* x < ln(2^-16446) */
+		return 0x1p-10000L * 0x1p-10000L;
 
-	/* Express e**x = e**g 2**n
-	 *   = e**g e**(n loge(2))
-	 *   = e**(g + n loge(2))
+	/* Express e**x = e**f 2**k
+	 *   = e**(f + k ln(2))
 	 */
-	px = floorl(LOG2EL * x + 0.5); /* floor() truncates toward -infinity. */
-	n = px;
-	x -= px * C1;
-	x -= px * C2;
+	px = floorl(LOG2E * x + 0.5);
+	k = px;
+	x -= px * LN2HI;
+	x -= px * LN2LO;
 
-	/* rational approximation for exponential
-	 * of the fractional part:
-	 * e**x =  1 + 2x P(x**2)/(Q(x**2) - P(x**2))
+	/* rational approximation of the fractional part:
+	 * e**x =  1 + 2x P(x**2)/(Q(x**2) - x P(x**2))
 	 */
 	xx = x * x;
 	px = x * __polevll(xx, P, 2);
-	x =  px/(__polevll(xx, Q, 3) - px);
+	x = px/(__polevll(xx, Q, 3) - px);
 	x = 1.0 + 2.0 * x;
-	x = scalbnl(x, n);
-	return x;
+	return scalbnl(x, k);
 }
 #endif
