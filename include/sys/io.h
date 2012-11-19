@@ -4,8 +4,9 @@
 extern "C" {
 #endif
 
-int ioperm(unsigned long, unsigned long, int);
-int iopl(int);
+#include <features.h>
+
+#include <bits/io.h>
 
 #ifdef __cplusplus
 }
