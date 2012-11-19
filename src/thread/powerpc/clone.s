@@ -13,12 +13,10 @@ __clone:
 # SYS_clone = 120
 # SYS_exit = 1
 
-# in order that the child can find the start func and its arg, we need to store it into
-# non-volative regs. to do so, we have to store those 2 regs into our stackframe, so
-# we can restore them later.
-subi 1, 1, 16 
-stw 30, 12(1)
-stw 31, 8(1)
+# store non-volatile regs r30, r31 on stack in order to put our
+# start func and its arg there
+stwu 30, -16(1)
+stw 31, 4(1)
 
 # save r3 (func) into r30, and r6(arg) into r31
 mr 30, 3
@@ -37,19 +35,9 @@ li 0, 120
 sc
 
 # check for syscall error
-#this code should be more efficient, but it borks
-#bns+ 1f # jump to label 1 if no summary overflow.
+bns+ 1f # jump to label 1 if no summary overflow.
 #else
-#neg 3, 3 #negate the result (errno)
-#b 2f # jump to epilogue
-
-# this error check code at least does not spoil the clone call.
-#mfcr    0                      # Check for an error
-#rlwinm  4, 0, 0, 3, 3        # by checking for bit 28.
-#cmplwi  0, 4, 0               # It is an error if non-zero.
-#beq     0, 1f                  # Jump if not an error.
-#neg     3, 3                  # Negate the error number.
-#b       2f # jump to epilogue
+neg 3, 3 #negate the result (errno)
 1:
 # compare sc result with 0
 cmpwi cr7, 3, 0
@@ -58,8 +46,7 @@ cmpwi cr7, 3, 0
 bne cr7, 2f
 
 #else: we're the child
-#call funcptr
-# move arg (d) into r3
+#call funcptr: move arg (d) into r3
 mr 3, 31
 #move r30 (funcptr) into CTR reg
 mtctr 30
@@ -72,12 +59,9 @@ sc
 2:
 
 # restore stack
-lwz 30, 12(1)
-lwz 31, 8(1)
+lwz 30, 0(1)
+lwz 31, 4(1)
 addi 1, 1, 16
 
 blr
-
-
-
 
