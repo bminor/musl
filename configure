@@ -145,7 +145,7 @@ i=0
 set -C
 while : ; do i=$(($i+1))
 tmpc="./conf$$-$PPID-$i.c"
-2>/dev/null > "$tmpc" && break
+2>|/dev/null > "$tmpc" && break
 test "$i" -gt 50 && fail "$0: cannot create temporary file $tmpc"
 done
 set +C
