@@ -1,6 +1,3 @@
-int iopl(int);
-int ioperm(unsigned long, unsigned long, int);
-
 static __inline void outb(unsigned char __val, unsigned short __port)
 {
 	__asm__ volatile ("outb %0,%1" : : "a" (__val), "dN" (__port));
