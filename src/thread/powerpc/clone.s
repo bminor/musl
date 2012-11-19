@@ -16,9 +16,9 @@ __clone:
 # in order that the child can find the start func and its arg, we need to store it into
 # non-volative regs. to do so, we have to store those 2 regs into our stackframe, so
 # we can restore them later.
-stw 30, -4(1)
-stw 31, -8(1)
 subi 1, 1, 16 
+stw 30, 12(1)
+stw 31, 8(1)
 
 # save r3 (func) into r30, and r6(arg) into r31
 mr 30, 3
@@ -72,9 +72,9 @@ sc
 2:
 
 # restore stack
+lwz 30, 12(1)
+lwz 31, 8(1)
 addi 1, 1, 16
-lwz 30, -4(1)
-lwz 31, -8(1)
 
 blr
 
