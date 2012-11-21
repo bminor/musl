@@ -27,7 +27,7 @@ typedef struct __ucontext {
 	struct __ucontext *uc_link;
 	stack_t uc_stack;
 	int uc_pad[7];
-	struct mcontext_t *uc_regs;
+	mcontext_t *uc_regs;
 	
 	sigset_t uc_sigmask;
 	
