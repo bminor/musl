@@ -16,9 +16,10 @@ union \1 \2;\
 #endif\
 /'
 
-TYPEDEF unsigned int size_t;
-TYPEDEF long ssize_t;
-TYPEDEF long ptrdiff_t;
+TYPEDEF unsigned size_t;
+TYPEDEF int ssize_t;
+TYPEDEF int ptrdiff_t;
+
 TYPEDEF __builtin_va_list va_list;
 
 #ifndef __cplusplus
@@ -52,8 +53,8 @@ TYPEDEF unsigned int       uint_fast16_t;
 TYPEDEF unsigned int       uint_fast32_t;
 TYPEDEF uint64_t           uint_fast64_t;
 
-TYPEDEF long          intptr_t;
-TYPEDEF unsigned long uintptr_t;
+TYPEDEF int intptr_t;
+TYPEDEF unsigned uintptr_t;
 
 TYPEDEF float float_t;
 TYPEDEF double double_t;
