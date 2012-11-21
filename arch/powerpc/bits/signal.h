@@ -1,6 +1,21 @@
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+
+struct sigcontext
+{
+	unsigned long _unused[4];
+	int signal;
+	unsigned long handler;
+	unsigned long oldmask;
+	void *regs;
+	gregset_t gp_regs;
+	fpregset_t fp_regs;
+	vrregset_t *v_regs;
+	long vmx_reserve[33+33+32+1]; /* 33=34 for ppc64 */
+};
+
 typedef unsigned long gregset_t[48];
 
 typedef struct {
@@ -19,8 +34,24 @@ typedef struct {
 typedef struct {
 	gregset_t gregs;
 	fpregset_t fpregs;
-	vrregset_t vrregs __attribute__((__aligned__(16)));
+	vrregset_t vrregs
+#ifdef __GNUC__
+	__attribute__((__aligned__(16)))
+#endif
+	;
 } mcontext_t;
+
+#else
+
+typedef struct {
+	long __regs[48+68+4*32+4]
+#ifdef __GNUC__
+	__attribute__((__aligned__(16)))
+#endif
+	;
+} mcontext_t;
+
+#endif
 
 typedef struct __ucontext {
 	unsigned long uc_flags;
@@ -46,24 +77,6 @@ typedef struct __ucontext {
 #define SA_NODEFER    0x40000000U
 #define SA_RESETHAND  0x80000000U
 #define SA_RESTORER   0x04000000U
-
-#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
-
-struct sigcontext
-{
-	unsigned long _unused[4];
-	int signal;
-	unsigned long handler;
-	unsigned long oldmask;
-	void *regs; /* originally struct pt_regs _user *regs,
-			pt_regs is defined in arch/powerpc/include/asm/ptrace.h */
-	gregset_t gp_regs;
-	fpregset_t fp_regs;
-	vrregset_t *v_regs;
-	long vmx_reserve[33+33+32+1]; /* 33=34 for ppc64 */
-};
-#define NSIG      64
-#endif
 
 #endif
 
