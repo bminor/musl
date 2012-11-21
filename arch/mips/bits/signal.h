@@ -82,3 +82,5 @@ struct sigcontext
 #define SIGXCPU   30
 #define SIGXFSZ   31
 #define SIGUNUSED SIGSYS
+
+#define _NSIG 129

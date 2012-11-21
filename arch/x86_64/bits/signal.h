@@ -78,3 +78,5 @@ struct sigcontext {
 #define SIGPWR    30
 #define SIGSYS    31
 #define SIGUNUSED SIGSYS
+
+#define _NSIG 65
