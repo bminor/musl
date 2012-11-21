@@ -5,19 +5,6 @@
 
 typedef unsigned long gregset_t[48];
 
-struct sigcontext
-{
-	unsigned long _unused[4];
-	int signal;
-	unsigned long handler;
-	unsigned long oldmask;
-	void *regs;
-	gregset_t gp_regs;
-	fpregset_t fp_regs;
-	vrregset_t *v_regs;
-	long vmx_reserve[33+33+32+1]; /* 33=34 for ppc64 */
-};
-
 typedef struct {
 	double fpregs[32];
 	double fpscr;
@@ -30,6 +17,19 @@ typedef struct {
 	unsigned _pad[2];
 	unsigned vscr;
 } vrregset_t;
+
+struct sigcontext
+{
+	unsigned long _unused[4];
+	int signal;
+	unsigned long handler;
+	unsigned long oldmask;
+	void *regs;
+	gregset_t gp_regs;
+	fpregset_t fp_regs;
+	vrregset_t *v_regs;
+	long vmx_reserve[33+33+32+1]; /* 33=34 for ppc64 */
+};
 
 typedef struct {
 	gregset_t gregs;
