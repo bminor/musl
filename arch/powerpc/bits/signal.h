@@ -3,6 +3,8 @@
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 
+typedef unsigned long gregset_t[48];
+
 struct sigcontext
 {
 	unsigned long _unused[4];
@@ -15,8 +17,6 @@ struct sigcontext
 	vrregset_t *v_regs;
 	long vmx_reserve[33+33+32+1]; /* 33=34 for ppc64 */
 };
-
-typedef unsigned long gregset_t[48];
 
 typedef struct {
 	double fpregs[32];
