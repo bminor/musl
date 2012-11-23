@@ -35,7 +35,6 @@ struct sigcontext
 	} regs;
 	unsigned long oldmask;
 };
-#define NSIG      64
 #endif
 
 #endif

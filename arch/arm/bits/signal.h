@@ -33,7 +33,6 @@ struct sigcontext
 	unsigned long arm_ip, arm_sp, arm_lr, arm_pc;
 	unsigned long arm_cpsr, fault_address;
 };
-#define NSIG      64
 #endif
 
 #endif

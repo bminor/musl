@@ -42,7 +42,6 @@ struct sigcontext {
 	struct __fpstate *fpstate;
 	unsigned long oldmask, cr2;
 };
-#define NSIG      64
 #endif
 
 #endif

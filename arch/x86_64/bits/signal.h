@@ -40,7 +40,6 @@ struct sigcontext {
 	struct __fpstate *fpstate;
 	unsigned long __reserved1[8];
 };
-#define NSIG      64
 #endif
 
 #endif
