@@ -1,17 +1,34 @@
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 
-struct __fpstate {
-	unsigned long __x[7];
-	unsigned char __y[80];
-	unsigned long __z;
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+struct _fpstate {
+	unsigned long cw, sw, tag, ipoff, cssel, dataoff, datasel;
+	struct {
+		unsigned short significand[4], exponent;
+	} _st[8];
+	unsigned long status;
 };
-
+struct sigcontext {
+	unsigned short gs, __gsh, fs, __fsh, es, __esh, ds, __dsh;
+	unsigned long edi, esi, ebp, esp, ebx, edx, ecx, eax;
+	unsigned long trapno, err, eip;
+	unsigned short cs, __csh;
+	unsigned long eflags, esp_at_signal;
+	unsigned short ss, __ssh;
+	struct _fpstate *fpstate;
+	unsigned long oldmask, cr2;
+};
 typedef struct {
-	unsigned long __gregs[19];
-	void *__fpregs;
-	unsigned long __oldmask, __cr2;
+	unsigned gregs[19];
+	struct _fpstate *fpregs;
+	unsigned long oldmask, cr2;
 } mcontext_t;
+#else
+typedef struct {
+	unsigned __space[22];
+} mcontext_t;
+#endif
 
 typedef struct __ucontext {
 	unsigned long uc_flags;
@@ -19,7 +36,7 @@ typedef struct __ucontext {
 	stack_t uc_stack;
 	mcontext_t uc_mcontext;
 	sigset_t uc_sigmask;
-	struct __fpstate __fpregs_mem;
+	unsigned long __fpregs_mem[28];
 } ucontext_t;
 
 #define SA_NOCLDSTOP  1
@@ -30,19 +47,6 @@ typedef struct __ucontext {
 #define SA_NODEFER    0x40000000
 #define SA_RESETHAND  0x80000000
 #define SA_RESTORER   0x04000000
-
-#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
-struct sigcontext {
-	unsigned short gs, __gsh, fs, __fsh, es, __esh, ds, __dsh;
-	unsigned long edi, esi, ebp, esp, ebx, edx, ecx, eax;
-	unsigned long trapno, err, eip;
-	unsigned short cs, __csh;
-	unsigned long eflags, esp_at_signal;
-	unsigned short ss, __ssh;
-	struct __fpstate *fpstate;
-	unsigned long oldmask, cr2;
-};
-#endif
 
 #endif
 

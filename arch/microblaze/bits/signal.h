@@ -1,9 +1,24 @@
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+typedef struct sigcontext
+{
+	struct {
+		unsigned long r0, r1, r2, r3, r4, r5, r6, r7;
+		unsigned long r8, r9, r10, r11, r12, r13, r14, r15;
+		unsigned long r16, r17, r18, r19, r20, r21, r22, r23;
+		unsigned long r24, r25, r26, r27, r28, r29, r30, r31;
+		unsigned long pc, msr, ear, esr, fsr;
+		int pt_mode;
+	} regs;
+	unsigned long oldmask;
+} mcontext_t;
+#else
 typedef struct {
 	unsigned long __regs[39];
 } mcontext_t;
+#endif
 
 typedef struct __ucontext {
 	unsigned long uc_flags;
@@ -21,21 +36,6 @@ typedef struct __ucontext {
 #define SA_NODEFER    0x40000000
 #define SA_RESETHAND  0x80000000
 #define SA_RESTORER   0x04000000
-
-#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
-struct sigcontext
-{
-	struct {
-		unsigned long r0, r1, r2, r3, r4, r5, r6, r7;
-		unsigned long r8, r9, r10, r11, r12, r13, r14, r15;
-		unsigned long r16, r17, r18, r19, r20, r21, r22, r23;
-		unsigned long r24, r25, r26, r27, r28, r29, r30, r31;
-		unsigned long pc, msr, ear, esr, fsr;
-		int pt_mode;
-	} regs;
-	unsigned long oldmask;
-};
-#endif
 
 #endif
 
