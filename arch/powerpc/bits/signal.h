@@ -25,10 +25,6 @@ struct sigcontext
 	unsigned long handler;
 	unsigned long oldmask;
 	void *regs;
-	gregset_t gp_regs;
-	fpregset_t fp_regs;
-	vrregset_t *v_regs;
-	long vmx_reserve[33+33+32+1]; /* 33=34 for ppc64 */
 };
 
 typedef struct {
