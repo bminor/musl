@@ -4,7 +4,7 @@ sigsetjmp:
 	#int sigsetjmp(sigjmp_buf buf, int save)
 	#		r3		r4
 	#0) store save into buf->__fl
-	stw 4, 256(3)
+	stw 4, 448(3)
 	#1) compare save with 0
 	cmpwi cr7, 4, 0
 	#2) if its 0, goto setjmp code
@@ -18,7 +18,7 @@ sigsetjmp:
 	mflr 31
 	
 	# put pointer to ss buf into r5 (3rd arg)
-	addi 5, 3, 260
+	addi 5, 3, 452
 	# put "2" i.e. SIG_SETMASK in r3
 	li 3, 2
 	li 4, 0
