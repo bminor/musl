@@ -55,14 +55,9 @@ typedef struct __ucontext {
 	stack_t uc_stack;
 	int uc_pad[7];
 	mcontext_t *uc_regs;
-	
 	sigset_t uc_sigmask;
-	
-        int             uc_maskext[30];
         int             uc_pad2[3];
-	
 	mcontext_t uc_mcontext;
-	char uc_reg_space[sizeof(mcontext_t) + 12];
 } ucontext_t;
 
 #define SA_NOCLDSTOP  1U
