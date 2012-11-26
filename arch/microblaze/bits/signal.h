@@ -2,6 +2,7 @@
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+typedef unsigned long greg_t, gregset_t[38];
 typedef struct sigcontext
 {
 	struct {

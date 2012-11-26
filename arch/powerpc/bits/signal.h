@@ -3,7 +3,7 @@
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 
-typedef unsigned long gregset_t[48];
+typedef unsigned long greg_t, gregset_t[48];
 
 typedef struct {
 	double fpregs[32];

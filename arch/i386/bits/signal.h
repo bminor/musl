@@ -2,13 +2,14 @@
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
-struct _fpstate {
+typedef int greg_t, gregset_t[19];
+typedef struct _fpstate {
 	unsigned long cw, sw, tag, ipoff, cssel, dataoff, datasel;
 	struct {
 		unsigned short significand[4], exponent;
 	} _st[8];
 	unsigned long status;
-};
+} *fpregset_t;
 struct sigcontext {
 	unsigned short gs, __gsh, fs, __fsh, es, __esh, ds, __dsh;
 	unsigned long edi, esi, ebp, esp, ebx, edx, ecx, eax;
@@ -20,8 +21,8 @@ struct sigcontext {
 	unsigned long oldmask, cr2;
 };
 typedef struct {
-	unsigned gregs[19];
-	struct _fpstate *fpregs;
+	gregset_t gregs;
+	fpregset_t fpregs;
 	unsigned long oldmask, cr2;
 } mcontext_t;
 #else

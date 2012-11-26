@@ -13,6 +13,7 @@ extern "C" {
 
 #ifdef _GNU_SOURCE
 #define __siginfo siginfo
+#define __ucontext ucontext
 #endif
 
 #define __NEED_size_t

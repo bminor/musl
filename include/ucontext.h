@@ -8,8 +8,8 @@ extern "C" {
 
 #include <signal.h>
 
-#ifdef _GNU_SOURCE
-#define ucontext __ucontext
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+#define NGREG (sizeof(gregset_t)/sizeof(greg_t))
 #endif
 
 struct __ucontext;

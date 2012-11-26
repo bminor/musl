@@ -2,7 +2,8 @@
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
-struct _fpstate {
+typedef long long greg_t, gregset_t[23];
+typedef struct _fpstate {
 	unsigned short cwd, swd, ftw, fop;
 	unsigned long long rip, rdp;
 	unsigned mxcsr, mxcr_mask;
@@ -13,7 +14,7 @@ struct _fpstate {
 		unsigned element[4];
 	} _xmm[16];
 	unsigned padding[24];
-};
+} *fpregset_t;
 struct sigcontext {
 	unsigned long r8, r9, r10, r11, r12, r13, r14, r15;
 	unsigned long rdi, rsi, rbp, rbx, rdx, rax, rcx, rsp, rip, eflags;
@@ -23,8 +24,8 @@ struct sigcontext {
 	unsigned long __reserved1[8];
 };
 typedef struct {
-	unsigned long long gregs[23];
-	struct _fpstate *fpregs;
+	gregset_t gregs;
+	fpregset_t fpregs;
 	unsigned long long __reserved1[8];
 } mcontext_t;
 #else
