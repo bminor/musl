@@ -927,7 +927,8 @@ void *__dynlink(int argc, char **argv)
 			if (phdr->p_type == PT_LOAD)
 				vdso->base = (void *)(vdso_base - phdr->p_vaddr + phdr->p_offset);
 		}
-		vdso->name = vdso->shortname = "linux-gate.so.1";
+		vdso->name = "";
+		vdso->shortname = "linux-gate.so.1";
 		vdso->global = 1;
 		decode_dyn(vdso);
 		vdso->prev = lib;
