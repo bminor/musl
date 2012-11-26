@@ -1,13 +1,13 @@
 #undef __WORDSIZE
 #define __WORDSIZE 64
 
-struct user_fpregs_struct
+typedef struct user_fpregs_struct
 {
 	uint16_t cwd, swd, ftw, fop;
 	uint64_t rip, rdp;
 	uint32_t mxcsr, mxcs_mask;
 	uint32_t st_space[32], xmm_space[64], padding[24];
-};
+} elf_fpregset_t;
 
 struct user_regs_struct
 {
@@ -15,6 +15,8 @@ struct user_regs_struct
 	unsigned long rax, rcx, rdx, rsi, rdi, orig_rax, rip;
 	unsigned long cs, eflags, rsp, ss, fs_base, gs_base, ds, es, fs, gs;
 };
+#define ELF_NGREG 27
+typedef unsigned long long elf_greg_t, elf_gregset_t[ELF_NGREG];
 
 struct user
 {

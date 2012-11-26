@@ -1,4 +1,4 @@
-struct user_fpregs {
+typedef struct user_fpregs {
 	struct fp_reg {
 		unsigned sign1:1;
 		unsigned unused:15;
@@ -12,11 +12,13 @@ struct user_fpregs {
 	unsigned fpcr:32;
 	unsigned char ftype[8];
 	unsigned int init_flag;
-};
+} elf_fpregset_t;
 
 struct user_regs {
 	unsigned long uregs[18];
 };
+#define ELF_NGREG 18
+typedef unsigned long elf_greg_t, elf_gregset_t[ELF_NGREG];
 
 struct user {
 	struct user_regs regs;
