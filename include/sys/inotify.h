@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#include <fcntl.h>
 
 struct inotify_event {
 	int wd;
@@ -13,8 +14,8 @@ struct inotify_event {
 	char name[];
 };
 
-#define IN_CLOEXEC 02000000
-#define IN_NONBLOCK 04000
+#define IN_CLOEXEC O_CLOEXEC
+#define IN_NONBLOCK O_NONBLOCK
 
 #define IN_ACCESS        0x00000001
 #define IN_MODIFY        0x00000002
