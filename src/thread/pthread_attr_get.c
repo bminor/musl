@@ -11,7 +11,7 @@ int pthread_attr_getguardsize(const pthread_attr_t *restrict a, size_t *restrict
 	return 0;
 }
 
-int pthread_attr_getinheritsched(const pthread_attr_t *a, int *inherit)
+int pthread_attr_getinheritsched(const pthread_attr_t *restrict a, int *restrict inherit)
 {
 	*inherit = a->_a_sched;
 	return 0;
@@ -23,7 +23,7 @@ int pthread_attr_getschedparam(const pthread_attr_t *restrict a, struct sched_pa
 	return 0;
 }
 
-int pthread_attr_getschedpolicy(const pthread_attr_t *a, int *policy)
+int pthread_attr_getschedpolicy(const pthread_attr_t *restrict a, int *restrict policy)
 {
 	*policy = a->_a_policy;
 	return 0;

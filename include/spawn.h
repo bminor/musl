@@ -57,8 +57,8 @@ int posix_spawnattr_getsigdefault(const posix_spawnattr_t *__restrict, sigset_t 
 
 int posix_spawnattr_setschedparam(posix_spawnattr_t *__restrict, const struct sched_param *__restrict);
 int posix_spawnattr_getschedparam(const posix_spawnattr_t *__restrict, struct sched_param *__restrict);
-int posix_spawnattr_setschedpolicy(posix_spawnattr_t *__restrict, int);
-int posix_spawnattr_getschedpolicy(const posix_spawnattr_t *__restrict, int *);
+int posix_spawnattr_setschedpolicy(posix_spawnattr_t *, int);
+int posix_spawnattr_getschedpolicy(const posix_spawnattr_t *__restrict, int *__restrict);
 
 int posix_spawn_file_actions_init(posix_spawn_file_actions_t *);
 int posix_spawn_file_actions_destroy(posix_spawn_file_actions_t *);
