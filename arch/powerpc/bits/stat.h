@@ -19,9 +19,3 @@ struct stat
 	struct timespec st_ctim;
 	unsigned __unused[2];
 };
-
-#ifdef _BSD_SOURCE
-#define st_atimespec st_atim
-#define st_mtimespec st_mtim
-#define st_ctimespec st_ctim
-#endif
