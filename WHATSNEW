@@ -780,3 +780,30 @@ bug fixes:
 - getaddrinfo failure with port "0"
 - dirname handling of trailing slash
 - vfork race in posix_spawn
+
+
+
+0.9.8 release notes
+
+new features:
+- powerpc port
+- dl_iterate_phdr interface
+- added mips-specific syscalls
+- thread priority scheduling
+- C11 CMPLX macro in complex.h
+- x86 port io functions in sys/io.h
+
+compatibility:
+- improved headers for trace/debugging/machine-access
+- stub functions for unsupported thread-related functionality
+
+bug fixes:
+- numerous math bugs (mostly exception flags and excess-precision issues)
+- register clobber error in i386 vsyscall asm (did not affect most callers)
+- various incorrect definitions in mips headers
+- broken dlsym asm on mips
+- empty prefix handling in configure script (--prefix="")
+- ldso search path logic issues
+- lock handling for stdio memory streams at exit time
+- invalid SO_REUSEPORT definition in socket.h (not supported by Linux)
+- broken redirection attempt to /dev/null in configure script

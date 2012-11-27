@@ -43,6 +43,7 @@ and ABI combinations:
 - arm (EABI)
 - mips (o32 ABI, requires fpu or float emulation in kernel)
 - microblaze (requires a cpu with lwx/swx instructions)
+- powerpc (32-bit, must use "secure plt" mode for dynamic linking)
 
 For architectures with both little- and big-endian options, both are
 supported unless otherwise noted.
