@@ -3,6 +3,7 @@
 
 void __init_tls(size_t *);
 void __init_security(size_t *);
+void __init_ldso_ctors(void);
 
 #define AUX_CNT 38
 
@@ -36,6 +37,10 @@ int __libc_start_main(
 
 	/* Execute constructors (static) linked into the application */
 	if (init) init(argc, argv, envp);
+
+#ifdef SHARED
+	__init_ldso_ctors();
+#endif
 
 	/* Pass control to to application */
 	exit(main(argc, argv, envp));

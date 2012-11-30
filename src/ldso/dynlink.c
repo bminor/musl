@@ -999,11 +999,14 @@ void *__dynlink(int argc, char **argv)
 
 	if (ssp_used) __init_ssp((void *)aux[AT_RANDOM]);
 
-	atexit(do_fini);
-	do_init_fini(tail);
-
 	errno = 0;
 	return (void *)aux[AT_ENTRY];
+}
+
+void __init_ldso_ctors(void)
+{
+	atexit(do_fini);
+	do_init_fini(tail);
 }
 
 void *dlopen(const char *file, int mode)
