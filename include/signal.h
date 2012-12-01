@@ -208,6 +208,10 @@ void (*sigset(int, void (*)(int)))(int);
 #define SIGSTKSZ 8192
 #endif
 
+#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+#define NSIG _NSIG
+#endif
+
 #ifdef _BSD_SOURCE
 typedef void (*sig_t)(int);
 #endif
@@ -218,7 +222,6 @@ void (*bsd_signal(int, void (*)(int)))(int);
 int sigisemptyset(const sigset_t *);
 #define SA_NOMASK SA_NODEFER
 #define SA_ONESHOT SA_RESETHAND
-#define NSIG _NSIG
 #endif
 
 #include <bits/signal.h>
