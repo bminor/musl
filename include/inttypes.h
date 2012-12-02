@@ -24,8 +24,11 @@ uintmax_t wcstoumax(const wchar_t *__restrict, wchar_t **__restrict, int);
 
 #if !defined __cplusplus || defined __STDC_FORMAT_MACROS
 
+#if UINTPTR_MAX == UINT64_MAX
+#define __PRI64  "l"
+#else
 #define __PRI64  "ll"
-#define __PRIPTR "l"
+#endif
 
 #define PRId8  "d"
 #define PRId16 "d"
@@ -124,12 +127,12 @@ uintmax_t wcstoumax(const wchar_t *__restrict, wchar_t **__restrict, int);
 #define PRIxMAX __PRI64 "x"
 #define PRIXMAX __PRI64 "X"
 
-#define PRIdPTR __PRIPTR "d"
-#define PRIiPTR __PRIPTR "i"
-#define PRIoPTR __PRIPTR "o"
-#define PRIuPTR __PRIPTR "u"
-#define PRIxPTR __PRIPTR "x"
-#define PRIXPTR __PRIPTR "X"
+#define PRIdPTR "ld"
+#define PRIiPTR "li"
+#define PRIoPTR "lo"
+#define PRIuPTR "lu"
+#define PRIxPTR "lx"
+#define PRIXPTR "lX"
 
 #define SCNd8   "hhd"
 #define SCNd16  "hd"
@@ -142,8 +145,8 @@ uintmax_t wcstoumax(const wchar_t *__restrict, wchar_t **__restrict, int);
 #define SCNdLEAST64 __PRI64 "d"
 
 #define SCNdFAST8  "hhd"
-#define SCNdFAST16 __PRIPTR "d"
-#define SCNdFAST32 __PRIPTR "d"
+#define SCNdFAST16 "d"
+#define SCNdFAST32 "d"
 #define SCNdFAST64 __PRI64 "d"
 
 #define SCNi8   "hhi"
@@ -157,8 +160,8 @@ uintmax_t wcstoumax(const wchar_t *__restrict, wchar_t **__restrict, int);
 #define SCNiLEAST64 __PRI64 "i"
 
 #define SCNiFAST8  "hhi"
-#define SCNiFAST16 __PRIPTR "i"
-#define SCNiFAST32 __PRIPTR "i"
+#define SCNiFAST16 "i"
+#define SCNiFAST32 "i"
 #define SCNiFAST64 __PRI64 "i"
 
 #define SCNu8   "hhu"
@@ -172,8 +175,8 @@ uintmax_t wcstoumax(const wchar_t *__restrict, wchar_t **__restrict, int);
 #define SCNuLEAST64 __PRI64 "u"
 
 #define SCNuFAST8 "hhu"
-#define SCNuFAST16 __PRIPTR "u"
-#define SCNuFAST32 __PRIPTR "u"
+#define SCNuFAST16 "u"
+#define SCNuFAST32 "u"
 #define SCNuFAST64 __PRI64 "u"
 
 #define SCNo8   "hho"
@@ -187,8 +190,8 @@ uintmax_t wcstoumax(const wchar_t *__restrict, wchar_t **__restrict, int);
 #define SCNoLEAST64 __PRI64 "o"
 
 #define SCNoFAST8  "hho"
-#define SCNoFAST16 __PRIPTR "o"
-#define SCNoFAST32 __PRIPTR "o"
+#define SCNoFAST16 "o"
+#define SCNoFAST32 "o"
 #define SCNoFAST64 __PRI64 "o"
 
 #define SCNx8   "hhx"
@@ -202,8 +205,8 @@ uintmax_t wcstoumax(const wchar_t *__restrict, wchar_t **__restrict, int);
 #define SCNxLEAST64 __PRI64 "x"
 
 #define SCNxFAST8  "hhx"
-#define SCNxFAST16 __PRIPTR "x"
-#define SCNxFAST32 __PRIPTR "x"
+#define SCNxFAST16 "x"
+#define SCNxFAST32 "x"
 #define SCNxFAST64 __PRI64 "x"
 
 #define SCNdMAX __PRI64 "d"
@@ -212,11 +215,11 @@ uintmax_t wcstoumax(const wchar_t *__restrict, wchar_t **__restrict, int);
 #define SCNuMAX __PRI64 "u"
 #define SCNxMAX __PRI64 "x"
 
-#define SCNdPTR __PRIPTR "d"
-#define SCNiPTR __PRIPTR "i"
-#define SCNoPTR __PRIPTR "o"
-#define SCNuPTR __PRIPTR "u"
-#define SCNxPTR __PRIPTR "x"
+#define SCNdPTR "ld"
+#define SCNiPTR "li"
+#define SCNoPTR "lo"
+#define SCNuPTR "lu"
+#define SCNxPTR "lx"
 
 #endif
 
