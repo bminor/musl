@@ -212,7 +212,7 @@ void (*sigset(int, void (*)(int)))(int);
 #define NSIG _NSIG
 #endif
 
-#ifdef _BSD_SOURCE
+#if defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
 typedef void (*sig_t)(int);
 #endif
 

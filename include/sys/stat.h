@@ -88,11 +88,8 @@ int mkfifoat(int, const char *, mode_t);
 int futimens(int, const struct timespec [2]);
 int utimensat(int, const char *, const struct timespec [2], int);
 
-#ifdef _BSD_SOURCE
-int lchmod(const char *, mode_t);
-#endif
-
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+int lchmod(const char *, mode_t);
 #define S_IREAD S_IRUSR
 #define S_IWRITE S_IWUSR
 #define S_IEXEC S_IXUSR

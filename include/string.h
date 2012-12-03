@@ -81,9 +81,6 @@ void *memccpy (void *__restrict, const void *__restrict, int, size_t);
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 char *strsep(char **, const char *);
-#endif
-
-#ifdef _BSD_SOURCE
 size_t strlcat (char *, const char *, size_t);
 size_t strlcpy (char *, const char *, size_t);
 #endif
