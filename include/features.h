@@ -1,6 +1,10 @@
 #ifndef _FEATURES_H
 #define _FEATURES_H
 
+#ifdef _ALL_SOURCE
+#define _GNU_SOURCE 1
+#endif
+
 #if !defined(_POSIX_SOURCE) && !defined(_POSIX_C_SOURCE) \
  && !defined(_XOPEN_SOURCE) && !defined(_GNU_SOURCE) \
  && !defined(_BSD_SOURCE) && !defined(__STRICT_ANSI__)
