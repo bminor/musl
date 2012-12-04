@@ -26,6 +26,7 @@ struct user {
 	unsigned long u_tsize, u_dsize, u_ssize;
 	unsigned long start_code, start_stack;
 	long signal;
+	int reserved;
 	struct user_regs *u_ar0;
 	unsigned long magic;
 	char u_comm[32];
