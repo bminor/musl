@@ -67,7 +67,7 @@ static void *wait_thread(void *p)
 	return 0;
 }
 
-int lio_listio(int mode, struct aiocb *restrict const cbs[restrict], int cnt, struct sigevent *restrict sev)
+int lio_listio(int mode, struct aiocb *restrict const *restrict cbs, int cnt, struct sigevent *restrict sev)
 {
 	int i, ret;
 	struct lio_state *st=0;
