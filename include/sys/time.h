@@ -31,6 +31,7 @@ int utimes (const char *, const struct timeval [2]);
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 int futimes(int, const struct timeval [2]);
+int futimesat(int, const char *, const struct timeval [2]);
 int lutimes(const char *, const struct timeval [2]);
 int settimeofday (const struct timeval *, void *);
 int adjtime (const struct timeval *, struct timeval *);
