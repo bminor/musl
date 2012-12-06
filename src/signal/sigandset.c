@@ -2,7 +2,7 @@
 #include <signal.h>
 #include <errno.h>
 
-#define SST_SIZE (sizeof(sigset_t) / sizeof(long))
+#define SST_SIZE (_NSIG/8)
 
 int sigandset(sigset_t *dest, sigset_t *left, sigset_t *right)
 {
