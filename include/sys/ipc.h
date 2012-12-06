@@ -13,12 +13,8 @@ extern "C" {
 
 #include <bits/alltypes.h>
 
-#ifdef _GNU_SOURCE
-#define key __ipc_perm_key
-#define seq __ipc_perm_seq
-#define __key __ipc_perm_key
-#define __seq __ipc_perm_seq
-#endif
+#define __ipc_perm_key __key
+#define __ipc_perm_seq __seq
 
 #include <bits/ipc.h>
 
