@@ -18,6 +18,8 @@
 #define TCP_CONGESTION	 13
 #define TCP_MD5SIG	 14
 
+#define SOL_TCP 6
+
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 #include <sys/types.h>
 #include <sys/socket.h>
