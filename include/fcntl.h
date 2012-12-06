@@ -108,6 +108,23 @@ int posix_fallocate(int, off_t, off_t);
 #define F_TLOCK 2
 #define F_TEST  3
 
+#define F_LINUX_SPECIFIC_BASE 1024
+#define F_SETLEASE      (F_LINUX_SPECIFIC_BASE + 0)
+#define F_GETLEASE      (F_LINUX_SPECIFIC_BASE + 1)
+#define F_NOTIFY        (F_LINUX_SPECIFIC_BASE + 2)
+#define F_CANCELLK      (F_LINUX_SPECIFIC_BASE + 5)
+#define F_DUPFD_CLOEXEC (F_LINUX_SPECIFIC_BASE + 6)
+#define F_SETPIPE_SZ    (F_LINUX_SPECIFIC_BASE + 7)
+#define F_GETPIPE_SZ    (F_LINUX_SPECIFIC_BASE + 8)
+
+#define DN_ACCESS       0x00000001
+#define DN_MODIFY       0x00000002
+#define DN_CREATE       0x00000004
+#define DN_DELETE       0x00000008
+#define DN_RENAME       0x00000010
+#define DN_ATTRIB       0x00000020
+#define DN_MULTISHOT    0x80000000
+
 int lockf(int, int, off_t);
 #endif
 
