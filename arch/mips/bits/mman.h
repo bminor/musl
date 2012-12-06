@@ -16,6 +16,10 @@
 #define MAP_ANON       0x800
 #define MAP_ANONYMOUS  MAP_ANON
 #define MAP_NORESERVE  0x0400
+#define MAP_GROWSDOWN  0x1000
+#define MAP_DENYWRITE  0x2000
+#define MAP_EXECUTABLE 0x4000
+#define MAP_LOCKED     0x8000
 
 #define POSIX_MADV_NORMAL       0
 #define POSIX_MADV_RANDOM       1
