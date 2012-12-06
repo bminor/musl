@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include <signal.h>
 
-#define SST_SIZE (_NSIG/8)
+#define SST_SIZE (_NSIG/8/sizeof(long))
 
 int sigandset(sigset_t *dest, sigset_t *left, sigset_t *right)
 {
