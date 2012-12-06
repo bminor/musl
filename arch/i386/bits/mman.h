@@ -16,6 +16,7 @@
 #define MAP_ANON       0x20
 #define MAP_ANONYMOUS  MAP_ANON
 #define MAP_32BIT      0x40
+#define MAP_NORESERVE  0x4000
 
 #define POSIX_MADV_NORMAL       0
 #define POSIX_MADV_RANDOM       1
