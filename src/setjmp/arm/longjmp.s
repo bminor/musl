@@ -21,8 +21,6 @@ longjmp:
 2:	tst r1,#0x40
 	beq 2f
 	ldc p11, cr8, [ip], #64
-	ldmia ip!, {r2,r3}
-	mcr p10, 7, r3, cr1, cr0, 0
 2:	tst r1,#0x200
 	beq 3f
 	ldcl p1, cr10, [ip], #8

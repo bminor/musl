@@ -23,8 +23,6 @@ setjmp:
 2:	tst r1,#0x40
 	beq 2f
 	stc p11, cr8, [ip], #64
-	mrc p10, 7, r2, cr1, cr0, 0
-	stmia ip!, {r0,r2}
 2:	tst r1,#0x200
 	beq 3f
 	stcl p1, cr10, [ip], #8
