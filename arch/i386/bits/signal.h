@@ -1,6 +1,28 @@
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 
+#ifdef _GNU_SOURCE
+#define REG_GS          0
+#define REG_FS          1
+#define REG_ES          2
+#define REG_DS          3
+#define REG_EDI         4
+#define REG_ESI         5
+#define REG_EBP         6
+#define REG_ESP         7
+#define REG_EBX         8
+#define REG_EDX         9
+#define REG_ECX         10
+#define REG_EAX         11
+#define REG_TRAPNO      12
+#define REG_ERR         13
+#define REG_EIP         14
+#define REG_CS          15
+#define REG_EFL         16
+#define REG_UESP        17
+#define REG_SS          18
+#endif
+
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 typedef int greg_t, gregset_t[19];
 typedef struct _fpstate {
@@ -48,26 +70,6 @@ typedef struct __ucontext {
 #define SA_NODEFER    0x40000000
 #define SA_RESETHAND  0x80000000
 #define SA_RESTORER   0x04000000
-
-#define REG_GS		0
-#define REG_FS		1
-#define REG_ES		2
-#define REG_DS		3
-#define REG_EDI		4
-#define REG_ESI		5
-#define REG_EBP		6
-#define REG_ESP		7
-#define REG_EBX		8
-#define REG_EDX		9
-#define REG_ECX		10
-#define REG_EAX		11
-#define REG_TRAPNO	12
-#define REG_ERR		13
-#define REG_EIP		14
-#define REG_CS		15
-#define REG_EFL		16
-#define REG_UESP	17
-#define REG_SS		18
 
 #endif
 
