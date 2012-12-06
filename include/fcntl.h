@@ -112,7 +112,6 @@ int posix_fallocate(int, off_t, off_t);
 #define F_GETLEASE	1025
 #define F_NOTIFY	1026
 #define F_CANCELLK	1029
-#define F_DUPFD_CLOEXEC	1030
 #define F_SETPIPE_SZ	1031
 #define F_GETPIPE_SZ	1032
 
