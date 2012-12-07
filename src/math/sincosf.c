@@ -48,7 +48,7 @@ void sincosf(float x, float *sin, float *cos)
 	}
 
 	/* |x| ~<= 5*pi/4 */
-	if (ix <= 0x407b53d1) {  
+	if (ix <= 0x407b53d1) {
 		if (ix <= 0x4016cbe3) {  /* |x| ~<= 3pi/4 */
 			if (hx < 0x80000000) {
 				*sin = __cosdf(x - s1pio2);

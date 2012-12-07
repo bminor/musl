@@ -27,7 +27,7 @@ extern size_t __hwcap;
 #if __GNUC__ < 4
 #define BROKEN_VISIBILITY 1
 #endif
-#define ATTR_LIBC_VISIBILITY __attribute__((visibility("hidden"))) 
+#define ATTR_LIBC_VISIBILITY __attribute__((visibility("hidden")))
 #else
 #define ATTR_LIBC_VISIBILITY
 #endif
