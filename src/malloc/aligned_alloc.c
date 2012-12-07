@@ -31,8 +31,6 @@ void *aligned_alloc(size_t align, size_t len)
 		return NULL;
 
 	header = ((size_t *)mem)[-1];
-	end = mem + (header & -8);
-	footer = ((size_t *)end)[-2];
 	new = (void *)((uintptr_t)mem + align-1 & -align);
 
 	if (!(header & 7)) {
@@ -40,6 +38,9 @@ void *aligned_alloc(size_t align, size_t len)
 		((size_t *)new)[-1] = ((size_t *)mem)[-1] - (new-mem);
 		return new;
 	}
+
+	end = mem + (header & -8);
+	footer = ((size_t *)end)[-2];
 
 	((size_t *)mem)[-1] = header&7 | new-mem;
 	((size_t *)new)[-2] = footer&7 | new-mem;
