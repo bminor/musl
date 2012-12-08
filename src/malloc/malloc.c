@@ -196,7 +196,11 @@ static int init_malloc(size_t n)
 		return 0;
 	}
 
-	mal.brk = __brk(0) + 2*SIZE_ALIGN-1 & -SIZE_ALIGN;
+	mal.brk = __brk(0);
+#ifdef SHARED
+	mal.brk = mal.brk + PAGE_SIZE-1 & -PAGE_SIZE;
+#endif
+	mal.brk = mal.brk + 2*SIZE_ALIGN-1 & -SIZE_ALIGN;
 
 	c = expand_heap(n);
 
