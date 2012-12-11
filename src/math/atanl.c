@@ -22,11 +22,6 @@ long double atanl(long double x)
 	return atan(x);
 }
 #elif (LDBL_MANT_DIG == 64 || LDBL_MANT_DIG == 113) && LDBL_MAX_EXP == 16384
-#include "__invtrigl.h"
-
-#define ATAN_CONST      (BIAS + 65)     /* 2**65 */
-#define ATAN_LINEAR     (BIAS - 32)     /* 2**-32 */
-static const long double huge = 1.0e300;
 
 static const long double atanhi[] = {
 	 4.63647609000806116202e-01L,
@@ -81,29 +76,27 @@ long double atanl(long double x)
 	u.e = x;
 	expsign = u.xbits.expsign;
 	expt = expsign & 0x7fff;
-	if (expt >= ATAN_CONST) { /* if |x| is large, atan(x)~=pi/2 */
-		if (expt == BIAS + LDBL_MAX_EXP &&
+	if (expt >= 0x3fff + 65) { /* if |x| is large, atan(x)~=pi/2 */
+		if (expt == 0x7fff &&
 		    ((u.bits.manh&~LDBL_NBIT)|u.bits.manl)!=0)  /* NaN */
 			return x+x;
-		if (expsign > 0)
-			return  atanhi[3]+atanlo[3];
-		else
-			return -atanhi[3]-atanlo[3];
+		z = atanhi[3] + 0x1p-1000;
+		return expsign < 0 ? -z : z;
 	}
 	/* Extract the exponent and the first few bits of the mantissa. */
 	/* XXX There should be a more convenient way to do this. */
-	expman = (expt << 8) | ((u.bits.manh >> (MANH_SIZE - 9)) & 0xff);
-	if (expman < ((BIAS - 2) << 8) + 0xc0) {  /* |x| < 0.4375 */
-		if (expt < ATAN_LINEAR) {   /* if |x| is small, atanl(x)~=x */
-			/* raise inexact */
-			if (huge+x > 1.0)
-				return x;
+	expman = (expt << 8) | ((u.bits.manh >> (LDBL_MANH_SIZE - 9)) & 0xff);
+	if (expman < ((0x3fff - 2) << 8) + 0xc0) {  /* |x| < 0.4375 */
+		if (expt < 0x3fff - 32) {   /* if |x| is small, atanl(x)~=x */
+			/* raise inexact if x!=0 */
+			FORCE_EVAL(x + 0x1p1000);
+			return x;
 		}
 		id = -1;
 	} else {
 		x = fabsl(x);
-		if (expman < (BIAS << 8) + 0x30) {  /* |x| < 1.1875 */
-			if (expman < ((BIAS - 1) << 8) + 0x60) { /*  7/16 <= |x| < 11/16 */
+		if (expman < (0x3fff << 8) + 0x30) {  /* |x| < 1.1875 */
+			if (expman < ((0x3fff - 1) << 8) + 0x60) { /*  7/16 <= |x| < 11/16 */
 				id = 0;
 				x = (2.0*x-1.0)/(2.0+x);
 			} else {                                 /* 11/16 <= |x| < 19/16 */
@@ -111,7 +104,7 @@ long double atanl(long double x)
 				x = (x-1.0)/(x+1.0);
 			}
 		} else {
-			if (expman < ((BIAS + 1) << 8) + 0x38) { /* |x| < 2.4375 */
+			if (expman < ((0x3fff + 1) << 8) + 0x38) { /* |x| < 2.4375 */
 				id = 2;
 				x = (x-1.5)/(1.0+1.5*x);
 			} else {                                 /* 2.4375 <= |x| < 2^ATAN_CONST */

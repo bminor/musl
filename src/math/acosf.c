@@ -16,59 +16,56 @@
 #include "libm.h"
 
 static const float
-pi      = 3.1415925026e+00, /* 0x40490fda */
-pio2_hi = 1.5707962513e+00; /* 0x3fc90fda */
-static const volatile float
-pio2_lo = 7.5497894159e-08; /* 0x33a22168 */
-static const float
+pio2_hi = 1.5707962513e+00, /* 0x3fc90fda */
+pio2_lo = 7.5497894159e-08, /* 0x33a22168 */
 pS0 =  1.6666586697e-01,
 pS1 = -4.2743422091e-02,
 pS2 = -8.6563630030e-03,
 qS1 = -7.0662963390e-01;
 
+static float R(float z)
+{
+	float p, q;
+	p = z*(pS0+z*(pS1+z*pS2));
+	q = 1.0f+z*qS1;
+	return p/q;
+}
+
 float acosf(float x)
 {
-	float z,p,q,r,w,s,c,df;
-	int32_t hx,ix;
+	float z,w,s,c,df;
+	uint32_t hx,ix;
 
 	GET_FLOAT_WORD(hx, x);
 	ix = hx & 0x7fffffff;
-	if (ix >= 0x3f800000) {  /* |x| >= 1 */
-		if (ix == 0x3f800000) {  /* |x| == 1 */
-			if (hx > 0) return 0.0f;  /* acos(1) = 0 */
-			return pi + 2.0f*pio2_lo;  /* acos(-1)= pi */
+	/* |x| >= 1 or nan */
+	if (ix >= 0x3f800000) {
+		if (ix == 0x3f800000) {
+			if (hx >> 31)
+				return 2*pio2_hi + 0x1p-120f;
+			return 0;
 		}
-		return (x-x)/(x-x);  /* acos(|x|>1) is NaN */
+		return 0/(x-x);
 	}
-	if (ix < 0x3f000000) {   /* |x| < 0.5 */
+	/* |x| < 0.5 */
+	if (ix < 0x3f000000) {
 		if (ix <= 0x32800000) /* |x| < 2**-26 */
-			return pio2_hi + pio2_lo;
-		z = x*x;
-		p = z*(pS0+z*(pS1+z*pS2));
-		q = 1.0f+z*qS1;
-		r = p/q;
-		return pio2_hi - (x - (pio2_lo-x*r));
-	} else if (hx < 0) {     /* x < -0.5 */
-		z = (1.0f+x)*0.5f;
-		p = z*(pS0+z*(pS1+z*pS2));
-		q = 1.0f+z*qS1;
-		s = sqrtf(z);
-		r = p/q;
-		w = r*s-pio2_lo;
-		return pi - 2.0f*(s+w);
-	} else {                 /* x > 0.5 */
-		int32_t idf;
-
-		z = (1.0f-x)*0.5f;
-		s = sqrtf(z);
-		df = s;
-		GET_FLOAT_WORD(idf,df);
-		SET_FLOAT_WORD(df,idf&0xfffff000);
-		c  = (z-df*df)/(s+df);
-		p = z*(pS0+z*(pS1+z*pS2));
-		q = 1.0f+z*qS1;
-		r = p/q;
-		w = r*s+c;
-		return 2.0f*(df+w);
+			return pio2_hi + 0x1p-120f;
+		return pio2_hi - (x - (pio2_lo-x*R(x*x)));
 	}
+	/* x < -0.5 */
+	if (hx >> 31) {
+		z = (1+x)*0.5f;
+		s = sqrtf(z);
+		w = R(z)*s-pio2_lo;
+		return 2*(pio2_hi - (s+w));
+	}
+	/* x > 0.5 */
+	z = (1-x)*0.5f;
+	s = sqrtf(z);
+	GET_FLOAT_WORD(hx,s);
+	SET_FLOAT_WORD(df,hx&0xfffff000);
+	c = (z-df*df)/(s+df);
+	w = R(z)*s+c;
+	return 2*(df+w);
 }

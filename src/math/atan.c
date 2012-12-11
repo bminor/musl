@@ -60,32 +60,26 @@ static const double aT[] = {
   1.62858201153657823623e-02, /* 0x3F90AD3A, 0xE322DA11 */
 };
 
-static const double huge = 1.0e300;
-
 double atan(double x)
 {
 	double w,s1,s2,z;
-	int32_t ix,hx,id;
+	uint32_t ix,sign;
+	int id;
 
-	GET_HIGH_WORD(hx, x);
-	ix = hx & 0x7fffffff;
+	GET_HIGH_WORD(ix, x);
+	sign = ix >> 31;
+	ix &= 0x7fffffff;
 	if (ix >= 0x44100000) {   /* if |x| >= 2^66 */
-		uint32_t low;
-
-		GET_LOW_WORD(low, x);
-		if (ix > 0x7ff00000 ||
-		    (ix == 0x7ff00000 && low != 0))  /* NaN */
-			return x+x;
-		if (hx > 0)
-			return  atanhi[3] + *(volatile double *)&atanlo[3];
-		else
-			return -atanhi[3] - *(volatile double *)&atanlo[3];
+		if (isnan(x))
+			return x;
+		z = atanhi[3] + 0x1p-1000;
+		return sign ? -z : z;
 	}
 	if (ix < 0x3fdc0000) {    /* |x| < 0.4375 */
 		if (ix < 0x3e400000) {  /* |x| < 2^-27 */
-			/* raise inexact */
-			if (huge+x > 1.0)
-				return x;
+			/* raise inexact if x!=0 */
+			FORCE_EVAL(x + 0x1p1000);
+			return x;
 		}
 		id = -1;
 	} else {
@@ -117,5 +111,5 @@ double atan(double x)
 	if (id < 0)
 		return x - x*(s1+s2);
 	z = atanhi[id] - (x*(s1+s2) - atanlo[id] - x);
-	return hx < 0 ? -z : z;
+	return sign ? -z : z;
 }

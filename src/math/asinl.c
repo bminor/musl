@@ -23,60 +23,49 @@ long double asinl(long double x)
 }
 #elif (LDBL_MANT_DIG == 64 || LDBL_MANT_DIG == 113) && LDBL_MAX_EXP == 16384
 #include "__invtrigl.h"
-static const long double huge = 1.000e+300;
-static const long double pio4_hi = 7.85398163397448309628e-01L;
-#define ASIN_LINEAR     (BIAS - 32)     /* 2**-32 */
 /* 0.95 */
-#define THRESH  ((0xe666666666666666ULL>>(64-(MANH_SIZE-1)))|LDBL_NBIT)
+#define THRESH  ((0xe666666666666666ULL>>(64-(LDBL_MANH_SIZE-1)))|LDBL_NBIT)
 
 long double asinl(long double x)
 {
 	union IEEEl2bits u;
-	long double t=0.0,w,p,q,c,r,s;
-	int16_t expsign, expt;
+	long double z,r,s;
+	uint16_t expsign, expt;
 
 	u.e = x;
 	expsign = u.xbits.expsign;
 	expt = expsign & 0x7fff;
-	if (expt >= BIAS) {          /* |x|>= 1 */
-		if (expt == BIAS &&
+	if (expt >= 0x3fff) {   /* |x| >= 1 or nan */
+		if (expt == 0x3fff &&
 		    ((u.bits.manh&~LDBL_NBIT)|u.bits.manl) == 0)
-			/* asin(1)=+-pi/2 with inexact */
-			return x*pio2_hi + x*pio2_lo;
-		return (x-x)/(x-x);  /* asin(|x|>1) is NaN */
-	} else if (expt < BIAS-1) {  /* |x|<0.5 */
-		if (expt < ASIN_LINEAR) {  /* if |x| is small, asinl(x)=x */
+			/* asin(+-1)=+-pi/2 with inexact */
+			return x*pio2_hi + 0x1p-1000;
+		return 0/(x-x);
+	}
+	if (expt < 0x3fff - 1) {  /* |x| < 0.5 */
+		if (expt < 0x3fff - 32) {  /* |x|<0x1p-32, asinl(x)=x */
 			/* return x with inexact if x!=0 */
-			if (huge+x > 1.0)
-				return x;
+			FORCE_EVAL(x + 0x1p1000);
+			return x;
 		}
-		t = x*x;
-		p = P(t);
-		q = Q(t);
-		w = p/q;
-		return x + x*w;
+		return x + x*__invtrigl_R(x*x);
 	}
 	/* 1 > |x| >= 0.5 */
-	w = 1.0 - fabsl(x);
-	t = w*0.5;
-	p = P(t);
-	q = Q(t);
-	s = sqrtl(t);
+	z = (1.0 - fabsl(x))*0.5;
+	s = sqrtl(z);
+	r = __invtrigl_R(z);
 	if (u.bits.manh >= THRESH) { /* if |x| is close to 1 */
-		w = p/q;
-		t = pio2_hi-(2.0*(s+s*w)-pio2_lo);
+		x = pio2_hi - (2*(s+s*r)-pio2_lo);
 	} else {
+		long double f, c;
 		u.e = s;
 		u.bits.manl = 0;
-		w = u.e;
-		c = (t-w*w)/(s+w);
-		r = p/q;
-		p = 2.0*s*r-(pio2_lo-2.0*c);
-		q = pio4_hi-2.0*w;
-		t = pio4_hi-(p-q);
+		f = u.e;
+		c = (z-f*f)/(s+f);
+		x = 0.5*pio2_hi-(2*s*r - (pio2_lo-2*c) - (0.5*pio2_hi-2*f));
 	}
-	if (expsign > 0)
-		return t;
-	return -t;
+	if (expsign>>15)
+		return -x;
+	return x;
 }
 #endif
