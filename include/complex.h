@@ -115,11 +115,9 @@ long double creall(long double complex);
 #define __CMPLX(x, y, t) \
 	((union { _Complex t __z; t __xy[2]; }){.__xy = {(x),(y)}}.__z)
 
-#if __STDC_VERSION__ >= 201112L
 #define CMPLX(x, y) __CMPLX(x, y, double)
 #define CMPLXF(x, y) __CMPLX(x, y, float)
 #define CMPLXL(x, y) __CMPLX(x, y, long double)
-#endif
 
 #ifdef __cplusplus
 }
