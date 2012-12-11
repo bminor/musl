@@ -8,7 +8,7 @@ int pipe2(int fd[2], int flag)
 	if (!flag) return syscall(SYS_pipe, fd);
 	int ret = __syscall(SYS_pipe2, fd, flag);
 	if (ret != -ENOSYS) return __syscall_ret(ret);
-	ret = syscall(SYS_pipe, fd);
+	ret = __syscall(SYS_pipe, fd);
 	if (ret) return __syscall_ret(ret);
 	if (flag & O_CLOEXEC) {
 		fcntl(fd[0], F_SETFD, FD_CLOEXEC);
