@@ -399,14 +399,6 @@ float       ynf(int, float);
 #ifdef _GNU_SOURCE
 long double lgammal_r(long double, int*);
 
-long double j0l(long double);
-long double j1l(long double);
-long double jnl(int, long double);
-
-long double y0l(long double);
-long double y1l(long double);
-long double ynl(int, long double);
-
 void        sincos(double, double*, double*);
 void        sincosf(float, float*, float*);
 void        sincosl(long double, long double*, long double*);
