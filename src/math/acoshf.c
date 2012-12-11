@@ -1,42 +1,17 @@
-/* origin: FreeBSD /usr/src/lib/msun/src/e_acoshf.c */
-/*
- * Conversion to float by Ian Lance Taylor, Cygnus Support, ian@cygnus.com.
- */
-/*
- * ====================================================
- * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
- *
- * Developed at SunPro, a Sun Microsystems, Inc. business.
- * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice
- * is preserved.
- * ====================================================
- */
-
 #include "libm.h"
 
-static const float
-ln2 = 6.9314718246e-01; /* 0x3f317218 */
-
+/* acosh(x) = log(x + sqrt(x*x-1)) */
 float acoshf(float x)
 {
-	float t;
-	int32_t hx;
+	union {float f; int32_t i;} u = {.f = x};
 
-	GET_FLOAT_WORD(hx, x);
-	if (hx < 0x3f800000) {  /* x < 1 */
-		return (x-x)/(x-x);
-	} else if (hx >= 0x4d800000) {  /* x > 2**28 */
-		if (hx >= 0x7f800000)  /* x is inf of NaN */
-			return x + x;
-		return logf(x) + ln2;  /* acosh(huge)=log(2x) */
-	} else if (hx == 0x3f800000) {
-		return 0.0f;  /* acosh(1) = 0 */
-	} else if (hx > 0x40000000) {  /* 2**28 > x > 2 */
-		t = x*x;
-		return logf(2.0f*x - 1.0f/(x+sqrtf(t-1.0f)));
-	} else {                /* 1 < x < 2 */
-		t = x-1.0f;
-		return log1pf(t + sqrtf(2.0f*t+t*t));
-	}
+	if (u.i < 0x3f800000+(1<<23))
+		/* x < 2, invalid if x < 1 or nan */
+		/* up to 2ulp error in [1,1.125] */
+		return log1pf(x-1 + sqrtf((x-1)*(x-1)+2*(x-1)));
+	if (u.i < 0x3f800000+(12<<23))
+		/* x < 0x1p12 */
+		return logf(2*x - 1/(x+sqrtf(x*x-1)));
+	/* x >= 0x1p12 */
+	return logf(x) + 0.693147180559945309417232121458176568f;
 }

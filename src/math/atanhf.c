@@ -1,42 +1,20 @@
-/* origin: FreeBSD /usr/src/lib/msun/src/e_atanhf.c */
-/*
- * Conversion to float by Ian Lance Taylor, Cygnus Support, ian@cygnus.com.
- */
-/*
- * ====================================================
- * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
- *
- * Developed at SunPro, a Sun Microsystems, Inc. business.
- * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice
- * is preserved.
- * ====================================================
- */
-
 #include "libm.h"
 
-static const float huge = 1e30;
-
+/* atanh(x) = log((1+x)/(1-x))/2 = log1p(2x/(1-x))/2 ~= x + x^3/3 + o(x^5) */
 float atanhf(float x)
 {
-	float t;
-	int32_t hx,ix;
+	union {float f; uint32_t i;} u = {.f = x};
+	unsigned s = u.i >> 31;
 
-	GET_FLOAT_WORD(hx, x);
-	ix = hx & 0x7fffffff;
-	if (ix > 0x3f800000)                   /* |x| > 1 */
-		return (x-x)/(x-x);
-	if (ix == 0x3f800000)
-		return x/0.0f;
-	if (ix < 0x31800000 && huge+x > 0.0f)  /* x < 2**-28 */
-		return x;
-	SET_FLOAT_WORD(x, ix);
-	if (ix < 0x3f000000) {                 /* x < 0.5 */
-		t = x+x;
-		t = 0.5f*log1pf(t + t*x/(1.0f-x));
-	} else
-		t = 0.5f*log1pf((x+x)/(1.0f-x));
-	if (hx >= 0)
-		return t;
-	return -t;
+	/* |x| */
+	u.i &= 0x7fffffff;
+	x = u.f;
+
+	if (u.i < 0x3f800000 - (1<<23)) {
+		/* |x| < 0.5, up to 1.7ulp error */
+		x = 0.5f*log1pf(2*x + 2*x*x/(1-x));
+	} else {
+		x = 0.5f*log1pf(2*x/(1-x));
+	}
+	return s ? -x : x;
 }
