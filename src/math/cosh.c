@@ -23,7 +23,7 @@
  *                                                        2
  *          22       <= x <= lnovft :  cosh(x) := exp(x)/2
  *          lnovft   <= x <= ln2ovft:  cosh(x) := exp(x/2)/2 * exp(x/2)
- *          ln2ovft  <  x           :  cosh(x) := huge*huge (overflow)
+ *          ln2ovft  <  x           :  cosh(x) := inf (overflow)
  *
  * Special cases:
  *      cosh(x) is |x| if x is +INF, -INF, or NaN.
@@ -32,43 +32,40 @@
 
 #include "libm.h"
 
-static const double huge = 1.0e300;
-
 double cosh(double x)
 {
-	double t, w;
-	int32_t ix;
+	union {double f; uint64_t i;} u = {.f = x};
+	uint32_t ix;
+	double t;
 
-	GET_HIGH_WORD(ix, x);
-	ix &= 0x7fffffff;
-
-	/* x is INF or NaN */
-	if (ix >= 0x7ff00000)
-		return x*x;
+	/* |x| */
+	u.i &= (uint64_t)-1/2;
+	x = u.f;
+	ix = u.i >> 32;
 
 	/* |x| in [0,0.5*ln2], return 1+expm1(|x|)^2/(2*exp(|x|)) */
 	if (ix < 0x3fd62e43) {
-		t = expm1(fabs(x));
-		w = 1.0+t;
+		t = expm1(x);
 		if (ix < 0x3c800000)
-			return w;  /* cosh(tiny) = 1 */
-		return 1.0 + (t*t)/(w+w);
+			return 1;
+		return 1 + t*t/(2*(1+t));
 	}
 
 	/* |x| in [0.5*ln2,22], return (exp(|x|)+1/exp(|x|))/2; */
 	if (ix < 0x40360000) {
-		t = exp(fabs(x));
+		t = exp(x);
 		return 0.5*t + 0.5/t;
 	}
 
 	/* |x| in [22, log(maxdouble)] return 0.5*exp(|x|) */
-	if (ix < 0x40862E42)
-		return 0.5*exp(fabs(x));
+	if (ix < 0x40862e42)
+		return 0.5*exp(x);
 
 	/* |x| in [log(maxdouble), overflowthresold] */
-	if (ix <= 0x408633CE)
-		return __expo2(fabs(x));
+	if (ix <= 0x408633ce)
+		return __expo2(x);
 
-	/* |x| > overflowthresold, cosh(x) overflow */
-	return huge*huge;
+	/* overflow (or nan) */
+	x *= 0x1p1023;
+	return x;
 }

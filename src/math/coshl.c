@@ -23,7 +23,7 @@
  *                                                         2
  *          22       <= x <= lnovft :  coshl(x) := expl(x)/2
  *          lnovft   <= x <= ln2ovft:  coshl(x) := expl(x/2)/2 * expl(x/2)
- *          ln2ovft  <  x           :  coshl(x) := huge*huge (overflow)
+ *          ln2ovft  <  x           :  coshl(x) := inf (overflow)
  *
  * Special cases:
  *      coshl(x) is |x| if x is +INF, -INF, or NaN.
@@ -38,49 +38,48 @@ long double coshl(long double x)
 	return cosh(x);
 }
 #elif LDBL_MANT_DIG == 64 && LDBL_MAX_EXP == 16384
-static const long double huge = 1.0e4900L;
-
 long double coshl(long double x)
 {
-	long double t,w;
-	int32_t ex;
+	union {
+		long double f;
+		struct{uint64_t m; uint16_t se; uint16_t pad;} i;
+	} u = {.f = x};
+	unsigned ex = u.i.se & 0x7fff;
+	long double t;
 	uint32_t mx,lx;
 
-	/* High word of |x|. */
-	GET_LDOUBLE_WORDS(ex, mx, lx, x);
-	ex &= 0x7fff;
-
-	/* x is INF or NaN */
-	if (ex == 0x7fff) return x*x;
+	/* |x| */
+	u.i.se = ex;
+	x = u.f;
+	mx = u.i.m >> 32;
+	lx = u.i.m;
 
 	/* |x| in [0,0.5*ln2], return 1+expm1l(|x|)^2/(2*expl(|x|)) */
-	if (ex < 0x3ffd || (ex == 0x3ffd && mx < 0xb17217f7u)) {
-		t = expm1l(fabsl(x));
-		w = 1.0 + t;
-		if (ex < 0x3fbc) return w;    /* cosh(tiny) = 1 */
-		return 1.0+(t*t)/(w+w);
+	if (ex < 0x3fff-2 || (ex == 0x3fff-2 && mx < 0xb17217f7)) {
+		t = expm1l(x);
+		if (ex < 0x3fff-64)
+			return 1;
+		return 1 + t*t/(2*(1+t));
 	}
 
 	/* |x| in [0.5*ln2,22], return (exp(|x|)+1/exp(|x|)/2; */
-	if (ex < 0x4003 || (ex == 0x4003 && mx < 0xb0000000u)) {
-		t = expl(fabsl(x));
+	if (ex < 0x3fff+4 || (ex == 0x3fff+4 && mx < 0xb0000000)) {
+		t = expl(x);
 		return 0.5*t + 0.5/t;
 	}
 
 	/* |x| in [22, ln(maxdouble)] return 0.5*exp(|x|) */
-	if (ex < 0x400c || (ex == 0x400c && mx < 0xb1700000u))
-		return 0.5*expl(fabsl(x));
+	if (ex < 0x3fff+13 || (ex == 0x3fff+13 && mx < 0xb1700000))
+		return 0.5*expl(x);
 
 	/* |x| in [log(maxdouble), log(2*maxdouble)) */
-	if (ex == 0x400c && (mx < 0xb174ddc0u ||
-	     (mx == 0xb174ddc0u && lx < 0x31aec0ebu)))
-	{
-		w = expl(0.5*fabsl(x));
-		t = 0.5*w;
-		return t*w;
+	if (ex == 0x3fff+13 && (mx < 0xb174ddc0 ||
+	     (mx == 0xb174ddc0 && lx < 0x31aec0eb))) {
+		t = expl(0.5*x);
+		return 0.5*t*t;
 	}
 
-	/* |x| >= log(2*maxdouble), cosh(x) overflow */
-	return huge*huge;
+	/* |x| >= log(2*maxdouble) or nan */
+	return x*0x1p16383L;
 }
 #endif
