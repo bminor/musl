@@ -24,7 +24,7 @@
 
 /*
  * invpio2:  53 bits of 2/pi
- * pio2_1:   first  33 bit of pi/2
+ * pio2_1:   first 25 bits of pi/2
  * pio2_1t:  pi/2 - pio2_1
  */
 static const double
@@ -41,7 +41,7 @@ int __rem_pio2f(float x, double *y)
 
 	GET_FLOAT_WORD(hx, x);
 	ix = hx & 0x7fffffff;
-	/* 33+53 bit pi is good enough for medium size */
+	/* 25+53 bit pi is good enough for medium size */
 	if (ix < 0x4dc90fdb) {  /* |x| ~< 2^28*(pi/2), medium size */
 		/* Use a specialized rint() to get fn.  Assume round-to-nearest. */
 		STRICT_ASSIGN(double, fn, x*invpio2 + 0x1.8p52);
