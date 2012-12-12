@@ -270,9 +270,19 @@ fnmatch '-march=*|*\ -march=*' "$CFLAGS" || tryldflag CFLAGS_AUTO -march=i486
 fnmatch '-mtune=*|*\ -mtune=*' "$CFLAGS" || tryldflag CFLAGS_AUTO -mtune=generic
 fi
 
+#
+# Even with -std=c99, gcc accepts some constructs which are constraint
+# violations. We want to treat these as errors regardless of whether
+# other purely stylistic warnings are enabled -- especially implicit
+# function declarations, which are a dangerous programming error.
+#
+tryflag CFLAGS_AUTO -Werror=implicit-function-declaration
+tryflag CFLAGS_AUTO -Werror=implicit-int
+tryflag CFLAGS_AUTO -Werror=pointer-sign
+tryflag CFLAGS_AUTO -Werror=pointer-arith
+
 if test "x$warnings" = xyes ; then
 tryflag CFLAGS_AUTO -Wall
-tryflag CFLAGS_AUTO -Wpointer-arith
 tryflag CFLAGS_AUTO -Wcast-align
 tryflag CFLAGS_AUTO -Wno-parentheses
 tryflag CFLAGS_AUTO -Wno-uninitialized
