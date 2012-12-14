@@ -59,10 +59,12 @@ sizeof(double) == sizeof(long double)
 
 /* function selection */
 
-#define __tg_real(fun, x) (__RETCAST(x)( \
+#define __tg_real_nocast(fun, x) ( \
 	__FLT(x) ? fun ## f (x) : \
 	__LDBL(x) ? fun ## l (x) : \
-	fun(x) ))
+	fun(x) )
+
+#define __tg_real(fun, x) (__RETCAST(x)__tg_real_nocast(fun, x))
 
 #define __tg_real_2_1(fun, x, y) (__RETCAST(x)( \
 	__FLT(x) ? fun ## f (x, y) : \
@@ -217,18 +219,18 @@ sizeof(double) == sizeof(long double)
 #define fmod(x,y)       __tg_real_2(fmod, (x), (y))
 #define frexp(x,y)      __tg_real_2_1(frexp, (x), (y))
 #define hypot(x,y)      __tg_real_2(hypot, (x), (y))
-#define ilogb(x)        __tg_real(ilogb, (x))
+#define ilogb(x)        __tg_real_nocast(ilogb, (x))
 #define ldexp(x,y)      __tg_real_2_1(ldexp, (x), (y))
 #define lgamma(x)       __tg_real(lgamma, (x))
-#define llrint(x)       __tg_real(llrint, (x))
-#define llround(x)      __tg_real(llround, (x))
+#define llrint(x)       __tg_real_nocast(llrint, (x))
+#define llround(x)      __tg_real_nocast(llround, (x))
 #define log(x)          __tg_real_complex(log, (x))
 #define log10(x)        __tg_real(log10, (x))
 #define log1p(x)        __tg_real(log1p, (x))
 #define log2(x)         __tg_real(log2, (x))
 #define logb(x)         __tg_real(logb, (x))
-#define lrint(x)        __tg_real(lrint, (x))
-#define lround(x)       __tg_real(lround, (x))
+#define lrint(x)        __tg_real_nocast(lrint, (x))
+#define lround(x)       __tg_real_nocast(lround, (x))
 #define nearbyint(x)    __tg_real(nearbyint, (x))
 #define nextafter(x,y)  __tg_real_2(nextafter, (x), (y))
 #define nexttoward(x,y) __tg_real_2(nexttoward, (x), (y))
