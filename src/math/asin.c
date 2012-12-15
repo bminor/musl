@@ -42,10 +42,8 @@
 #include "libm.h"
 
 static const double
-huge = 1.000e+300,
 pio2_hi = 1.57079632679489655800e+00, /* 0x3FF921FB, 0x54442D18 */
 pio2_lo = 6.12323399573676603587e-17, /* 0x3C91A626, 0x33145C07 */
-pio4_hi = 7.85398163397448278999e-01, /* 0x3FE921FB, 0x54442D18 */
 /* coefficients for R(x^2) */
 pS0 =  1.66666666666666657415e-01, /* 0x3FC55555, 0x55555555 */
 pS1 = -3.25565818622400915405e-01, /* 0xBFD4D612, 0x03EB6F7D */
@@ -58,51 +56,54 @@ qS2 =  2.02094576023350569471e+00, /* 0x40002AE5, 0x9C598AC8 */
 qS3 = -6.88283971605453293030e-01, /* 0xBFE6066C, 0x1B8D0159 */
 qS4 =  7.70381505559019352791e-02; /* 0x3FB3B8C5, 0xB12E9282 */
 
+static double R(double z)
+{
+	double p, q;
+	p = z*(pS0+z*(pS1+z*(pS2+z*(pS3+z*(pS4+z*pS5)))));
+	q = 1.0+z*(qS1+z*(qS2+z*(qS3+z*qS4)));
+	return p/q;
+}
+
 double asin(double x)
 {
-	double t=0.0,w,p,q,c,r,s;
-	int32_t hx,ix;
+	double z,r,s;
+	uint32_t hx,ix;
 
 	GET_HIGH_WORD(hx, x);
 	ix = hx & 0x7fffffff;
-	if (ix >= 0x3ff00000) {           /* |x|>= 1 */
+	/* |x| >= 1 or nan */
+	if (ix >= 0x3ff00000) {
 		uint32_t lx;
-
 		GET_LOW_WORD(lx, x);
 		if ((ix-0x3ff00000 | lx) == 0)
 			/* asin(1) = +-pi/2 with inexact */
-			return x*pio2_hi + x*pio2_lo;
-		return (x-x)/(x-x);  /* asin(|x|>1) is NaN */
-	} else if (ix < 0x3fe00000) {  /* |x|<0.5 */
-		if (ix < 0x3e500000) {  /* if |x| < 2**-26 */
-			if (huge+x > 1.0)
-				return x; /* return x with inexact if x!=0*/
+			return x*pio2_hi + 0x1p-1000;
+		return 0/(x-x);
+	}
+	/* |x| < 0.5 */
+	if (ix < 0x3fe00000) {
+		if (ix < 0x3e500000) {
+			/* |x|<0x1p-26, return x with inexact if x!=0*/
+			FORCE_EVAL(x + 0x1p1000);
+			return x;
 		}
-		t = x*x;
-		p = t*(pS0+t*(pS1+t*(pS2+t*(pS3+t*(pS4+t*pS5)))));
-		q = 1.0+t*(qS1+t*(qS2+t*(qS3+t*qS4)));
-		w = p/q;
-		return x + x*w;
+		return x + x*R(x*x);
 	}
 	/* 1 > |x| >= 0.5 */
-	w = 1.0 - fabs(x);
-	t = w*0.5;
-	p = t*(pS0+t*(pS1+t*(pS2+t*(pS3+t*(pS4+t*pS5)))));
-	q = 1.0+t*(qS1+t*(qS2+t*(qS3+t*qS4)));
-	s = sqrt(t);
-	if (ix >= 0x3FEF3333) {  /* if |x| > 0.975 */
-		w = p/q;
-		t = pio2_hi-(2.0*(s+s*w)-pio2_lo);
+	z = (1 - fabs(x))*0.5;
+	s = sqrt(z);
+	r = R(z);
+	if (ix >= 0x3fef3333) {  /* if |x| > 0.975 */
+		x = pio2_hi-(2*(s+s*r)-pio2_lo);
 	} else {
-		w = s;
-		SET_LOW_WORD(w,0);
-		c = (t-w*w)/(s+w);
-		r = p/q;
-		p = 2.0*s*r-(pio2_lo-2.0*c);
-		q = pio4_hi - 2.0*w;
-		t = pio4_hi - (p-q);
+		double f,c;
+		/* f+c = sqrt(z) */
+		f = s;
+		SET_LOW_WORD(f,0);
+		c = (z-f*f)/(s+f);
+		x = 0.5*pio2_hi - (2*s*r - (pio2_lo-2*c) - (0.5*pio2_hi-2*f));
 	}
-	if (hx > 0)
-		return t;
-	return -t;
+	if (hx >> 31)
+		return -x;
+	return x;
 }

@@ -38,28 +38,26 @@ static const float aT[] = {
   6.1687607318e-02,
 };
 
-static const float huge = 1.0e30;
-
 float atanf(float x)
 {
 	float w,s1,s2,z;
-	int32_t ix,hx,id;
+	uint32_t ix,sign;
+	int id;
 
-	GET_FLOAT_WORD(hx, x);
-	ix = hx & 0x7fffffff;
+	GET_FLOAT_WORD(ix, x);
+	sign = ix>>31;
+	ix &= 0x7fffffff;
 	if (ix >= 0x4c800000) {  /* if |x| >= 2**26 */
-		if (ix > 0x7f800000)  /* NaN */
-			return x+x;
-		if (hx > 0)
-			return  atanhi[3] + *(volatile float *)&atanlo[3];
-		else
-			return -atanhi[3] - *(volatile float *)&atanlo[3];
+		if (isnan(x))
+			return x;
+		z = atanhi[3] + 0x1p-120f;
+		return sign ? -z : z;
 	}
 	if (ix < 0x3ee00000) {   /* |x| < 0.4375 */
 		if (ix < 0x39800000) {  /* |x| < 2**-12 */
-			/* raise inexact */
-			if(huge+x>1.0f)
-				return x;
+			/* raise inexact if x!=0 */
+			FORCE_EVAL(x + 0x1p120f);
+			return x;
 		}
 		id = -1;
 	} else {
@@ -91,5 +89,5 @@ float atanf(float x)
 	if (id < 0)
 		return x - x*(s1+s2);
 	z = atanhi[id] - ((x*(s1+s2) - atanlo[id]) - x);
-	return hx < 0 ? -z : z;
+	return sign ? -z : z;
 }

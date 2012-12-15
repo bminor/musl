@@ -23,55 +23,46 @@ long double acosl(long double x)
 }
 #elif (LDBL_MANT_DIG == 64 || LDBL_MANT_DIG == 113) && LDBL_MAX_EXP == 16384
 #include "__invtrigl.h"
-#define ACOS_CONST      (BIAS - 65)     /* 2**-65 */
 
 long double acosl(long double x)
 {
 	union IEEEl2bits u;
-	long double z, p, q, r, w, s, c, df;
+	long double z, w, s, c, df;
 	int16_t expsign, expt;
 	u.e = x;
 	expsign = u.xbits.expsign;
 	expt = expsign & 0x7fff;
-	if (expt >= BIAS) {        /* |x| >= 1 */
-		if (expt == BIAS &&
+	/* |x| >= 1 or nan */
+	if (expt >= 0x3fff) {
+		if (expt == 0x3fff &&
 			((u.bits.manh & ~LDBL_NBIT) | u.bits.manl) == 0) {
 			if (expsign > 0)
-				return 0.0;  /* acos(1) = 0 */
-			else
-				// FIXME
-				return pi_hi + 2.0 * pio2_lo;  /* acos(-1)= pi */
+				return 0;  /* acos(1) = 0 */
+			return 2*pio2_hi + 0x1p-1000;  /* acos(-1)= pi */
 		}
-		return (x - x) / (x - x);  /* acos(|x|>1) is NaN */
+		return 0/(x-x);  /* acos(|x|>1) is NaN */
 	}
-	if (expt < BIAS - 1) {     /* |x| < 0.5 */
-		if (expt < ACOS_CONST)
-			return pio2_hi + pio2_lo;  /* x tiny: acosl=pi/2 */
-		z = x * x;
-		p = P(z);
-		q = Q(z);
-		r = p / q;
-		return pio2_hi - (x - (pio2_lo - x * r));
-	} else if (expsign < 0) {  /* x < -0.5 */
+	/* |x| < 0.5 */
+	if (expt < 0x3fff - 1) {
+		if (expt < 0x3fff - 65)
+			return pio2_hi + 0x1p-1000;  /* x < 0x1p-65: acosl(x)=pi/2 */
+		return pio2_hi - (x - (pio2_lo - x * __invtrigl_R(x*x)));
+	}
+	/* x < -0.5 */
+	if (expsign < 0) {
 		z = (1.0 + x) * 0.5;
-		p = P(z);
-		q = Q(z);
 		s = sqrtl(z);
-		r = p / q;
-		w = r * s - pio2_lo;
-		return pi_hi - 2.0 * (s + w);
-	} else {                   /* x > 0.5 */
-		z = (1.0 - x) * 0.5;
-		s = sqrtl(z);
-		u.e = s;
-		u.bits.manl = 0;
-		df = u.e;
-		c = (z - df * df) / (s + df);
-		p = P(z);
-		q = Q(z);
-		r = p / q;
-		w = r * s + c;
-		return 2.0 * (df + w);
+		w = __invtrigl_R(z) * s - pio2_lo;
+		return 2*(pio2_hi - (s + w));
 	}
+	/* x > 0.5 */
+	z = (1.0 - x) * 0.5;
+	s = sqrtl(z);
+	u.e = s;
+	u.bits.manl = 0;
+	df = u.e;
+	c = (z - df * df) / (s + df);
+	w = __invtrigl_R(z) * s + c;
+	return 2*(df + w);
 }
 #endif

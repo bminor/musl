@@ -168,12 +168,4 @@ long double __p1evll(long double, const long double *, int);
 #define STRICT_ASSIGN(type, lval, rval) ((lval) = (type)(rval))
 #endif
 
-/* complex */
-
-#ifndef CMPLX
-#define CMPLX(x, y) __CMPLX(x, y, double)
-#define CMPLXF(x, y) __CMPLX(x, y, float)
-#define CMPLXL(x, y) __CMPLX(x, y, long double)
-#endif
-
 #endif

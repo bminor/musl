@@ -50,12 +50,6 @@ expf:
 	flds 4(%esp)
 	jmp 2f
 
-.global expl
-.type expl,@function
-expl:
-	fldt 4(%esp)
-	jmp 2f
-
 .global exp
 .type exp,@function
 exp:
