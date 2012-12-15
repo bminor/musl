@@ -16,6 +16,9 @@ extern "C" {
 #include <sys/ipc.h>
 #include <bits/shm.h>
 
+#define SHM_R 0400
+#define SHM_W 0200
+
 #define SHM_RDONLY 010000
 #define SHM_RND    020000
 #define SHM_REMAP  040000
