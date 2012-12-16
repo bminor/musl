@@ -433,7 +433,7 @@ static struct dso *load_library(const char *name)
 {
 	char buf[2*NAME_MAX+2];
 	const char *pathname;
-	unsigned char *base, *map;
+	unsigned char *map;
 	size_t map_len;
 	struct dso *p, temp_dso = {0};
 	int fd;
@@ -566,7 +566,7 @@ static struct dso *load_library(const char *name)
 	p->prev = tail;
 	tail = p;
 
-	if (ldd_mode) dprintf(1, "\t%s => %s (%p)\n", name, pathname, base);
+	if (ldd_mode) dprintf(1, "\t%s => %s (%p)\n", name, pathname, p->base);
 
 	return p;
 }
