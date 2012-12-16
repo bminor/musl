@@ -205,42 +205,36 @@ static long double stirf(long double x)
 long double tgammal(long double x)
 {
 	long double p, q, z;
-	int i, sign;
 
-	if (isnan(x))
-		return NAN;
-	if (x == INFINITY)
-		return INFINITY;
-	if (x == -INFINITY)
-		return x - x;
+	if (!isfinite(x))
+		return x + INFINITY;
+
 	q = fabsl(x);
 	if (q > 13.0) {
-		sign = 1;
-		if (q > MAXGAML)
-			goto goverf;
 		if (x < 0.0) {
 			p = floorl(q);
-			if (p == q)
-				return (x - x) / (x - x);
-			i = p;
-			if ((i & 1) == 0)
-				sign = -1;
 			z = q - p;
-			if (z > 0.5L) {
-				p += 1.0;
-				z = q - p;
+			if (z == 0)
+				return 0 / z;
+			if (q > MAXGAML) {
+				z = 0;
+			} else {
+				if (z > 0.5) {
+					p += 1.0;
+					z = q - p;
+				}
+				z = q * sinl(PIL * z);
+				z = fabsl(z) * stirf(q);
+				z = PIL/z;
 			}
-			z = q * sinl(PIL * z);
-			z = fabsl(z) * stirf(q);
-			if (z <= PIL/LDBL_MAX) {
-goverf:
-				return sign * INFINITY;
-			}
-			z = PIL/z;
+			if (0.5 * p == floorl(q * 0.5))
+				z = -z;
+		} else if (x > MAXGAML) {
+			z = x * 0x1p16383L;
 		} else {
 			z = stirf(x);
 		}
-		return sign * z;
+		return z;
 	}
 
 	z = 1.0;
@@ -268,8 +262,9 @@ goverf:
 	return z;
 
 small:
-	if (x == 0.0)
-		return (x - x) / (x - x);
+	/* z==1 if x was originally +-0 */
+	if (x == 0 && z != 1)
+		return x / x;
 	if (x < 0.0) {
 		x = -x;
 		q = z / (x * __polevll(x, SN, 8));
