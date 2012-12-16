@@ -1,73 +1,41 @@
-/* origin: FreeBSD /usr/src/lib/msun/src/s_tanh.c */
-/*
- * ====================================================
- * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
- *
- * Developed at SunPro, a Sun Microsystems, Inc. business.
- * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice
- * is preserved.
- * ====================================================
- */
-/* Tanh(x)
- * Return the Hyperbolic Tangent of x
- *
- * Method :
- *                                     x    -x
- *                                    e  - e
- *      0. tanh(x) is defined to be -----------
- *                                     x    -x
- *                                    e  + e
- *      1. reduce x to non-negative by tanh(-x) = -tanh(x).
- *      2.  0      <= x <  2**-28 : tanh(x) := x with inexact if x != 0
- *                                              -t
- *          2**-28 <= x <  1      : tanh(x) := -----; t = expm1(-2x)
- *                                             t + 2
- *                                                   2
- *          1      <= x <  22     : tanh(x) := 1 - -----; t = expm1(2x)
- *                                                 t + 2
- *          22     <= x <= INF    : tanh(x) := 1.
- *
- * Special cases:
- *      tanh(NaN) is NaN;
- *      only tanh(0)=0 is exact for finite argument.
- */
-
 #include "libm.h"
 
-static const double tiny = 1.0e-300, huge = 1.0e300;
-
+/* tanh(x) = (exp(x) - exp(-x))/(exp(x) + exp(-x))
+ *         = (exp(2*x) - 1)/(exp(2*x) - 1 + 2)
+ *         = (1 - exp(-2*x))/(exp(-2*x) - 1 + 2)
+ */
 double tanh(double x)
 {
-	double t,z;
-	int32_t jx,ix;
+	union {double f; uint64_t i;} u = {.f = x};
+	uint32_t w;
+	int sign;
+	double t;
 
-	GET_HIGH_WORD(jx, x);
-	ix = jx & 0x7fffffff;
+	/* x = |x| */
+	sign = u.i >> 63;
+	u.i &= (uint64_t)-1/2;
+	x = u.f;
+	w = u.i >> 32;
 
-	/* x is INF or NaN */
-	if (ix >= 0x7ff00000) {
-		if (jx >= 0)
-			return 1.0f/x + 1.0f;  /* tanh(+-inf)=+-1 */
-		else
-			return 1.0f/x - 1.0f;  /* tanh(NaN) = NaN */
-	}
-
-	if (ix < 0x40360000) {  /* |x| < 22 */
-		if (ix < 0x3e300000) {  /* |x| < 2**-28 */
-			/* tanh(tiny) = tiny with inexact */
-			if (huge+x > 1.0f)
-				return x;
-		}
-		if (ix >= 0x3ff00000) {  /* |x| >= 1  */
-			t = expm1(2.0f*fabs(x));
-			z = 1.0f - 2.0f/(t+2.0f);
+	if (w > 0x3fe193ea) {
+		/* |x| > log(3)/2 ~= 0.5493 or nan */
+		if (w > 0x40340000) {
+			/* |x| > 20 or nan */
+			/* note: this branch avoids raising overflow */
+			/* raise inexact if x!=+-inf and handle nan */
+			t = 1 + 0/(x + 0x1p-120f);
 		} else {
-			t = expm1(-2.0f*fabs(x));
-			z= -t/(t+2.0f);
+			t = expm1(2*x);
+			t = 1 - 2/(t+2);
 		}
-	} else {  /* |x| >= 22, return +-1 */
-		z = 1.0f - tiny;  /* raise inexact */
+	} else if (w > 0x3fd058ae) {
+		/* |x| > log(5/3)/2 ~= 0.2554 */
+		t = expm1(2*x);
+		t = t/(t+2);
+	} else {
+		/* |x| is small, up to 2ulp error in [0.1,0.2554] */
+		t = expm1(-2*x);
+		t = -t/(t+2);
 	}
-	return jx >= 0 ? z : -z;
+	return sign ? -t : t;
 }
