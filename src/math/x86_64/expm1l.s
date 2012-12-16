@@ -1,1 +1,1 @@
-# see expm1.s
+# see exp2l.s
