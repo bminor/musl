@@ -1,6 +1,7 @@
 # exp(x) = 2^hi + 2^hi (2^lo - 1)
 # where hi+lo = log2e*x with 128bit precision
 # exact log2e*x calculation depends on nearest rounding mode
+# using the exact multiplication method of Dekker and Veltkamp
 
 .global expl
 .type expl,@function
@@ -35,7 +36,6 @@ expl:
 		# should be 0x1.71547652b82fe178p0 == 0x3fff b8aa3b29 5c17f0bc
 		# it will be wrong on non-nearest rounding mode
 3:	fldl2e
-#	subl $32, %esp
 	subl $44, %esp
 		# hi = log2e_hi*x
 		# 2^hi = exp2l(hi)
@@ -54,7 +54,7 @@ expl:
 	fldt 16(%esp)
 		# fpu stack: 2^hi x hi
 		# exact mult: x*log2e
-	fld %st(1) # x
+	fld %st(1)
 		# c = 0x1p32+1
 	pushl $0x41f00000
 	pushl $0x00100000
