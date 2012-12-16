@@ -39,13 +39,13 @@ long double asinl(long double x)
 		if (expt == 0x3fff &&
 		    ((u.bits.manh&~LDBL_NBIT)|u.bits.manl) == 0)
 			/* asin(+-1)=+-pi/2 with inexact */
-			return x*pio2_hi + 0x1p-1000;
+			return x*pio2_hi + 0x1p-120f;
 		return 0/(x-x);
 	}
 	if (expt < 0x3fff - 1) {  /* |x| < 0.5 */
 		if (expt < 0x3fff - 32) {  /* |x|<0x1p-32, asinl(x)=x */
 			/* return x with inexact if x!=0 */
-			FORCE_EVAL(x + 0x1p1000);
+			FORCE_EVAL(x + 0x1p120f);
 			return x;
 		}
 		return x + x*__invtrigl_R(x*x);

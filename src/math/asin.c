@@ -77,14 +77,14 @@ double asin(double x)
 		GET_LOW_WORD(lx, x);
 		if ((ix-0x3ff00000 | lx) == 0)
 			/* asin(1) = +-pi/2 with inexact */
-			return x*pio2_hi + 0x1p-1000;
+			return x*pio2_hi + 0x1p-120f;
 		return 0/(x-x);
 	}
 	/* |x| < 0.5 */
 	if (ix < 0x3fe00000) {
 		if (ix < 0x3e500000) {
 			/* |x|<0x1p-26, return x with inexact if x!=0*/
-			FORCE_EVAL(x + 0x1p1000);
+			FORCE_EVAL(x + 0x1p120f);
 			return x;
 		}
 		return x + x*R(x*x);

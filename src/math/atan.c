@@ -72,13 +72,13 @@ double atan(double x)
 	if (ix >= 0x44100000) {   /* if |x| >= 2^66 */
 		if (isnan(x))
 			return x;
-		z = atanhi[3] + 0x1p-1000;
+		z = atanhi[3] + 0x1p-120f;
 		return sign ? -z : z;
 	}
 	if (ix < 0x3fdc0000) {    /* |x| < 0.4375 */
 		if (ix < 0x3e400000) {  /* |x| < 2^-27 */
 			/* raise inexact if x!=0 */
-			FORCE_EVAL(x + 0x1p1000);
+			FORCE_EVAL(x + 0x1p120f);
 			return x;
 		}
 		id = -1;

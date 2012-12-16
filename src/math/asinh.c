@@ -22,7 +22,7 @@ double asinh(double x)
 		x = log1p(x + x*x/(sqrt(x*x+1)+1));
 	} else {
 		/* |x| < 0x1p-26, raise inexact if x != 0 */
-		FORCE_EVAL(x + 0x1p1000);
+		FORCE_EVAL(x + 0x1p120f);
 	}
 	return s ? -x : x;
 }

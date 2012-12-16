@@ -80,7 +80,7 @@ long double atanl(long double x)
 		if (expt == 0x7fff &&
 		    ((u.bits.manh&~LDBL_NBIT)|u.bits.manl)!=0)  /* NaN */
 			return x+x;
-		z = atanhi[3] + 0x1p-1000;
+		z = atanhi[3] + 0x1p-120f;
 		return expsign < 0 ? -z : z;
 	}
 	/* Extract the exponent and the first few bits of the mantissa. */
@@ -89,7 +89,7 @@ long double atanl(long double x)
 	if (expman < ((0x3fff - 2) << 8) + 0xc0) {  /* |x| < 0.4375 */
 		if (expt < 0x3fff - 32) {   /* if |x| is small, atanl(x)~=x */
 			/* raise inexact if x!=0 */
-			FORCE_EVAL(x + 0x1p1000);
+			FORCE_EVAL(x + 0x1p120f);
 			return x;
 		}
 		id = -1;

@@ -72,7 +72,7 @@ double acos(double x)
 		if ((ix-0x3ff00000 | lx) == 0) {
 			/* acos(1)=0, acos(-1)=pi */
 			if (hx >> 31)
-				return 2*pio2_hi + 0x1p-1000;
+				return 2*pio2_hi + 0x1p-120f;
 			return 0;
 		}
 		return 0/(x-x);
@@ -80,7 +80,7 @@ double acos(double x)
 	/* |x| < 0.5 */
 	if (ix < 0x3fe00000) {
 		if (ix <= 0x3c600000)  /* |x| < 2**-57 */
-			return pio2_hi + 0x1p-1000;
+			return pio2_hi + 0x1p-120f;
 		return pio2_hi - (x - (pio2_lo-x*R(x*x)));
 	}
 	/* x < -0.5 */

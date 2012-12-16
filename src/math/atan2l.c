@@ -52,39 +52,39 @@ long double atan2l(long double y, long double x)
 		switch(m) {
 		case 0:
 		case 1: return y;           /* atan(+-0,+anything)=+-0 */
-		case 2: return  2*pio2_hi+0x1p-1000; /* atan(+0,-anything) = pi */
-		case 3: return -2*pio2_hi-0x1p-1000; /* atan(-0,-anything) =-pi */
+		case 2: return  2*pio2_hi+0x1p-120f; /* atan(+0,-anything) = pi */
+		case 3: return -2*pio2_hi-0x1p-120f; /* atan(-0,-anything) =-pi */
 		}
 	}
 	/* when x = 0 */
 	if (exptx==0 && ((ux.bits.manh&~LDBL_NBIT)|ux.bits.manl)==0)
-		return expsigny < 0 ? -pio2_hi-0x1p-1000 : pio2_hi+0x1p-1000;
+		return expsigny < 0 ? -pio2_hi-0x1p-120f : pio2_hi+0x1p-120f;
 	/* when x is INF */
 	if (exptx == 0x7fff) {
 		if (expty == 0x7fff) {
 			switch(m) {
-			case 0: return  pio2_hi*0.5+0x1p-1000; /* atan(+INF,+INF) */
-			case 1: return -pio2_hi*0.5-0x1p-1000; /* atan(-INF,+INF) */
-			case 2: return  1.5*pio2_hi+0x1p-1000; /* atan(+INF,-INF) */
-			case 3: return -1.5*pio2_hi-0x1p-1000; /* atan(-INF,-INF) */
+			case 0: return  pio2_hi*0.5+0x1p-120f; /* atan(+INF,+INF) */
+			case 1: return -pio2_hi*0.5-0x1p-120f; /* atan(-INF,+INF) */
+			case 2: return  1.5*pio2_hi+0x1p-120f; /* atan(+INF,-INF) */
+			case 3: return -1.5*pio2_hi-0x1p-120f; /* atan(-INF,-INF) */
 			}
 		} else {
 			switch(m) {
 			case 0: return  0.0;        /* atan(+...,+INF) */
 			case 1: return -0.0;        /* atan(-...,+INF) */
-			case 2: return  2*pio2_hi+0x1p-1000; /* atan(+...,-INF) */
-			case 3: return -2*pio2_hi-0x1p-1000; /* atan(-...,-INF) */
+			case 2: return  2*pio2_hi+0x1p-120f; /* atan(+...,-INF) */
+			case 3: return -2*pio2_hi-0x1p-120f; /* atan(-...,-INF) */
 			}
 		}
 	}
 	/* when y is INF */
 	if (expty == 0x7fff)
-		return expsigny < 0 ? -pio2_hi-0x1p-1000 : pio2_hi+0x1p-1000;
+		return expsigny < 0 ? -pio2_hi-0x1p-120f : pio2_hi+0x1p-120f;
 
 	/* compute y/x */
 	k = expty-exptx;
 	if(k > LDBL_MANT_DIG+2) { /* |y/x| huge */
-		z = pio2_hi+0x1p-1000;
+		z = pio2_hi+0x1p-120f;
 		m &= 1;
 	} else if (expsignx < 0 && k < -LDBL_MANT_DIG-2) /* |y/x| tiny, x<0 */
 		z = 0.0;

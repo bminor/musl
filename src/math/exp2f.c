@@ -97,11 +97,11 @@ float exp2f(float x)
 			return x;
 		}
 		if (x >= 128) {
-			STRICT_ASSIGN(float, x, x * 0x1p127);
+			STRICT_ASSIGN(float, x, x * 0x1p127f);
 			return x;
 		}
 		if (x <= -150) {
-			STRICT_ASSIGN(float, x, 0x1p-100*0x1p-100);
+			STRICT_ASSIGN(float, x, 0x1p-100f*0x1p-100f);
 			return x;
 		}
 	} else if (ix <= 0x33000000) {  /* |x| <= 0x1p-25 */
