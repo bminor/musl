@@ -20,7 +20,7 @@
 #define REG_RSP         15
 #define REG_RIP         16
 #define REG_EFL         17
-#define REG_CSGFS       18
+#define REG_CSGSFS      18
 #define REG_ERR         19
 #define REG_TRAPNO      20
 #define REG_OLDMASK     21
