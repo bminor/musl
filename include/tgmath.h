@@ -13,7 +13,7 @@ sizeof(double) == sizeof(long double)
 #include <math.h>
 #include <complex.h>
 
-#define __IS_FP(x) !!((1?1:(x))/2)
+#define __IS_FP(x) (sizeof((x)+1ULL) == sizeof((x)+1.0f))
 #define __IS_CX(x) (__IS_FP(x) && sizeof(x) == sizeof((x)+I))
 #define __IS_REAL(x) (__IS_FP(x) && 2*sizeof(x) == sizeof((x)+I))
 
@@ -28,57 +28,42 @@ sizeof(double) == sizeof(long double)
 
 #ifdef __GNUC__
 /*
-the conditional expression (that selects the right function
-for evaluation) should be casted to the return type of the
-selected function (otherwise the result type is determined
-by the conversion rules applied to all the function return
-types so it is long double or long double _Complex)
+the result must be casted to the right type
+(otherwise the result type is determined by the conversion
+rules applied to all the function return types so it is long
+double or long double complex except for integral functions)
 
-this cannot be done in c99 (c11 has _Generic that would help
-but is not yet widely supported), so the typeof extension of
-gcc is used and that ?: has special semantics when one of
-the operands is a null pointer constant
+this cannot be done in c99, so the typeof gcc extension is
+used and that the type of ?: depends on wether an operand is
+a null pointer constant or not
+(in c11 _Generic can be used)
 
-unfortunately the standard is overly strict about the
-definition of null pointer constants (current gcc does not
-follow the standard but clang does) so we have to use a hack
-to be able to tell integer and floating-point types apart:
-both gcc and clang evaluate sizeof(void) to 1 even though it
-is a constraint violation, we only use this on clang for now
+the c arguments below must be integer constant expressions
+so they can be in null pointer constants
+(__IS_FP above was carefully chosen this way)
 */
-/* predicates that evaluate to integer constant expressions */
-#ifdef __clang__
-/* TODO: __c_IS_FP(1.0) is a constraint violation */
-#define __c_IS_FP(x) (!(sizeof*(__typeof__(0?(int*)0:(void*)__IS_FP(x)))0-1))
-#else
-#define __c_IS_FP(x) __IS_FP(x)
-#endif
-#define __c_IS_CX(x) (__c_IS_FP(x) && sizeof(x) == sizeof((x)+I))
-#define __c_FLTCX(x) (__c_IS_CX(x) && sizeof(x) == sizeof(float complex))
-#define __c_DBLCX(x) (__c_IS_CX(x) && sizeof(x) == sizeof(double complex))
-#define __c_LDBLCX(x) (__c_IS_CX(x) && sizeof(x) == sizeof(long double complex) && sizeof(long double) != sizeof(double))
 /* if c then t else void */
 #define __type1(c,t) __typeof__(*(0?(t*)0:(void*)!(c)))
 /* if c then t1 else t2 */
 #define __type2(c,t1,t2) __typeof__(*(0?(__type1(c,t1)*)0:(__type1(!(c),t2)*)0))
 /* cast to double when x is integral, otherwise use typeof(x) */
 #define __RETCAST(x) ( \
-	__type2(__c_IS_FP(x), __typeof__(x), double))
+	__type2(__IS_FP(x), __typeof__(x), double))
 /* 2 args case, should work for complex types (cpow) */
 #define __RETCAST_2(x, y) ( \
-	__type2(__c_IS_FP(x) && __c_IS_FP(y), \
+	__type2(__IS_FP(x) && __IS_FP(y), \
 		__typeof__((x)+(y)), \
 		__typeof__((x)+(y)+1.0)))
 /* 3 args case (fma only) */
 #define __RETCAST_3(x, y, z) ( \
-	__type2(__c_IS_FP(x) && __c_IS_FP(y) && __c_IS_FP(z), \
+	__type2(__IS_FP(x) && __IS_FP(y) && __IS_FP(z), \
 		__typeof__((x)+(y)+(z)), \
 		__typeof__((x)+(y)+(z)+1.0)))
 /* drop complex from the type of x */
 /* TODO: wrong when sizeof(long double)==sizeof(double) */
 #define __RETCAST_REAL(x) (  \
-	__type2(sizeof(__RETCAST(x)0+I)==sizeof(float complex), float, \
-	__type2(sizeof(__RETCAST(x)0+I)==sizeof(double complex), double, \
+	__type2(__IS_FP(x) && sizeof((x)+I) == sizeof(float complex), float, \
+	__type2(sizeof((x)+1.0+I) == sizeof(double complex), double, \
 		long double)))
 /* add complex to the type of x */
 #define __RETCAST_CX(x) (__typeof__(__RETCAST(x)0+I))
