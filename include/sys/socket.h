@@ -150,6 +150,8 @@ struct linger
 #define SO_SNDLOWAT     19
 #define SO_RCVTIMEO     20
 #define SO_SNDTIMEO     21
+#define SO_SNDBUFFORCE  32
+#define SO_RCVBUFFORCE  33
 #endif
 
 
