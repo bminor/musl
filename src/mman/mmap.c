@@ -10,12 +10,16 @@ static void dummy0(void) { }
 weak_alias(dummy1, __vm_lock);
 weak_alias(dummy0, __vm_unlock);
 
+#define OFF_MASK ((-0x2000ULL << (8*sizeof(long)-1)) | 0xfff)
+
 void *__mmap(void *start, size_t len, int prot, int flags, int fd, off_t off)
 {
 	void *ret;
-	if (sizeof(off_t) > sizeof(long))
-		if (((long)off & 0xfff) | ((long)((unsigned long long)off>>(12 + 8*(sizeof(off_t)-sizeof(long))))))
-			start = (void *)-1;
+
+	if (off & OFF_MASK) {
+		errno = EINVAL;
+		return MAP_FAILED;
+	}
 	if (flags & MAP_FIXED) __vm_lock(-1);
 #ifdef SYS_mmap2
 	ret = (void *)syscall(SYS_mmap2, start, len, prot, flags, fd, off>>12);
