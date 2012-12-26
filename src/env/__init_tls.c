@@ -23,7 +23,7 @@ void *__copy_tls(unsigned char *mem)
 	td = (pthread_t)mem;
 	mem += sizeof(struct pthread);
 #else
-	mem += __libc.tls_size - sizeof(struct pthread);
+	mem += libc.tls_size - sizeof(struct pthread);
 	mem -= (uintptr_t)mem & (align-1);
 	td = (pthread_t)mem;
 	td->dtv = dtv;
