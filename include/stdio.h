@@ -175,11 +175,11 @@ int fileno_unlocked(FILE *);
 int getw(FILE *);
 int putw(int, FILE *);
 char *fgetln(FILE *, size_t *);
+int asprintf(char **, const char *, ...);
+int vasprintf(char **, const char *, va_list);
 #endif
 
 #ifdef _GNU_SOURCE
-int asprintf(char **, const char *, ...);
-int vasprintf(char **, const char *, va_list);
 char *fgets_unlocked(char *, int, FILE *);
 int fputs_unlocked(const char *, FILE *);
 #endif
