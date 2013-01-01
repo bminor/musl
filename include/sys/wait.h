@@ -33,6 +33,10 @@ pid_t wait4 (pid_t, int *, int, struct rusage *);
 #define WCONTINUED 8
 #define WNOWAIT    0x1000000
 
+#define __WNOTHREAD 0x20000000
+#define __WALL      0x40000000
+#define __WCLONE    0x80000000
+
 #define P_ALL  0
 #define P_PID  1
 #define P_PGID 2
