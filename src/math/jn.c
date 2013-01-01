@@ -20,7 +20,7 @@
  * Note 2. About jn(n,x), yn(n,x)
  *      For n=0, j0(x) is called,
  *      for n=1, j1(x) is called,
- *      for n<x, forward recursion us used starting
+ *      for n<=x, forward recursion is used starting
  *      from values of j0(x) and j1(x).
  *      for n>x, a continued fraction approximation to
  *      j(n,x)/j(n-1,x) is evaluated and then backward
@@ -32,7 +32,6 @@
  *      yn(n,x) is similar in all respects, except
  *      that forward recursion is used for all
  *      values of n>1.
- *
  */
 
 #include "libm.h"
@@ -41,33 +40,39 @@ static const double invsqrtpi = 5.64189583547756279280e-01; /* 0x3FE20DD7, 0x504
 
 double jn(int n, double x)
 {
-	int32_t i,hx,ix,lx,sgn;
-	double a, b, temp, di;
-	double z, w;
+	uint32_t ix, lx;
+	int nm1, i, sign;
+	double a, b, temp;
+
+	EXTRACT_WORDS(ix, lx, x);
+	sign = ix>>31;
+	ix &= 0x7fffffff;
+
+	if ((ix | (lx|-lx)>>31) > 0x7ff00000) /* nan */
+		return x;
 
 	/* J(-n,x) = (-1)^n * J(n, x), J(n, -x) = (-1)^n * J(n, x)
 	 * Thus, J(-n,x) = J(n,-x)
 	 */
-	EXTRACT_WORDS(hx, lx, x);
-	ix = 0x7fffffff & hx;
-	/* if J(n,NaN) is NaN */
-	if ((ix|((uint32_t)(lx|-lx))>>31) > 0x7ff00000)
-		return x+x;
+	/* nm1 = |n|-1 is used instead of |n| to handle n==INT_MIN */
+	if (n == 0)
+		return j0(x);
 	if (n < 0) {
-		n = -n;
+		nm1 = -(n+1);
 		x = -x;
-		hx ^= 0x80000000;
-	}
-	if (n == 0) return j0(x);
-	if (n == 1) return j1(x);
+		sign ^= 1;
+	} else
+		nm1 = n-1;
+	if (nm1 == 0)
+		return j1(x);
 
-	sgn = (n&1)&(hx>>31);  /* even n -- 0, odd n -- sign(x) */
+	sign &= n;  /* even n: 0, odd n: signbit(x) */
 	x = fabs(x);
-	if ((ix|lx) == 0 || ix >= 0x7ff00000)  /* if x is 0 or inf */
+	if ((ix|lx) == 0 || ix == 0x7ff00000)  /* if x is 0 or inf */
 		b = 0.0;
-	else if ((double)n <= x) {
+	else if (nm1 < x) {
 		/* Safe to use J(n+1,x)=2n/x *J(n,x)-J(n-1,x) */
-		if (ix >= 0x52D00000) { /* x > 2**302 */
+		if (ix >= 0x52d00000) { /* x > 2**302 */
 			/* (x >> n**2)
 			 *      Jn(x) = cos(x-(2n+1)*pi/4)*sqrt(2/x*pi)
 			 *      Yn(x) = sin(x-(2n+1)*pi/4)*sqrt(2/x*pi)
@@ -81,19 +86,21 @@ double jn(int n, double x)
 			 *             2    -s+c            -c-s
 			 *             3     s+c             c-s
 			 */
-			switch(n&3) {
-			case 0: temp =  cos(x)+sin(x); break;
-			case 1: temp = -cos(x)+sin(x); break;
-			case 2: temp = -cos(x)-sin(x); break;
-			case 3: temp =  cos(x)-sin(x); break;
+			switch(nm1&3) {
+			case 0: temp = -cos(x)+sin(x); break;
+			case 1: temp = -cos(x)-sin(x); break;
+			case 2: temp =  cos(x)-sin(x); break;
+			default:
+			case 3: temp =  cos(x)+sin(x); break;
 			}
 			b = invsqrtpi*temp/sqrt(x);
 		} else {
 			a = j0(x);
 			b = j1(x);
-			for (i=1; i<n; i++){
+			for (i=0; i<nm1; ) {
+				i++;
 				temp = b;
-				b = b*((double)(i+i)/x) - a; /* avoid underflow */
+				b = b*(2.0*i/x) - a; /* avoid underflow */
 				a = temp;
 			}
 		}
@@ -102,12 +109,13 @@ double jn(int n, double x)
 			/* x is tiny, return the first Taylor expansion of J(n,x)
 			 * J(n,x) = 1/n!*(x/2)^n  - ...
 			 */
-			if (n > 33)  /* underflow */
+			if (nm1 > 32)  /* underflow */
 				b = 0.0;
 			else {
 				temp = x*0.5;
 				b = temp;
-				for (a=1.0,i=2; i<=n; i++) {
+				a = 1.0;
+				for (i=2; i<=nm1+1; i++) {
 					a *= (double)i; /* a = n! */
 					b *= temp;      /* b = (x/2)^n */
 				}
@@ -143,13 +151,14 @@ double jn(int n, double x)
 			 * When Q(k) > 1e17     good for quadruple
 			 */
 			/* determine k */
-			double t,v;
-			double q0,q1,h,tmp;
-			int32_t k,m;
+			double t,q0,q1,w,h,z,tmp,nf;
+			int k;
 
-			w  = (n+n)/(double)x; h = 2.0/(double)x;
-			q0 = w;
+			nf = nm1 + 1.0;
+			w = 2*nf/x;
+			h = 2/x;
 			z = w+h;
+			q0 = w;
 			q1 = w*z - 1.0;
 			k = 1;
 			while (q1 < 1.0e9) {
@@ -159,9 +168,8 @@ double jn(int n, double x)
 				q0 = q1;
 				q1 = tmp;
 			}
-			m = n+n;
-			for (t=0.0, i = 2*(n+k); i>=m; i -= 2)
-				t = 1.0/(i/x-t);
+			for (t=0.0, i=k; i>=0; i--)
+				t = 1/(2*(i+nf)/x - t);
 			a = t;
 			b = 1.0;
 			/*  estimate log((2/x)^n*n!) = n*log(2/x)+n*ln(n)
@@ -172,26 +180,20 @@ double jn(int n, double x)
 			 *  then recurrent value may overflow and the result is
 			 *  likely underflow to zero
 			 */
-			tmp = n;
-			v = 2.0/x;
-			tmp = tmp*log(fabs(v*tmp));
+			tmp = nf*log(fabs(w));
 			if (tmp < 7.09782712893383973096e+02) {
-				for (i=n-1,di=(double)(i+i); i>0; i--) {
+				for (i=nm1; i>0; i--) {
 					temp = b;
-					b *= di;
-					b = b/x - a;
+					b = b*(2.0*i)/x - a;
 					a = temp;
-					di -= 2.0;
 				}
 			} else {
-				for (i=n-1,di=(double)(i+i); i>0; i--) {
+				for (i=nm1; i>0; i--) {
 					temp = b;
-					b *= di;
-					b = b/x - a;
+					b = b*(2.0*i)/x - a;
 					a = temp;
-					di -= 2.0;
 					/* scale b to avoid spurious overflow */
-					if (b > 1e100) {
+					if (b > 0x1p500) {
 						a /= b;
 						t /= b;
 						b  = 1.0;
@@ -206,39 +208,40 @@ double jn(int n, double x)
 				b = t*w/a;
 		}
 	}
-	if (sgn==1) return -b;
-	return b;
+	return sign ? -b : b;
 }
-
 
 
 double yn(int n, double x)
 {
-	int32_t i,hx,ix,lx;
-	int32_t sign;
+	uint32_t ix, lx, ib;
+	int nm1, sign, i;
 	double a, b, temp;
 
-	EXTRACT_WORDS(hx, lx, x);
-	ix = 0x7fffffff & hx;
-	/* if Y(n,NaN) is NaN */
-	if ((ix|((uint32_t)(lx|-lx))>>31) > 0x7ff00000)
-		return x+x;
-	if ((ix|lx) == 0)
-		return -1.0/0.0;
-	if (hx < 0)
-		return 0.0/0.0;
-	sign = 1;
-	if (n < 0) {
-		n = -n;
-		sign = 1 - ((n&1)<<1);
-	}
-	if (n == 0)
-		return y0(x);
-	if (n == 1)
-		return sign*y1(x);
+	EXTRACT_WORDS(ix, lx, x);
+	sign = ix>>31;
+	ix &= 0x7fffffff;
+
+	if ((ix | (lx|-lx)>>31) > 0x7ff00000) /* nan */
+		return x;
+	if (sign && (ix|lx)!=0) /* x < 0 */
+		return 0/0.0;
 	if (ix == 0x7ff00000)
 		return 0.0;
-	if (ix >= 0x52D00000) { /* x > 2**302 */
+
+	if (n == 0)
+		return y0(x);
+	if (n < 0) {
+		nm1 = -(n+1);
+		sign = n&1;
+	} else {
+		nm1 = n-1;
+		sign = 0;
+	}
+	if (nm1 == 0)
+		return sign ? -y1(x) : y1(x);
+
+	if (ix >= 0x52d00000) { /* x > 2**302 */
 		/* (x >> n**2)
 		 *      Jn(x) = cos(x-(2n+1)*pi/4)*sqrt(2/x*pi)
 		 *      Yn(x) = sin(x-(2n+1)*pi/4)*sqrt(2/x*pi)
@@ -252,26 +255,26 @@ double yn(int n, double x)
 		 *             2    -s+c            -c-s
 		 *             3     s+c             c-s
 		 */
-		switch(n&3) {
-		case 0: temp =  sin(x)-cos(x); break;
-		case 1: temp = -sin(x)-cos(x); break;
-		case 2: temp = -sin(x)+cos(x); break;
-		case 3: temp =  sin(x)+cos(x); break;
+		switch(nm1&3) {
+		case 0: temp = -sin(x)-cos(x); break;
+		case 1: temp = -sin(x)+cos(x); break;
+		case 2: temp =  sin(x)+cos(x); break;
+		default:
+		case 3: temp =  sin(x)-cos(x); break;
 		}
 		b = invsqrtpi*temp/sqrt(x);
 	} else {
-		uint32_t high;
 		a = y0(x);
 		b = y1(x);
 		/* quit if b is -inf */
-		GET_HIGH_WORD(high, b);
-		for (i=1; i<n && high!=0xfff00000; i++){
+		GET_HIGH_WORD(ib, b);
+		for (i=0; i<nm1 && ib!=0xfff00000; ){
+			i++;
 			temp = b;
-			b = ((double)(i+i)/x)*b - a;
-			GET_HIGH_WORD(high, b);
+			b = (2.0*i/x)*b - a;
+			GET_HIGH_WORD(ib, b);
 			a = temp;
 		}
 	}
-	if (sign > 0) return b;
-	return -b;
+	return sign ? -b : b;
 }

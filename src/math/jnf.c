@@ -18,55 +18,57 @@
 
 float jnf(int n, float x)
 {
-	int32_t i,hx,ix, sgn;
-	float a, b, temp, di;
-	float z, w;
+	uint32_t ix;
+	int nm1, sign, i;
+	float a, b, temp;
 
-	/* J(-n,x) = (-1)^n * J(n, x), J(n, -x) = (-1)^n * J(n, x)
-	 * Thus, J(-n,x) = J(n,-x)
-	 */
-	GET_FLOAT_WORD(hx, x);
-	ix = 0x7fffffff & hx;
-	/* if J(n,NaN) is NaN */
-	if (ix > 0x7f800000)
-		return x+x;
+	GET_FLOAT_WORD(ix, x);
+	sign = ix>>31;
+	ix &= 0x7fffffff;
+	if (ix > 0x7f800000) /* nan */
+		return x;
+
+	/* J(-n,x) = J(n,-x), use |n|-1 to avoid overflow in -n */
+	if (n == 0)
+		return j0f(x);
 	if (n < 0) {
-		n = -n;
+		nm1 = -(n+1);
 		x = -x;
-		hx ^= 0x80000000;
-	}
-	if (n == 0) return j0f(x);
-	if (n == 1) return j1f(x);
+		sign ^= 1;
+	} else
+		nm1 = n-1;
+	if (nm1 == 0)
+		return j1f(x);
 
-	sgn = (n&1)&(hx>>31);  /* even n -- 0, odd n -- sign(x) */
+	sign &= n;  /* even n: 0, odd n: signbit(x) */
 	x = fabsf(x);
-	if (ix == 0 || ix >= 0x7f800000)  /* if x is 0 or inf */
+	if (ix == 0 || ix == 0x7f800000)  /* if x is 0 or inf */
 		b = 0.0f;
-	else if((float)n <= x) {
+	else if (nm1 < x) {
 		/* Safe to use J(n+1,x)=2n/x *J(n,x)-J(n-1,x) */
 		a = j0f(x);
 		b = j1f(x);
-		for (i=1; i<n; i++){
+		for (i=0; i<nm1; ){
+			i++;
 			temp = b;
-			b = b*((float)(i+i)/x) - a; /* avoid underflow */
+			b = b*(2.0f*i/x) - a;
 			a = temp;
 		}
 	} else {
-		if (ix < 0x30800000) { /* x < 2**-29 */
+		if (ix < 0x35800000) { /* x < 2**-20 */
 			/* x is tiny, return the first Taylor expansion of J(n,x)
 			 * J(n,x) = 1/n!*(x/2)^n  - ...
 			 */
-			if (n > 33)  /* underflow */
-				b = 0.0f;
-			else {
-				temp = 0.5f * x;
-				b = temp;
-				for (a=1.0f,i=2; i<=n; i++) {
-					a *= (float)i;    /* a = n! */
-					b *= temp;        /* b = (x/2)^n */
-				}
-				b = b/a;
+			if (nm1 > 8)  /* underflow */
+				nm1 = 8;
+			temp = 0.5f * x;
+			b = temp;
+			a = 1.0f;
+			for (i=2; i<=nm1+1; i++) {
+				a *= (float)i;    /* a = n! */
+				b *= temp;        /* b = (x/2)^n */
 			}
+			b = b/a;
 		} else {
 			/* use backward recurrence */
 			/*                      x      x^2      x^2
@@ -97,26 +99,25 @@ float jnf(int n, float x)
 			 * When Q(k) > 1e17     good for quadruple
 			 */
 			/* determine k */
-			float t,v;
-			float q0,q1,h,tmp;
-			int32_t k,m;
+			float t,q0,q1,w,h,z,tmp,nf;
+			int k;
 
-			w = (n+n)/x;
-			h = 2.0f/x;
+			nf = nm1+1.0f;
+			w = 2*nf/x;
+			h = 2/x;
 			z = w+h;
 			q0 = w;
 			q1 = w*z - 1.0f;
 			k = 1;
-			while (q1 < 1.0e9f) {
+			while (q1 < 1.0e4f) {
 				k += 1;
 				z += h;
 				tmp = z*q1 - q0;
 				q0 = q1;
 				q1 = tmp;
 			}
-			m = n+n;
-			for (t=0.0f, i = 2*(n+k); i>=m; i -= 2)
-				t = 1.0f/(i/x-t);
+			for (t=0.0f, i=k; i>=0; i--)
+				t = 1.0f/(2*(i+nf)/x-t);
 			a = t;
 			b = 1.0f;
 			/*  estimate log((2/x)^n*n!) = n*log(2/x)+n*ln(n)
@@ -127,26 +128,20 @@ float jnf(int n, float x)
 			 *  then recurrent value may overflow and the result is
 			 *  likely underflow to zero
 			 */
-			tmp = n;
-			v = 2.0f/x;
-			tmp = tmp*logf(fabsf(v*tmp));
+			tmp = nf*logf(fabsf(w));
 			if (tmp < 88.721679688f) {
-				for (i=n-1,di=(float)(i+i); i>0; i--) {
+				for (i=nm1; i>0; i--) {
 					temp = b;
-					b *= di;
-					b = b/x - a;
+					b = 2.0f*i*b/x - a;
 					a = temp;
-					di -= 2.0f;
 				}
 			} else {
-				for (i=n-1,di=(float)(i+i); i>0; i--){
+				for (i=nm1; i>0; i--){
 					temp = b;
-					b *= di;
-					b = b/x - a;
+					b = 2.0f*i*b/x - a;
 					a = temp;
-					di -= 2.0f;
 					/* scale b to avoid spurious overflow */
-					if (b > 1e10f) {
+					if (b > 0x1p60f) {
 						a /= b;
 						t /= b;
 						b = 1.0f;
@@ -161,48 +156,47 @@ float jnf(int n, float x)
 				b = t*w/a;
 		}
 	}
-	if (sgn == 1) return -b;
-	return b;
+	return sign ? -b : b;
 }
 
 float ynf(int n, float x)
 {
-	int32_t i,hx,ix,ib;
-	int32_t sign;
+	uint32_t ix, ib;
+	int nm1, sign, i;
 	float a, b, temp;
 
-	GET_FLOAT_WORD(hx, x);
-	ix = 0x7fffffff & hx;
-	/* if Y(n,NaN) is NaN */
-	if (ix > 0x7f800000)
-		return x+x;
-	if (ix == 0)
-		return -1.0f/0.0f;
-	if (hx < 0)
-		return 0.0f/0.0f;
-	sign = 1;
-	if (n < 0) {
-		n = -n;
-		sign = 1 - ((n&1)<<1);
-	}
-	if (n == 0)
-		return y0f(x);
-	if (n == 1)
-		return sign*y1f(x);
+	GET_FLOAT_WORD(ix, x);
+	sign = ix>>31;
+	ix &= 0x7fffffff;
+	if (ix > 0x7f800000) /* nan */
+		return x;
+	if (sign && ix != 0) /* x < 0 */
+		return 0/0.0f;
 	if (ix == 0x7f800000)
 		return 0.0f;
+
+	if (n == 0)
+		return y0f(x);
+	if (n < 0) {
+		nm1 = -(n+1);
+		sign = n&1;
+	} else {
+		nm1 = n-1;
+		sign = 0;
+	}
+	if (nm1 == 0)
+		return sign ? -y1f(x) : y1f(x);
 
 	a = y0f(x);
 	b = y1f(x);
 	/* quit if b is -inf */
 	GET_FLOAT_WORD(ib,b);
-	for (i = 1; i < n && ib != 0xff800000; i++){
+	for (i = 0; i < nm1 && ib != 0xff800000; ) {
+		i++;
 		temp = b;
-		b = ((float)(i+i)/x)*b - a;
+		b = (2.0f*i/x)*b - a;
 		GET_FLOAT_WORD(ib, b);
 		a = temp;
 	}
-	if (sign > 0)
-		return b;
-	return -b;
+	return sign ? -b : b;
 }
