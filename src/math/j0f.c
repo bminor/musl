@@ -18,10 +18,39 @@
 static float pzerof(float), qzerof(float);
 
 static const float
-huge      = 1e30,
 invsqrtpi = 5.6418961287e-01, /* 0x3f106ebb */
-tpi       = 6.3661974669e-01, /* 0x3f22f983 */
+tpi       = 6.3661974669e-01; /* 0x3f22f983 */
+
+static float common(uint32_t ix, float x, int y0)
+{
+	float z,s,c,ss,cc;
+	/*
+	 * j0(x) = 1/sqrt(pi) * (P(0,x)*cc - Q(0,x)*ss) / sqrt(x)
+	 * y0(x) = 1/sqrt(pi) * (P(0,x)*ss + Q(0,x)*cc) / sqrt(x)
+	 */
+	s = sinf(x);
+	c = cosf(x);
+	if (y0)
+		c = -c;
+	cc = s+c;
+	if (ix < 0x7f000000) {
+		ss = s-c;
+		z = -cosf(2*x);
+		if (s*c < 0)
+			cc = z/ss;
+		else
+			ss = z/cc;
+		if (ix < 0x58800000) {
+			if (y0)
+				ss = -ss;
+			cc = pzerof(x)*cc-qzerof(x)*ss;
+		}
+	}
+	return invsqrtpi*cc/sqrtf(x);
+}
+
 /* R0/S0 on [0, 2.00] */
+static const float
 R02 =  1.5625000000e-02, /* 0x3c800000 */
 R03 = -1.8997929874e-04, /* 0xb947352e */
 R04 =  1.8295404516e-06, /* 0x35f58e88 */
@@ -33,56 +62,29 @@ S04 =  1.1661400734e-09; /* 0x30a045e8 */
 
 float j0f(float x)
 {
-	float z, s,c,ss,cc,r,u,v;
-	int32_t hx,ix;
+	float z,r,s;
+	uint32_t ix;
 
-	GET_FLOAT_WORD(hx, x);
-	ix = hx & 0x7fffffff;
+	GET_FLOAT_WORD(ix, x);
+	ix &= 0x7fffffff;
 	if (ix >= 0x7f800000)
-		return 1.0f/(x*x);
+		return 1/(x*x);
 	x = fabsf(x);
-	if (ix >= 0x40000000) {  /* |x| >= 2.0 */
-		s = sinf(x);
-		c = cosf(x);
-		ss = s-c;
-		cc = s+c;
-		if (ix < 0x7f000000) {  /* make sure x+x does not overflow */
-			z = -cosf(x+x);
-			if (s*c < 0.0f)
-				cc = z/ss;
-			else
-				ss = z/cc;
-		}
-		/*
-		 * j0(x) = 1/sqrt(pi) * (P(0,x)*cc - Q(0,x)*ss) / sqrt(x)
-		 * y0(x) = 1/sqrt(pi) * (P(0,x)*ss + Q(0,x)*cc) / sqrt(x)
-		 */
-		if (ix > 0x80000000)
-			z = (invsqrtpi*cc)/sqrtf(x);
-		else {
-			u = pzerof(x);
-			v = qzerof(x);
-			z = invsqrtpi*(u*cc-v*ss)/sqrtf(x);
-		}
-		return z;
+
+	if (ix >= 0x40000000) {  /* |x| >= 2 */
+		/* large ulp error near zeros */
+		return common(ix, x, 0);
 	}
-	if (ix < 0x39000000) {  /* |x| < 2**-13 */
-		/* raise inexact if x != 0 */
-		if (huge+x > 1.0f) {
-			if (ix < 0x32000000)  /* |x| < 2**-27 */
-				return 1.0f;
-			return 1.0f - 0.25f*x*x;
-		}
+	if (ix >= 0x3a000000) {  /* |x| >= 2**-11 */
+		/* up to 4ulp error near 2 */
+		z = x*x;
+		r = z*(R02+z*(R03+z*(R04+z*R05)));
+		s = 1+z*(S01+z*(S02+z*(S03+z*S04)));
+		return (1+x/2)*(1-x/2) + z*(r/s);
 	}
-	z = x*x;
-	r =  z*(R02+z*(R03+z*(R04+z*R05)));
-	s =  1.0f+z*(S01+z*(S02+z*(S03+z*S04)));
-	if(ix < 0x3F800000) {   /* |x| < 1.00 */
-		return 1.0f + z*(-0.25f + (r/s));
-	} else {
-		u = 0.5f*x;
-		return (1.0f+u)*(1.0f-u) + z*(r/s);
-	}
+	if (ix >= 0x21800000)  /* |x| >= 2**-60 */
+		x = 0.25f*x*x;
+	return 1 - x;
 }
 
 static const float
@@ -100,61 +102,28 @@ v04  =  4.4111031494e-10; /* 0x2ff280c2 */
 
 float y0f(float x)
 {
-	float z,s,c,ss,cc,u,v;
-	int32_t hx,ix;
+	float z,u,v;
+	uint32_t ix;
 
-	GET_FLOAT_WORD(hx, x);
-	ix = 0x7fffffff & hx;
-	/* Y0(NaN) is NaN, y0(-inf) is Nan, y0(inf) is 0  */
+	GET_FLOAT_WORD(ix, x);
+	if ((ix & 0x7fffffff) == 0)
+		return -1/0.0f;
+	if (ix>>31)
+		return 0/0.0f;
 	if (ix >= 0x7f800000)
-		return 1.0f/(x+x*x);
-	if (ix == 0)
-		return -1.0f/0.0f;
-	if (hx < 0)
-		return 0.0f/0.0f;
+		return 1/x;
 	if (ix >= 0x40000000) {  /* |x| >= 2.0 */
-		/* y0(x) = sqrt(2/(pi*x))*(p0(x)*sin(x0)+q0(x)*cos(x0))
-		 * where x0 = x-pi/4
-		 *      Better formula:
-		 *              cos(x0) = cos(x)cos(pi/4)+sin(x)sin(pi/4)
-		 *                      =  1/sqrt(2) * (sin(x) + cos(x))
-		 *              sin(x0) = sin(x)cos(3pi/4)-cos(x)sin(3pi/4)
-		 *                      =  1/sqrt(2) * (sin(x) - cos(x))
-		 * To avoid cancellation, use
-		 *              sin(x) +- cos(x) = -cos(2x)/(sin(x) -+ cos(x))
-		 * to compute the worse one.
-		 */
-		s = sinf(x);
-		c = cosf(x);
-		ss = s-c;
-		cc = s+c;
-		/*
-		 * j0(x) = 1/sqrt(pi) * (P(0,x)*cc - Q(0,x)*ss) / sqrt(x)
-		 * y0(x) = 1/sqrt(pi) * (P(0,x)*ss + Q(0,x)*cc) / sqrt(x)
-		 */
-		if (ix < 0x7f000000) {  /* make sure x+x not overflow */
-			z = -cosf(x+x);
-			if (s*c < 0.0f)
-				cc = z/ss;
-			else
-				ss = z/cc;
-		}
-		if (ix > 0x80000000)
-			z = (invsqrtpi*ss)/sqrtf(x);
-		else {
-			u = pzerof(x);
-			v = qzerof(x);
-			z = invsqrtpi*(u*ss+v*cc)/sqrtf(x);
-		}
-		return z;
+		/* large ulp error near zeros */
+		return common(ix,x,1);
 	}
-	if (ix <= 0x32000000) {  /* x < 2**-27 */
-		return u00 + tpi*logf(x);
+	if (ix >= 0x39000000) {  /* x >= 2**-13 */
+		/* large ulp error at x ~= 0.89 */
+		z = x*x;
+		u = u00+z*(u01+z*(u02+z*(u03+z*(u04+z*(u05+z*u06)))));
+		v = 1+z*(v01+z*(v02+z*(v03+z*v04)));
+		return u/v + tpi*(j0f(x)*logf(x));
 	}
-	z = x*x;
-	u = u00+z*(u01+z*(u02+z*(u03+z*(u04+z*(u05+z*u06)))));
-	v = 1.0f+z*(v01+z*(v02+z*(v03+z*v04)));
-	return u/v + tpi*(j0f(x)*logf(x));
+	return u00 + tpi*logf(x);
 }
 
 /* The asymptotic expansions of pzero is
@@ -233,14 +202,14 @@ static float pzerof(float x)
 {
 	const float *p,*q;
 	float z,r,s;
-	int32_t ix;
+	uint32_t ix;
 
 	GET_FLOAT_WORD(ix, x);
 	ix &= 0x7fffffff;
 	if      (ix >= 0x41000000){p = pR8; q = pS8;}
 	else if (ix >= 0x40f71c58){p = pR5; q = pS5;}
 	else if (ix >= 0x4036db68){p = pR3; q = pS3;}
-	else if (ix >= 0x40000000){p = pR2; q = pS2;}
+	else /*ix >= 0x40000000*/ {p = pR2; q = pS2;}
 	z = 1.0f/(x*x);
 	r = p[0]+z*(p[1]+z*(p[2]+z*(p[3]+z*(p[4]+z*p[5]))));
 	s = 1.0f+z*(q[0]+z*(q[1]+z*(q[2]+z*(q[3]+z*q[4]))));
@@ -329,14 +298,14 @@ static float qzerof(float x)
 {
 	const float *p,*q;
 	float s,r,z;
-	int32_t ix;
+	uint32_t ix;
 
 	GET_FLOAT_WORD(ix, x);
 	ix &= 0x7fffffff;
 	if      (ix >= 0x41000000){p = qR8; q = qS8;}
 	else if (ix >= 0x40f71c58){p = qR5; q = qS5;}
 	else if (ix >= 0x4036db68){p = qR3; q = qS3;}
-	else if (ix >= 0x40000000){p = qR2; q = qS2;}
+	else /*ix >= 0x40000000*/ {p = qR2; q = qS2;}
 	z = 1.0f/(x*x);
 	r = p[0]+z*(p[1]+z*(p[2]+z*(p[3]+z*(p[4]+z*p[5]))));
 	s = 1.0f+z*(q[0]+z*(q[1]+z*(q[2]+z*(q[3]+z*(q[4]+z*q[5])))));
