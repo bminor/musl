@@ -81,6 +81,7 @@ uint16_t ntohs(uint16_t);
 #define IPPROTO_UDP      17
 #define IPPROTO_IDP      22
 #define IPPROTO_TP       29
+#define IPPROTO_DCCP     33
 #define IPPROTO_IPV6     41
 #define IPPROTO_ROUTING  43
 #define IPPROTO_FRAGMENT 44
@@ -95,6 +96,8 @@ uint16_t ntohs(uint16_t);
 #define IPPROTO_ENCAP    98
 #define IPPROTO_PIM      103
 #define IPPROTO_COMP     108
+#define IPPROTO_SCTP     132
+#define IPPROTO_UDPLITE  136
 #define IPPROTO_RAW      255
 #define IPPROTO_MAX      256
 
