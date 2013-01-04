@@ -45,6 +45,10 @@ struct tm
 	long __tm_gmtoff;
 	const char *__tm_zone;
 };
+#if defined(_BSD_SOURCE)
+#define tm_gmtoff __tm_gmtoff
+#define tm_zone __tm_zone
+#endif
 
 clock_t clock (void);
 time_t time (time_t *);
