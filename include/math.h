@@ -346,6 +346,7 @@ long double truncl(long double);
 
 
 #if defined(_XOPEN_SOURCE) || defined(_BSD_SOURCE)
+#undef  MAXFLOAT
 #define MAXFLOAT        3.40282347e+38F
 #endif
 
