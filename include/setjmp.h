@@ -13,7 +13,7 @@ extern "C" {
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) \
  || defined(_BSD_SOURCE)
-typedef struct {
+typedef struct __sigjmp_buf {
 	jmp_buf __jb;
 	unsigned long __fl;
 	unsigned long __ss[128/sizeof(long)];
