@@ -6,13 +6,14 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#include <fcntl.h>
 
 #define __NEED_sigset_t
 
 #include <bits/alltypes.h>
 
-#define SFD_CLOEXEC 02000000
-#define SFD_NONBLOCK 04000
+#define SFD_CLOEXEC O_CLOEXEC
+#define SFD_NONBLOCK O_NONBLOCK
 
 int signalfd(int, const sigset_t *, int);
 
