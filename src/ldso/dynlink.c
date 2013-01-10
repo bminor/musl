@@ -1091,6 +1091,15 @@ end:
 	return p;
 }
 
+static int invalid_dso_handle(struct dso *h)
+{
+	struct dso *p;
+	for (p=head; p; p=p->next) if (h==p) return 0;
+	snprintf(errbuf, sizeof errbuf, "Invalid library handle %p", (void *)h);
+	errflag = 1;
+	return 1;
+}
+
 static void *do_dlsym(struct dso *p, const char *s, void *ra)
 {
 	size_t i;
@@ -1110,6 +1119,7 @@ static void *do_dlsym(struct dso *p, const char *s, void *ra)
 			return __tls_get_addr((size_t []){def.dso->tls_id, def.sym->st_value});
 		return def.dso->base + def.sym->st_value;
 	}
+	if (invalid_dso_handle(p)) return 0;
 	if (p->ghashtab) {
 		gh = gnu_hash(s);
 		sym = gnu_lookup(s, gh, p);
@@ -1236,6 +1246,12 @@ int dl_iterate_phdr(int(*callback)(struct dl_phdr_info *info, size_t size, void 
 	return ret;
 }
 #else
+static int invalid_dso_handle(struct dso *h)
+{
+	snprintf(errbuf, sizeof errbuf, "Invalid library handle %p", (void *)h);
+	errflag = 1;
+	return 1;
+}
 void *dlopen(const char *file, int mode)
 {
 	return 0;
@@ -1259,5 +1275,5 @@ char *dlerror()
 
 int dlclose(void *p)
 {
-	return 0;
+	return invalid_dso_handle(p);
 }
