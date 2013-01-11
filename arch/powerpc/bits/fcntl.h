@@ -35,3 +35,4 @@
 #define F_SETOWN_EX 15
 #define F_GETOWN_EX 16
 
+#define F_GETOWNER_UIDS 17
