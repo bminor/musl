@@ -144,6 +144,7 @@ struct termios
 #define ECHOKE 0004000
 #define FLUSHO 0010000
 #define PENDIN 0040000
+#define EXTPROC 0200000
 
 #define TCOOFF 0
 #define TCOON  1
