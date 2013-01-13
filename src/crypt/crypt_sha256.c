@@ -119,7 +119,7 @@ static void sha256_init(struct sha256 *s)
 	s->h[7] = 0x5be0cd19;
 }
 
-static void sha256_sum(struct sha256 *s, uint8_t md[20])
+static void sha256_sum(struct sha256 *s, uint8_t *md)
 {
 	int i;
 

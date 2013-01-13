@@ -136,7 +136,7 @@ static void sha512_init(struct sha512 *s)
 	s->h[7] = 0x5be0cd19137e2179ULL;
 }
 
-static void sha512_sum(struct sha512 *s, uint8_t md[20])
+static void sha512_sum(struct sha512 *s, uint8_t *md)
 {
 	int i;
 

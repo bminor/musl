@@ -118,7 +118,7 @@ static void md5_init(struct md5 *s)
 	s->h[3] = 0x10325476;
 }
 
-static void md5_sum(struct md5 *s, uint8_t md[16])
+static void md5_sum(struct md5 *s, uint8_t *md)
 {
 	int i;
 
