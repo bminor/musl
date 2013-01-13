@@ -109,7 +109,7 @@ int lio_listio(int mode, struct aiocb *restrict const *restrict cbs, int cnt, st
 	if (mode == LIO_WAIT) {
 		ret = lio_wait(st);
 		free(st);
-		return 0;
+		return ret;
 	}
 
 	if (st) {
