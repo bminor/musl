@@ -879,10 +879,7 @@ static char *_crypt_extended_r_uut(const char *_key, const char *_setting, char 
 	const unsigned char *key = (const unsigned char *)_key;
 	const unsigned char *setting = (const unsigned char *)_setting;
 	struct expanded_key ekey;
-	union {
-		unsigned char c[8];
-		uint32_t i[2];
-	} keybuf;
+	unsigned char keybuf[8];
 	unsigned char *p, *q;
 	uint32_t count, salt, l, r0, r1;
 	unsigned int i;
@@ -891,13 +888,13 @@ static char *_crypt_extended_r_uut(const char *_key, const char *_setting, char 
 	 * Copy the key, shifting each character left by one bit and padding
 	 * with zeroes.
 	 */
-	q = keybuf.c;
-	while (q <= &keybuf.c[sizeof(keybuf.c) - 1]) {
+	q = keybuf;
+	while (q <= &keybuf[sizeof(keybuf) - 1]) {
 		*q++ = *key << 1;
 		if (*key)
 			key++;
 	}
-	des_setkey(keybuf.c, &ekey);
+	des_setkey(keybuf, &ekey);
 
 	if (*setting == _PASSWORD_EFMT1) {
 		/*
@@ -925,14 +922,14 @@ static char *_crypt_extended_r_uut(const char *_key, const char *_setting, char 
 			/*
 			 * Encrypt the key with itself.
 			 */
-			des_cipher(keybuf.c, keybuf.c, 1, 0, &ekey);
+			des_cipher(keybuf, keybuf, 1, 0, &ekey);
 			/*
 			 * And XOR with the next 8 characters of the key.
 			 */
-			q = keybuf.c;
-			while (q <= &keybuf.c[sizeof(keybuf.c) - 1] && *key)
+			q = keybuf;
+			while (q <= &keybuf[sizeof(keybuf) - 1] && *key)
 				*q++ ^= *key++ << 1;
-			des_setkey(keybuf.c, &ekey);
+			des_setkey(keybuf, &ekey);
 		}
 
 		memcpy(output, setting, 9);
