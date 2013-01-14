@@ -106,13 +106,10 @@
 #include "libm.h"
 
 static const double
-tiny = 1e-300,
-/* c = (float)0.84506291151 */
 erx  = 8.45062911510467529297e-01, /* 0x3FEB0AC1, 0x60000000 */
 /*
  * Coefficients for approximation to  erf on [0,0.84375]
  */
-efx  =  1.28379167095512586316e-01, /* 0x3FC06EBA, 0x8214DB69 */
 efx8 =  1.02703333676410069053e+00, /* 0x3FF06EBA, 0x8214DB69 */
 pp0  =  1.28379167095512558561e-01, /* 0x3FC06EBA, 0x8214DB68 */
 pp1  = -3.25042107247001499370e-01, /* 0xBFD4CD7D, 0x691CB913 */
@@ -177,52 +174,31 @@ sb5  =  2.55305040643316442583e+03, /* 0x40A3F219, 0xCEDF3BE6 */
 sb6  =  4.74528541206955367215e+02, /* 0x407DA874, 0xE79FE763 */
 sb7  = -2.24409524465858183362e+01; /* 0xC03670E2, 0x42712D62 */
 
-double erf(double x)
+static double erfc1(double x)
 {
-	int32_t hx,ix,i;
-	double R,S,P,Q,s,y,z,r;
+	double s,P,Q;
 
-	GET_HIGH_WORD(hx, x);
-	ix = hx & 0x7fffffff;
-	if (ix >= 0x7ff00000) {
-		/* erf(nan)=nan, erf(+-inf)=+-1 */
-		i = ((uint32_t)hx>>31)<<1;
-		return (double)(1-i) + 1.0/x;
-	}
-	if (ix < 0x3feb0000) {  /* |x|<0.84375 */
-		if (ix < 0x3e300000) {  /* |x|<2**-28 */
-			if (ix < 0x00800000)
-				/* avoid underflow */
-				return 0.125*(8.0*x + efx8*x);
-			return x + efx*x;
-		}
-		z = x*x;
-		r = pp0+z*(pp1+z*(pp2+z*(pp3+z*pp4)));
-		s = 1.0+z*(qq1+z*(qq2+z*(qq3+z*(qq4+z*qq5))));
-		y = r/s;
-		return x + x*y;
-	}
-	if (ix < 0x3ff40000) {  /* 0.84375 <= |x| < 1.25 */
-		s = fabs(x)-1.0;
-		P = pa0+s*(pa1+s*(pa2+s*(pa3+s*(pa4+s*(pa5+s*pa6)))));
-		Q = 1.0+s*(qa1+s*(qa2+s*(qa3+s*(qa4+s*(qa5+s*qa6)))));
-		if (hx >= 0)
-			return erx + P/Q;
-		return -erx - P/Q;
-	}
-	if (ix >= 0x40180000) {  /* inf > |x| >= 6 */
-		if (hx >= 0)
-			return 1.0 - tiny;
-		return tiny - 1.0;
-	}
+	s = fabs(x) - 1;
+	P = pa0+s*(pa1+s*(pa2+s*(pa3+s*(pa4+s*(pa5+s*pa6)))));
+	Q = 1+s*(qa1+s*(qa2+s*(qa3+s*(qa4+s*(qa5+s*qa6)))));
+	return 1 - erx - P/Q;
+}
+
+static double erfc2(uint32_t ix, double x)
+{
+	double s,z,R,S;
+
+	if (ix < 0x3ff40000)  /* |x| < 1.25 */
+		return erfc1(x);
+
 	x = fabs(x);
-	s = 1.0/(x*x);
-	if (ix < 0x4006DB6E) {  /* |x| < 1/0.35 */
+	s = 1/(x*x);
+	if (ix < 0x4006db6d) {  /* |x| < 1/.35 ~ 2.85714 */
 		R = ra0+s*(ra1+s*(ra2+s*(ra3+s*(ra4+s*(
 		     ra5+s*(ra6+s*ra7))))));
 		S = 1.0+s*(sa1+s*(sa2+s*(sa3+s*(sa4+s*(
 		     sa5+s*(sa6+s*(sa7+s*sa8)))))));
-	} else {                /* |x| >= 1/0.35 */
+	} else {                /* |x| > 1/.35 */
 		R = rb0+s*(rb1+s*(rb2+s*(rb3+s*(rb4+s*(
 		     rb5+s*rb6)))));
 		S = 1.0+s*(sb1+s*(sb2+s*(sb3+s*(sb4+s*(
@@ -230,22 +206,52 @@ double erf(double x)
 	}
 	z = x;
 	SET_LOW_WORD(z,0);
-	r = exp(-z*z-0.5625)*exp((z-x)*(z+x)+R/S);
-	if (hx >= 0)
-		return 1.0 - r/x;
-	return r/x - 1.0;
+	return exp(-z*z-0.5625)*exp((z-x)*(z+x)+R/S)/x;
+}
+
+double erf(double x)
+{
+	double r,s,z,y;
+	uint32_t ix;
+	int sign;
+
+	GET_HIGH_WORD(ix, x);
+	sign = ix>>31;
+	ix &= 0x7fffffff;
+	if (ix >= 0x7ff00000) {
+		/* erf(nan)=nan, erf(+-inf)=+-1 */
+		return 1-2*sign + 1/x;
+	}
+	if (ix < 0x3feb0000) {  /* |x| < 0.84375 */
+		if (ix < 0x3e300000) {  /* |x| < 2**-28 */
+			/* avoid underflow */
+			return 0.125*(8*x + efx8*x);
+		}
+		z = x*x;
+		r = pp0+z*(pp1+z*(pp2+z*(pp3+z*pp4)));
+		s = 1.0+z*(qq1+z*(qq2+z*(qq3+z*(qq4+z*qq5))));
+		y = r/s;
+		return x + x*y;
+	}
+	if (ix < 0x40180000)  /* 0.84375 <= |x| < 6 */
+		y = 1 - erfc2(ix,x);
+	else
+		y = 1 - 0x1p-1022;
+	return sign ? -y : y;
 }
 
 double erfc(double x)
 {
-	int32_t hx,ix;
-	double R,S,P,Q,s,y,z,r;
+	double r,s,z,y;
+	uint32_t ix;
+	int sign;
 
-	GET_HIGH_WORD(hx, x);
-	ix = hx & 0x7fffffff;
+	GET_HIGH_WORD(ix, x);
+	sign = ix>>31;
+	ix &= 0x7fffffff;
 	if (ix >= 0x7ff00000) {
 		/* erfc(nan)=nan, erfc(+-inf)=0,2 */
-		return (double)(((uint32_t)hx>>31)<<1) + 1.0/x;
+		return 2*sign + 1/x;
 	}
 	if (ix < 0x3feb0000) {  /* |x| < 0.84375 */
 		if (ix < 0x3c700000)  /* |x| < 2**-56 */
@@ -254,50 +260,13 @@ double erfc(double x)
 		r = pp0+z*(pp1+z*(pp2+z*(pp3+z*pp4)));
 		s = 1.0+z*(qq1+z*(qq2+z*(qq3+z*(qq4+z*qq5))));
 		y = r/s;
-		if (hx < 0x3fd00000) {  /* x < 1/4 */
+		if (sign || ix < 0x3fd00000) {  /* x < 1/4 */
 			return 1.0 - (x+x*y);
-		} else {
-			r = x*y;
-			r += x - 0.5;
-			return 0.5 - r ;
 		}
+		return 0.5 - (x - 0.5 + x*y);
 	}
-	if (ix < 0x3ff40000) {  /* 0.84375 <= |x| < 1.25 */
-		s = fabs(x)-1.0;
-		P = pa0+s*(pa1+s*(pa2+s*(pa3+s*(pa4+s*(pa5+s*pa6)))));
-		Q = 1.0+s*(qa1+s*(qa2+s*(qa3+s*(qa4+s*(qa5+s*qa6)))));
-		if (hx >= 0) {
-			z = 1.0-erx;
-			return z - P/Q;
-		} else {
-			z = erx+P/Q;
-			return 1.0 + z;
-		}
+	if (ix < 0x403c0000) {  /* 0.84375 <= |x| < 28 */
+		return sign ? 2 - erfc2(ix,x) : erfc2(ix,x);
 	}
-	if (ix < 0x403c0000) {  /* |x| < 28 */
-		x = fabs(x);
-		s = 1.0/(x*x);
-		if (ix < 0x4006DB6D) {  /* |x| < 1/.35 ~ 2.857143*/
-			R = ra0+s*(ra1+s*(ra2+s*(ra3+s*(ra4+s*(
-			     ra5+s*(ra6+s*ra7))))));
-			S = 1.0+s*(sa1+s*(sa2+s*(sa3+s*(sa4+s*(
-			     sa5+s*(sa6+s*(sa7+s*sa8)))))));
-		} else {                /* |x| >= 1/.35 ~ 2.857143 */
-			if (hx < 0 && ix >= 0x40180000)  /* x < -6 */
-				return 2.0 - tiny;
-			R = rb0+s*(rb1+s*(rb2+s*(rb3+s*(rb4+s*(
-			     rb5+s*rb6)))));
-			S = 1.0+s*(sb1+s*(sb2+s*(sb3+s*(sb4+s*(
-			     sb5+s*(sb6+s*sb7))))));
-		}
-		z = x;
-		SET_LOW_WORD(z, 0);
-		r = exp(-z*z-0.5625)*exp((z-x)*(z+x)+R/S);
-		if (hx > 0)
-			return r/x;
-		return 2.0 - r/x;
-	}
-	if (hx > 0)
-		return tiny*tiny;
-	return 2.0 - tiny;
+	return sign ? 2 - 0x1p-1022 : 0x1p-1022*0x1p-1022;
 }
