@@ -53,7 +53,6 @@ typedef struct {
   tre_ctype_t class;
   tre_ctype_t *neg_classes;
   int backref;
-  int *params;
 } tre_pos_and_tags_t;
 
 
@@ -103,10 +102,7 @@ typedef struct {
   long code_min;
   long code_max;
   int position;
-  union {
-    tre_ctype_t class;
-    int *params;
-  } u;
+  tre_ctype_t class;
   tre_ctype_t *neg_classes;
 } tre_literal_t;
 
@@ -652,7 +648,7 @@ tre_parse_bracket_items(tre_parse_ctx_t *ctx, int negate,
 	      status = tre_new_item(ctx->mem, min, max, &i, &max_i, items);
 	      if (status != REG_OK)
 		break;
-	      ((tre_literal_t*)((*items)[i-1])->obj)->u.class = class;
+	      ((tre_literal_t*)((*items)[i-1])->obj)->class = class;
 	    }
 
 	  /* Add opposite-case counterpoints if REG_ICASE is present.
@@ -2231,8 +2227,7 @@ typedef enum {
    iteration count to a catenated sequence of copies of the node. */
 static reg_errcode_t
 tre_expand_ast(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *ast,
-	       int *position, tre_tag_direction_t *tag_directions,
-	       int *max_depth)
+	       int *position, tre_tag_direction_t *tag_directions)
 {
   reg_errcode_t status = REG_OK;
   int bottom = tre_stack_num_objects(stack);
@@ -2531,8 +2526,7 @@ tre_set_union(tre_mem_t mem, tre_pos_and_tags_t *set1, tre_pos_and_tags_t *set2,
    set to the number of tags seen on the path. */
 static reg_errcode_t
 tre_match_empty(tre_stack_t *stack, tre_ast_node_t *node, int *tags,
-		int *assertions, int *params, int *num_tags_seen,
-		int *params_seen)
+		int *assertions, int *num_tags_seen)
 {
   tre_literal_t *lit;
   tre_union_t *uni;
@@ -2703,7 +2697,7 @@ tre_compute_nfl(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree)
 		    node->lastpos = tre_set_one(mem, lit->position,
 						(int)lit->code_min,
 						(int)lit->code_max,
-						lit->u.class, lit->neg_classes,
+						lit->class, lit->neg_classes,
 						-1);
 		    if (!node->lastpos)
 		      return REG_ESPACE;
@@ -2774,8 +2768,7 @@ tre_compute_nfl(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree)
 
 	case NFL_POST_CATENATION:
 	  {
-	    int num_tags, *tags, assertions, params_seen;
-	    int *params;
+	    int num_tags, *tags, assertions;
 	    reg_errcode_t status;
 	    tre_catenation_t *cat = node->obj;
 	    node->nullable = cat->left->nullable && cat->right->nullable;
@@ -2787,8 +2780,7 @@ tre_compute_nfl(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree)
 		   with tre_match_empty() to get the number of tags and
 		   parameters. */
 		status = tre_match_empty(stack, cat->left,
-					 NULL, NULL, NULL, &num_tags,
-					 &params_seen);
+					 NULL, NULL, &num_tags);
 		if (status != REG_OK)
 		  return status;
 		/* Allocate arrays for the tags and parameters. */
@@ -2800,7 +2792,7 @@ tre_compute_nfl(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree)
 		/* Second pass with tre_mach_empty() to get the list of
 		   tags and parameters. */
 		status = tre_match_empty(stack, cat->left, tags,
-					 &assertions, params, NULL, NULL);
+					 &assertions, NULL);
 		if (status != REG_OK)
 		  {
 		    xfree(tags);
@@ -2825,8 +2817,7 @@ tre_compute_nfl(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree)
 		   with tre_match_empty() to get the number of tags and
 		   parameters. */
 		status = tre_match_empty(stack, cat->right,
-					 NULL, NULL, NULL, &num_tags,
-					 &params_seen);
+					 NULL, NULL, &num_tags);
 		if (status != REG_OK)
 		  return status;
 		/* Allocate arrays for the tags and parameters. */
@@ -2838,7 +2829,7 @@ tre_compute_nfl(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree)
 		/* Second pass with tre_mach_empty() to get the list of
 		   tags and parameters. */
 		status = tre_match_empty(stack, cat->right, tags,
-					 &assertions, params, NULL, NULL);
+					 &assertions, NULL);
 		if (status != REG_OK)
 		  {
 		    xfree(tags);
@@ -3194,7 +3185,7 @@ regcomp(regex_t *restrict preg, const char *restrict regex, int cflags)
 
   /* Expand iteration nodes. */
   errcode = tre_expand_ast(mem, stack, tree, &parse_ctx.position,
-			   tag_directions, &tnfa->params_depth);
+			   tag_directions);
   if (errcode != REG_OK)
     ERROR_EXIT(errcode);
 

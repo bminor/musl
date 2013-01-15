@@ -167,7 +167,6 @@ struct tnfa {
   int cflags;
   int have_backrefs;
   int have_approx;
-  int params_depth;
 };
 
 /* from tre-mem.h: */
