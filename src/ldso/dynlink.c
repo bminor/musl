@@ -1188,7 +1188,7 @@ int __dladdr(void *addr, Dl_info *info)
 	}
 
 	for (; nsym; nsym--, sym++) {
-		if (sym->st_shndx && sym->st_value
+		if (sym->st_value
 		 && (1<<(sym->st_info&0xf) & OK_TYPES)
 		 && (1<<(sym->st_info>>4) & OK_BINDS)) {
 			void *symaddr = p->base + sym->st_value;
