@@ -26,12 +26,7 @@ extern "C" {
 
 #include <bits/wchar.h>
 
-#undef NULL
-#ifdef __cplusplus
-#define NULL 0
-#else
-#define NULL ((void*)0)
-#endif
+#define NULL 0L
 
 #undef WEOF
 #define WEOF (-1)

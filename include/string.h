@@ -7,12 +7,7 @@ extern "C" {
 
 #include <features.h>
 
-#undef NULL
-#ifdef __cplusplus
-#define NULL 0
-#else
-#define NULL ((void*)0)
-#endif
+#define NULL 0L
 
 #define __NEED_size_t
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
