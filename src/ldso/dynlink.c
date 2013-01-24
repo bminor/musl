@@ -99,6 +99,7 @@ static int ssp_used;
 static int runtime;
 static int ldd_mode;
 static int ldso_fail;
+static int noload;
 static jmp_buf rtld_fail;
 static pthread_rwlock_t lock;
 static struct debug debug;
@@ -508,7 +509,7 @@ static struct dso *load_library(const char *name)
 			return p;
 		}
 	}
-	map = map_library(fd, &temp_dso);
+	map = noload ? 0 : map_library(fd, &temp_dso);
 	close(fd);
 	if (!map) return 0;
 
@@ -1027,6 +1028,7 @@ void *dlopen(const char *file, int mode)
 	orig_tls_offset = tls_offset;
 	orig_tls_align = tls_align;
 	orig_tail = tail;
+	noload = mode & RTLD_NOLOAD;
 
 	if (setjmp(rtld_fail)) {
 		/* Clean up anything new that was (partially) loaded */
@@ -1050,8 +1052,10 @@ void *dlopen(const char *file, int mode)
 	} else p = load_library(file);
 
 	if (!p) {
-		snprintf(errbuf, sizeof errbuf,
-			"Error loading shared library %s: %m", file);
+		snprintf(errbuf, sizeof errbuf, noload ?
+			"Library %s is not already loaded" :
+			"Error loading shared library %s: %m",
+			file);
 		errflag = 1;
 		goto end;
 	}
