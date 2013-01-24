@@ -1119,7 +1119,8 @@ static void *do_dlsym(struct dso *p, const char *s, void *ra)
 			return __tls_get_addr((size_t []){def.dso->tls_id, def.sym->st_value});
 		return def.dso->base + def.sym->st_value;
 	}
-	if (invalid_dso_handle(p)) return 0;
+	if (p != RTLD_DEFAULT && p != RTLD_NEXT && invalid_dso_handle(p))
+		return 0;
 	if (p->ghashtab) {
 		gh = gnu_hash(s);
 		sym = gnu_lookup(s, gh, p);
