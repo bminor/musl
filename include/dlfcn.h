@@ -10,6 +10,7 @@ extern "C" {
 #define RTLD_LAZY   1
 #define RTLD_NOW    2
 #define RTLD_NOLOAD 4
+#define RTLD_NODELETE 4096
 #define RTLD_GLOBAL 256
 #define RTLD_LOCAL  0
 
