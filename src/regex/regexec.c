@@ -596,6 +596,7 @@ tre_tnfa_run_backtrack(const tre_tnfa_t *tnfa, const void *string,
      started from. */
   int next_c_start;
   const char *str_byte_start;
+  int pos_start = -1;
 #ifdef TRE_MBSTATE
   mbstate_t mbstate_start;
 #endif /* TRE_MBSTATE */
@@ -675,7 +676,9 @@ tre_tnfa_run_backtrack(const tre_tnfa_t *tnfa, const void *string,
   }
 
   state = NULL;
+  pos = pos_start;
   GET_NEXT_WCHAR();
+  pos_start = pos;
   next_c_start = next_c;
   str_byte_start = str_byte;
 #ifdef TRE_MBSTATE
