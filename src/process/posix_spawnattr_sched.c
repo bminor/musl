@@ -14,12 +14,12 @@ int posix_spawnattr_setschedparam(posix_spawnattr_t *restrict attr,
 	return ENOSYS;
 }
 
-int posix_spawnattr_getschedpolicy(const posix_spawnattr_t *restrict attr, int *policy)
+int posix_spawnattr_getschedpolicy(const posix_spawnattr_t *restrict attr, int *restrict policy)
 {
 	return ENOSYS;
 }
 
-int posix_spawnattr_setschedpolicy(posix_spawnattr_t *restrict attr, int policy)
+int posix_spawnattr_setschedpolicy(posix_spawnattr_t *attr, int policy)
 {
 	return ENOSYS;
 }
