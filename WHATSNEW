@@ -807,3 +807,59 @@ bug fixes:
 - lock handling for stdio memory streams at exit time
 - invalid SO_REUSEPORT definition in socket.h (not supported by Linux)
 - broken redirection attempt to /dev/null in configure script
+
+
+
+0.9.9 release notes
+
+new features:
+- tgamma implementation (no longer lgamma wrapper with low precision)
+- various gnu extensions: sigandset, sigorset, etc.
+- futimesat function (obsolete)
+- various linux syscalls: arch_prctl, personality, etc.
+
+optimizations:
+- hyperbolic, inverse hyperbolic, and inverse trig, bessel functions
+- is* comparison macros in math.h now expand inline properly
+
+library bugs fixed:
+- calling getenv from shared library ctors was broken
+- invalid read in mmap-serviced aligned_alloc/memalign (possible crash)
+- wrong errno result in fallback path of pipe2 
+- various math functions raising spurious exceptions
+- mmap errno value on invalid offsets
+- backwards alignment logic in strlcpy
+- integer overflows in bessel functions
+- large (up to 60ulp) error in erfcf
+- dlsym/dlclose crashing on invalid library handles
+- failure to handle arch variations for cloexec/nonblock flags
+- lio_listio wrong return value for LIO_WAIT mode
+- dladdr failure to resolve PLT addresses
+- time_t/struct tm conversion off-by-one-day in december
+- malloc corruption on nonstandard kernels with non-page-aligned brk
+
+arch-specific bugs fixed:
+- arm ctors/dtors were not working with recent gcc versions
+- arm and mips setjmp/longjmp wrongly saved/restored fenv state
+- loss of precision in i386/x86_64 expl
+
+header bugs fixed:
+- incorrect PRI/SCN macros in inttypes.h for some types
+- arm sys/user.h regressions
+- failure of offsetof() to be an integer constant expression
+- tgmath return value type problems
+
+header compatibility improvements:
+- _GNU_SOURCE now enables everything; _ALL_SOURCE also works
+- scsi/scsi.h and scsi/sg.h are now provided
+- additional MAP_* flags for mmap
+- additional F_* commands and flags for fcntl
+- additional socket option, IPPROTO_* values, and multicase macros
+- thread-related waitpid flags
+- EHWPOISON added to errno.h
+- additional macros for mount, swap, and reboot operations
+- expose additional link.h structures
+- always ensure sizeof(NULL)==sizeof(void *), even in c++
+- additional flags for poll, epoll, inotify, timerfd, timex, dlfcn
+- register names in signal.h/ucontext.h for x86
+- ipc.h ipc_perm nonstandard struct field name compatibility improve
