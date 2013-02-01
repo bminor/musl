@@ -106,7 +106,8 @@ void __unmapself(void *, size_t);
 
 int __timedwait(volatile int *, int, clockid_t, const struct timespec *, void (*)(void *), void *, int);
 void __wait(volatile int *, volatile int *, int, int);
-void __wake(volatile int *, int, int);
+#define __wake(addr, cnt, priv) \
+	__syscall(SYS_futex, addr, FUTEX_WAKE, (cnt)<0?INT_MAX:(cnt))
 
 void __acquire_ptc();
 void __release_ptc();
