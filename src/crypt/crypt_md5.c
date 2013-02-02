@@ -182,7 +182,7 @@ static void md5_update(struct md5 *s, const void *m, unsigned long len)
 #define KEY_MAX 30000
 #define SALT_MAX 8
 
-static unsigned char b64[] =
+static const unsigned char b64[] =
 "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 static char *to64(char *s, unsigned int u, int n)

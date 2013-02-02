@@ -174,7 +174,7 @@ static void sha512_update(struct sha512 *s, const void *m, unsigned long len)
 	memcpy(s->buf, p, len);
 }
 
-static unsigned char b64[] =
+static const unsigned char b64[] =
 "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 static char *to64(char *s, unsigned int u, int n)
