@@ -435,7 +435,6 @@ static struct dso *load_library(const char *name)
 	char buf[2*NAME_MAX+2];
 	const char *pathname;
 	unsigned char *map;
-	size_t map_len;
 	struct dso *p, temp_dso = {0};
 	int fd;
 	struct stat st;
@@ -528,7 +527,7 @@ static struct dso *load_library(const char *name)
 	}
 	p = calloc(1, alloc_size);
 	if (!p) {
-		munmap(map, map_len);
+		munmap(map, temp_dso.map_len);
 		return 0;
 	}
 	memcpy(p, &temp_dso, sizeof temp_dso);
@@ -542,8 +541,8 @@ static struct dso *load_library(const char *name)
 	if (pathname != name) p->shortname = strrchr(p->name, '/')+1;
 	if (p->tls_image) {
 		if (runtime && !__pthread_self_init()) {
+			munmap(map, p->map_len);
 			free(p);
-			munmap(map, map_len);
 			return 0;
 		}
 		p->tls_id = ++tls_cnt;
