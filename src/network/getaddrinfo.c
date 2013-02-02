@@ -219,7 +219,7 @@ int getaddrinfo(const char *restrict host, const char *restrict serv, const stru
 		while (j--) buf[i++].sa.sin.sin_family = AF_INET6;
 	}
 
-	if (__dns_get_rr((void *)&buf[cnt], 0, 256, 1, reply, RR_CNAME, 1) < 0)
+	if (__dns_get_rr((void *)&buf[cnt], 0, 256, 1, reply, RR_CNAME, 1) <= 0)
 		strcpy((void *)&buf[cnt], host);
 
 	for (i=0; i<cnt; i++) {
