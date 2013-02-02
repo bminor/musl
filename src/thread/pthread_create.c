@@ -142,14 +142,14 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attrp
 	if (!tsd) {
 		if (guard) {
 			map = mmap(0, size, PROT_NONE, MAP_PRIVATE|MAP_ANON, -1, 0);
-			if (map == MAP_FAILED) return EAGAIN;
+			if (map == MAP_FAILED) goto fail;
 			if (mprotect(map+guard, size-guard, PROT_READ|PROT_WRITE)) {
 				munmap(map, size);
-				return EAGAIN;
+				goto fail;
 			}
 		} else {
 			map = mmap(0, size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, -1, 0);
-			if (map == MAP_FAILED) return EAGAIN;
+			if (map == MAP_FAILED) goto fail;
 		}
 		tsd = map + size - __pthread_tsd_size;
 		if (!stack) stack = tsd - libc.tls_size;
@@ -202,4 +202,7 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attrp
 
 	*res = new;
 	return 0;
+fail:
+	__release_ptc();
+	return EAGAIN;
 }
