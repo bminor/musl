@@ -25,10 +25,7 @@ int gethostbyname2_r(const char *name, int af,
 	/* Align buffer */
 	i = (uintptr_t)buf & sizeof(char *)-1;
 	if (i) {
-		if (buflen < sizeof(char *)-i) {
-			errno = ERANGE;
-			return -1;
-		}
+		if (buflen < sizeof(char *)-i) return ERANGE;
 		buf += sizeof(char *)-i;
 		buflen -= sizeof(char *)-i;
 	}
@@ -37,16 +34,16 @@ int gethostbyname2_r(const char *name, int af,
 	switch (getaddrinfo(name, 0, &hint, &ai)) {
 	case EAI_NONAME:
 		*err = HOST_NOT_FOUND;
-		return -1;
+		return errno;
 	case EAI_AGAIN:
 		*err = TRY_AGAIN;
-		return -1;
+		return errno;
 	default:
 	case EAI_MEMORY:
 	case EAI_SYSTEM:
 	case EAI_FAIL:
 		*err = NO_RECOVERY;
-		return -1;
+		return errno;
 	case 0:
 		break;
 	}
@@ -63,8 +60,7 @@ int gethostbyname2_r(const char *name, int af,
 
 	if (need > buflen) {
 		freeaddrinfo(ai);
-		errno = ERANGE;
-		return -1;
+		return ERANGE;
 	}
 
 	h->h_aliases = (void *)buf;

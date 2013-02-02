@@ -23,16 +23,13 @@ int gethostbyaddr_r(const void *a, socklen_t l, int af,
 	else if (af==AF_INET && l==4) memcpy(&sa.sin.sin_addr, a, 4);
 	else {
 		*err = NO_RECOVERY;
-		return -1;
+		return EINVAL;
 	}
 
 	/* Align buffer and check for space for pointers and ip address */
 	i = (uintptr_t)buf & sizeof(char *)-1;
 	if (!i) i = sizeof(char *);
-	if (buflen <= 5*sizeof(char *)-i + l) {
-		errno = ERANGE;
-		return -1;
-	}
+	if (buflen <= 5*sizeof(char *)-i + l) return ERANGE;
 	buf += sizeof(char *)-i;
 	buflen -= 5*sizeof(char *)-i + l;
 
@@ -51,15 +48,15 @@ int gethostbyaddr_r(const void *a, socklen_t l, int af,
 	switch (getnameinfo((void *)&sa, sl, buf, buflen, 0, 0, 0)) {
 	case EAI_AGAIN:
 		*err = TRY_AGAIN;
-		return -1;
+		return EAGAIN;
 	case EAI_OVERFLOW:
-		errno = ERANGE;
+		return ERANGE;
 	default:
 	case EAI_MEMORY:
 	case EAI_SYSTEM:
 	case EAI_FAIL:
 		*err = NO_RECOVERY;
-		return -1;
+		return errno;
 	case 0:
 		break;
 	}
