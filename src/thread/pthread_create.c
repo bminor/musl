@@ -188,7 +188,7 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attrp
 
 	if (ret < 0) {
 		a_dec(&libc.threads_minus_1);
-		munmap(map, size);
+		if (map) munmap(map, size);
 		return EAGAIN;
 	}
 
