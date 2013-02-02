@@ -30,7 +30,6 @@ int gethostbyname2_r(const char *name, int af,
 		buflen -= sizeof(char *)-i;
 	}
 
-	getaddrinfo(name, 0, &hint, &ai);
 	switch (getaddrinfo(name, 0, &hint, &ai)) {
 	case EAI_NONAME:
 		*err = HOST_NOT_FOUND;
