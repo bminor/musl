@@ -96,15 +96,15 @@ static void init_file_lock(FILE *f)
 
 void *__copy_tls(unsigned char *);
 
-int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attr, void *(*entry)(void *), void *restrict arg)
+int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attrp, void *(*entry)(void *), void *restrict arg)
 {
 	int ret;
-	size_t size = DEFAULT_STACK_SIZE + DEFAULT_GUARD_SIZE;
-	size_t guard = DEFAULT_GUARD_SIZE;
+	size_t size, guard;
 	struct pthread *self = pthread_self(), *new;
-	unsigned char *map, *stack, *tsd;
+	unsigned char *map = 0, *stack = 0, *tsd = 0;
 	unsigned flags = 0x7d8f00;
 	int do_sched = 0;
+	pthread_attr_t attr = {0};
 
 	if (!self) return ENOSYS;
 	if (!libc.threaded) {
@@ -115,19 +115,31 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attr,
 		init_file_lock(__stderr_used);
 		libc.threaded = 1;
 	}
+	if (attrp) attr = *attrp;
 
 	__acquire_ptc();
 
-	if (attr && attr->_a_stackaddr) {
-		map = 0;
-		tsd = (void *)(attr->_a_stackaddr-__pthread_tsd_size & -16);
-	} else {
-		if (attr) {
-			guard = ROUND(attr->_a_guardsize + DEFAULT_GUARD_SIZE);
-			size = guard + ROUND(attr->_a_stacksize
-				+ DEFAULT_STACK_SIZE + libc.tls_size);
+	if (attr._a_stackaddr) {
+		size_t need = libc.tls_size + __pthread_tsd_size;
+		size = attr._a_stacksize + DEFAULT_STACK_SIZE;
+		stack = (void *)(attr._a_stackaddr & -16);
+		/* Use application-provided stack for TLS only when
+		 * it does not take more than ~12% or 2k of the
+		 * application's stack space. */
+		if (need < size/8 && need < 2048) {
+			tsd = stack - __pthread_tsd_size;
+			stack = tsd - libc.tls_size;
+		} else {
+			size = ROUND(need);
+			guard = 0;
 		}
-		size += __pthread_tsd_size;
+	} else {
+		guard = ROUND(DEFAULT_GUARD_SIZE + attr._a_guardsize);
+		size = guard + ROUND(DEFAULT_STACK_SIZE + attr._a_stacksize
+			+ libc.tls_size +  __pthread_tsd_size);
+	}
+
+	if (!tsd) {
 		if (guard) {
 			map = mmap(0, size, PROT_NONE, MAP_PRIVATE|MAP_ANON, -1, 0);
 			if (map == MAP_FAILED) return EAGAIN;
@@ -140,8 +152,10 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attr,
 			if (map == MAP_FAILED) return EAGAIN;
 		}
 		tsd = map + size - __pthread_tsd_size;
+		if (!stack) stack = tsd - libc.tls_size;
 	}
-	new = __copy_tls(stack = tsd - libc.tls_size);
+
+	new = __copy_tls(tsd - libc.tls_size);
 	new->map_base = map;
 	new->map_size = size;
 	new->pid = self->pid;
@@ -150,11 +164,11 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attr,
 	new->start_arg = arg;
 	new->self = new;
 	new->tsd = (void *)tsd;
-	if (attr && attr->_a_detach) {
+	if (attr._a_detach) {
 		new->detached = 1;
 		flags -= 0x200000;
 	}
-	if (attr && attr->_a_sched) {
+	if (attr._a_sched) {
 		do_sched = new->startlock[0] = 1;
 		__syscall(SYS_rt_sigprocmask, SIG_BLOCK,
 			SIGALL_SET, self->sigmask, __SYSCALL_SSLEN);
@@ -180,7 +194,7 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attr,
 
 	if (do_sched) {
 		ret = __syscall(SYS_sched_setscheduler, new->tid,
-			attr->_a_policy, &attr->_a_prio);
+			attr._a_policy, &attr._a_prio);
 		a_store(new->startlock, ret<0 ? 2 : 0);
 		__wake(new->startlock, 1, 1);
 		if (ret < 0) return -ret;
