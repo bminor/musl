@@ -4,7 +4,7 @@
 
 struct fdop {
 	struct fdop *next, *prev;
-	int cmd, fd, newfd, oflag;
+	int cmd, fd, srcfd, oflag;
 	mode_t mode;
 	char path[];
 };
