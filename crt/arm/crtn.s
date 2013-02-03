@@ -1,5 +1,7 @@
 .weak __init_array_start
 .weak __init_array_end
+.hidden __init_array_start
+.hidden __init_array_end
 
 .section .init
 	adr lr, 1f

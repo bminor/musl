@@ -5,6 +5,8 @@ _init:
 
 .weak __fini_array_start
 .weak __fini_array_end
+.hidden __fini_array_start
+.hidden __fini_array_end
 
 .section .fini
 .global _fini
