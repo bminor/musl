@@ -152,7 +152,7 @@ int __posix_spawnx(pid_t *restrict res, const char *restrict path,
 	close(args.p[1]);
 
 	if (pid > 0) {
-		if (read(args.p[0], &ec, sizeof ec) < sizeof ec) ec = 0;
+		if (read(args.p[0], &ec, sizeof ec) != sizeof ec) ec = 0;
 		else waitpid(pid, &(int){0}, 0);
 	} else {
 		ec = -pid;
