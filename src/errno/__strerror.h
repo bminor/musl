@@ -61,7 +61,7 @@ E(ENOLCK,       "No locks available")
 
 E(EDEADLK,      "Resource deadlock would occur")
 E(ENOTRECOVERABLE, "State not recoverable")
-E(EOWNERDEAR,   "Previous owner died")
+E(EOWNERDEAD,   "Previous owner died")
 E(ECANCELED,    "Operation canceled")
 E(ENOSYS,       "Function not implemented")
 E(ENOMSG,       "No message of desired type")
