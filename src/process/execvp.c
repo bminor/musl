@@ -4,7 +4,7 @@
 #include <errno.h>
 #include <limits.h>
 
-extern char **environ;
+extern char **__environ;
 
 int __execvpe(const char *file, char *const argv[], char *const envp[])
 {
@@ -45,5 +45,5 @@ int __execvpe(const char *file, char *const argv[], char *const envp[])
 
 int execvp(const char *file, char *const argv[])
 {
-	return __execvpe(file, argv, environ);
+	return __execvpe(file, argv, __environ);
 }

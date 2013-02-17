@@ -57,7 +57,6 @@ void __synccall(void (*)(void *), void *);
 int __setxid(int, int, int, int);
 
 extern char **__environ;
-#define environ __environ
 
 #undef weak_alias
 #define weak_alias(old, new) \

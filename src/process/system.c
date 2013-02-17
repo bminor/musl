@@ -13,7 +13,7 @@ static void dummy_0()
 weak_alias(dummy_0, __acquire_ptc);
 weak_alias(dummy_0, __release_ptc);
 
-extern char **environ;
+extern char **__environ;
 
 int system(const char *cmd)
 {
@@ -40,7 +40,7 @@ int system(const char *cmd)
 	posix_spawnattr_setsigdefault(&attr, &reset);
 	posix_spawnattr_setflags(&attr, POSIX_SPAWN_SETSIGDEF|POSIX_SPAWN_SETSIGMASK);
 	ret = posix_spawn(&pid, "/bin/sh", 0, &attr,
-		(char *[]){"sh", "-c", (char *)cmd, 0}, environ);
+		(char *[]){"sh", "-c", (char *)cmd, 0}, __environ);
 	posix_spawnattr_destroy(&attr);
 
 	if (!ret) while (waitpid(pid, &status, 0)<0 && errno == EINTR);
