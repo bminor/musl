@@ -30,6 +30,10 @@ struct group  *getgrent(void);
 void           endgrent(void);
 void           setgrent(void);
 
+#ifdef _GNU_SOURCE
+struct group  *fgetgrent(FILE *stream);
+#endif
+
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 int getgrouplist(const char *, gid_t, gid_t *, int *);
 int setgroups(size_t, const gid_t *);
