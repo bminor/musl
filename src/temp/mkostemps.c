@@ -9,18 +9,15 @@ char *__randname(char *);
 
 int __mkostemps(char *template, int len, int flags)
 {
-	if (len < 0) return EINVAL;
-
-	size_t l = strlen(template)-len;
-	if (l < 6 || strncmp(template+l-6, "XXXXXX", 6)) {
+	size_t l = strlen(template);
+	if (l<6 || len>l-6 || strncmp(template+l-len-6, "XXXXXX", 6)) {
 		errno = EINVAL;
-		*template = 0;
 		return -1;
 	}
 
 	int fd, retries = 100;
 	while (retries--) {
-		__randname(template+l-6);
+		__randname(template+l-len-6);
 		if ((fd = open(template, flags | O_RDWR | O_CREAT | O_EXCL, 0600))>=0)
 			return fd;
 		if (errno != EEXIST) return -1;
