@@ -11,7 +11,7 @@ char *__mktemp(char *template)
 	size_t l = strlen(template);
 	int retries = 10000;
 
-	if (l < 6 || strcmp(template+l-6, "XXXXXX")) {
+	if (l < 6 || memcmp(template+l-6, "XXXXXX", 6)) {
 		errno = EINVAL;
 		*template = 0;
 		return template;
