@@ -10,7 +10,6 @@ char *__mktemp(char *template)
 {
 	size_t l = strlen(template);
 	int retries = 10000;
-	unsigned long r;
 
 	if (l < 6 || strcmp(template+l-6, "XXXXXX")) {
 		errno = EINVAL;
