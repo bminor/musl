@@ -95,6 +95,7 @@ int posix_memalign (void **, size_t, size_t);
 int setenv (const char *, const char *, int);
 int unsetenv (const char *);
 int mkstemp (char *);
+int mkostemp (char *, int);
 char *mkdtemp (char *);
 int getsubopt (char **, char *const *, char **);
 int rand_r (unsigned *);
@@ -134,6 +135,8 @@ void lcong48 (unsigned short [7]);
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 #include <alloca.h>
 char *mktemp (char *);
+int mkstemps (char *, int);
+int mkostemps (char *, int, int);
 void *valloc (size_t);
 void *memalign(size_t, size_t);
 #define WCOREDUMP(s) ((s) & 0x80)
@@ -150,6 +153,11 @@ char *gcvt(double, int, char *);
 
 #if defined(_LARGEFILE64_SOURCE) || defined(_GNU_SOURCE)
 #define mkstemp64 mkstemp
+#define mkostemp64 mkostemp
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+#define mkstemps64 mkstemps
+#define mkostemps64 mkostemps
+#endif
 #endif
 
 #ifdef __cplusplus
