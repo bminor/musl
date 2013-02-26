@@ -55,7 +55,7 @@ TYPEDEF uint64_t           uint_fast64_t;
 TYPEDEF long          intptr_t;
 TYPEDEF unsigned long uintptr_t;
 
-TYPEDEF double float_t;
+TYPEDEF float float_t;
 TYPEDEF double double_t;
 
 TYPEDEF long time_t;
