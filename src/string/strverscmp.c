@@ -31,8 +31,10 @@ int strverscmp(const char *l, const char *r)
 		while (isdigit(r[lenr]) ) lenr++;
 		if (lenl==lenr) {
 			return (*l -  *r);
+		} else if (lenl>lenr) {
+			return 1;
 		} else {
-			return (lenl - lenr);
+			return -1;
 		}
 	} else {
 		return (*l -  *r);
