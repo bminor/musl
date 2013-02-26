@@ -19,9 +19,6 @@ struct lastlog {
 
 #define ut_time ut_tv.tv_sec
 #define ut_name ut_user
-#define ut_exit __ut_exit
-#define e_termination __e_termination
-#define e_exit __e_exit
 #define utmp utmpx
 #define utmpname(x) (-1)
 
