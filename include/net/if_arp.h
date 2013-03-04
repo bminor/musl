@@ -117,12 +117,12 @@ struct arpreq_old {
 #define ARPD_FLUSH	0x03
 
 struct arpd_request {
-	uint16_t req;
+	unsigned short req;
 	uint32_t ip;
-	uint32_t dev;
-	uint32_t stamp;
-	uint32_t updated;
-	uint8_t ha[MAX_ADDR_LEN];
+	unsigned long dev;
+	unsigned long stamp;
+	unsigned long updated;
+	unsigned char ha[MAX_ADDR_LEN];
 };
 
 

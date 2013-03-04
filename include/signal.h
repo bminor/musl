@@ -103,7 +103,7 @@ union sigval {
 struct __siginfo {
 	int si_signo, si_errno, si_code;
 	union {
-		char __pad[128 - 3*sizeof(int)];
+		char __pad[128 - 2*sizeof(int) - sizeof(long)];
 		struct {
 			pid_t si_pid;
 			uid_t si_uid;

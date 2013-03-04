@@ -17,6 +17,7 @@ typedef struct {
 	size_t re_nsub;
 	void *__opaque, *__padding[4];
 	size_t __nsub2;
+	char __padding2;
 } regex_t;
 
 typedef struct {
