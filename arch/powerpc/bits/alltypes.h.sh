@@ -26,8 +26,8 @@ TYPEDEF __builtin_va_list va_list;
 TYPEDEF long wchar_t;
 #endif
 TYPEDEF int wint_t;
-TYPEDEF long wctrans_t;
-TYPEDEF long wctype_t;
+TYPEDEF const int * wctrans_t;
+TYPEDEF unsigned long wctype_t;
 
 TYPEDEF signed char int8_t;
 TYPEDEF short       int16_t;
