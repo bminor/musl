@@ -10,6 +10,10 @@ extern "C" {
 #define __NEED_size_t
 #define __NEED_gid_t
 
+#ifdef _GNU_SOURCE
+#define __NEED_FILE
+#endif
+
 #include <bits/alltypes.h>
 
 struct group
