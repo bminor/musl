@@ -94,7 +94,7 @@ src/ldso/dynlink.lo: arch/$(ARCH)/reloc.h
 lib/libc.so: $(LOBJS)
 	$(CC) $(CFLAGS_ALL_SHARED) $(LDFLAGS) -nostdlib -shared \
 	-Wl,-e,_start -Wl,-Bsymbolic-functions \
-	-Wl,-soname=libc.so -o $@ $(LOBJS) $(LIBCC)
+	-o $@ $(LOBJS) $(LIBCC)
 
 lib/libc.a: $(OBJS)
 	rm -f $@
