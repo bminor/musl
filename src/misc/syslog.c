@@ -9,9 +9,10 @@
 #include <string.h>
 #include <pthread.h>
 #include "libc.h"
+#include "atomic.h"
 
 static int lock[2];
-static const char *log_ident;
+static char log_ident[32];
 static int log_opt;
 static int log_facility = LOG_USER;
 static int log_mask = 0xff;
@@ -19,9 +20,8 @@ static int log_fd = -1;
 
 int setlogmask(int maskpri)
 {
-	int old = log_mask;
-	if (maskpri) log_mask = maskpri;
-	return old;
+	if (maskpri) return a_swap(&log_mask, maskpri);
+	else return log_mask;
 }
 
 static const struct {
@@ -43,15 +43,10 @@ void closelog(void)
 	pthread_setcancelstate(cs, 0);
 }
 
-static void __openlog(const char *ident, int opt, int facility)
+static void __openlog()
 {
-	log_ident = ident;
-	log_opt = opt;
-	log_facility = facility;
-
-	if (!(opt & LOG_NDELAY) || log_fd>=0) return;
-
 	log_fd = socket(AF_UNIX, SOCK_DGRAM|SOCK_CLOEXEC, 0);
+	if (log_fd >= 0) connect(log_fd, (void *)&log_addr, sizeof log_addr);
 }
 
 void openlog(const char *ident, int opt, int facility)
@@ -59,7 +54,19 @@ void openlog(const char *ident, int opt, int facility)
 	int cs;
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
 	LOCK(lock);
-	__openlog(ident, opt, facility);
+
+	if (ident) {
+		size_t n = strnlen(ident, sizeof log_ident - 1);
+		memcpy(log_ident, ident, n);
+		log_ident[n] = 0;
+	} else {
+		log_ident[0] = 0;
+	}
+	log_opt = opt;
+	log_facility = facility;
+
+	if ((opt & LOG_NDELAY) && log_fd<0) __openlog();
+
 	UNLOCK(lock);
 	pthread_setcancelstate(cs, 0);
 }
@@ -74,12 +81,11 @@ static void _vsyslog(int priority, const char *message, va_list ap)
 	int l, l2;
 
 	if (log_fd < 0) {
-		__openlog(log_ident, log_opt | LOG_NDELAY, log_facility);
-		if (log_fd < 0) {
-			UNLOCK(lock);
-			return;
-		}
+		__openlog();
+		if (log_fd < 0) return;
 	}
+
+	if (!(priority & LOG_FACMASK)) priority |= log_facility;
 
 	now = time(NULL);
 	gmtime_r(&now, &tm);
@@ -87,17 +93,14 @@ static void _vsyslog(int priority, const char *message, va_list ap)
 
 	pid = (log_opt & LOG_PID) ? getpid() : 0;
 	l = snprintf(buf, sizeof buf, "<%d>%s %s%s%.0d%s: ",
-		priority, timebuf,
-		log_ident ? log_ident : "",
-		"["+!pid, pid, "]"+!pid);
+		priority, timebuf, log_ident, "["+!pid, pid, "]"+!pid);
 	l2 = vsnprintf(buf+l, sizeof buf - l, message, ap);
 	if (l2 >= 0) {
-		l += l2;
+		if (l2 >= sizeof buf - l) l = sizeof buf - 1;
+		else l += l2;
 		if (buf[l-1] != '\n') buf[l++] = '\n';
-		sendto(log_fd, buf, l, 0, (void *)&log_addr, 11);
+		send(log_fd, buf, l, 0);
 	}
-
-	UNLOCK(lock);
 }
 
 void __vsyslog(int priority, const char *message, va_list ap)
