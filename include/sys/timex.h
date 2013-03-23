@@ -36,6 +36,7 @@ struct timex {
 #define ADJ_STATUS		0x0010
 #define ADJ_TIMECONST		0x0020
 #define ADJ_TAI			0x0080
+#define ADJ_SETOFFSET		0x0100
 #define ADJ_MICRO		0x1000
 #define ADJ_NANO		0x2000
 #define ADJ_TICK		0x4000
