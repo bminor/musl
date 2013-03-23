@@ -43,12 +43,24 @@
 #define ETH_P_MPLS_UC	0x8847
 #define ETH_P_MPLS_MC	0x8848
 #define ETH_P_ATMMPOA	0x884c
+#define ETH_P_LINK_CTL	0x886c
 #define ETH_P_ATMFATE	0x8884
 #define ETH_P_PAE	0x888E
 #define ETH_P_AOE	0x88A2
+#define ETH_P_8021AD	0x88A8
+#define ETH_P_802_EX1	0x88B5
 #define ETH_P_TIPC	0x88CA
+#define ETH_P_8021AH	0x88E7
+#define ETH_P_MVRP	0x88F5
+#define ETH_P_1588	0x88F7
 #define ETH_P_FCOE	0x8906
+#define ETH_P_TDLS	0x890D
+#define ETH_P_FIP	0x8914
+#define ETH_P_QINQ1	0x9100
+#define ETH_P_QINQ2	0x9200
+#define ETH_P_QINQ3	0x9300
 #define ETH_P_EDSA	0xDADA
+#define ETH_P_AF_IUCV	0xFBFB
 
 #define ETH_P_802_3	0x0001
 #define ETH_P_AX25	0x0002
@@ -60,6 +72,7 @@
 #define ETH_P_PPP_MP    0x0008
 #define ETH_P_LOCALTALK 0x0009
 #define ETH_P_CAN	0x000C
+#define ETH_P_CANFD	0x000D
 #define ETH_P_PPPTALK	0x0010
 #define ETH_P_TR_802_2	0x0011
 #define ETH_P_MOBITEX	0x0015
@@ -71,6 +84,8 @@
 #define ETH_P_DSA	0x001B
 #define ETH_P_TRAILER	0x001C
 #define ETH_P_PHONET	0x00F5
+#define ETH_P_IEEE802154 0x00F6
+#define ETH_P_CAIF	0x00F7
 
 struct ethhdr {
 	uint8_t h_dest[ETH_ALEN];
