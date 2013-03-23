@@ -153,7 +153,7 @@ struct linger
 #define SO_PRIORITY     12
 #define SO_LINGER       13
 #define SO_BSDCOMPAT    14
-/* #define SO_REUSEPORT    15 */
+#define SO_REUSEPORT    15
 #define SO_PASSCRED     16
 #define SO_PEERCRED     17
 #define SO_RCVLOWAT     18
@@ -164,7 +164,6 @@ struct linger
 #define SO_RCVBUFFORCE  33
 #endif
 
-
 #define SO_SECURITY_AUTHENTICATION              22
 #define SO_SECURITY_ENCRYPTION_TRANSPORT        23
 #define SO_SECURITY_ENCRYPTION_NETWORK          24
@@ -173,12 +172,28 @@ struct linger
 
 #define SO_ATTACH_FILTER        26
 #define SO_DETACH_FILTER        27
+#define SO_GET_FILTER           SO_ATTACH_FILTER
 
 #define SO_PEERNAME             28
 #define SO_TIMESTAMP            29
 #define SCM_TIMESTAMP           SO_TIMESTAMP
 
 #define SO_ACCEPTCONN           30
+#define SO_PEERSEC              31
+#define SO_PASSSEC              34
+#define SO_TIMESTAMPNS          35
+#define SCM_TIMESTAMPNS         SO_TIMESTAMPNS
+#define SO_MARK                 36
+#define SO_TIMESTAMPING         37
+#define SCM_TIMESTAMPING        SO_TIMESTAMPING
+#define SO_PROTOCOL             38
+#define SO_DOMAIN               39
+#define SO_RXQ_OVFL             40
+#define SO_WIFI_STATUS          41
+#define SCM_WIFI_STATUS         SO_WIFI_STATUS
+#define SO_PEEK_OFF             42
+#define SO_NOFCS                43
+#define SO_LOCK_FILTER          44
 
 #ifndef SOL_SOCKET
 #define SOL_SOCKET      1
