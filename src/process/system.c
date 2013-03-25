@@ -7,12 +7,6 @@
 #include "pthread_impl.h"
 #include "libc.h"
 
-static void dummy_0()
-{
-}
-weak_alias(dummy_0, __acquire_ptc);
-weak_alias(dummy_0, __release_ptc);
-
 extern char **__environ;
 
 int system(const char *cmd)
