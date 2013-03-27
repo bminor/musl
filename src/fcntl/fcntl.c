@@ -22,5 +22,21 @@ int fcntl(int fd, int cmd, ...)
 		if (ret) return __syscall_ret(ret);
 		return ex.type == F_OWNER_PGRP ? -ex.pid : ex.pid;
 	}
+	if (cmd == F_DUPFD_CLOEXEC) {
+		int ret = __syscall(SYS_fcntl, fd, F_DUPFD_CLOEXEC, arg);
+		if (ret != -EINVAL) {
+			if (ret >= 0)
+				__syscall(SYS_fcntl, ret, F_SETFD, FD_CLOEXEC);
+			return __syscall_ret(ret);
+		}
+		ret = __syscall(SYS_fcntl, fd, F_DUPFD_CLOEXEC, 0);
+		if (ret != -EINVAL) {
+			if (ret >= 0) __syscall(SYS_close, ret);
+			return __syscall_ret(-EINVAL);
+		}
+		ret = __syscall(SYS_fcntl, fd, F_DUPFD, arg);
+		if (ret >= 0) __syscall(SYS_fcntl, ret, F_SETFD, FD_CLOEXEC);
+		return __syscall_ret(ret);
+	}
 	return syscall(SYS_fcntl, fd, cmd, arg);
 }
