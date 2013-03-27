@@ -53,7 +53,7 @@ static void install_handler()
 	};
 	__libc_sigaction(SIGTIMER, &sa, 0);
 	__syscall(SYS_rt_sigprocmask, SIG_UNBLOCK,
-		SIGTIMER_SET, 0, __SYSCALL_SSLEN);
+		SIGTIMER_SET, 0, _NSIG/8);
 }
 
 static void *start(void *arg)

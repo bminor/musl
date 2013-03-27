@@ -1,4 +1,5 @@
 #include <sys/epoll.h>
+#include <signal.h>
 #include "syscall.h"
 
 int epoll_create(int size)
@@ -18,7 +19,7 @@ int epoll_ctl(int fd, int op, int fd2, struct epoll_event *ev)
 
 int epoll_pwait(int fd, struct epoll_event *ev, int cnt, int to, const sigset_t *sigs)
 {
-	return syscall(SYS_epoll_pwait, fd, ev, cnt, to, sigs, __SYSCALL_SSLEN);
+	return syscall(SYS_epoll_pwait, fd, ev, cnt, to, sigs, _NSIG/8);
 }
 
 int epoll_wait(int fd, struct epoll_event *ev, int cnt, int to)

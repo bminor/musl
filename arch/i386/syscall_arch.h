@@ -3,8 +3,6 @@
 ((union { long long ll; long l[2]; }){ .ll = x }).l[1]
 #define __SYSCALL_LL_O(x) __SYSCALL_LL_E((x))
 
-#define __SYSCALL_SSLEN 8
-
 static inline long __syscall0(long n)
 {
 	unsigned long __ret;

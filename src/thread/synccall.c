@@ -62,7 +62,7 @@ void __synccall(void (*func)(void *), void *ctx)
 	__inhibit_ptc();
 
 	__syscall(SYS_rt_sigprocmask, SIG_BLOCK, SIGALL_SET,
-		&oldmask, __SYSCALL_SSLEN);
+		&oldmask, _NSIG/8);
 
 	sem_init(&chaindone, 0, 0);
 	sem_init(&chainlock, 0, 1);
@@ -95,7 +95,7 @@ void __synccall(void (*func)(void *), void *ctx)
 	__libc_sigaction(SIGSYNCCALL, &sa, 0);
 
 	__syscall(SYS_rt_sigprocmask, SIG_SETMASK,
-		&oldmask, 0, __SYSCALL_SSLEN);
+		&oldmask, 0, _NSIG/8);
 
 	__release_ptc();
 }

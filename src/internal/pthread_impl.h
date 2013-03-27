@@ -41,7 +41,7 @@ struct pthread {
 	int killlock[2];
 	int exitlock[2];
 	int startlock[2];
-	unsigned long sigmask[__SYSCALL_SSLEN/sizeof(long)];
+	unsigned long sigmask[_NSIG/8/sizeof(long)];
 };
 
 struct __timer {
@@ -89,10 +89,10 @@ struct __timer {
 
 #define SIGALL_SET ((sigset_t *)(const unsigned long long [2]){ -1,-1 })
 #define SIGPT_SET \
-	((sigset_t *)(const unsigned long [__SYSCALL_SSLEN/sizeof(long)]){ \
+	((sigset_t *)(const unsigned long [_NSIG/8/sizeof(long)]){ \
 	[sizeof(long)==4] = 3UL<<(32*(sizeof(long)>4)) })
 #define SIGTIMER_SET \
-	((sigset_t *)(const unsigned long [__SYSCALL_SSLEN/sizeof(long)]){ \
+	((sigset_t *)(const unsigned long [_NSIG/8/sizeof(long)]){ \
 	 0x80000000 })
 
 pthread_t __pthread_self_init(void);

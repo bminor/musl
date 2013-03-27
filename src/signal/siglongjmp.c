@@ -6,6 +6,6 @@
 _Noreturn void siglongjmp(sigjmp_buf buf, int ret)
 {
 	if (buf->__fl) __syscall(SYS_rt_sigprocmask, SIG_SETMASK,
-		buf->__ss, 0, __SYSCALL_SSLEN);
+		buf->__ss, 0, _NSIG/8);
 	longjmp(buf->__jb, ret);
 }

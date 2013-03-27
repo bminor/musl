@@ -1,8 +1,6 @@
 #define __SYSCALL_LL_E(x) (x)
 #define __SYSCALL_LL_O(x) (x)
 
-#define __SYSCALL_SSLEN 8
-
 static __inline long __syscall0(long n)
 {
 	unsigned long ret;

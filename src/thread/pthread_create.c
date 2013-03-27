@@ -40,7 +40,7 @@ _Noreturn void pthread_exit(void *result)
 		if (self->detached == 2)
 			__syscall(SYS_set_tid_address, 0);
 		__syscall(SYS_rt_sigprocmask, SIG_BLOCK,
-			SIGALL_SET, 0, __SYSCALL_SSLEN);
+			SIGALL_SET, 0, _NSIG/8);
 		__unmapself(self->map_base, self->map_size);
 	}
 
@@ -69,11 +69,11 @@ static int start(void *p)
 			pthread_exit(0);
 		}
 		__syscall(SYS_rt_sigprocmask, SIG_SETMASK,
-			self->sigmask, 0, __SYSCALL_SSLEN);
+			self->sigmask, 0, _NSIG/8);
 	}
 	if (self->unblock_cancel)
 		__syscall(SYS_rt_sigprocmask, SIG_UNBLOCK,
-			SIGPT_SET, 0, __SYSCALL_SSLEN);
+			SIGPT_SET, 0, _NSIG/8);
 	pthread_exit(self->start(self->start_arg));
 	return 0;
 }
@@ -171,7 +171,7 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attrp
 	if (attr._a_sched) {
 		do_sched = new->startlock[0] = 1;
 		__syscall(SYS_rt_sigprocmask, SIG_BLOCK,
-			SIGALL_SET, self->sigmask, __SYSCALL_SSLEN);
+			SIGALL_SET, self->sigmask, _NSIG/8);
 	}
 	new->unblock_cancel = self->cancel;
 	new->canary = self->canary;
@@ -183,7 +183,7 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attrp
 
 	if (do_sched) {
 		__syscall(SYS_rt_sigprocmask, SIG_SETMASK,
-			new->sigmask, 0, __SYSCALL_SSLEN);
+			new->sigmask, 0, _NSIG/8);
 	}
 
 	if (ret < 0) {
