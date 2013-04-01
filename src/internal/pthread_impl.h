@@ -23,6 +23,8 @@ struct pthread {
 	int detached;
 	unsigned char *map_base;
 	size_t map_size;
+	void *stack;
+	size_t stack_size;
 	void *start_arg;
 	void *(*start)(void *);
 	void *result;

@@ -101,7 +101,7 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attrp
 	int ret;
 	size_t size, guard;
 	struct pthread *self = pthread_self(), *new;
-	unsigned char *map = 0, *stack = 0, *tsd = 0;
+	unsigned char *map = 0, *stack = 0, *tsd = 0, *stack_limit;
 	unsigned flags = 0x7d8f00;
 	int do_sched = 0;
 	pthread_attr_t attr = {0};
@@ -123,6 +123,7 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attrp
 		size_t need = libc.tls_size + __pthread_tsd_size;
 		size = attr._a_stacksize + DEFAULT_STACK_SIZE;
 		stack = (void *)(attr._a_stackaddr & -16);
+		stack_limit = attr._a_stackaddr - size;
 		/* Use application-provided stack for TLS only when
 		 * it does not take more than ~12% or 2k of the
 		 * application's stack space. */
@@ -152,12 +153,17 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attrp
 			if (map == MAP_FAILED) goto fail;
 		}
 		tsd = map + size - __pthread_tsd_size;
-		if (!stack) stack = tsd - libc.tls_size;
+		if (!stack) {
+			stack = tsd - libc.tls_size;
+			stack_limit = map + guard;
+		}
 	}
 
 	new = __copy_tls(tsd - libc.tls_size);
 	new->map_base = map;
 	new->map_size = size;
+	new->stack = stack;
+	new->stack_size = stack - stack_limit;
 	new->pid = self->pid;
 	new->errno_ptr = &new->errno_val;
 	new->start = entry;
