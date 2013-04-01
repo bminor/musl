@@ -36,7 +36,7 @@ struct cmsghdr
 #define SO_PRIORITY     12
 #define SO_LINGER       128
 #define SO_BSDCOMPAT    14
-/* #define SO_REUSEPORT    512 */
+#define SO_REUSEPORT    512
 #define SO_PASSCRED     17
 #define SO_PEERCRED     18
 #define SO_RCVLOWAT     0x1004
