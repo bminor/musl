@@ -209,6 +209,10 @@ void _pthread_cleanup_pop(struct __ptcb *, int);
 #define pthread_cleanup_push(f, x) do { struct __ptcb __cb; _pthread_cleanup_push(&__cb, f, x);
 #define pthread_cleanup_pop(r) _pthread_cleanup_pop(&__cb, (r)); } while(0)
 
+#ifdef _GNU_SOURCE
+int pthread_getattr_np(pthread_t, pthread_attr_t *);
+#endif
+
 #ifdef __cplusplus
 }
 #endif
