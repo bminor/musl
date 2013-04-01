@@ -362,6 +362,19 @@
 #define __NR_rt_tgsigqueueinfo 365
 #define __NR_perf_event_open 366
 #define __NR_recvmmsg 367
+#define __NR_fanotify_init 368
+#define __NR_fanotify_mark 369
+#define __NR_prlimit64 370
+#define __NR_name_to_handle_at 371
+#define __NR_open_by_handle_at 372
+#define __NR_clock_adjtime 373
+#define __NR_syncfs 374
+#define __NR_setns 375
+#define __NR_sendmmsg 376
+#define __NR_process_vm_readv 377
+#define __NR_process_vm_writev 378
+#define __NR_kcmp 379
+#define __NR_finit_module 380
 
 /* Repeated with SYS_ prefix */
 
@@ -730,11 +743,16 @@
 #define SYS_rt_tgsigqueueinfo 365
 #define SYS_perf_event_open 366
 #define SYS_recvmmsg 367
-
-
-#define SYS_clock_adjtime 999999 // FIXME
-#define SYS_process_vm_readv 999999 // FIXME
-#define SYS_process_vm_writev 999999 // FIXME
-#define SYS_prlimit64 999999 // FIXME
-#define SYS_setns 999999 // FIXME
-#define SYS_syncfs 999999 // FIXME
+#define SYS_fanotify_init 368
+#define SYS_fanotify_mark 369
+#define SYS_prlimit64 370
+#define SYS_name_to_handle_at 371
+#define SYS_open_by_handle_at 372
+#define SYS_clock_adjtime 373
+#define SYS_syncfs 374
+#define SYS_setns 375
+#define SYS_sendmmsg 376
+#define SYS_process_vm_readv 377
+#define SYS_process_vm_writev 378
+#define SYS_kcmp 379
+#define SYS_finit_module 380

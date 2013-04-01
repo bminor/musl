@@ -310,6 +310,8 @@
 #define __NR_getcpu				309
 #define __NR_process_vm_readv			310
 #define __NR_process_vm_writev			311
+#define __NR_kcmp				312
+#define __NR_finit_module			313
 
 #undef __NR_fstatat
 #undef __NR_pread
@@ -637,6 +639,8 @@
 #define SYS_getcpu				309
 #define SYS_process_vm_readv			310
 #define SYS_process_vm_writev			311
+#define SYS_kcmp				312
+#define SYS_finit_module			313
 
 #undef SYS_fstatat
 #undef SYS_pread

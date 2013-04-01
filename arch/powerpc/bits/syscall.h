@@ -366,6 +366,8 @@
 #define __NR_setns                 350
 #define __NR_process_vm_readv      351
 #define __NR_process_vm_writev     352
+#define __NR_finit_module          353
+#define __NR_kcmp                  354
 
 /*
  * repeated with SYS prefix
@@ -738,4 +740,5 @@
 #define SYS_setns                 350
 #define SYS_process_vm_readv      351
 #define SYS_process_vm_writev     352
-
+#define SYS_finit_module          353
+#define SYS_kcmp                  354
