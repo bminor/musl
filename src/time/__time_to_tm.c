@@ -76,6 +76,8 @@ struct tm *__time_to_tm(time_t t, struct tm *tm)
 	tm->tm_year= year;
 	tm->tm_wday= wday;
 	tm->tm_yday= yday;
+	tm->__tm_zone = 0;
+	tm->__tm_gmtoff = 0;
 
 	return tm;
 }
