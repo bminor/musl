@@ -39,7 +39,7 @@ struct tm
 	long __tm_gmtoff;
 	const char *__tm_zone;
 };
-#if defined(_BSD_SOURCE)
+#if defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
 #define tm_gmtoff __tm_gmtoff
 #define tm_zone __tm_zone
 #endif
