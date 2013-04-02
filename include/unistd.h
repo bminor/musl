@@ -24,6 +24,7 @@ extern "C" {
 #define __NEED_off_t
 #define __NEED_pid_t
 #define __NEED_intptr_t
+#define __NEED_useconds_t
 
 #include <bits/alltypes.h>
 

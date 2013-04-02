@@ -52,6 +52,7 @@ extern "C" {
 #define __NEED_pthread_spinlock_t
 #define __NEED_pthread_key_t
 #define __NEED_pthread_once_t
+#define __NEED_useconds_t
 
 #include <bits/alltypes.h>
 
