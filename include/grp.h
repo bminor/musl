@@ -36,6 +36,7 @@ void           setgrent(void);
 
 #ifdef _GNU_SOURCE
 struct group  *fgetgrent(FILE *stream);
+int putgrent(const struct group *, FILE *);
 #endif
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)

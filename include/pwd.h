@@ -39,6 +39,7 @@ int getpwnam_r (const char *, struct passwd *, char *, size_t, struct passwd **)
 
 #ifdef _GNU_SOURCE
 struct passwd *fgetpwent(FILE *);
+int putpwent(const struct passwd *, FILE *);
 #endif
 
 #ifdef __cplusplus
