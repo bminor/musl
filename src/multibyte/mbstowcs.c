@@ -13,6 +13,5 @@
 
 size_t mbstowcs(wchar_t *restrict ws, const char *restrict s, size_t wn)
 {
-	mbstate_t st = { 0 };
-	return mbsrtowcs(ws, (void*)&s, wn, &st);
+	return mbsrtowcs(ws, (void*)&s, wn, 0);
 }
