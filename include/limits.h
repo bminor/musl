@@ -9,7 +9,7 @@
 
 /* Support signed or unsigned plain-char */
 
-#ifdef __CHAR_UNSIGNED__
+#if '\0'-1 > 0
 #define CHAR_MIN 0
 #define CHAR_MAX 255
 #else
