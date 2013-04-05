@@ -36,7 +36,6 @@ static stor* list_add(stor** list, stor** head, char* ifname)
 		*head = curr;
 		if(!*list) *list = curr;
 	}
-	out:
 	return curr;
 }
 
