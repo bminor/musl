@@ -137,39 +137,37 @@ int getifaddrs(struct ifaddrs **ifap)
 	struct ifreq reqs[32]; /* arbitrary chosen boundary */
 	struct ifconf conf = {.ifc_len = sizeof reqs, .ifc_req = reqs};
 	if(-1 == ioctl(sock, SIOCGIFCONF, &conf)) goto err;
-	else {
-		size_t reqitems = conf.ifc_len / sizeof(struct ifreq);
-		for(head = list; head; head = (stor*)head->next) {
-			size_t i;
-			for(i = 0; i < reqitems; i++) {
-				// get SIOCGIFADDR of active interfaces.
-				if(!strcmp(reqs[i].ifr_name, head->name)) {
-					head->addr.v4 = *(struct sockaddr_in*)&reqs[i].ifr_addr;
-					head->ifa.ifa_addr = (struct sockaddr*) &head->addr;
-					break;
-				}
+	size_t reqitems = conf.ifc_len / sizeof(struct ifreq);
+	for(head = list; head; head = (stor*)head->next) {
+		size_t i;
+		for(i = 0; i < reqitems; i++) {
+			// get SIOCGIFADDR of active interfaces.
+			if(!strcmp(reqs[i].ifr_name, head->name)) {
+				head->addr.v4 = *(struct sockaddr_in*)&reqs[i].ifr_addr;
+				head->ifa.ifa_addr = (struct sockaddr*) &head->addr;
+				break;
 			}
-			struct ifreq req;
-			snprintf(req.ifr_name, sizeof req.ifr_name, "%s", head->name);
-			if(-1 == ioctl(sock, SIOCGIFFLAGS, &req)) goto err;
+		}
+		struct ifreq req;
+		snprintf(req.ifr_name, sizeof req.ifr_name, "%s", head->name);
+		if(-1 == ioctl(sock, SIOCGIFFLAGS, &req)) goto err;
 
-			head->ifa.ifa_flags = req.ifr_flags;
-			if(head->ifa.ifa_addr) {
-				/* or'ing flags with IFF_LOWER_UP on active interfaces to mimic glibc */
-				head->ifa.ifa_flags |= IFF_LOWER_UP; 
-				if(-1 == ioctl(sock, SIOCGIFNETMASK, &req)) goto err;
-				head->netmask.v4 = *(struct sockaddr_in*)&req.ifr_netmask;
-				head->ifa.ifa_netmask = (struct sockaddr*) &head->netmask;
-		
-				if(head->ifa.ifa_flags & IFF_POINTOPOINT) {
-					if(-1 == ioctl(sock, SIOCGIFDSTADDR, &req)) goto err;
-					head->dst.v4 = *(struct sockaddr_in*)&req.ifr_dstaddr;
-				} else {
-					if(-1 == ioctl(sock, SIOCGIFBRDADDR, &req)) goto err;
-					head->dst.v4 = *(struct sockaddr_in*)&req.ifr_broadaddr;
-				}
-				head->ifa.ifa_ifu.ifu_dstaddr = (struct sockaddr*) &head->dst;
+		head->ifa.ifa_flags = req.ifr_flags;
+		if(head->ifa.ifa_addr) {
+			/* or'ing flags with IFF_LOWER_UP on active interfaces to mimic glibc */
+			head->ifa.ifa_flags |= IFF_LOWER_UP; 
+			if(-1 == ioctl(sock, SIOCGIFNETMASK, &req)) goto err;
+			head->netmask.v4 = *(struct sockaddr_in*)&req.ifr_netmask;
+			head->ifa.ifa_netmask = (struct sockaddr*) &head->netmask;
+	
+			if(head->ifa.ifa_flags & IFF_POINTOPOINT) {
+				if(-1 == ioctl(sock, SIOCGIFDSTADDR, &req)) goto err;
+				head->dst.v4 = *(struct sockaddr_in*)&req.ifr_dstaddr;
+			} else {
+				if(-1 == ioctl(sock, SIOCGIFBRDADDR, &req)) goto err;
+				head->dst.v4 = *(struct sockaddr_in*)&req.ifr_broadaddr;
 			}
+			head->ifa.ifa_ifu.ifu_dstaddr = (struct sockaddr*) &head->dst;
 		}
 	}
 	close(sock);
