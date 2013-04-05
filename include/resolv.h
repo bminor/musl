@@ -135,6 +135,7 @@ int res_mkquery(int, const char *, int, int, char *, int, struct rrec *, char *,
 int res_send(const char *, int, char *, int);
 int dn_comp(unsigned char *, unsigned char *, int, unsigned char **, unsigned char *, unsigned char **);
 int dn_expand(unsigned char *, unsigned char *, unsigned char *, unsigned char *, int);
+int dn_skipname(const unsigned char *, const unsigned char *);
 
 #ifdef __cplusplus
 }
