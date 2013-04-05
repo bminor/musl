@@ -106,31 +106,18 @@ static void dealwithipv6(stor **list, stor** head)
 
 int getifaddrs(struct ifaddrs **ifap)
 {
-	FILE* f = fopen("/proc/net/dev", "r");
-	if(!f) return -1;
-
-	/* the alternative to parsing /proc.. seems to be iterating
-	   through the interfaces using an index number in ifreq.ifr_ifindex
-	   until we get some error code back. the kernel will fill ifr_name field
-	   for valid ifindices (SIOCGIFINDEX) */
 	stor *list = 0, *head = 0;
-
-	char* line; char linebuf[512];
-	while((line = fgets(linebuf, sizeof linebuf, f))) {
-		while(isspace(*line) && *line) line++;
-		char* start = line;
-		while(*line && isalnum(*line)) line++;
-		if(line > start && *line == ':') {
-			// found interface
-			*line = 0;
-			stor* curr = list_add(&list, &head, start);
-			if(!curr) {
-				fclose(f);
-				goto err2;
-			}
+	struct if_nameindex* ii = if_nameindex();
+	if(!ii) return -1;
+	size_t i;
+	for(i = 0; ii[i].if_index || ii[i].if_name; i++) {
+		stor* curr = list_add(&list, &head, ii[i].if_name);
+		if(!curr) {
+			if_freenameindex(ii);
+			goto err2;
 		}
 	}
-	fclose(f);
+	if_freenameindex(ii);
 
 	int sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
 	if(sock == -1) goto err2;
@@ -139,7 +126,6 @@ int getifaddrs(struct ifaddrs **ifap)
 	if(-1 == ioctl(sock, SIOCGIFCONF, &conf)) goto err;
 	size_t reqitems = conf.ifc_len / sizeof(struct ifreq);
 	for(head = list; head; head = (stor*)head->next) {
-		size_t i;
 		for(i = 0; i < reqitems; i++) {
 			// get SIOCGIFADDR of active interfaces.
 			if(!strcmp(reqs[i].ifr_name, head->name)) {
