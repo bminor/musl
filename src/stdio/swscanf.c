@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <wchar.h>
+#include "libc.h"
 
 int swscanf(const wchar_t *restrict s, const wchar_t *restrict fmt, ...)
 {
@@ -11,3 +12,5 @@ int swscanf(const wchar_t *restrict s, const wchar_t *restrict fmt, ...)
 	va_end(ap);
 	return ret;
 }
+
+weak_alias(swscanf,__isoc99_swscanf);
