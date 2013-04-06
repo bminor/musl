@@ -8,8 +8,9 @@ void __init_ldso_ctors(void);
 #define AUX_CNT 38
 
 extern size_t __hwcap, __sysinfo;
+extern char *__progname, *__progname_full;
 
-void __init_libc(char **envp)
+void __init_libc(char **envp, char *pn)
 {
 	size_t i, *auxv, aux[AUX_CNT] = { 0 };
 	__environ = envp;
@@ -18,6 +19,11 @@ void __init_libc(char **envp)
 	for (i=0; auxv[i]; i+=2) if (auxv[i]<AUX_CNT) aux[auxv[i]] = auxv[i+1];
 	__hwcap = aux[AT_HWCAP];
 	__sysinfo = aux[AT_SYSINFO];
+
+	if (pn) {
+		__progname = __progname_full = pn;
+		for (i=0; pn[i]; i++) if (pn[i]=='/') __progname = pn+i+1;
+	}
 
 	__init_tls(aux);
 	__init_security(aux);
@@ -30,7 +36,7 @@ int __libc_start_main(
 {
 	char **envp = argv+argc+1;
 
-	__init_libc(envp);
+	__init_libc(envp, argv[0]);
 
 	libc.ldso_fini = ldso_fini;
 	libc.fini = fini;
