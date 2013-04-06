@@ -99,7 +99,7 @@ int timer_create(clockid_t clk, struct sigevent *restrict evp, timer_t *restrict
 		}
 		if (syscall(SYS_timer_create, clk, ksevp, &timerid) < 0)
 			return -1;
-		*res = (void *)timerid;
+		*res = (void *)(intptr_t)timerid;
 		break;
 	case SIGEV_THREAD:
 		pthread_once(&once, install_handler);
@@ -125,7 +125,7 @@ int timer_create(clockid_t clk, struct sigevent *restrict evp, timer_t *restrict
 			pthread_cancel(td);
 			return -1;
 		}
-		td->result = (void *)timerid;
+		td->result = (void *)(intptr_t)timerid;
 		*res = td;
 		break;
 	default:
