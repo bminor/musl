@@ -22,9 +22,8 @@ size_t mbrtowc(wchar_t *restrict wc, const char *restrict src, size_t n, mbstate
 	c = *(unsigned *)st;
 	
 	if (!s) {
-		s = (void *)"";
-		wc = (void *)&wc;
-		n = 1;
+		if (c) goto ilseq;
+		return 0;
 	} else if (!wc) wc = (void *)&wc;
 
 	if (!n) return -2;
