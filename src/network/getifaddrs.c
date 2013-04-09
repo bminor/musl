@@ -51,8 +51,17 @@ void freeifaddrs(struct ifaddrs *ifp)
 
 static void ipv6netmask(unsigned prefix_length, struct sockaddr_in6 *sa)
 {
-	// FIXME: left for bit-wizard rich
-	memset(&sa->sin6_addr, -1, sizeof(sa->sin6_addr));
+	unsigned char* hb = sa->sin6_addr.s6_addr;
+	unsigned onebytes = prefix_length / 8;
+	unsigned bits = prefix_length % 8;
+	unsigned nullbytes = 16 - onebytes;
+	memset(hb, -1, onebytes);
+	memset(hb+onebytes, 0, nullbytes);
+	if(bits) {
+		unsigned char x = -1;
+		x <<= 8 - bits;
+		hb[onebytes] = x;
+	}
 }
 
 static void dealwithipv6(stor **list, stor** head)
