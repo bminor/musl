@@ -51,7 +51,7 @@ loop:
 	*(unsigned *)st = c;
 	return -2;
 ilseq:
-	*(unsigned *)st = FAILSTATE;
+	*(unsigned *)st = 0;
 	errno = EILSEQ;
 	return -1;
 }
