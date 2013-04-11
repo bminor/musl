@@ -7,6 +7,7 @@ extern "C" {
 
 #include <features.h>
 #include <netinet/in.h>
+#include <sys/socket.h>
 
 struct ifaddrs {
 	struct ifaddrs *ifa_next;
