@@ -863,3 +863,55 @@ header compatibility improvements:
 - additional flags for poll, epoll, inotify, timerfd, timex, dlfcn
 - register names in signal.h/ucontext.h for x86
 - ipc.h ipc_perm nonstandard struct field name compatibility improve
+
+
+
+0.9.10 release notes
+
+new features:
+- getifaddrs 
+- pthread_getattr_np (widely used by garbage collectors)
+- mkostemps, mkostemp, mkstemps functions (mkostemp is future-POSIX)
+- strcasestr and strverscmp (previously stubs)
+
+improvements:
+- major performance improvements in mbtowc
+- avoid filling caller-provided thread stacks with large TLS
+- debloat unnecessary static buffers
+- robust posix_spawn based on CLONE_VM instead of vfork
+- new system() and popen() based on posix_spawn
+- better strerror strings
+- further emulation of atomic close-on-exec/nonblock options for old kernels
+- provide macro constants for new-ish kernel features
+
+compatibility:
+- several nonstandard but widely-available pwd/grp/shadow functions
+- program_invocation_[short_]name
+- re-added useconds_t type used by some programs
+- some legacy arpa headers
+- dn_skipname function (legacy resolver API)
+- additional ABI aliases for supporting glibc-linked libraries/binaries
+
+general bugs fixed:
+- stale locks and bogus munmap call when pthread_create fails
+- uninitialized argument to munmap when dynlink load_library fails
+- incorrect error returns in gethostby*_r
+- memory leak in gethostbyname family
+- blank ai_canonname in getaddrinfo for non-CNAME records
+- undefined HZ macro in scsi/sg.h
+- wrong return value for wmemmove on forward-copy
+- namespace conformance in strings.h
+- various utmp.h bugs
+- unnecessary DT_SONAME in libc.so caused problems on some systems
+- multiple bugs in syslog, some possibly dangerous
+- non-functional setpriority function
+- slight mishandling of 0xf5 byte in UTF-8 decoder
+- misaligned memory accesses in mbsrtowcs
+
+arch-specific bugs fixed:
+- crash in shared library loading on arm
+- missing __aeabi_atexit needed by arm eabi
+- wrong float_t definition on x86_64
+- various low-impact type size/alignment mismatches in some headers
+- epoll struct alignment wrong on non-x86[_64] archs
+- broken pipe2 fallback code on mips with old kernels
