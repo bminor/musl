@@ -1,6 +1,6 @@
 musl as a whole is licensed under the following standard MIT license:
 
-Copyright © 2005-2012 Rich Felker
+Copyright © 2005-2013 Rich Felker
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -75,7 +75,7 @@ and later supplemented and integrated by John Spencer. It is licensed
 under the standard MIT terms.
 
 All other files which have no copyright comments are original works
-Copyright © 2005-2012 Rich Felker, the main author of this library.
+Copyright © 2005-2013 Rich Felker, the main author of this library.
 The decision to exclude such comments is intentional, as it should be
 possible to carry around the complete source code on tiny storage
 media. All public header files (include/* and arch/*/bits/*) should be
