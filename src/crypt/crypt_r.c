@@ -11,6 +11,10 @@ char *__crypt_sha512(const char *, const char *, char *);
 
 char *__crypt_r(const char *key, const char *salt, struct crypt_data *data)
 {
+	/* Per the crypt_r API, the caller has provided a pointer to
+	 * struct crypt_data; however, this implementation does not
+	 * use the structure to store any internal state, and treats
+	 * it purely as a char buffer for storing the result. */
 	char *output = (char *)data;
 	if (salt[0] == '$' && salt[1] && salt[2]) {
 		if (salt[1] == '1' && salt[2] == '$')

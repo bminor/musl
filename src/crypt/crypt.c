@@ -5,7 +5,12 @@ char *__crypt_r(const char *, const char *, struct crypt_data *);
 
 char *crypt(const char *key, const char *salt)
 {
-	/* Note: update this size when we add more hash types */
+	/* This buffer is sufficiently large for all
+	 * currently-supported hash types. It needs to be updated if
+	 * longer hashes are added. The cast to struct crypt_data * is
+	 * purely to meet the public API requirements of the crypt_r
+	 * function; the implementation of crypt_r uses the object
+	 * purely as a char buffer. */
 	static char buf[128];
 	return __crypt_r(key, salt, (struct crypt_data *)buf);
 }
