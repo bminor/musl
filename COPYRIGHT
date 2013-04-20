@@ -88,5 +88,5 @@ I will explicitly release it from copyright.
 The following files are trivial, in my opinion not copyrightable in
 the first place, and hereby explicitly released to the Public Domain:
 
-All public headers: include/*
+All public headers: include/*, arch/*/bits/*
 Startup files: crt/*
