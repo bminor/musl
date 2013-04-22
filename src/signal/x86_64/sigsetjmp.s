@@ -6,8 +6,8 @@ sigsetjmp:
 	movq %rsi,64(%rdi)
 	jz 1f
 	pushq %rdi
-	leaq 72(%rdi),%rsi
-	xorl %edx,%edx
+	leaq 72(%rdi),%rdx
+	xorl %esi,%esi
 	movl $2,%edi
 	call sigprocmask
 	popq %rdi
