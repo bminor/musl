@@ -39,8 +39,6 @@ typedef uint16_t uint_least16_t;
 typedef uint32_t uint_least32_t;
 typedef uint64_t uint_least64_t;
 
-#if !defined __cplusplus || defined __STDC_LIMIT_MACROS
-
 #define INT8_MIN   (-1-0x7f)
 #define INT16_MIN  (-1-0x7fff)
 #define INT32_MIN  (-1-0x7fffffff)
@@ -88,10 +86,6 @@ typedef uint64_t uint_least64_t;
 
 #include <bits/stdint.h>
 
-#endif
-
-#if !defined __cplusplus || defined __STDC_CONSTANT_MACROS
-
 #define INT8_C(c)  c
 #define INT16_C(c) c
 #define INT32_C(c) c
@@ -110,8 +104,6 @@ typedef uint64_t uint_least64_t;
 #define UINT64_C(c) c ## ULL
 #define INTMAX_C(c)  c ## LL
 #define UINTMAX_C(c) c ## ULL
-#endif
-
 #endif
 
 #endif
