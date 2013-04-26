@@ -12,7 +12,6 @@ weak_alias(dummy_0, __pthread_tsd_run_dtors);
 _Noreturn void pthread_exit(void *result)
 {
 	pthread_t self = pthread_self();
-	int n;
 
 	self->result = result;
 
@@ -38,9 +37,7 @@ _Noreturn void pthread_exit(void *result)
 	 * reasons as well. */
 	__syscall(SYS_rt_sigprocmask, SIG_BLOCK, SIGALL_SET, 0, _NSIG/8);
 
-	do n = libc.threads_minus_1;
-	while (n && a_cas(&libc.threads_minus_1, n, n-1)!=n);
-	if (!n) exit(0);
+	if (a_fetch_add(&libc.threads_minus_1, -1)==0) exit(0);
 
 	if (self->detached && self->map_base) {
 		/* Detached threads must avoid the kernel clear_child_tid
