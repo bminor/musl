@@ -30,13 +30,19 @@ _Noreturn void pthread_exit(void *result)
 	/* Mark this thread dead before decrementing count */
 	__lock(self->killlock);
 	self->dead = 1;
-	__unlock(self->killlock);
 
 	/* Block all signals before decrementing the live thread count.
 	 * This is important to ensure that dynamically allocated TLS
 	 * is not under-allocated/over-committed, and possibly for other
 	 * reasons as well. */
 	__syscall(SYS_rt_sigprocmask, SIG_BLOCK, SIGALL_SET, &set, _NSIG/8);
+
+	/* Wait to unlock the kill lock, which governs functions like
+	 * pthread_kill which target a thread id, until signals have
+	 * been blocked. This precludes observation of the thread id
+	 * as a live thread (with application code running in it) after
+	 * the thread was reported dead by ESRCH being returned. */
+	__unlock(self->killlock);
 
 	/* It's impossible to determine whether this is "the last thread"
 	 * until performing the atomic decrement, since multiple threads
