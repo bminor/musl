@@ -35,7 +35,7 @@ _Noreturn void pthread_exit(void *result)
 	 * This is important to ensure that dynamically allocated TLS
 	 * is not under-allocated/over-committed, and possibly for other
 	 * reasons as well. */
-	__syscall(SYS_rt_sigprocmask, SIG_BLOCK, SIGALL_SET, &set, _NSIG/8);
+	__block_all_sigs(&set);
 
 	/* Wait to unlock the kill lock, which governs functions like
 	 * pthread_kill which target a thread id, until signals have
@@ -51,7 +51,7 @@ _Noreturn void pthread_exit(void *result)
 	 * stdio cleanup code a consistent state. */
 	if (a_fetch_add(&libc.threads_minus_1, -1)==0) {
 		libc.threads_minus_1 = 0;
-		__syscall(SYS_rt_sigprocmask, SIG_SETMASK, &set, 0, _NSIG/8);
+		__restore_sigs(&set);
 		exit(0);
 	}
 
@@ -94,8 +94,7 @@ static int start(void *p)
 			self->detached = 2;
 			pthread_exit(0);
 		}
-		__syscall(SYS_rt_sigprocmask, SIG_SETMASK,
-			self->sigmask, 0, _NSIG/8);
+		__restore_sigs(self->sigmask);
 	}
 	if (self->unblock_cancel)
 		__syscall(SYS_rt_sigprocmask, SIG_UNBLOCK,
@@ -202,8 +201,7 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attrp
 	}
 	if (attr._a_sched) {
 		do_sched = new->startlock[0] = 1;
-		__syscall(SYS_rt_sigprocmask, SIG_BLOCK,
-			SIGALL_SET, new->sigmask, _NSIG/8);
+		__block_app_sigs(new->sigmask);
 	}
 	new->unblock_cancel = self->cancel;
 	new->canary = self->canary;
@@ -214,8 +212,7 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attrp
 	__release_ptc();
 
 	if (do_sched) {
-		__syscall(SYS_rt_sigprocmask, SIG_SETMASK,
-			new->sigmask, 0, _NSIG/8);
+		__restore_sigs(new->sigmask);
 	}
 
 	if (ret < 0) {

@@ -115,6 +115,10 @@ void __acquire_ptc();
 void __release_ptc();
 void __inhibit_ptc();
 
+void __block_all_sigs(void *);
+void __block_app_sigs(void *);
+void __restore_sigs(void *);
+
 #define DEFAULT_STACK_SIZE 81920
 #define DEFAULT_GUARD_SIZE PAGE_SIZE
 

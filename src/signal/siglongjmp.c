@@ -2,10 +2,10 @@
 #include <signal.h>
 #include <stdlib.h>
 #include "syscall.h"
+#include "pthread_impl.h"
 
 _Noreturn void siglongjmp(sigjmp_buf buf, int ret)
 {
-	if (buf->__fl) __syscall(SYS_rt_sigprocmask, SIG_SETMASK,
-		buf->__ss, 0, _NSIG/8);
+	if (buf->__fl) __restore_sigs(buf->__ss);
 	longjmp(buf->__jb, ret);
 }
