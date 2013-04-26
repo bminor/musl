@@ -10,12 +10,6 @@
 #include "fdop.h"
 #include "libc.h"
 
-static void dummy_0()
-{
-}
-weak_alias(dummy_0, __acquire_ptc);
-weak_alias(dummy_0, __release_ptc);
-
 struct args {
 	int p[2];
 	sigset_t oldmask;
@@ -144,10 +138,6 @@ int __posix_spawnx(pid_t *restrict res, const char *restrict path,
 	args.envp = envp;
 	pthread_sigmask(SIG_BLOCK, SIGALL_SET, &args.oldmask);
 
-	/* This lock prevents setuid/setgid operations while the parent
-	 * is sharing memory with the child. Situations where processes
-	 * with different permissions share VM are fundamentally unsafe. */
-	__acquire_ptc();
 	pid = __clone(child, stack+sizeof stack, CLONE_VM|SIGCHLD, &args);
 	close(args.p[1]);
 
@@ -158,9 +148,6 @@ int __posix_spawnx(pid_t *restrict res, const char *restrict path,
 		ec = -pid;
 	}
 
-	/* At this point, the child has either exited or successfully
-	 * performed exec, so the lock may be released. */
-	__release_ptc();
 	close(args.p[0]);
 
 	if (!ec) *res = pid;
