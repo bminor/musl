@@ -32,6 +32,8 @@ _Noreturn void pthread_exit(void *result)
 	self->dead = 1;
 	__unlock(self->killlock);
 
+	__syscall(SYS_rt_sigprocmask, SIG_BLOCK, SIGALL_SET, 0, _NSIG/8);
+
 	do n = libc.threads_minus_1;
 	while (n && a_cas(&libc.threads_minus_1, n, n-1)!=n);
 	if (!n) exit(0);
@@ -39,8 +41,6 @@ _Noreturn void pthread_exit(void *result)
 	if (self->detached && self->map_base) {
 		if (self->detached == 2)
 			__syscall(SYS_set_tid_address, 0);
-		__syscall(SYS_rt_sigprocmask, SIG_BLOCK,
-			SIGALL_SET, 0, _NSIG/8);
 		__unmapself(self->map_base, self->map_size);
 	}
 
