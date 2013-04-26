@@ -12,6 +12,7 @@ weak_alias(dummy_0, __pthread_tsd_run_dtors);
 _Noreturn void pthread_exit(void *result)
 {
 	pthread_t self = pthread_self();
+	sigset_t set;
 
 	self->result = result;
 
@@ -35,9 +36,18 @@ _Noreturn void pthread_exit(void *result)
 	 * This is important to ensure that dynamically allocated TLS
 	 * is not under-allocated/over-committed, and possibly for other
 	 * reasons as well. */
-	__syscall(SYS_rt_sigprocmask, SIG_BLOCK, SIGALL_SET, 0, _NSIG/8);
+	__syscall(SYS_rt_sigprocmask, SIG_BLOCK, SIGALL_SET, &set, _NSIG/8);
 
-	if (a_fetch_add(&libc.threads_minus_1, -1)==0) exit(0);
+	/* It's impossible to determine whether this is "the last thread"
+	 * until performing the atomic decrement, since multiple threads
+	 * could exit at the same time. For the last thread, revert the
+	 * decrement and unblock signals to give the atexit handlers and
+	 * stdio cleanup code a consistent state. */
+	if (a_fetch_add(&libc.threads_minus_1, -1)==0) {
+		libc.threads_minus_1 = 0;
+		__syscall(SYS_rt_sigprocmask, SIG_SETMASK, &set, 0, _NSIG/8);
+		exit(0);
+	}
 
 	if (self->detached && self->map_base) {
 		/* Detached threads must avoid the kernel clear_child_tid
