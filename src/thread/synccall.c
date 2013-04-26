@@ -21,15 +21,6 @@ static void handler(int sig, siginfo_t *si, void *ctx)
 
 	sigqueue(self->pid, SIGSYNCCALL, (union sigval){0});
 
-	/* Threads which have already decremented themselves from the
-	 * thread count must not act. Block further receipt of signals
-	 * and return. */
-	if (self->dead) {
-		memset(&((ucontext_t *)ctx)->uc_sigmask, -1, 8);
-		errno = old_errno;
-		return;
-	}
-
 	sem_init(&ch.sem, 0, 0);
 	sem_init(&ch.sem2, 0, 0);
 
