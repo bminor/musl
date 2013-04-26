@@ -32,6 +32,10 @@ _Noreturn void pthread_exit(void *result)
 	self->dead = 1;
 	__unlock(self->killlock);
 
+	/* Block all signals before decrementing the live thread count.
+	 * This is important to ensure that dynamically allocated TLS
+	 * is not under-allocated/over-committed, and possibly for other
+	 * reasons as well. */
 	__syscall(SYS_rt_sigprocmask, SIG_BLOCK, SIGALL_SET, 0, _NSIG/8);
 
 	do n = libc.threads_minus_1;
@@ -39,8 +43,17 @@ _Noreturn void pthread_exit(void *result)
 	if (!n) exit(0);
 
 	if (self->detached && self->map_base) {
-		if (self->detached == 2)
-			__syscall(SYS_set_tid_address, 0);
+		/* Detached threads must avoid the kernel clear_child_tid
+		 * feature, since the virtual address will have been
+		 * unmapped and possibly already reused by a new mapping
+		 * at the time the kernel would perform the write. In
+		 * the case of threads that started out detached, the
+		 * initial clone flags are correct, but if the thread was
+		 * detached later (== 2), we need to clear it here. */
+		if (self->detached == 2) __syscall(SYS_set_tid_address, 0);
+
+		/* The following call unmaps the thread's stack mapping
+		 * and then exits without touching the stack. */
 		__unmapself(self->map_base, self->map_size);
 	}
 
