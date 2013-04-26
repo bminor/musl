@@ -197,7 +197,7 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attrp
 	if (attr._a_sched) {
 		do_sched = new->startlock[0] = 1;
 		__syscall(SYS_rt_sigprocmask, SIG_BLOCK,
-			SIGALL_SET, self->sigmask, _NSIG/8);
+			SIGALL_SET, new->sigmask, _NSIG/8);
 	}
 	new->unblock_cancel = self->cancel;
 	new->canary = self->canary;
