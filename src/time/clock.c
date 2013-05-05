@@ -11,5 +11,5 @@ clock_t clock()
 	if (!__clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts))
 		return ts.tv_sec*1000000 + ts.tv_nsec/1000;
 	__syscall(SYS_times, &tms);
-	return (tms.tms_utime + tms.tms_stime)*100;
+	return (tms.tms_utime + tms.tms_stime)*10000;
 }
