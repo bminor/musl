@@ -43,11 +43,16 @@ int __fpclassify(double);
 int __fpclassifyf(float);
 int __fpclassifyl(long double);
 
-union __float_repr { float __f; __uint32_t __i; };
-union __double_repr { double __f; __uint64_t __i; };
-
-#define __FLOAT_BITS(f) (((union __float_repr){ (float)(f) }).__i)
-#define __DOUBLE_BITS(f) (((union __double_repr){ (double)(f) }).__i)
+static __inline __uint32_t __FLOAT_BITS(float __f)
+{
+	union {float __f; __uint32_t __i;} __u = {__f};
+	return __u.__i;
+}
+static __inline __uint64_t __DOUBLE_BITS(double __f)
+{
+	union {double __f; __uint64_t __i;} __u = {__f};
+	return __u.__i;
+}
 
 #define fpclassify(x) ( \
 	sizeof(x) == sizeof(float) ? __fpclassifyf(x) : \
