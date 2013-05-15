@@ -25,7 +25,7 @@ qS1 = -7.0662963390e-01;
 
 static float R(float z)
 {
-	float p, q;
+	float_t p, q;
 	p = z*(pS0+z*(pS1+z*pS2));
 	q = 1.0f+z*qS1;
 	return p/q;

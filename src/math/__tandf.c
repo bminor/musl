@@ -27,7 +27,7 @@ static const double T[] = {
 
 float __tandf(double x, int iy)
 {
-	double z,r,w,s,t,u;
+	double_t z,r,w,s,t,u;
 
 	z = x*x;
 	/*

@@ -81,7 +81,7 @@ Lg7 = 1.479819860511658591e-01; /* 3FC2F112 DF3E5244 */
  */
 static inline double __log1p(double f)
 {
-	double hfsq,s,z,R,w,t1,t2;
+	double_t hfsq,s,z,R,w,t1,t2;
 
 	s = f/(2.0+f);
 	z = s*s;

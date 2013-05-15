@@ -201,7 +201,7 @@ static const float pS2[5] = {
 static float pzerof(float x)
 {
 	const float *p,*q;
-	float z,r,s;
+	float_t z,r,s;
 	uint32_t ix;
 
 	GET_FLOAT_WORD(ix, x);
@@ -297,7 +297,7 @@ static const float qS2[6] = {
 static float qzerof(float x)
 {
 	const float *p,*q;
-	float s,r,z;
+	float_t s,r,z;
 	uint32_t ix;
 
 	GET_FLOAT_WORD(ix, x);

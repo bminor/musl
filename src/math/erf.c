@@ -176,7 +176,7 @@ sb7  = -2.24409524465858183362e+01; /* 0xC03670E2, 0x42712D62 */
 
 static double erfc1(double x)
 {
-	double s,P,Q;
+	double_t s,P,Q;
 
 	s = fabs(x) - 1;
 	P = pa0+s*(pa1+s*(pa2+s*(pa3+s*(pa4+s*(pa5+s*pa6)))));
@@ -186,7 +186,8 @@ static double erfc1(double x)
 
 static double erfc2(uint32_t ix, double x)
 {
-	double s,z,R,S;
+	double_t s,R,S;
+	double z;
 
 	if (ix < 0x3ff40000)  /* |x| < 1.25 */
 		return erfc1(x);

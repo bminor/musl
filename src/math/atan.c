@@ -62,7 +62,7 @@ static const double aT[] = {
 
 double atan(double x)
 {
-	double w,s1,s2,z;
+	double_t w,s1,s2,z;
 	uint32_t ix,sign;
 	int id;
 

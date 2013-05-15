@@ -25,7 +25,7 @@ S4 =  0x16cd878c3b46a7.0p-71; /*  0.0000027183114939898219064 */
 
 float __sindf(double x)
 {
-	double r, s, w, z;
+	double_t r, s, w, z;
 
 	/* Try to optimize for parallel evaluation as in __tandf.c. */
 	z = x*x;

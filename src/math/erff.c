@@ -86,7 +86,7 @@ sb7  = -2.2440952301e+01; /* 0xc1b38712 */
 
 static float erfc1(float x)
 {
-	float s,P,Q;
+	float_t s,P,Q;
 
 	s = fabsf(x) - 1;
 	P = pa0+s*(pa1+s*(pa2+s*(pa3+s*(pa4+s*(pa5+s*pa6)))));
@@ -96,7 +96,8 @@ static float erfc1(float x)
 
 static float erfc2(uint32_t ix, float x)
 {
-	float s,z,R,S;
+	float_t s,R,S;
+	float z;
 
 	if (ix < 0x3fa00000)  /* |x| < 1.25 */
 		return erfc1(x);

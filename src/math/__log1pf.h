@@ -22,7 +22,7 @@ Lg4 = 0xf89e26.0p-26; /* 0.24279078841 */
 
 static inline float __log1pf(float f)
 {
-	float hfsq,s,z,R,w,t1,t2;
+	float_t hfsq,s,z,R,w,t1,t2;
 
 	s = f/(2.0f + f);
 	z = s*s;

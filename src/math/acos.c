@@ -51,7 +51,7 @@ qS4 =  7.70381505559019352791e-02; /* 0x3FB3B8C5, 0xB12E9282 */
 
 static double R(double z)
 {
-	double p, q;
+	double_t p, q;
 	p = z*(pS0+z*(pS1+z*(pS2+z*(pS3+z*(pS4+z*pS5)))));
 	q = 1.0+z*(qS1+z*(qS2+z*(qS3+z*qS4)));
 	return p/q;

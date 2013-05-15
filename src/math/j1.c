@@ -250,7 +250,7 @@ static const double ps2[5] = {
 static double pone(double x)
 {
 	const double *p,*q;
-	double z,r,s;
+	double_t z,r,s;
 	uint32_t ix;
 
 	GET_HIGH_WORD(ix, x);
@@ -346,7 +346,7 @@ static const double qs2[6] = {
 static double qone(double x)
 {
 	const double *p,*q;
-	double  s,r,z;
+	double_t s,r,z;
 	uint32_t ix;
 
 	GET_HIGH_WORD(ix, x);

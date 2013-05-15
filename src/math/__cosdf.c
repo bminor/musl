@@ -25,7 +25,7 @@ C3  =  0x199342e0ee5069.0p-68; /*  0.0000243904487962774090654 */
 
 float __cosdf(double x)
 {
-	double r, w, z;
+	double_t r, w, z;
 
 	/* Try to optimize for parallel evaluation as in __tandf.c. */
 	z = x*x;

@@ -40,7 +40,7 @@ static const float aT[] = {
 
 float atanf(float x)
 {
-	float w,s1,s2,z;
+	float_t w,s1,s2,z;
 	uint32_t ix,sign;
 	int id;
 

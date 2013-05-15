@@ -89,7 +89,7 @@ static const double fact[] = {
 /* S(x) rational function for positive x */
 static double S(double x)
 {
-	double num = 0, den = 0;
+	double_t num = 0, den = 0;
 	int i;
 
 	/* to avoid overflow handle large x differently */

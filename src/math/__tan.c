@@ -65,7 +65,7 @@ pio4lo =     3.06161699786838301793e-17; /* 3C81A626, 33145C07 */
 
 double __tan(double x, double y, int iy)
 {
-	double z, r, v, w, s, sign;
+	double_t z, r, v, w, s, sign;
 	int32_t ix, hx;
 
 	GET_HIGH_WORD(hx,x);
@@ -106,7 +106,8 @@ double __tan(double x, double y, int iy)
 		 * -1.0 / (x+r) here
 		 */
 		/* compute -1.0 / (x+r) accurately */
-		double a, t;
+		double_t a;
+		double z, t;
 		z = w;
 		SET_LOW_WORD(z,0);
 		v = r - (z - x);        /* z+v = r+x */
