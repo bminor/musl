@@ -22,8 +22,6 @@ uintmax_t strtoumax(const char *__restrict, char **__restrict, int);
 intmax_t wcstoimax(const wchar_t *__restrict, wchar_t **__restrict, int);
 uintmax_t wcstoumax(const wchar_t *__restrict, wchar_t **__restrict, int);
 
-#if !defined __cplusplus || defined __STDC_FORMAT_MACROS
-
 #if UINTPTR_MAX == UINT64_MAX
 #define __PRI64  "l"
 #else
@@ -220,8 +218,6 @@ uintmax_t wcstoumax(const wchar_t *__restrict, wchar_t **__restrict, int);
 #define SCNoPTR "lo"
 #define SCNuPTR "lu"
 #define SCNxPTR "lx"
-
-#endif
 
 #ifdef __cplusplus
 }
