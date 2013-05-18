@@ -25,7 +25,7 @@ static const double T[] = {
   0x1362b9bf971bcd.0p-59, /* 0.00946564784943673166728 */
 };
 
-float __tandf(double x, int iy)
+float __tandf(double x, int odd)
 {
 	double_t z,r,w,s,t,u;
 
@@ -50,6 +50,5 @@ float __tandf(double x, int iy)
 	s = z*x;
 	u = T[0] + z*T[1];
 	r = (x + s*u) + (s*w)*(t + w*r);
-	if(iy==1) return r;
-	else return -1.0/r;
+	return odd ? -1.0/r : r;
 }

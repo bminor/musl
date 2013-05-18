@@ -45,25 +45,21 @@ T29 =  0.0000078293456938132840,        /*  0x106b59141a6cb3.0p-69 */
 T31 = -0.0000032609076735050182,        /* -0x1b5abef3ba4b59.0p-71 */
 T33 =  0.0000023261313142559411;        /*  0x13835436c0c87f.0p-71 */
 
-long double __tanl(long double x, long double y, int iy) {
+long double __tanl(long double x, long double y, int odd) {
 	long double z, r, v, w, s, a, t;
-	long double osign;
-	int i;
+	int big, sign;
 
-	iy = iy == 1 ? -1 : 1;        /* XXX recover original interface */
-	osign = copysignl(1.0, x);
-	if (fabsl(x) >= 0.67434) {
+	big = fabsl(x) >= 0.67434;
+	if (big) {
+		sign = 0;
 		if (x < 0) {
+			sign = 1;
 			x = -x;
 			y = -y;
 		}
-		z = pio4 - x;
-		w = pio4lo - y;
-		x = z + w;
+		x = (pio4 - x) + (pio4lo - y);
 		y = 0.0;
-		i = 1;
-	} else
-		i = 0;
+	}
 	z = x * x;
 	w = z * z;
 	r = T5 + w * (T9 + w * (T13 + w * (T17 + w * (T21 +
@@ -71,14 +67,14 @@ long double __tanl(long double x, long double y, int iy) {
 	v = z * (T7 + w * (T11 + w * (T15 + w * (T19 + w * (T23 +
 	     w * (T27 + w * T31))))));
 	s = z * x;
-	r = y + z * (s * (r + v) + y);
-	r += T3 * s;
+	r = y + z * (s * (r + v) + y) + T3 * s;
 	w = x + r;
-	if (i == 1) {
-		v = (long double)iy;
-		return osign * (v - 2.0 * (x - (w * w / (w + v) - r)));
+	if (big) {
+		s = 1 - 2*odd;
+		v = s - 2.0 * (x + (r - w * w / (w + s)));
+		return sign ? -v : v;
 	}
-	if (iy == 1)
+	if (!odd)
 		return w;
 
 	/*
