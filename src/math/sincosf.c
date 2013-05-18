@@ -25,21 +25,23 @@ s4pio2 = 4*M_PI_2; /* 0x401921FB, 0x54442D18 */
 
 void sincosf(float x, float *sin, float *cos)
 {
-	double y, s, c;
-	uint32_t n, hx, ix;
+	double y;
+	float_t s, c;
+	uint32_t ix;
+	unsigned n, sign;
 
-	GET_FLOAT_WORD(hx, x);
-	ix = hx & 0x7fffffff;
+	GET_FLOAT_WORD(ix, x);
+	sign = ix >> 31;
+	ix &= 0x7fffffff;
 
 	/* |x| ~<= pi/4 */
 	if (ix <= 0x3f490fda) {
 		/* |x| < 2**-12 */
 		if (ix < 0x39800000) {
-			/* raise inexact if x != 0 */
-			if((int)x == 0) {
-				*sin = x;
-				*cos = 1.0f;
-			}
+			/* raise inexact if x!=0 and underflow if subnormal */
+			FORCE_EVAL(ix < 0x00100000 ? x/0x1p120f : x+0x1p120f);
+			*sin = x;
+			*cos = 1.0f;
 			return;
 		}
 		*sin = __sindf(x);
@@ -50,34 +52,35 @@ void sincosf(float x, float *sin, float *cos)
 	/* |x| ~<= 5*pi/4 */
 	if (ix <= 0x407b53d1) {
 		if (ix <= 0x4016cbe3) {  /* |x| ~<= 3pi/4 */
-			if (hx < 0x80000000) {
-				*sin = __cosdf(x - s1pio2);
-				*cos = __sindf(s1pio2 - x);
-			} else {
+			if (sign) {
 				*sin = -__cosdf(x + s1pio2);
 				*cos = __sindf(x + s1pio2);
+			} else {
+				*sin = __cosdf(s1pio2 - x);
+				*cos = __sindf(s1pio2 - x);
 			}
 			return;
 		}
-		*sin = __sindf(hx < 0x80000000 ? s2pio2 - x : -s2pio2 - x);
-		*cos = -__cosdf(hx < 0x80000000 ? x - s2pio2 : x + s2pio2);
+		/* -sin(x+c) is not correct if x+c could be 0: -0 vs +0 */
+		*sin = -__sindf(sign ? x + s2pio2 : x - s2pio2);
+		*cos = -__cosdf(sign ? x + s2pio2 : x - s2pio2);
 		return;
 	}
 
 	/* |x| ~<= 9*pi/4 */
 	if (ix <= 0x40e231d5) {
 		if (ix <= 0x40afeddf) {  /* |x| ~<= 7*pi/4 */
-			if (hx < 0x80000000) {
+			if (sign) {
+				*sin = __cosdf(x + s3pio2);
+				*cos = -__sindf(x + s3pio2);
+			} else {
 				*sin = -__cosdf(x - s3pio2);
 				*cos = __sindf(x - s3pio2);
-			} else {
-				*sin = __cosdf(x + s3pio2);
-				*cos = __sindf(-s3pio2 - x);
 			}
 			return;
 		}
-		*sin = __sindf(hx < 0x80000000 ? x - s4pio2 : x + s4pio2);
-		*cos = __cosdf(hx < 0x80000000 ? x - s4pio2 : x + s4pio2);
+		*sin = __sindf(sign ? x + s4pio2 : x - s4pio2);
+		*cos = __cosdf(sign ? x + s4pio2 : x - s4pio2);
 		return;
 	}
 

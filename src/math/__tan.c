@@ -12,7 +12,7 @@
  * kernel tan function on ~[-pi/4, pi/4] (except on -0), pi/4 ~ 0.7854
  * Input x is assumed to be bounded by ~pi/4 in magnitude.
  * Input y is the tail of x.
- * Input k indicates whether tan (if k = 1) or -1/tan (if k = -1) is returned.
+ * Input odd indicates whether tan (if odd = 0) or -1/tan (if odd = 1) is returned.
  *
  * Algorithm
  *      1. Since tan(-x) = -tan(x), we need only to consider positive x.
@@ -63,21 +63,22 @@ static const double T[] = {
 pio4 =       7.85398163397448278999e-01, /* 3FE921FB, 54442D18 */
 pio4lo =     3.06161699786838301793e-17; /* 3C81A626, 33145C07 */
 
-double __tan(double x, double y, int iy)
+double __tan(double x, double y, int odd)
 {
-	double_t z, r, v, w, s, sign;
-	int32_t ix, hx;
+	double_t z, r, v, w, s, a;
+	double w0, a0;
+	uint32_t hx;
+	int big, sign;
 
 	GET_HIGH_WORD(hx,x);
-	ix = hx & 0x7fffffff;    /* high word of |x| */
-	if (ix >= 0x3FE59428) {  /* |x| >= 0.6744 */
-		if (hx < 0) {
+	big = (hx&0x7fffffff) >= 0x3FE59428; /* |x| >= 0.6744 */
+	if (big) {
+		sign = hx>>31;
+		if (sign) {
 			x = -x;
 			y = -y;
 		}
-		z = pio4 - x;
-		w = pio4lo - y;
-		x = z + w;
+		x = (pio4 - x) + (pio4lo - y);
 		y = 0.0;
 	}
 	z = x * x;
@@ -90,30 +91,20 @@ double __tan(double x, double y, int iy)
 	r = T[1] + w*(T[3] + w*(T[5] + w*(T[7] + w*(T[9] + w*T[11]))));
 	v = z*(T[2] + w*(T[4] + w*(T[6] + w*(T[8] + w*(T[10] + w*T[12])))));
 	s = z * x;
-	r = y + z * (s * (r + v) + y);
-	r += T[0] * s;
+	r = y + z*(s*(r + v) + y) + s*T[0];
 	w = x + r;
-	if (ix >= 0x3FE59428) {
-		v = iy;
-		sign = 1 - ((hx >> 30) & 2);
-		return sign * (v - 2.0 * (x - (w * w / (w + v) - r)));
+	if (big) {
+		s = 1 - 2*odd;
+		v = s - 2.0 * (x + (r - w*w/(w + s)));
+		return sign ? -v : v;
 	}
-	if (iy == 1)
+	if (!odd)
 		return w;
-	else {
-		/*
-		 * if allow error up to 2 ulp, simply return
-		 * -1.0 / (x+r) here
-		 */
-		/* compute -1.0 / (x+r) accurately */
-		double_t a;
-		double z, t;
-		z = w;
-		SET_LOW_WORD(z,0);
-		v = r - (z - x);        /* z+v = r+x */
-		t = a = -1.0 / w;       /* a = -1.0/w */
-		SET_LOW_WORD(t,0);
-		s = 1.0 + t * z;
-		return t + a * (s + t * v);
-	}
+	/* -1.0/(x+r) has up to 2ulp error, so compute it accurately */
+	w0 = w;
+	SET_LOW_WORD(w0, 0);
+	v = r - (w0 - x);       /* w0+v = r+x */
+	a0 = a = -1.0 / w;
+	SET_LOW_WORD(a0, 0);
+	return a0 + a*(1.0 + a0*w0 + a0*v);
 }

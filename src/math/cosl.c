@@ -39,30 +39,30 @@ long double cosl(long double x) {
 long double cosl(long double x)
 {
 	union IEEEl2bits z;
-	int e0;
+	unsigned n;
 	long double y[2];
 	long double hi, lo;
 
 	z.e = x;
 	z.bits.sign = 0;
 
-	/* If x = +-0 or x is a subnormal number, then cos(x) = 1 */
-	if (z.bits.exp == 0)
-		return 1.0;
-
 	/* If x = NaN or Inf, then cos(x) = NaN. */
-	if (z.bits.exp == 32767)
+	if (z.bits.exp == 0x7fff)
 		return (x - x) / (x - x);
 
-	/* Optimize the case where x is already within range. */
-	if (z.e < M_PI_4)
+	/* |x| < (double)pi/4 */
+	if (z.e < M_PI_4) {
+		/* |x| < 0x1p-64 */
+		if (z.bits.exp < 0x3fff - 64)
+			/* raise inexact if x!=0 */
+			return 1.0 + x;
 		return __cosl(z.e, 0);
+	}
 
-	e0 = __rem_pio2l(x, y);
+	n = __rem_pio2l(x, y);
 	hi = y[0];
 	lo = y[1];
-
-	switch (e0 & 3) {
+	switch (n & 3) {
 	case 0:
 		hi = __cosl(hi, lo);
 		break;
