@@ -37,33 +37,32 @@ long double sinl(long double x)
 long double sinl(long double x)
 {
 	union IEEEl2bits z;
-	int e0, s;
+	unsigned n;
 	long double y[2];
 	long double hi, lo;
 
 	z.e = x;
-	s = z.bits.sign;
 	z.bits.sign = 0;
 
-	/* If x = +-0 or x is a subnormal number, then sin(x) = x */
-	if (z.bits.exp == 0)
-		return x;
-
 	/* If x = NaN or Inf, then sin(x) = NaN. */
-	if (z.bits.exp == 32767)
+	if (z.bits.exp == 0x7fff)
 		return (x - x) / (x - x);
 
-	/* Optimize the case where x is already within range. */
+	/* |x| < (double)pi/4 */
 	if (z.e < M_PI_4) {
-		hi = __sinl(z.e, 0, 0);
-		return  s ? -hi : hi;
+		/* |x| < 0x1p-64 */
+		if (z.bits.exp < 0x3fff - 64) {
+			/* raise inexact if x!=0 and underflow if subnormal */
+			FORCE_EVAL(z.bits.exp == 0 ? x/0x1p120f : x+0x1p120f);
+			return x;
+		}
+		return __sinl(x, 0.0, 0);
 	}
 
-	e0 = __rem_pio2l(x, y);
+	n = __rem_pio2l(x, y);
 	hi = y[0];
 	lo = y[1];
-
-	switch (e0 & 3) {
+	switch (n & 3) {
 	case 0:
 		hi = __sinl(hi, lo, 1);
 		break;
@@ -71,10 +70,10 @@ long double sinl(long double x)
 		hi = __cosl(hi, lo);
 		break;
 	case 2:
-		hi = - __sinl(hi, lo, 1);
+		hi = -__sinl(hi, lo, 1);
 		break;
 	case 3:
-		hi = - __cosl(hi, lo);
+		hi = -__cosl(hi, lo);
 		break;
 	}
 	return hi;

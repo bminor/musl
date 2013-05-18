@@ -44,21 +44,22 @@
 
 double sin(double x)
 {
-	double y[2], z=0.0;
-	int32_t n, ix;
+	double y[2];
+	uint32_t ix;
+	unsigned n;
 
 	/* High word of x. */
 	GET_HIGH_WORD(ix, x);
+	ix &= 0x7fffffff;
 
 	/* |x| ~< pi/4 */
-	ix &= 0x7fffffff;
 	if (ix <= 0x3fe921fb) {
 		if (ix < 0x3e500000) {  /* |x| < 2**-26 */
-			/* raise inexact if x != 0 */
-			if ((int)x == 0)
-				return x;
+			/* raise inexact if x != 0 and underflow if subnormal*/
+			FORCE_EVAL(ix < 0x00100000 ? x/0x1p120f : x+0x1p120f);
+			return x;
 		}
-		return __sin(x, z, 0);
+		return __sin(x, 0.0, 0);
 	}
 
 	/* sin(Inf or NaN) is NaN */

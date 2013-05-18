@@ -53,11 +53,12 @@ long double tanl(long double x)
 
 	/* |x| < (double)pi/4 */
 	if (z.e < M_PI_4) {
-		/* x = +-0 or x is subnormal */
-		if (z.bits.exp == 0)
-			/* inexact and underflow if x!=0 */
-			return x + x*0x1p-120f;
-		/* can raise spurious underflow */
+		/* |x| < 0x1p-64 */
+		if (z.bits.exp < 0x3fff - 64) {
+			/* raise inexact if x!=0 and underflow if subnormal */
+			FORCE_EVAL(z.bits.exp == 0 ? x/0x1p120f : x+0x1p120f);
+			return x;
+		}
 		return __tanl(x, 0, 0);
 	}
 
