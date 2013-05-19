@@ -119,9 +119,17 @@ double fma(double x, double y, double z)
 	} else if (ez > exy - 12) {
 		add(&hi, &lo2, xy, z);
 		if (hi == 0) {
+			/*
+			xy + z is 0, but it should be calculated with the
+			original rounding mode so the sign is correct, if the
+			compiler does not support FENV_ACCESS ON it does not
+			know about the changed rounding mode and eliminates
+			the xy + z below without the volatile memory access
+			*/
+			volatile double z_;
 			fesetround(round);
-			/* make sure that the sign of 0 is correct */
-			return (xy + z) + lo1;
+			z_ = z;
+			return (xy + z_) + lo1;
 		}
 	} else {
 		/*
@@ -135,10 +143,36 @@ double fma(double x, double y, double z)
 		hi = xy;
 		lo2 = z;
 	}
+	/*
+	the result is stored before return for correct precision and exceptions
+
+	one corner case is when the underflow flag should be raised because
+	the precise result is an inexact subnormal double, but the calculated
+	long double result is an exact subnormal double
+	(so rounding to double does not raise exceptions)
+
+	in nearest rounding mode dadd takes care of this: the last bit of the
+	result is adjusted so rounding sees an inexact value when it should
+
+	in non-nearest rounding mode fenv is used for the workaround
+	*/
 	fesetround(round);
 	if (round == FE_TONEAREST)
-		return dadd(hi, dadd(lo1, lo2));
-	return hi + (lo1 + lo2);
+		z = dadd(hi, dadd(lo1, lo2));
+	else {
+#if defined(FE_INEXACT) && defined(FE_UNDERFLOW)
+		int e = fetestexcept(FE_INEXACT);
+		feclearexcept(FE_INEXACT);
+#endif
+		z = hi + (lo1 + lo2);
+#if defined(FE_INEXACT) && defined(FE_UNDERFLOW)
+		if (getexp(z) < 0x3fff-1022 && fetestexcept(FE_INEXACT))
+			feraiseexcept(FE_UNDERFLOW);
+		else if (e)
+			feraiseexcept(FE_INEXACT);
+#endif
+	}
+	return z;
 }
 #else
 /* origin: FreeBSD /usr/src/lib/msun/src/s_fma.c */
