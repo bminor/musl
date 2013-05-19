@@ -441,6 +441,8 @@ double fma(double x, double y, double z)
 		/*
 		 * There is no need to worry about double rounding in directed
 		 * rounding modes.
+		 * TODO: underflow is not raised properly, example in downward rounding:
+		 * fma(0x1.000000001p-1000, 0x1.000000001p-30, -0x1p-1066)
 		 */
 		fesetround(oround);
 		adj = r.lo + xy.lo;

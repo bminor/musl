@@ -262,6 +262,8 @@ long double fmal(long double x, long double y, long double z)
 		/*
 		 * There is no need to worry about double rounding in directed
 		 * rounding modes.
+		 * TODO: underflow is not raised correctly, example in downward rounding:
+		 * fmal(0x1.0000000001p-16000L, 0x1.0000000001p-400L, -0x1p-16440L)
 		 */
 		fesetround(oround);
 		adj = r.lo + xy.lo;

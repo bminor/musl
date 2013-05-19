@@ -49,7 +49,14 @@ float fmaf(float x, float y, float z)
 		(hr & 0x7ff00000) == 0x7ff00000 ||  /* NaN */
 		result - xy == z ||                 /* exact */
 		fegetround() != FE_TONEAREST)       /* not round-to-nearest */
-		return (result);
+	{
+		/*
+		TODO: underflow is not raised correctly, example in
+		downward rouding: fmaf(0x1p-120f, 0x1p-120f, 0x1p-149f)
+		*/
+		z = result;
+		return z;
+	}
 
 	/*
 	 * If result is inexact, and exactly halfway between two float values,
@@ -63,5 +70,6 @@ float fmaf(float x, float y, float z)
 	fesetround(FE_TONEAREST);
 	if (result == adjusted_result)
 		SET_LOW_WORD(adjusted_result, lr + 1);
-	return (adjusted_result);
+	z = adjusted_result;
+	return z;
 }
