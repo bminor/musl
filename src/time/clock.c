@@ -1,15 +1,18 @@
 #include <time.h>
-#include <sys/times.h>
-#include "syscall.h"
+#include <limits.h>
 
 int __clock_gettime(clockid_t, struct timespec *);
 
 clock_t clock()
 {
 	struct timespec ts;
-	struct tms tms;
-	if (!__clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts))
-		return ts.tv_sec*1000000 + ts.tv_nsec/1000;
-	__syscall(SYS_times, &tms);
-	return (tms.tms_utime + tms.tms_stime)*10000;
+
+	if (__clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts))
+		return -1;
+
+	if (ts.tv_sec > LONG_MAX/1000000
+	 || ts.tv_nsec/1000 > LONG_MAX-1000000*ts.tv_sec)
+		return -1;
+
+	return ts.tv_sec*1000000 + ts.tv_nsec/1000;
 }
