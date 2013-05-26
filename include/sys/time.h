@@ -30,15 +30,15 @@ int utimes (const char *, const struct timeval [2]);
 #endif
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
-int futimes(int, const struct timeval [2]);
-int futimesat(int, const char *, const struct timeval [2]);
-int lutimes(const char *, const struct timeval [2]);
-int settimeofday (const struct timeval *, void *);
-int adjtime (const struct timeval *, struct timeval *);
 struct timezone {
 	int tz_minuteswest;
 	int tz_dsttime;
 };
+int futimes(int, const struct timeval [2]);
+int futimesat(int, const char *, const struct timeval [2]);
+int lutimes(const char *, const struct timeval [2]);
+int settimeofday(const struct timeval *, const struct timezone *);
+int adjtime (const struct timeval *, struct timeval *);
 #define timerisset(t) ((t)->tv_sec || (t)->tv_usec)
 #define timerclear(t) ((t)->tv_sec = (t)->tv_usec = 0)
 #define timercmp(s,t,op) ((s)->tv_sec == (t)->tv_sec ? \
