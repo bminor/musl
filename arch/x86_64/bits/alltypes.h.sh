@@ -94,12 +94,12 @@ TYPEDEF long off_t;
 TYPEDEF unsigned int mode_t;
 
 TYPEDEF unsigned long nlink_t;
-TYPEDEF unsigned long long ino_t;
+TYPEDEF unsigned long ino_t;
 TYPEDEF unsigned long dev_t;
 TYPEDEF long blksize_t;
-TYPEDEF long long blkcnt_t;
-TYPEDEF unsigned long long fsblkcnt_t;
-TYPEDEF unsigned long long fsfilcnt_t;
+TYPEDEF long blkcnt_t;
+TYPEDEF unsigned long fsblkcnt_t;
+TYPEDEF unsigned long fsfilcnt_t;
 
 TYPEDEF void * timer_t;
 TYPEDEF int clockid_t;
