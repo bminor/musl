@@ -17,6 +17,8 @@ static int init_main_thread()
 	main_thread->self = main_thread;
 	main_thread->tid = main_thread->pid =
 		__syscall(SYS_set_tid_address, &main_thread->tid);
+	if (!main_thread->dtv)
+		main_thread->dtv = (void *)dummy;
 	libc.main_thread = main_thread;
 	return 0;
 }

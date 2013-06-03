@@ -740,13 +740,13 @@ void *__copy_tls(unsigned char *mem)
 void *__tls_get_addr(size_t *v)
 {
 	pthread_t self = __pthread_self();
-	if (self->dtv && v[0]<=(size_t)self->dtv[0] && self->dtv[v[0]])
+	if (v[0]<=(size_t)self->dtv[0] && self->dtv[v[0]])
 		return (char *)self->dtv[v[0]]+v[1];
 
 	/* Block signals to make accessing new TLS async-signal-safe */
 	sigset_t set;
 	pthread_sigmask(SIG_BLOCK, SIGALL_SET, &set);
-	if (self->dtv && v[0]<=(size_t)self->dtv[0] && self->dtv[v[0]]) {
+	if (v[0]<=(size_t)self->dtv[0] && self->dtv[v[0]]) {
 		pthread_sigmask(SIG_SETMASK, &set, 0);
 		return (char *)self->dtv[v[0]]+v[1];
 	}
@@ -759,10 +759,10 @@ void *__tls_get_addr(size_t *v)
 	for (p=head; p->tls_id != v[0]; p=p->next);
 
 	/* Get new DTV space from new DSO if needed */
-	if (!self->dtv || v[0] > (size_t)self->dtv[0]) {
+	if (v[0] > (size_t)self->dtv[0]) {
 		void **newdtv = p->new_dtv +
 			(v[0]+1)*sizeof(void *)*a_fetch_add(&p->new_dtv_idx,1);
-		if (self->dtv) memcpy(newdtv, self->dtv,
+		memcpy(newdtv, self->dtv,
 			((size_t)self->dtv[0]+1) * sizeof(void *));
 		newdtv[0] = (void *)v[0];
 		self->dtv = newdtv;
