@@ -169,32 +169,22 @@ int vfscanf(FILE *restrict f, const char *restrict fmt, va_list ap)
 
 		t = *p;
 
-		switch (t) {
-		case 'C':
-			if (width < 1) width = 1;
-		case 'S':
+		/* C or S */
+		if ((t&0x2f) == 3) {
 			t |= 32;
 			size = SIZE_l;
-			break;
-		case 'c':
-			if (width < 1) width = 1;
-		case 'd': case 'i': case 'o': case 'u': case 'x':
-		case 'a': case 'e': case 'f': case 'g':
-		case 'A': case 'E': case 'F': case 'G': case 'X':
-		case '[': case 's':
-		case 'p': case 'n':
-			break;
-		default:
-			goto fmt_fail;
 		}
 
-		if (t == 'n') {
+		switch (t) {
+		case 'c':
+			if (width < 1) width = 1;
+		case '[':
+			break;
+		case 'n':
 			store_int(dest, size, pos);
 			/* do not increment match count, etc! */
 			continue;
-		}
-
-		if (t != '[' && (t|32) != 'c') {
+		default:
 			shlim(f, 0);
 			while (isspace(shgetc(f)));
 			shunget(f);
