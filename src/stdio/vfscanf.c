@@ -88,6 +88,7 @@ int vfscanf(FILE *restrict f, const char *restrict fmt, va_list ap)
 	unsigned long long x;
 	long double y;
 	off_t pos = 0;
+	unsigned char scanset[257];
 
 	FLOCK(f);
 
@@ -170,104 +171,92 @@ int vfscanf(FILE *restrict f, const char *restrict fmt, va_list ap)
 
 		switch (t) {
 		case 'C':
+			if (width < 1) width = 1;
+		case 'S':
+			t |= 32;
+			size = SIZE_l;
+			break;
 		case 'c':
 			if (width < 1) width = 1;
-		case 's':
-			if (size == SIZE_l) t &= ~0x20;
 		case 'd': case 'i': case 'o': case 'u': case 'x':
 		case 'a': case 'e': case 'f': case 'g':
 		case 'A': case 'E': case 'F': case 'G': case 'X':
-		case '[': case 'S':
+		case '[': case 's':
 		case 'p': case 'n':
-			if (width < 1) width = 0;
 			break;
 		default:
 			goto fmt_fail;
 		}
 
-		shlim(f, width);
-
-		if (t != 'n') {
-			if (shgetc(f) < 0) goto input_fail;
-			shunget(f);
-		}
-
-		switch (t) {
-		case 'n':
+		if (t == 'n') {
 			store_int(dest, size, pos);
 			/* do not increment match count, etc! */
 			continue;
-		case 'C':
-			wcs = dest;
-			st = (mbstate_t){ 0 };
-			while ((c=shgetc(f)) >= 0) {
-				if (readwc(c, &wcs, &st) < 0)
-					goto input_fail;
-			}
-			if (!mbsinit(&st)) goto input_fail;
-			if (shcnt(f) != width) goto match_fail;
-			break;
+		}
+
+		if (t != '[' && (t|32) != 'c') {
+			shlim(f, 0);
+			while (isspace(shgetc(f)));
+			shunget(f);
+			pos += shcnt(f);
+		}
+
+		shlim(f, width);
+		if (shgetc(f) < 0) goto input_fail;
+		shunget(f);
+
+		switch (t) {
+		case 's':
 		case 'c':
-			if (dest) {
-				s = dest;
-				while ((c=shgetc(f)) >= 0) *s++ = c;
-			} else {
-				while (shgetc(f)>=0);
-			}
-			if (shcnt(f) < width) goto match_fail;
-			break;
 		case '[':
-			s = dest;
-			wcs = dest;
-
-			if (*++p == '^') p++, invert = 1;
-			else invert = 0;
-
-			unsigned char scanset[257];
-			memset(scanset, invert, sizeof scanset);
-
-			scanset[0] = 0;
-			if (*p == '-') p++, scanset[1+'-'] = 1-invert;
-			else if (*p == ']') p++, scanset[1+']'] = 1-invert;
-			for (; *p != ']'; p++) {
-				if (!*p) goto fmt_fail;
-				if (*p=='-' && p[1] && p[1] != ']')
-					for (c=p++[-1]; c<*p; c++)
-						scanset[1+c] = 1-invert;
-				scanset[1+*p] = 1-invert;
+			if (t == 'c' || t == 's') {
+				memset(scanset, -1, sizeof scanset);
+				scanset[0] = 0;
+				if (t == 's') {
+					scanset[1+'\t'] = 0;
+					scanset[1+'\n'] = 0;
+					scanset[1+'\v'] = 0;
+					scanset[1+'\f'] = 0;
+					scanset[1+'\r'] = 0;
+					scanset[1+' '] = 0;
+				}
+			} else {
+				if (*++p == '^') p++, invert = 1;
+				else invert = 0;
+				memset(scanset, invert, sizeof scanset);
+				scanset[0] = 0;
+				if (*p == '-') p++, scanset[1+'-'] = 1-invert;
+				else if (*p == ']') p++, scanset[1+']'] = 1-invert;
+				for (; *p != ']'; p++) {
+					if (!*p) goto fmt_fail;
+					if (*p=='-' && p[1] && p[1] != ']')
+						for (c=p++[-1]; c<*p; c++)
+							scanset[1+c] = 1-invert;
+					scanset[1+*p] = 1-invert;
+				}
 			}
-
+			wcs = 0;
+			s = 0;
 			if (size == SIZE_l) {
+				wcs = dest;
 				st = (mbstate_t){0};
 				while (scanset[(c=shgetc(f))+1]) {
 					if (readwc(c, &wcs, &st) < 0)
 						goto input_fail;
 				}
 				if (!mbsinit(&st)) goto input_fail;
-				s = 0;
-			} else if (s) {
+			} else if ((s = dest)) {
 				while (scanset[(c=shgetc(f))+1])
 					*s++ = c;
-				wcs = 0;
 			} else {
 				while (scanset[(c=shgetc(f))+1]);
 			}
 			shunget(f);
 			if (!shcnt(f)) goto match_fail;
-			if (s) *s = 0;
+			if (t == 'c' && shcnt(f) != width) goto match_fail;
 			if (wcs) *wcs = 0;
+			if (s) *s = 0;
 			break;
-		default:
-			shlim(f, 0);
-			while (isspace(shgetc(f)));
-			shunget(f);
-			pos += shcnt(f);
-			shlim(f, width);
-			if (shgetc(f) < 0) goto input_fail;
-			shunget(f);
-		}
-
-		switch (t) {
 		case 'p':
 		case 'X':
 		case 'x':
@@ -305,28 +294,6 @@ int vfscanf(FILE *restrict f, const char *restrict fmt, va_list ap)
 				*(long double *)dest = y;
 				break;
 			}
-			break;
-		case 'S':
-			wcs = dest;
-			st = (mbstate_t){ 0 };
-			while (!isspace(c=shgetc(f)) && c!=EOF) {
-				if (readwc(c, &wcs, &st) < 0)
-					goto input_fail;
-			}
-			shunget(f);
-			if (!mbsinit(&st)) goto input_fail;
-			if (dest) *wcs++ = 0;
-			break;
-		case 's':
-			if (dest) {
-				s = dest;
-				while (!isspace(c=shgetc(f)) && c!=EOF)
-					*s++ = c;
-				*s = 0;
-			} else {
-				while (!isspace(c=shgetc(f)) && c!=EOF);
-			}
-			shunget(f);
 			break;
 		}
 
