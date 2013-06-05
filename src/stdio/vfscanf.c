@@ -56,21 +56,6 @@ static void *arg_n(va_list ap, unsigned int n)
 	return p;
 }
 
-static int readwc(int c, wchar_t **wcs, mbstate_t *st)
-{
-	char ch = c;
-	wchar_t wc;
-	switch (mbrtowc(&wc, &ch, 1, st)) {
-	case -1:
-		return -1;
-	case -2:
-		break;
-	default:
-		if (*wcs) *(*wcs)++ = wc;
-	}
-	return 0;
-}
-
 int vfscanf(FILE *restrict f, const char *restrict fmt, va_list ap)
 {
 	int width;
@@ -89,6 +74,8 @@ int vfscanf(FILE *restrict f, const char *restrict fmt, va_list ap)
 	long double y;
 	off_t pos = 0;
 	unsigned char scanset[257];
+	size_t i, k;
+	wchar_t wc;
 
 	FLOCK(f);
 
@@ -129,7 +116,7 @@ int vfscanf(FILE *restrict f, const char *restrict fmt, va_list ap)
 		}
 
 		if (*p=='m') {
-			alloc = 1;
+			alloc = !!dest;
 			p++;
 		} else {
 			alloc = 0;
@@ -227,25 +214,59 @@ int vfscanf(FILE *restrict f, const char *restrict fmt, va_list ap)
 			}
 			wcs = 0;
 			s = 0;
+			i = 0;
+			k = t=='c' ? width+1U : 31;
 			if (size == SIZE_l) {
-				wcs = dest;
+				if (alloc) {
+					wcs = malloc(k*sizeof(wchar_t));
+					if (!wcs) goto alloc_fail;
+				} else {
+					wcs = dest;
+				}
 				st = (mbstate_t){0};
 				while (scanset[(c=shgetc(f))+1]) {
-					if (readwc(c, &wcs, &st) < 0)
+					switch (mbrtowc(&wc, &(char){c}, 1, &st)) {
+					case -1:
 						goto input_fail;
+					case -2:
+						continue;
+					}
+					if (wcs) wcs[i++] = wc;
+					if (alloc && i==k) {
+						k+=k+1;
+						wchar_t *tmp = realloc(wcs, k*sizeof(wchar_t));
+						if (!tmp) goto alloc_fail;
+						wcs = tmp;
+					}
 				}
 				if (!mbsinit(&st)) goto input_fail;
+			} else if (alloc) {
+				s = malloc(k);
+				if (!s) goto alloc_fail;
+				while (scanset[(c=shgetc(f))+1]) {
+					s[i++] = c;
+					if (i==k) {
+						k+=k+1;
+						char *tmp = realloc(s, k);
+						if (!tmp) goto alloc_fail;
+						s = tmp;
+					}
+				}
 			} else if ((s = dest)) {
 				while (scanset[(c=shgetc(f))+1])
-					*s++ = c;
+					s[i++] = c;
 			} else {
 				while (scanset[(c=shgetc(f))+1]);
 			}
 			shunget(f);
 			if (!shcnt(f)) goto match_fail;
 			if (t == 'c' && shcnt(f) != width) goto match_fail;
-			if (wcs) *wcs = 0;
-			if (s) *s = 0;
+			if (alloc) {
+				if (size == SIZE_l) *(wchar_t **)dest = wcs;
+				else *(char **)dest = s;
+			}
+			if (wcs) wcs[i] = 0;
+			if (s) s[i] = 0;
 			break;
 		case 'p':
 		case 'X':
@@ -292,10 +313,15 @@ int vfscanf(FILE *restrict f, const char *restrict fmt, va_list ap)
 	}
 	if (0) {
 fmt_fail:
+alloc_fail:
 input_fail:
 		if (!matches) matches--;
-	}
 match_fail:
+		if (alloc) {
+			free(s);
+			free(wcs);
+		}
+	}
 	FUNLOCK(f);
 	return matches;
 }
