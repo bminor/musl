@@ -103,6 +103,7 @@ int vfwscanf(FILE *restrict f, const wchar_t *restrict fmt, va_list ap)
 	static const char size_pfx[][3] = { "hh", "h", "", "l", "L", "ll" };
 	char tmp[3*sizeof(int)+10];
 	const wchar_t *set;
+	size_t i, k;
 
 	FLOCK(f);
 
@@ -140,7 +141,7 @@ int vfwscanf(FILE *restrict f, const wchar_t *restrict fmt, va_list ap)
 		}
 
 		if (*p=='m') {
-			alloc = 1;
+			alloc = !!dest;
 			p++;
 		} else {
 			alloc = 0;
@@ -233,16 +234,39 @@ int vfwscanf(FILE *restrict f, const wchar_t *restrict fmt, va_list ap)
 
 			if (width < 1) width = -1;
 
+			i = 0;
+			if (alloc) {
+				k = t=='c' ? width+1U : 31;
+				if (size == SIZE_l) {
+					wcs = malloc(k*sizeof(wchar_t));
+					if (!wcs) goto alloc_fail;
+				} else {
+					s = malloc(k);
+					if (!s) goto alloc_fail;
+				}
+			}
 			while (width) {
 				if ((c=getwc(f))<0) break;
 				if (in_set(set, c) == invert)
 					break;
 				if (wcs) {
-					*wcs++ = c;
+					wcs[i++] = c;
+					if (alloc && i==k) {
+						k += k+1;
+						wchar_t *tmp = realloc(wcs, k*sizeof(wchar_t));
+						if (!tmp) goto alloc_fail;
+						wcs = tmp;
+					}
 				} else if (size != SIZE_l) {
-					int l = wctomb(s?s:tmp, c);
+					int l = wctomb(s?s+i:tmp, c);
 					if (l<0) goto input_fail;
-					if (s) s+=l;
+					i += l;
+					if (alloc && i > k-4) {
+						k += k+1;
+						char *tmp = realloc(s, k);
+						if (!tmp) goto alloc_fail;
+						s = tmp;
+					}
 				}
 				pos++;
 				width-=(width>0);
@@ -253,8 +277,12 @@ int vfwscanf(FILE *restrict f, const wchar_t *restrict fmt, va_list ap)
 				if (t == 'c' || !gotmatch) goto match_fail;
 			}
 
-			if (wcs) *wcs++ = 0;
-			if (s) *s++ = 0;
+			if (alloc) {
+				if (size == SIZE_l) *(wchar_t **)dest = wcs;
+				else *(char **)dest = s;
+			}
+			if (wcs) wcs[i] = 0;
+			if (s) s[i] = 0;
 			break;
 
 		case 'd': case 'i': case 'o': case 'u': case 'x':
@@ -279,10 +307,15 @@ int vfwscanf(FILE *restrict f, const wchar_t *restrict fmt, va_list ap)
 	}
 	if (0) {
 fmt_fail:
+alloc_fail:
 input_fail:
 		if (!matches) matches--;
-	}
 match_fail:
+		if (alloc) {
+			free(s);
+			free(wcs);
+		}
+	}
 	FUNLOCK(f);
 	return matches;
 }
