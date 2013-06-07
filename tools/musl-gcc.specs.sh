@@ -5,10 +5,10 @@ cat <<EOF
 %rename cpp_options old_cpp_options
 
 *cpp_options:
--nostdinc -isystem $incdir %(old_cpp_options)
+-nostdinc -isystem $incdir -isystem include%s %(old_cpp_options)
 
 *cc1:
-%(cc1_cpu) -nostdinc -isystem $incdir 
+%(cc1_cpu) -nostdinc -isystem -isystem include%s $incdir 
 
 *link_libgcc:
 -L$libdir -L .%s
