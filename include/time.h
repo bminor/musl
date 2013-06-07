@@ -25,6 +25,11 @@ extern "C" {
 
 #include <bits/alltypes.h>
 
+#if defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
+#define __tm_gmtoff tm_gmtoff
+#define __tm_zone tm_zone
+#endif
+
 struct tm
 {
 	int tm_sec;
@@ -39,10 +44,6 @@ struct tm
 	long __tm_gmtoff;
 	const char *__tm_zone;
 };
-#if defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
-#define tm_gmtoff __tm_gmtoff
-#define tm_zone __tm_zone
-#endif
 
 clock_t clock (void);
 time_t time (time_t *);
