@@ -55,7 +55,7 @@ struct tm *localtime (const time_t *);
 char *asctime (const struct tm *);
 char *ctime (const time_t *);
 
-#define CLOCKS_PER_SEC 1000000UL
+#define CLOCKS_PER_SEC 1000000L
 
 
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
