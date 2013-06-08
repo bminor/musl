@@ -1,6 +1,7 @@
 #include <stdlib.h>
+#include <stdint.h>
 
-static unsigned seed;
+static uint64_t seed;
 
 void srand(unsigned s)
 {
@@ -9,5 +10,6 @@ void srand(unsigned s)
 
 int rand(void)
 {
-	return (seed = (seed+1) * 1103515245 + 12345 - 1)+1 & 0x7fffffff;
+	seed = 6364136223846793005ULL*seed + 1;
+	return seed>>33;
 }
