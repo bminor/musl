@@ -13,7 +13,7 @@ struct lio_state {
 
 static int lio_wait(struct lio_state *st)
 {
-	int i, err, got_err;
+	int i, err, got_err = 0;
 	int cnt = st->cnt;
 	struct aiocb **cbs = st->cbs;
 
