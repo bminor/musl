@@ -51,7 +51,7 @@ static void *io_thread(void *p)
 
 	__aio_wake();
 
-	switch (cb->aio_sigevent.sigev_notify) {
+	switch (sev.sigev_notify) {
 	case SIGEV_SIGNAL:
 		notify_signal(&sev);
 		break;
