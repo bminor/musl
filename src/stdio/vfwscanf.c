@@ -281,8 +281,10 @@ int vfwscanf(FILE *restrict f, const wchar_t *restrict fmt, va_list ap)
 				if (size == SIZE_l) *(wchar_t **)dest = wcs;
 				else *(char **)dest = s;
 			}
-			if (wcs) wcs[i] = 0;
-			if (s) s[i] = 0;
+			if (t != 'c') {
+				if (wcs) wcs[i] = 0;
+				if (s) s[i] = 0;
+			}
 			break;
 
 		case 'd': case 'i': case 'o': case 'u': case 'x':

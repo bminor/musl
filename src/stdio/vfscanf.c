@@ -265,8 +265,10 @@ int vfscanf(FILE *restrict f, const char *restrict fmt, va_list ap)
 				if (size == SIZE_l) *(wchar_t **)dest = wcs;
 				else *(char **)dest = s;
 			}
-			if (wcs) wcs[i] = 0;
-			if (s) s[i] = 0;
+			if (t != 'c') {
+				if (wcs) wcs[i] = 0;
+				if (s) s[i] = 0;
+			}
 			break;
 		case 'p':
 		case 'X':
