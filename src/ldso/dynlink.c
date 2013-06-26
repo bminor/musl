@@ -479,7 +479,7 @@ static struct dso *load_library(const char *name)
 				FILE *f = fopen(ETC_LDSO_PATH, "rbe");
 				if (f) {
 					if (getdelim(&sys_path, (size_t[1]){0}, 0, f) <= 0) {
-						if (sys_path) free(sys_path);
+						free(sys_path);
 						sys_path = "";
 					}
 					fclose(f);
