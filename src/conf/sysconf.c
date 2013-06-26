@@ -151,7 +151,7 @@ long sysconf(int name)
 		[_SC_C_LANG_SUPPORT_R] = -1,
 		[_SC_CLOCK_SELECTION] = VER,
 		[_SC_CPUTIME] = VER,
-		[_SC_THREAD_CPUTIME] = -1,
+		[_SC_THREAD_CPUTIME] = VER,
 		[_SC_DEVICE_IO] = -1,
 		[_SC_DEVICE_SPECIFIC] = -1,
 		[_SC_DEVICE_SPECIFIC_R] = -1,
