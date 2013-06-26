@@ -8,7 +8,7 @@ extern "C" {
 #include <features.h>
 
 #define __NEED_FILE
-#define __NEED_va_list
+#define __NEED___isoc_va_list
 #define __NEED_size_t
 
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
@@ -16,6 +16,7 @@ extern "C" {
  || defined(_BSD_SOURCE)
 #define __NEED_ssize_t
 #define __NEED_off_t
+#define __NEED_va_list
 #endif
 
 #include <bits/alltypes.h>
@@ -99,17 +100,17 @@ int fprintf(FILE *__restrict, const char *__restrict, ...);
 int sprintf(char *__restrict, const char *__restrict, ...);
 int snprintf(char *__restrict, size_t, const char *__restrict, ...);
 
-int vprintf(const char *__restrict, va_list);
-int vfprintf(FILE *__restrict, const char *__restrict, va_list);
-int vsprintf(char *__restrict, const char *__restrict, va_list);
-int vsnprintf(char *__restrict, size_t, const char *__restrict, va_list);
+int vprintf(const char *__restrict, __isoc_va_list);
+int vfprintf(FILE *__restrict, const char *__restrict, __isoc_va_list);
+int vsprintf(char *__restrict, const char *__restrict, __isoc_va_list);
+int vsnprintf(char *__restrict, size_t, const char *__restrict, __isoc_va_list);
 
 int scanf(const char *__restrict, ...);
 int fscanf(FILE *__restrict, const char *__restrict, ...);
 int sscanf(const char *__restrict, const char *__restrict, ...);
-int vscanf(const char *__restrict, va_list);
-int vfscanf(FILE *__restrict, const char *__restrict, va_list);
-int vsscanf(const char *__restrict, const char *__restrict, va_list);
+int vscanf(const char *__restrict, __isoc_va_list);
+int vfscanf(FILE *__restrict, const char *__restrict, __isoc_va_list);
+int vsscanf(const char *__restrict, const char *__restrict, __isoc_va_list);
 
 void perror(const char *);
 
@@ -131,7 +132,7 @@ int fileno(FILE *);
 int fseeko(FILE *, off_t, int);
 off_t ftello(FILE *);
 int dprintf(int, const char *__restrict, ...);
-int vdprintf(int, const char *__restrict, va_list);
+int vdprintf(int, const char *__restrict, __isoc_va_list);
 void flockfile(FILE *);
 int ftrylockfile(FILE *);
 void funlockfile(FILE *);
@@ -171,7 +172,7 @@ int getw(FILE *);
 int putw(int, FILE *);
 char *fgetln(FILE *, size_t *);
 int asprintf(char **, const char *, ...);
-int vasprintf(char **, const char *, va_list);
+int vasprintf(char **, const char *, __isoc_va_list);
 #endif
 
 #ifdef _GNU_SOURCE

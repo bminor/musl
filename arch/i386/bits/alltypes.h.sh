@@ -22,8 +22,10 @@ TYPEDEF int ptrdiff_t;
 
 #if __GNUC__ >= 3
 TYPEDEF __builtin_va_list va_list;
+TYPEDEF __builtin_va_list __isoc_va_list;
 #else
 TYPEDEF struct __va_list * va_list;
+TYPEDEF struct __va_list * __isoc_va_list;
 #endif
 
 #ifndef __cplusplus
