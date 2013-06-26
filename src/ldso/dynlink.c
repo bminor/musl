@@ -478,7 +478,7 @@ static struct dso *load_library(const char *name)
 			if (!sys_path) {
 				FILE *f = fopen(ETC_LDSO_PATH, "rbe");
 				if (f) {
-					if (getline(&sys_path, (size_t[1]){0}, f) > 0) {
+					if (getdelim(&sys_path, (size_t[1]){0}, 0, f) > 0) {
 						size_t l = strlen(sys_path);
 						if (l && sys_path[l-1]=='\n')
 							sys_path[l-1] = 0;
