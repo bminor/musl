@@ -29,7 +29,10 @@ char *inet_ntoa (struct in_addr);
 int inet_pton (int, const char *__restrict, void *__restrict);
 const char *inet_ntop (int, const void *__restrict, char *__restrict, socklen_t);
 
-int inet_aton (const char *, struct in_addr *); /* nonstandard but widely used */
+int inet_aton (const char *, struct in_addr *);
+struct in_addr inet_makeaddr(int, int);
+in_addr_t inet_lnaof(struct in_addr);
+in_addr_t inet_netof(struct in_addr);
 
 #undef INET_ADDRSTRLEN
 #undef INET6_ADDRSTRLEN
