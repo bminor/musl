@@ -123,9 +123,9 @@ sem_t *sem_open(const char *name, int flags, ...)
 			goto fail;
 		}
 		close(fd);
-		if (link(tmp, name) == 0) break;
-		e = errno;
+		e = link(tmp, name) ? errno : 0;
 		unlink(tmp);
+		if (!e) break;
 		/* Failure is only fatal when doing an exclusive open;
 		 * otherwise, next iteration will try to open the
 		 * existing file. */
