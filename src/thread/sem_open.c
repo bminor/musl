@@ -67,14 +67,14 @@ sem_t *sem_open(const char *name, int flags, ...)
 
 	flags &= (O_CREAT|O_EXCL);
 
+	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
+
 	/* Early failure check for exclusive open; otherwise the case
 	 * where the semaphore already exists is expensive. */
 	if (flags == (O_CREAT|O_EXCL) && access(name, F_OK) == 0) {
 		errno = EEXIST;
-		return SEM_FAILED;
+		goto fail;
 	}
-
-	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
 
 	for (;;) {
 		/* If exclusive mode is not requested, try opening an
@@ -153,6 +153,9 @@ sem_t *sem_open(const char *name, int flags, ...)
 
 fail:
 	pthread_setcancelstate(cs, 0);
+	LOCK(lock);
+	semtab[slot].sem = 0;
+	UNLOCK(lock);
 	return SEM_FAILED;
 }
 
