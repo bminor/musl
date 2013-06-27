@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include <errno.h>
+#include <stdint.h>
 #include <limits.h>
 #include "syscall.h"
 #include "libc.h"
@@ -18,6 +19,10 @@ void *__mmap(void *start, size_t len, int prot, int flags, int fd, off_t off)
 
 	if (off & OFF_MASK) {
 		errno = EINVAL;
+		return MAP_FAILED;
+	}
+	if (len >= PTRDIFF_MAX) {
+		errno = ENOMEM;
 		return MAP_FAILED;
 	}
 	if (flags & MAP_FIXED) __vm_lock(-1);
