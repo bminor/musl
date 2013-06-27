@@ -82,8 +82,8 @@ sem_t *sem_open(const char *name, int flags, ...)
 		if (flags != (O_CREAT|O_EXCL)) {
 			fd = open(name, FLAGS);
 			if (fd >= 0) {
-				if ((map = mmap(0, sizeof(sem_t), PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0)) == MAP_FAILED ||
-				    fstat(fd, &st) < 0) {
+				if (fstat(fd, &st) < 0 ||
+				    (map = mmap(0, sizeof(sem_t), PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0)) == MAP_FAILED) {
 					close(fd);
 					goto fail;
 				}
