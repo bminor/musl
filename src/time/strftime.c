@@ -17,6 +17,32 @@ static int is_leap(int y)
 	return !(y%4) && ((y%100) || !(y%400));
 }
 
+static int week_num(const struct tm *tm)
+{
+	int val = (tm->tm_yday + 7 - (tm->tm_wday+6)%7) / 7;
+	/* If 1 Jan is just 1-3 days past Monday,
+	 * the previous week is also in this year. */
+	if ((tm->tm_wday - tm->tm_yday - 2 + 371) % 7 <= 2)
+		val++;
+	if (!val) {
+		val = 52;
+		/* If 31 December of prev year a Thursday,
+		 * or Friday of a leap year, then the
+		 * prev year has 53 weeks. */
+		int dec31 = (tm->tm_wday - tm->tm_yday - 1 + 7) % 7;
+		if (dec31 == 4 || (dec31 == 5 && is_leap(tm->tm_year%400-1)))
+			val++;
+	} else if (val == 53) {
+		/* If 1 January is not a Thursday, and not
+		 * a Wednesday of a leap year, then this
+		 * year has only 52 weeks. */
+		int jan1 = (tm->tm_wday - tm->tm_yday + 371) % 7;
+		if (jan1 != 4 && (jan1 != 3 || !is_leap(tm->tm_year)))
+			val = 1;
+	}
+	return val;
+}
+
 size_t strftime(char *restrict s, size_t n, const char *restrict f, const struct tm *restrict tm)
 {
 	nl_item item;
@@ -67,14 +93,15 @@ do_fmt:
 			fmt = "%Y-%m-%d";
 			goto recu_strftime;
 		case 'g':
-			// FIXME
-			val = 0; //week_based_year(tm)%100;
-			fmt = "%02d";
-			goto number;
 		case 'G':
-			// FIXME
-			val = 0; //week_based_year(tm);
 			fmt = "%04d";
+			val = tm->tm_year + 1900;
+			if (tm->tm_yday < 3 && week_num(tm) != 1) val--;
+			else if (tm->tm_yday > 360 && week_num(tm) == 1) val++;
+			if (*f=='g') {
+				fmt = "%02d";
+				val %= 100;
+			}
 			goto number;
 		case 'H':
 			val = tm->tm_hour;
@@ -133,27 +160,7 @@ do_fmt:
 			fmt = "%02d";
 			goto number;
 		case 'V':
-			val = (tm->tm_yday + 7 - (tm->tm_wday+6)%7) / 7;
-			/* If 1 Jan is just 1-3 days past Monday,
-			 * the previous week is also in this year. */
-			if ((tm->tm_wday - tm->tm_yday - 2 + 371) % 7 <= 2)
-				val++;
-			if (!val) {
-				val = 52;
-				/* If 31 December of prev year a Thursday,
-				 * or Friday of a leap year, then the
-				 * prev year has 53 weeks. */
-				int dec31 = (tm->tm_wday - tm->tm_yday - 1 + 7) % 7;
-				if (dec31 == 4 || (dec31 == 5 && is_leap(tm->tm_year%400-1)))
-					val++;
-			} else if (val == 53) {
-				/* If 1 January is not a Thursday, and not
-				 * a Wednesday of a leap year, then this
-				 * year has only 52 weeks. */
-				int jan1 = (tm->tm_wday - tm->tm_yday + 371) % 7;
-				if (jan1 != 4 && (jan1 != 3 || !is_leap(tm->tm_year)))
-					val = 1;
-			}
+			val = week_num(tm);
 			fmt = "%02d";
 			goto number;
 		case 'w':
