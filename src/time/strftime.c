@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <langinfo.h>
 #include <time.h>
+#include <limits.h>
 #include "__time.h"
 
 // FIXME: integer overflows
