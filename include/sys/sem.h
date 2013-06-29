@@ -25,13 +25,21 @@ extern "C" {
 #define SETVAL		16
 #define SETALL		17
 
+#include <endian.h>
+
 struct semid_ds {
 	struct ipc_perm sem_perm;
 	long sem_otime;
 	unsigned long __unused1;
 	long sem_ctime;
 	unsigned long __unused2;
-	unsigned long sem_nsems;
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+	unsigned short sem_nsems;
+	char __sem_nsems_pad[sizeof(long)-sizeof(short)];
+#else
+	char __sem_nsems_pad[sizeof(long)-sizeof(short)];
+	unsigned short sem_nsems;
+#endif
 	unsigned long __unused3;
 	unsigned long __unused4;
 };
