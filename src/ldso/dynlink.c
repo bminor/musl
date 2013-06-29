@@ -1273,6 +1273,18 @@ int __dladdr (void *addr, Dl_info *info)
 }
 #endif
 
+int __dlinfo(void *dso, int req, void *res)
+{
+	if (invalid_dso_handle(dso)) return -1;
+	if (req != RTLD_DI_LINKMAP) {
+		snprintf(errbuf, sizeof errbuf, "Unsupported request %d", req);
+		errflag = 1;
+		return -1;
+	}
+	*(struct link_map **)res = dso;
+	return 0;
+}
+
 char *dlerror()
 {
 	if (!errflag) return 0;

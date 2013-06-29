@@ -17,6 +17,8 @@ extern "C" {
 #define RTLD_NEXT    ((void *)-1)
 #define RTLD_DEFAULT ((void *)0)
 
+#define RTLD_DI_LINKMAP 2
+
 int    dlclose(void *);
 char  *dlerror(void);
 void  *dlopen(const char *, int);
@@ -30,6 +32,7 @@ typedef struct {
 	void *dli_saddr;
 } Dl_info;
 int dladdr(void *, Dl_info *);
+int dlinfo(void *, int, void *);
 #endif
 
 #ifdef __cplusplus
