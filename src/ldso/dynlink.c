@@ -692,6 +692,10 @@ static void do_init_fini(struct dso *p)
 		}
 		if (dyn[0] & (1<<DT_INIT))
 			((void (*)(void))(p->base + dyn[DT_INIT]))();
+		if (!need_locking && libc.threads_minus_1) {
+			need_locking = 1;
+			pthread_mutex_lock(&init_fini_lock);
+		}
 	}
 	if (need_locking) pthread_mutex_unlock(&init_fini_lock);
 }
