@@ -47,6 +47,8 @@ struct shm_info {
 #endif
 };
 
+typedef unsigned long shmatt_t;
+
 void *shmat(int, const void *, int);
 int shmctl(int, int, struct shmid_ds *);
 int shmdt(const void *);
