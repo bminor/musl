@@ -2,7 +2,7 @@
 #define _SYS_SYSMACROS_H
 
 #define major(x) \
-	((unsigned)( (((x)>>32) & 0xfffff000) | (((x)>>8) & 0x00000fff) ))
+	((unsigned)( (((x)>>31>>1) & 0xfffff000) | (((x)>>8) & 0x00000fff) ))
 #define minor(x) \
 	((unsigned)( (((x)>>12) & 0xffffff00) | ((x) & 0x000000ff) ))
 
