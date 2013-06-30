@@ -915,3 +915,46 @@ arch-specific bugs fixed:
 - various low-impact type size/alignment mismatches in some headers
 - epoll struct alignment wrong on non-x86[_64] archs
 - broken pipe2 fallback code on mips with old kernels
+
+
+
+0.9.11 release notes
+
+new features:
+- %m allocation modifier for scanf
+- week number and ISO week-based-year functionality in strftime
+- per-process and per-thread cputime clocks
+- ethernet address conversion interfaces
+- legacy classful ipv4 network address interfaces
+- minimal dlinfo function (nonstandard)
+
+other improvements:
+- dynamic linker path file can now use newlines to separate paths
+- math optimizations for archs with extended precision (i386)
+- musl-gcc wrapper now exposes gcc's intrinsic headers
+- quality of rand and rand_r pseudo-random sequences
+- support for large device minor numbers (greater than 8 bits)
+- various header conformance and compatibility fixes
+
+directly user-visible bugs fixed:
+- scanf losing characters on unbuffered streams and fmemopen streams
+- failure of mbsrtowcs to record stop position when dest is full
+- failure of iconv to convert to legacy codepages
+- non-working pthread_[sg]etschedparam functions (wrong syscall arguments)
+
+other potentially-serious bugs fixed:
+- resource leaks in sem_open
+- various bugs in thread exit synchronization
+- invalid access in aio notification after aiocb free/reuse
+- synchronization in dynamic linker when new thread dlopens during ctors
+- lack of error handling for failure to read dynamic linker path file
+- creation by mmap or shmget of objects larger than PTRDIFF_MAX
+
+minor conformance bugs fixed:
+- overflow handling for the clock function
+- workaround for incorrect exceptions in fma due to compiler bugs
+- workaround wrong kernel type for sem_nsems field in struct semid_ds
+
+arch-specific bugs fixed:
+- x86_64 sigsetjmp clobbered the signal mask rather than saving it
+- misaligned stack when calling ctors/dtors (crashing on x86_64)
