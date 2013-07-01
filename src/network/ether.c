@@ -41,3 +41,18 @@ char *ether_ntoa (const struct ether_addr *p_a) {
 	static char x[18];
 	return ether_ntoa_r (p_a, x);
 }
+
+int ether_line(const char *l, struct ether_addr *e, char *hostname)
+{
+	return -1;
+}
+
+int ether_ntohost(char *hostname, const struct ether_addr *e)
+{
+	return -1;
+}
+
+int ether_hostton(const char *hostname, struct ether_addr *e)
+{
+	return -1;
+}
