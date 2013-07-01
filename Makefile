@@ -37,7 +37,8 @@ CFLAGS_ALL_SHARED = $(CFLAGS_ALL) -fPIC -DSHARED
 AR      = $(CROSS_COMPILE)ar
 RANLIB  = $(CROSS_COMPILE)ranlib
 
-ALL_INCLUDES = $(sort $(wildcard include/*.h include/*/*.h) $(GENH))
+ARCH_INCLUDES = $(wildcard arch/$(ARCH)/bits/*.h)
+ALL_INCLUDES = $(sort $(wildcard include/*.h include/*/*.h) $(GENH) $(ARCH_INCLUDES:arch/$(ARCH)/%=include/%))
 
 EMPTY_LIB_NAMES = m rt pthread crypt util xnet resolv dl
 EMPTY_LIBS = $(EMPTY_LIB_NAMES:%=lib/lib%.a)
@@ -122,6 +123,9 @@ $(DESTDIR)$(libdir)/%.so: lib/%.so
 	install -D -m 755 $< $@
 
 $(DESTDIR)$(libdir)/%: lib/%
+	install -D -m 644 $< $@
+
+$(DESTDIR)$(includedir)/bits/%: arch/$(ARCH)/bits/%
 	install -D -m 644 $< $@
 
 $(DESTDIR)$(includedir)/%: include/%
