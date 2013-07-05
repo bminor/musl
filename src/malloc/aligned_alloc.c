@@ -11,7 +11,7 @@ void *aligned_alloc(size_t align, size_t len)
 	unsigned char *mem, *new, *end;
 	size_t header, footer;
 
-	if ((align & -align & -sizeof(void *)) != align) {
+	if ((align & -align) != align) {
 		errno = EINVAL;
 		return NULL;
 	}
