@@ -8,17 +8,14 @@
 
 char *ctermid(char *s)
 {
-	static char *s2;
+	static char s2[L_ctermid];
 	int fd;
-	if (!s) {
-		if (!s2) s2 = malloc(L_ctermid);
-		s = s2;
-	}
+	if (!s) s = s2;
+	*s = 0;
 	fd = open("/dev/tty", O_WRONLY | O_NOCTTY | O_CLOEXEC);
-	if (fd < 0)
-		return strcpy(s, "");
-	if (ttyname_r(fd, s, L_ctermid))
-		strcpy(s, "");
-	__syscall(SYS_close, fd);
+	if (fd >= 0) {
+		ttyname_r(fd, s, L_ctermid);
+		__syscall(SYS_close, fd);
+	}
 	return s;
 }
