@@ -48,7 +48,7 @@ static const char map[] = {
 	[SIGSYS]    = 31
 };
 
-#define sigmap(x) ((unsigned)(x) > sizeof map ? 0 : map[(unsigned)(x)])
+#define sigmap(x) ((unsigned)(x) >= sizeof map ? 0 : map[(unsigned)(x)])
 
 #endif
 
