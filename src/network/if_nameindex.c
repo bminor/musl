@@ -47,7 +47,7 @@ struct if_nameindex *if_nameindex()
 {
 	size_t n;
 	void *p = 0;
-	int s = socket(AF_UNIX, SOCK_DGRAM, 0);
+	int s = socket(AF_UNIX, SOCK_DGRAM|SOCK_CLOEXEC, 0);
 	if (s>=0) {
 		for (n=0; (p=do_nameindex(s, n)) == (void *)-1; n++);
 		__syscall(SYS_close, s);

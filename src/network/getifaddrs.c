@@ -127,7 +127,7 @@ int getifaddrs(struct ifaddrs **ifap)
 	}
 	if_freenameindex(ii);
 
-	int sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
+	int sock = socket(PF_INET, SOCK_DGRAM|SOCK_CLOEXEC, IPPROTO_IP);
 	if(sock == -1) goto err2;
 	struct ifreq reqs[32]; /* arbitrary chosen boundary */
 	struct ifconf conf = {.ifc_len = sizeof reqs, .ifc_req = reqs};
