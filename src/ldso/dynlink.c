@@ -309,7 +309,7 @@ static void *map_library(int fd, struct dso *dso)
 	size_t this_min, this_max;
 	off_t off_start;
 	Ehdr *eh;
-	Phdr *ph;
+	Phdr *ph, *ph0;
 	unsigned prot;
 	unsigned char *map, *base;
 	size_t dyn;
@@ -324,11 +324,10 @@ static void *map_library(int fd, struct dso *dso)
 	if (eh->e_phoff + phsize > l) {
 		l = pread(fd, buf+1, phsize, eh->e_phoff);
 		if (l != phsize) return 0;
-		eh->e_phoff = sizeof *eh;
+		ph = ph0 = (void *)(buf + 1);
+	} else {
+		ph = ph0 = (void *)((char *)buf + eh->e_phoff);
 	}
-	ph = (void *)((char *)buf + eh->e_phoff);
-	dso->phdr = ph;
-	dso->phnum = eh->e_phnum;
 	for (i=eh->e_phnum; i; i--, ph=(void *)((char *)ph+eh->e_phentsize)) {
 		if (ph->p_type == PT_DYNAMIC)
 			dyn = ph->p_vaddr;
@@ -363,9 +362,18 @@ static void *map_library(int fd, struct dso *dso)
 	map = mmap((void *)addr_min, map_len, prot, MAP_PRIVATE, fd, off_start);
 	if (map==MAP_FAILED) return 0;
 	base = map - addr_min;
-	ph = (void *)((char *)buf + eh->e_phoff);
-	for (i=eh->e_phnum; i; i--, ph=(void *)((char *)ph+eh->e_phentsize)) {
+	dso->phdr = 0;
+	dso->phnum = 0;
+	for (ph=ph0, i=eh->e_phnum; i; i--, ph=(void *)((char *)ph+eh->e_phentsize)) {
 		if (ph->p_type != PT_LOAD) continue;
+		/* Check if the programs headers are in this load segment, and
+		 * if so, record the address for use by dl_iterate_phdr. */
+		if (!dso->phdr && eh->e_phoff >= ph->p_offset
+		    && eh->e_phoff+phsize <= ph->p_offset+ph->p_filesz) {
+			dso->phdr = (void *)(base + ph->p_vaddr
+				+ (eh->e_phoff-ph->p_offset));
+			dso->phnum = eh->e_phnum;
+		}
 		/* Reuse the existing mapping for the lowest-address LOAD */
 		if ((ph->p_vaddr & -PAGE_SIZE) == addr_min) continue;
 		this_min = ph->p_vaddr & -PAGE_SIZE;
@@ -390,8 +398,7 @@ static void *map_library(int fd, struct dso *dso)
 				goto error;
 			break;
 		}
-	if (!runtime) reclaim_gaps(base, (void *)((char *)buf + eh->e_phoff),
-		eh->e_phentsize, eh->e_phnum);
+	if (!runtime) reclaim_gaps(base, ph0, eh->e_phentsize, eh->e_phnum);
 	dso->map = map;
 	dso->map_len = map_len;
 	dso->base = base;
