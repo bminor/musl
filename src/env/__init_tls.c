@@ -26,9 +26,9 @@ void *__copy_tls(unsigned char *mem)
 	mem += libc.tls_size - sizeof(struct pthread);
 	mem -= (uintptr_t)mem & (align-1);
 	td = (pthread_t)mem;
-	td->dtv = dtv;
 	mem -= size;
 #endif
+	td->dtv = dtv;
 	dtv[1] = mem;
 	memcpy(mem, image, len);
 	return td;
