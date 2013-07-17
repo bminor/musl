@@ -1,11 +1,15 @@
-#include <time.h>
+#include "time_impl.h"
+#include <errno.h>
+#include "libc.h"
 
-#include "__time.h"
-
-struct tm *localtime_r(const time_t *restrict t, struct tm *restrict result)
+struct tm *__localtime_r(const time_t *restrict t, struct tm *restrict tm)
 {
-	__tzset();
-	__time_to_tm(*t - __timezone, result);
-	result->tm_isdst = -1;
-	return __dst_adjust(result);
+	__secs_to_zone(*t, 0, &tm->tm_isdst, &tm->__tm_gmtoff, 0, &tm->__tm_zone);
+	if (__secs_to_tm((long long)*t - tm->__tm_gmtoff, tm) < 0) {
+		errno = EINVAL;
+		return 0;
+	}
+	return tm;
 }
+
+weak_alias(__localtime_r, localtime_r);

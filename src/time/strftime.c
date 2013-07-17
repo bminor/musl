@@ -3,7 +3,6 @@
 #include <langinfo.h>
 #include <time.h>
 #include <limits.h>
-#include "__time.h"
 
 // FIXME: integer overflows
 
@@ -182,14 +181,11 @@ do_fmt:
 			fmt = "%04d";
 			goto number;
 		case 'z':
-			if (tm->tm_isdst < 0) continue;
-			val = -__timezone - (tm->tm_isdst ? __dst_offset : 0);
+			val = -tm->__tm_gmtoff;
 			l += snprintf(s+l, n-l, "%+.2d%.2d", val/3600, abs(val%3600)/60);
 			continue;
 		case 'Z':
-			if (tm->tm_isdst < 0 || !__tzname[0] || !__tzname[0][0])
-				continue;
-			l += snprintf(s+l, n-l, "%s", __tzname[!!tm->tm_isdst]);
+			l += snprintf(s+l, n-l, "%s", tm->__tm_zone);
 			continue;
 		default:
 			return 0;

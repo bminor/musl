@@ -1,12 +1,9 @@
-#include <time.h>
+#include "time_impl.h"
 
-#include "__time.h"
+struct tm *__localtime_r(const time_t *restrict, struct tm *restrict);
 
 struct tm *localtime(const time_t *t)
 {
 	static struct tm tm;
-	__tzset();
-	__time_to_tm(*t - __timezone, &tm);
-	tm.tm_isdst = -1;
-	return __dst_adjust(&tm);
+	return __localtime_r(t, &tm);
 }

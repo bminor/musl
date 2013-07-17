@@ -1,24 +1,30 @@
-#include <time.h>
-
-#include "__time.h"
+#include "time_impl.h"
+#include <errno.h>
+#include <stdlib.h>
+#include <string.h>
 
 time_t mktime(struct tm *tm)
 {
-	int isdst = tm->tm_isdst;
-	time_t t, lt;
+	struct tm new;
+	long opp;
+	long long t = __tm_to_secs(tm);
 
-	__tzset();
+	__secs_to_zone(t, 1, &new.tm_isdst, &new.__tm_gmtoff, &opp, &new.__tm_zone);
 
-	tm->tm_sec += __timezone;
-	if (isdst > 0) tm->tm_sec += __dst_offset;
+	if (tm->tm_isdst>=0 && new.tm_isdst!=tm->tm_isdst)
+		t += opp - new.__tm_gmtoff;
 
-	t = __tm_to_time(tm);
-	
-	lt = t - __timezone;
-	if (isdst > 0) lt -= __dst_offset;
-	__time_to_tm(lt, tm);
+	t += new.__tm_gmtoff;
+	if ((time_t)t != t) goto error;
 
-	__dst_adjust(tm);
-	
+	__secs_to_zone(t, 0, &new.tm_isdst, &new.__tm_gmtoff, &opp, &new.__tm_zone);
+
+	if (__secs_to_tm(t - new.__tm_gmtoff, &new) < 0) goto error;
+
+	*tm = new;
 	return t;
+
+error:
+	errno = EINVAL;
+	return -1;
 }

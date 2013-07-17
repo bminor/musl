@@ -1,11 +1,10 @@
-#include <time.h>
+#include "time_impl.h"
+#include <errno.h>
 
-#include "__time.h"
+struct tm *__gmtime_r(const time_t *restrict, struct tm *restrict);
 
 struct tm *gmtime(const time_t *t)
 {
 	static struct tm tm;
-	__time_to_tm(*t, &tm);
-	tm.tm_isdst = 0;
-	return &tm;
+	return __gmtime_r(t, &tm);
 }

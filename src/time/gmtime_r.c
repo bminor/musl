@@ -1,10 +1,17 @@
-#include <time.h>
+#include "time_impl.h"
+#include <errno.h>
+#include "libc.h"
 
-#include "__time.h"
-
-struct tm *gmtime_r(const time_t *restrict t, struct tm *restrict result)
+struct tm *__gmtime_r(const time_t *restrict t, struct tm *restrict tm)
 {
-	__time_to_tm(*t, result);
-	result->tm_isdst = 0;
-	return result;
+	if (__secs_to_tm(*t, tm) < 0) {
+		errno = EINVAL;
+		return 0;
+	}
+	tm->tm_isdst = 0;
+	tm->__tm_gmtoff = 0;
+	tm->__tm_zone = "GMT";
+	return tm;
 }
+
+weak_alias(__gmtime_r, gmtime_r);
