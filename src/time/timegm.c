@@ -7,7 +7,7 @@ time_t timegm(struct tm *tm)
 	struct tm new;
 	long long t = __tm_to_secs(tm);
 	if (__secs_to_tm(t, &new) < 0) {
-		errno = EINVAL;
+		errno = EOVERFLOW;
 		return -1;
 	}
 	*tm = new;

@@ -25,6 +25,6 @@ time_t mktime(struct tm *tm)
 	return t;
 
 error:
-	errno = EINVAL;
+	errno = EOVERFLOW;
 	return -1;
 }
