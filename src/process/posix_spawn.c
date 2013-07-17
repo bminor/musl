@@ -138,7 +138,8 @@ int __posix_spawnx(pid_t *restrict res, const char *restrict path,
 	args.envp = envp;
 	pthread_sigmask(SIG_BLOCK, SIGALL_SET, &args.oldmask);
 
-	pid = __clone(child, stack+sizeof stack, CLONE_VM|SIGCHLD, &args);
+	pid = __clone(child, stack+sizeof stack,
+		CLONE_VM|CLONE_VFORK|SIGCHLD, &args);
 	close(args.p[1]);
 
 	if (pid > 0) {
