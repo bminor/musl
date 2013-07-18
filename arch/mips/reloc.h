@@ -1,7 +1,14 @@
 #include <string.h>
 #include <elf.h>
+#include <endian.h>
 
-#define ETC_LDSO_PATH "/etc/ld-musl-mips.path"
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+#define ENDIAN_SUFFIX "el"
+#else
+#define ENDIAN_SUFFIX ""
+#endif
+
+#define LDSO_ARCH "mips" ENDIAN_SUFFIX
 
 #define IS_COPY(x) ((x)==R_MIPS_COPY)
 #define IS_PLT(x) 1

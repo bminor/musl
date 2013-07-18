@@ -483,7 +483,26 @@ static struct dso *load_library(const char *name)
 		if (fd < 0 && env_path) fd = path_open(name, env_path, buf, sizeof buf);
 		if (fd < 0) {
 			if (!sys_path) {
-				FILE *f = fopen(ETC_LDSO_PATH, "rbe");
+				char *prefix = 0;
+				size_t prefix_len;
+				if (ldso->name[0]=='/') {
+					char *s, *t, *z;
+					for (s=t=z=ldso->name; *s; s++)
+						if (*s=='/') z=t, t=s;
+					prefix_len = z-ldso->name;
+					if (prefix_len < PATH_MAX)
+						prefix = ldso->name;
+				}
+				if (!prefix) {
+					prefix = "";
+					prefix_len = 0;
+				}
+				char etc_ldso_path[prefix_len + 1
+					+ sizeof "/etc/ld-musl-" LDSO_ARCH ".path"];
+				snprintf(etc_ldso_path, sizeof etc_ldso_path,
+					"%.*s/etc/ld-musl-" LDSO_ARCH ".path",
+					(int)prefix_len, prefix);
+				FILE *f = fopen(etc_ldso_path, "rbe");
 				if (f) {
 					if (getdelim(&sys_path, (size_t[1]){0}, 0, f) <= 0) {
 						free(sys_path);

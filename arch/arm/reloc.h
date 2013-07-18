@@ -1,7 +1,20 @@
 #include <string.h>
 #include <elf.h>
+#include <endian.h>
 
-#define ETC_LDSO_PATH "/etc/ld-musl-arm.path"
+#if __BYTE_ORDER == __BIG_ENDIAN
+#define ENDIAN_SUFFIX "eb"
+#else
+#define ENDIAN_SUFFIX ""
+#endif
+
+#if __SOFTFP__
+#define FP_SUFFIX ""
+#else
+#define FP_SUFFIX "hf"
+#endif
+
+#define LDSO_ARCH "arm" ENDIAN_SUFFIX FP_SUFFIX
 
 #define IS_COPY(x) ((x)==R_ARM_COPY)
 #define IS_PLT(x) ((x)==R_ARM_JUMP_SLOT)

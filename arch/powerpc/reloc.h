@@ -1,7 +1,7 @@
 #include <string.h>
 #include <elf.h>
 
-#define ETC_LDSO_PATH "/etc/ld-musl-powerpc.path"
+#define LDSO_ARCH "powerpc" ENDIAN_SUFFIX
 
 #define IS_COPY(x) ((x)==R_PPC_COPY)
 #define IS_PLT(x) ((x)==R_PPC_JMP_SLOT)

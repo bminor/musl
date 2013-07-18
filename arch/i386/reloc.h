@@ -1,7 +1,7 @@
 #include <string.h>
 #include <elf.h>
 
-#define ETC_LDSO_PATH "/etc/ld-musl-i386.path"
+#define LDSO_ARCH "i386"
 
 #define IS_COPY(x) ((x)==R_386_COPY)
 #define IS_PLT(x) ((x)==R_386_JMP_SLOT)

@@ -1,7 +1,14 @@
 #include <string.h>
 #include <elf.h>
+#include <endian.h>
 
-#define ETC_LDSO_PATH "/etc/ld-musl-microblaze.path"
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+#define ENDIAN_SUFFIX "el"
+#else
+#define ENDIAN_SUFFIX ""
+#endif
+
+#define LDSO_ARCH "microblaze" ENDIAN_SUFFIX
 
 #define IS_COPY(x) ((x)==R_MICROBLAZE_COPY)
 #define IS_PLT(x) ((x)==R_MICROBLAZE_JUMP_SLOT)
