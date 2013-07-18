@@ -38,7 +38,7 @@ extern "C" {
 #define _IONBF 2
 
 #define BUFSIZ 1024
-#define FILENAME_MAX 4095
+#define FILENAME_MAX 4096
 #define FOPEN_MAX 1000
 #define TMP_MAX 10000
 #define L_tmpnam 20
