@@ -70,9 +70,9 @@ STRUCT timeval { time_t tv_sec; int tv_usec; };
 STRUCT timespec { time_t tv_sec; long tv_nsec; };
 
 TYPEDEF int pid_t;
-TYPEDEF int id_t;
-TYPEDEF int uid_t;
-TYPEDEF int gid_t;
+TYPEDEF unsigned id_t;
+TYPEDEF unsigned uid_t;
+TYPEDEF unsigned gid_t;
 TYPEDEF int key_t;
 
 TYPEDEF struct __pthread * pthread_t;

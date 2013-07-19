@@ -1,6 +1,13 @@
 #include "pwf.h"
 #include <pthread.h>
 
+static unsigned atou(char **s)
+{
+	unsigned x;
+	for (x=0; **s-'0'<10U; ++*s) x=10*x+(**s-'0');
+	return x;
+}
+
 struct group *__getgrent_a(FILE *f, struct group *gr, char **line, size_t *size, char ***mem, size_t *nmem)
 {
 	ssize_t l;
@@ -24,8 +31,8 @@ struct group *__getgrent_a(FILE *f, struct group *gr, char **line, size_t *size,
 		*s++ = 0; gr->gr_passwd = s;
 		if (!(s = strchr(s, ':'))) continue;
 
-		*s++ = 0; gr->gr_gid = atoi(s);
-		if (!(s = strchr(s, ':'))) continue;
+		*s++ = 0; gr->gr_gid = atou(&s);
+		if (*s != ':') continue;
 
 		*s++ = 0; mems = s;
 		break;
