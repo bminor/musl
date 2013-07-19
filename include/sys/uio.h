@@ -21,6 +21,8 @@ extern "C" {
 
 #include <bits/alltypes.h>
 
+#define UIO_MAXIOV 1024
+
 ssize_t readv (int, const struct iovec *, int);
 ssize_t writev (int, const struct iovec *, int);
 
