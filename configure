@@ -56,7 +56,8 @@ while eval "fnmatch '*/' \"\${$1}\"" ; do eval "$1=\${$1%/}" ; done
 
 trycppif () {
 printf "checking preprocessor condition %s... " "$1"
-echo "#if $1" > "$tmpc"
+echo "typedef int x;" > "$tmpc"
+echo "#if $1" >> "$tmpc"
 echo "#error yes" >> "$tmpc"
 echo "#endif" >> "$tmpc"
 if $CC $2 -c -o /dev/null "$tmpc" >/dev/null 2>&1 ; then
