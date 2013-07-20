@@ -696,7 +696,13 @@ static void do_fini()
 	for (p=fini_head; p; p=p->fini_next) {
 		if (!p->constructed) continue;
 		decode_vec(p->dynv, dyn, DYN_CNT);
-		((void (*)(void))(p->base + dyn[DT_FINI]))();
+		if (dyn[0] & (1<<DT_FINI_ARRAY)) {
+			size_t n = dyn[DT_FINI_ARRAYSZ]/sizeof(size_t);
+			size_t *fn = (void *)(p->base + dyn[DT_FINI_ARRAY]);
+			while (n--) ((void (*)(void))*fn++)();
+		}
+		if (dyn[0] & (1<<DT_FINI))
+			((void (*)(void))(p->base + dyn[DT_FINI]))();
 	}
 }
 
@@ -712,12 +718,17 @@ static void do_init_fini(struct dso *p)
 		if (p->constructed) continue;
 		p->constructed = 1;
 		decode_vec(p->dynv, dyn, DYN_CNT);
-		if (dyn[0] & (1<<DT_FINI)) {
+		if (dyn[0] & ((1<<DT_FINI) | (1<<DT_FINI_ARRAY))) {
 			p->fini_next = fini_head;
 			fini_head = p;
 		}
 		if (dyn[0] & (1<<DT_INIT))
 			((void (*)(void))(p->base + dyn[DT_INIT]))();
+		if (dyn[0] & (1<<DT_INIT_ARRAY)) {
+			size_t n = dyn[DT_INIT_ARRAYSZ]/sizeof(size_t);
+			size_t *fn = (void *)(p->base + dyn[DT_INIT_ARRAY]);
+			while (n--) ((void (*)(void))*fn++)();
+		}
 		if (!need_locking && libc.threads_minus_1) {
 			need_locking = 1;
 			pthread_mutex_lock(&init_fini_lock);
