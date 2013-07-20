@@ -109,6 +109,8 @@ int vfwscanf(FILE *restrict f, const wchar_t *restrict fmt, va_list ap)
 
 	for (p=fmt; *p; p++) {
 
+		alloc = 0;
+
 		if (iswspace(*p)) {
 			while (iswspace(p[1])) p++;
 			while (iswspace((c=getwc(f)))) pos++;

@@ -81,6 +81,8 @@ int vfscanf(FILE *restrict f, const char *restrict fmt, va_list ap)
 
 	for (p=(const unsigned char *)fmt; *p; p++) {
 
+		alloc = 0;
+
 		if (isspace(*p)) {
 			while (isspace(p[1])) p++;
 			shlim(f, 0);
