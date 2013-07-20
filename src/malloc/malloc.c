@@ -418,6 +418,9 @@ void *realloc(void *p, size_t n)
 
 	next = NEXT_CHUNK(self);
 
+	/* Crash on corrupted footer (likely from buffer overflow) */
+	if (next->psize != self->csize) a_crash();
+
 	/* Merge adjacent chunks if we need more space. This is not
 	 * a waste of time even if we fail to get enough space, because our
 	 * subsequent call to free would otherwise have to do the merge. */
@@ -470,6 +473,9 @@ void free(void *p)
 
 	final_size = new_size = CHUNK_SIZE(self);
 	next = NEXT_CHUNK(self);
+
+	/* Crash on corrupted footer (likely from buffer overflow) */
+	if (next->psize != self->csize) a_crash();
 
 	for (;;) {
 		/* Replace middle of large chunks with fresh zero pages */
