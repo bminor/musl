@@ -9,9 +9,6 @@ struct __libc {
 	int threaded;
 	int secure;
 	size_t *auxv;
-	int (*atexit)(void (*)(void));
-	void (*fini)(void);
-	void (*ldso_fini)(void);
 	volatile int threads_minus_1;
 	int canceldisable;
 	FILE *ofl_head;

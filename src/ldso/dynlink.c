@@ -91,6 +91,7 @@ struct symdef {
 
 void __init_ssp(size_t *);
 void *__install_initial_tls(void *);
+void __init_libc(char **, char *);
 
 static struct dso *head, *tail, *ldso, *fini_head;
 static char *env_path, *sys_path, *r_path;
@@ -841,6 +842,7 @@ void *__dynlink(int argc, char **argv)
 	char *env_preload=0;
 	size_t vdso_base;
 	size_t *auxv;
+	char **envp = argv+argc+1;
 
 	/* Find aux vector just past environ[] */
 	for (i=argc+1; argv[i]; i++)
@@ -953,7 +955,6 @@ void *__dynlink(int argc, char **argv)
 		tls_align = MAXP2(tls_align, app->tls_align);
 	}
 	app->global = 1;
-	app->constructed = 1;
 	decode_dyn(app);
 
 	/* Attach to vdso, if provided by the kernel */
@@ -1038,15 +1039,12 @@ void *__dynlink(int argc, char **argv)
 	_dl_debug_state();
 
 	if (ssp_used) __init_ssp((void *)aux[AT_RANDOM]);
-
-	errno = 0;
-	return (void *)aux[AT_ENTRY];
-}
-
-void __init_ldso_ctors(void)
-{
+	__init_libc(envp, argv[0]);
 	atexit(do_fini);
+	errno = 0;
 	do_init_fini(tail);
+
+	return (void *)aux[AT_ENTRY];
 }
 
 void *dlopen(const char *file, int mode)

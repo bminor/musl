@@ -5,6 +5,13 @@ void __init_tls(size_t *);
 void __init_security(size_t *);
 void __init_ldso_ctors(void);
 
+#ifndef SHARED
+static void dummy() {}
+weak_alias(dummy, _init);
+extern void (*const __init_array_start)() __attribute__((weak));
+extern void (*const __init_array_end)() __attribute__((weak));
+#endif
+
 #define AUX_CNT 38
 
 extern size_t __hwcap, __sysinfo;
@@ -29,23 +36,16 @@ void __init_libc(char **envp, char *pn)
 	__init_security(aux);
 }
 
-int __libc_start_main(
-	int (*main)(int, char **, char **), int argc, char **argv,
-	int (*init)(int, char **, char **), void (*fini)(void),
-	void (*ldso_fini)(void))
+int __libc_start_main(int (*main)(int,char **,char **), int argc, char **argv)
 {
 	char **envp = argv+argc+1;
 
+#ifndef SHARED
 	__init_libc(envp, argv[0]);
-
-	libc.ldso_fini = ldso_fini;
-	libc.fini = fini;
-
-	/* Execute constructors (static) linked into the application */
-	if (init) init(argc, argv, envp);
-
-#ifdef SHARED
-	__init_ldso_ctors();
+	_init();
+	uintptr_t a = (uintptr_t)&__init_array_start;
+	for (; a<(uintptr_t)&__init_array_end; a+=sizeof(void(*)()))
+		(*(void (**)())a)();
 #endif
 
 	/* Pass control to to application */
