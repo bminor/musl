@@ -698,8 +698,8 @@ static void do_fini()
 		decode_vec(p->dynv, dyn, DYN_CNT);
 		if (dyn[0] & (1<<DT_FINI_ARRAY)) {
 			size_t n = dyn[DT_FINI_ARRAYSZ]/sizeof(size_t);
-			size_t *fn = (void *)(p->base + dyn[DT_FINI_ARRAY]);
-			while (n--) ((void (*)(void))*fn++)();
+			size_t *fn = (size_t *)(p->base + dyn[DT_FINI_ARRAY])+n;
+			while (n--) ((void (*)(void))*--fn)();
 		}
 		if (dyn[0] & (1<<DT_FINI))
 			((void (*)(void))(p->base + dyn[DT_FINI]))();
