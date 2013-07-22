@@ -7,7 +7,7 @@ TYPEDEF __builtin_va_list __isoc_va_list;
 #ifndef __cplusplus
 TYPEDEF int wchar_t;
 #endif
-TYPEDEF int wint_t;
+TYPEDEF unsigned wint_t;
 
 TYPEDEF float float_t;
 TYPEDEF double double_t;

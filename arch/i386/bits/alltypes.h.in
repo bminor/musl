@@ -16,7 +16,7 @@ TYPEDEF __WCHAR_TYPE__ wchar_t;
 TYPEDEF long wchar_t;
 #endif
 #endif
-TYPEDEF long wint_t;
+TYPEDEF unsigned wint_t;
 
 #if defined(__FLT_EVAL_METHOD__) && __FLT_EVAL_METHOD__ == 0
 TYPEDEF float float_t;

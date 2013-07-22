@@ -20,7 +20,7 @@ extern "C" {
 typedef const int * wctrans_t;
 
 #undef WEOF
-#define WEOF (-1)
+#define WEOF 0xffffffffU
 
 #undef iswdigit
 
