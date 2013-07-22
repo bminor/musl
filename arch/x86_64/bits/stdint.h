@@ -17,6 +17,4 @@ typedef uint32_t uint_fast32_t;
 #define UINTPTR_MAX     UINT64_MAX
 #define PTRDIFF_MIN     INT64_MIN
 #define PTRDIFF_MAX     INT64_MAX
-#define SIG_ATOMIC_MIN  INT64_MIN
-#define SIG_ATOMIC_MAX  INT64_MAX
 #define SIZE_MAX        UINT64_MAX
