@@ -702,8 +702,10 @@ static void do_fini()
 			size_t *fn = (size_t *)(p->base + dyn[DT_FINI_ARRAY])+n;
 			while (n--) ((void (*)(void))*--fn)();
 		}
+#ifndef NO_LEGACY_INITFINI
 		if (dyn[0] & (1<<DT_FINI))
 			((void (*)(void))(p->base + dyn[DT_FINI]))();
+#endif
 	}
 }
 
@@ -723,8 +725,10 @@ static void do_init_fini(struct dso *p)
 			p->fini_next = fini_head;
 			fini_head = p;
 		}
+#ifndef NO_LEGACY_INITFINI
 		if (dyn[0] & (1<<DT_INIT))
 			((void (*)(void))(p->base + dyn[DT_INIT]))();
+#endif
 		if (dyn[0] & (1<<DT_INIT_ARRAY)) {
 			size_t n = dyn[DT_INIT_ARRAYSZ]/sizeof(size_t);
 			size_t *fn = (void *)(p->base + dyn[DT_INIT_ARRAY]);

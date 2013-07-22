@@ -52,3 +52,5 @@ static inline void do_single_reloc(
 		break;
 	}
 }
+
+#define NO_LEGACY_INITFINI
