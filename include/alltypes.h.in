@@ -48,9 +48,9 @@ TYPEDEF struct __pthread * pthread_t;
 TYPEDEF int pthread_once_t;
 TYPEDEF int pthread_key_t;
 TYPEDEF int pthread_spinlock_t;
-TYPEDEF unsigned pthread_mutexattr_t;
-TYPEDEF unsigned pthread_condattr_t;
-TYPEDEF unsigned pthread_barrierattr_t;
+TYPEDEF struct { unsigned __attr; } pthread_mutexattr_t;
+TYPEDEF struct { unsigned __attr; } pthread_condattr_t;
+TYPEDEF struct { unsigned __attr; } pthread_barrierattr_t;
 TYPEDEF struct { unsigned __attr[2]; } pthread_rwlockattr_t;
 
 TYPEDEF struct _IO_FILE FILE;

@@ -2,6 +2,6 @@
 
 int pthread_barrierattr_setpshared(pthread_barrierattr_t *a, int pshared)
 {
-	*a = pshared ? INT_MIN : 0;
+	a->__attr = pshared ? INT_MIN : 0;
 	return 0;
 }
