@@ -1,5 +1,6 @@
 #define _Addr int
 #define _Int64 long long
+#define _Reg int
 
 #if __GNUC__ >= 3
 TYPEDEF __builtin_va_list va_list;
