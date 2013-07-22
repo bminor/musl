@@ -1,4 +1,4 @@
-struct __DIR_s
+struct __dirstream
 {
 	int fd;
 	off_t tell;

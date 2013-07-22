@@ -10,10 +10,13 @@ extern "C" {
 
 #define __NEED_pid_t
 #define __NEED_id_t
-#define __NEED_siginfo_t
 #include <bits/alltypes.h>
 
-typedef int idtype_t;
+typedef enum {
+	P_ALL = 0,
+	P_PID = 1,
+	P_PGID = 2
+} idtype_t;
 
 pid_t wait (int *);
 int waitid (idtype_t, id_t, siginfo_t *, int);
@@ -36,10 +39,6 @@ pid_t wait4 (pid_t, int *, int, struct rusage *);
 #define __WNOTHREAD 0x20000000
 #define __WALL      0x40000000
 #define __WCLONE    0x80000000
-
-#define P_ALL  0
-#define P_PID  1
-#define P_PGID 2
 
 #define WEXITSTATUS(s) (((s) & 0xff00) >> 8)
 #define WTERMSIG(s) ((s) & 0x7f)

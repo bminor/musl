@@ -12,7 +12,6 @@ extern "C" {
  || defined(_BSD_SOURCE)
 
 #ifdef _GNU_SOURCE
-#define __siginfo siginfo
 #define __ucontext ucontext
 #endif
 
@@ -25,7 +24,6 @@ extern "C" {
 #define __NEED_time_t
 #define __NEED_clock_t
 #define __NEED_sigset_t
-#define __NEED_siginfo_t
 
 #include <bits/alltypes.h>
 
@@ -77,19 +75,7 @@ extern "C" {
 #define CLD_STOPPED 5
 #define CLD_CONTINUED 6
 
-struct sigaction {
-	union {
-		void (*sa_handler)(int);
-		void (*sa_sigaction)(int, siginfo_t *, void *);
-	} __sa_handler;
-	sigset_t sa_mask;
-	int sa_flags;
-	void (*sa_restorer)(void);	
-};
-#define sa_handler   __sa_handler.sa_handler
-#define sa_sigaction __sa_handler.sa_sigaction
-
-typedef struct {
+typedef struct sigaltstack {
 	void *ss_sp;
 	int ss_flags;
 	size_t ss_size;
@@ -100,7 +86,7 @@ union sigval {
 	void *sival_ptr;
 };
 
-struct __siginfo {
+typedef struct {
 	int si_signo, si_errno, si_code;
 	union {
 		char __pad[128 - 2*sizeof(int) - sizeof(long)];
@@ -126,7 +112,7 @@ struct __siginfo {
 			int si_fd;
 		} __sigpoll;
 	} __si_fields;
-};
+} siginfo_t;
 #define si_pid     __si_fields.__sigchld.si_pid
 #define si_uid     __si_fields.__sigchld.si_uid
 #define si_status  __si_fields.__sigchld.si_status
@@ -140,6 +126,18 @@ struct __siginfo {
 #define si_timer2  __si_fields.__timer.si_timer2
 #define si_ptr     __si_fields.__rt.si_sigval.sival_ptr
 #define si_int     __si_fields.__rt.si_sigval.sival_int
+
+struct sigaction {
+	union {
+		void (*sa_handler)(int);
+		void (*sa_sigaction)(int, siginfo_t *, void *);
+	} __sa_handler;
+	sigset_t sa_mask;
+	int sa_flags;
+	void (*sa_restorer)(void);	
+};
+#define sa_handler   __sa_handler.sa_handler
+#define sa_sigaction __sa_handler.sa_sigaction
 
 struct sigevent {
 	union sigval sigev_value;

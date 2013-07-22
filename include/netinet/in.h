@@ -6,16 +6,12 @@ extern "C" {
 #endif
 
 #include <features.h>
+#include <inttypes.h>
+#include <sys/socket.h>
 
-#define __NEED_in_addr_t
-#define __NEED_in_port_t
-#define __NEED_sa_family_t
-#define __NEED_struct_in_addr
-#define __NEED_uint8_t
-#define __NEED_uint16_t
-#define __NEED_uint32_t
-
-#include <bits/alltypes.h>
+typedef uint16_t in_port_t;
+typedef uint32_t in_addr_t;
+struct in_addr { in_addr_t s_addr; };
 
 struct sockaddr_in
 {

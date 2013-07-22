@@ -8,10 +8,8 @@ extern "C" {
 #define NL_SETD 1
 #define NL_CAT_LOCALE 1
 
-#define __NEED_nl_item
-#include <bits/alltypes.h>
-
-typedef long nl_catd;
+typedef int nl_item;
+typedef void *nl_catd;
 
 nl_catd catopen (const char *, int);
 char *catgets (nl_catd, int, int, const char *);

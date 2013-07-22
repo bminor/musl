@@ -73,10 +73,10 @@ include/bits:
 	@test "$(ARCH)" || { echo "Please set ARCH in config.mak before running make." ; exit 1 ; }
 	ln -sf ../arch/$(ARCH)/bits $@
 
-include/bits/alltypes.h.sh: include/bits
+include/bits/alltypes.h.in: include/bits
 
-include/bits/alltypes.h: include/bits/alltypes.h.sh
-	sh $< > $@
+include/bits/alltypes.h: include/bits/alltypes.h.in include/alltypes.h.in tools/mkalltypes.sed
+	sed -f tools/mkalltypes.sed include/bits/alltypes.h.in include/alltypes.h.in > $@
 
 src/ldso/dynlink.lo: arch/$(ARCH)/reloc.h
 

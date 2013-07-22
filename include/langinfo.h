@@ -5,7 +5,8 @@
 extern "C" {
 #endif
 
-#define __NEED_nl_item
+#include <nl_types.h>
+
 #define __NEED_locale_t
 
 #include <bits/alltypes.h>

@@ -18,7 +18,7 @@
 #define F_ERR 32
 #define F_SVB 64
 
-struct __FILE_s {
+struct _IO_FILE {
 	unsigned flags;
 	unsigned char *rpos, *rend;
 	int (*close)(FILE *);

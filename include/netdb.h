@@ -6,15 +6,12 @@ extern "C" {
 #endif
 
 #include <features.h>
+#include <netinet/in.h>
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 #define __NEED_size_t
-#endif
-
-#define __NEED_socklen_t
-#define __NEED_uint32_t
-
 #include <bits/alltypes.h>
+#endif
 
 struct addrinfo
 {

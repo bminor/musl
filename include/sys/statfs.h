@@ -9,7 +9,7 @@ extern "C" {
 
 #include <sys/statvfs.h>
 
-typedef struct {
+typedef struct __fsid_t {
 	int __val[2];
 } fsid_t;
 

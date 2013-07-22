@@ -7,16 +7,6 @@ extern "C" {
 
 #include <features.h>
 #include <netinet/in.h>
-#include <inttypes.h>
-
-#define __NEED_socklen_t
-#define __NEED_in_addr_t
-#define __NEED_in_port_t
-#define __NEED_uint16_t
-#define __NEED_uint32_t
-#define __NEED_struct_in_addr
-
-#include <bits/alltypes.h>
 
 uint32_t htonl(uint32_t);
 uint16_t htons(uint16_t);

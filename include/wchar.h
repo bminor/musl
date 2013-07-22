@@ -38,7 +38,7 @@ extern "C" {
 #undef WEOF
 #define WEOF (-1)
 
-typedef struct
+typedef struct __mbstate_t
 {
 	unsigned __opaque1, __opaque2;
 } mbstate_t;

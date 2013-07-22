@@ -6,10 +6,9 @@ extern "C" {
 #endif
 
 #include <features.h>
+#include <sys/time.h>
 
 #define __NEED_id_t
-#define __NEED_time_t
-#define __NEED_struct_timeval
 
 #ifdef _GNU_SOURCE
 #define __NEED_pid_t

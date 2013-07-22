@@ -43,7 +43,7 @@ extern "C" {
 #define TMP_MAX 10000
 #define L_tmpnam 20
 
-typedef union {
+typedef union _G_fpos64_t {
 	char __opaque[16];
 	double __align;
 } fpos_t;
