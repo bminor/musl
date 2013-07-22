@@ -49,13 +49,17 @@ extern "C" {
 #define __NEED_pthread_key_t
 #define __NEED_pthread_once_t
 #define __NEED_useconds_t
+#define __NEED_u_int64_t
+
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+#define __NEED_register_t
+#endif
 
 #include <bits/alltypes.h>
 
 typedef unsigned char u_int8_t;
 typedef unsigned short u_int16_t;
 typedef unsigned u_int32_t;
-typedef unsigned long long u_int64_t;
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 typedef char *caddr_t;
@@ -65,7 +69,6 @@ typedef unsigned u_int, uint;
 typedef unsigned long u_long, ulong;
 typedef long long quad_t;
 typedef unsigned long long u_quad_t;
-typedef long register_t;
 #include <endian.h>
 #include <sys/select.h>
 #include <sys/sysmacros.h>
