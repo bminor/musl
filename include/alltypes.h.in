@@ -3,6 +3,7 @@ TYPEDEF unsigned _Addr uintptr_t;
 TYPEDEF _Addr ptrdiff_t;
 TYPEDEF _Addr ssize_t;
 TYPEDEF _Addr intptr_t;
+TYPEDEF _Addr regoff_t;
 
 TYPEDEF signed char     int8_t;
 TYPEDEF short           int16_t;

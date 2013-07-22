@@ -7,13 +7,12 @@ extern "C" {
 
 #include <features.h>
 
+#define __NEED_regoff_t
 #define __NEED_size_t
 
 #include <bits/alltypes.h>
 
-typedef long regoff_t;
-
-typedef struct {
+typedef struct re_pattern_buffer {
 	size_t re_nsub;
 	void *__opaque, *__padding[4];
 	size_t __nsub2;
