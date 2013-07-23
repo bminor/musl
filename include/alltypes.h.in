@@ -66,3 +66,7 @@ STRUCT iovec { void *iov_base; size_t iov_len; };
 
 TYPEDEF unsigned socklen_t;
 TYPEDEF unsigned short sa_family_t;
+
+#undef _Addr
+#undef _Int64
+#undef _Reg
