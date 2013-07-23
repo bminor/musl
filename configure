@@ -24,6 +24,7 @@ System types:
   --host=HOST             same as --target
 
 Optional features:
+  --enable-optimize=...   optimize listed components for speed over size [auto]
   --enable-debug          build with debugging information [disabled]
   --enable-warnings       build with recommended warnings flags [disabled]
   --enable-gcc-wrapper    build musl-gcc toolchain wrapper [auto]
@@ -104,6 +105,7 @@ fi
 CFLAGS_C99FSE=
 CFLAGS_AUTO=
 LDFLAGS_AUTO=
+OPTIMIZE_GLOBS=
 prefix=/usr/local/musl
 exec_prefix='$(prefix)'
 bindir='$(exec_prefix)/bin'
@@ -111,6 +113,7 @@ libdir='$(prefix)/lib'
 includedir='$(prefix)/include'
 syslibdir='/lib'
 target=
+optimize=auto
 debug=no
 warnings=no
 shared=yes
@@ -129,6 +132,9 @@ case "$arg" in
 --disable-shared|--enable-shared=no) shared=no ;;
 --enable-static|--enable-static=yes) static=yes ;;
 --disable-static|--enable-static=no) static=no ;;
+--enable-optimize) optimize=yes ;;
+--enable-optimize=*) optimize=${arg#*=} ;;
+--disable-optimize) optimize=no ;;
 --enable-debug|--enable-debug=yes) debug=yes ;;
 --disable-debug|--enable-debug=no) debug=no ;;
 --enable-warnings|--enable-warnings=yes) warnings=yes ;;
@@ -230,14 +236,57 @@ tryflag CFLAGS_C99FSE -fexcess-precision=standard \
 || { test "$ARCH" = i386 && tryflag CFLAGS_C99FSE -ffloat-store ; }
 tryflag CFLAGS_C99FSE -frounding-math
 
+
 #
-# Setup basic default CFLAGS: debug, optimization, and -pipe
+# If debugging is explicitly enabled, don't auto-enable optimizations
 #
-if fnmatch '-O*|*\ -O*' "$CFLAGS_AUTO $CFLAGS" ; then :
-else
-tryflag CFLAGS_AUTO -Os || tryflag CFLAGS_AUTO -O2
+if test "$debug" = yes ; then
+CFLAGS_AUTO=-g
+test "$optimize" = auto && optimize=no
 fi
-test "x$debug" = xyes && CFLAGS_AUTO="-g"
+
+#
+# Possibly add a -O option to CFLAGS and select modules to optimize with
+# -O3 based on the status of --enable-optimize and provided CFLAGS.
+#
+printf "checking for optimization settings... "
+case "x$optimize" in
+xauto)
+if fnmatch '-O*|*\ -O*' "$CFLAGS_AUTO $CFLAGS" ; then
+printf "using provided CFLAGS\n" ;optimize=no
+else
+printf "using defaults\n" ; optimize=yes
+fi
+;;
+xsize|xnone) printf "minimize size\n" ; optimize=size ;;
+xno|x) printf "disabled\n" ; optimize=no ;;
+*) printf "custom\n" ;;
+esac
+
+test "$optimize" = no || tryflag CFLAGS_AUTO -Os || tryflag CFLAGS_AUTO -O2
+test "$optimize" = yes && optimize="internal,malloc,math,string"
+
+if fnmatch 'no|size' "$optimize" ; then :
+else
+printf "components to be optimized for speed:"
+while test "$optimize" ; do
+case "$optimize" in
+*,*) this=${optimize%%,*} optimize=${optimize#*,} ;;
+*) this=$optimize optimize=
+esac
+printf " $this"
+case "$this" in
+*/*.c) ;;
+*/*) this=$this*.c ;;
+*) this=$this/*.c ;;
+esac
+OPTIMIZE_GLOBS="$OPTIMIZE_GLOBS $this"
+done
+OPTIMIZE_GLOBS=${OPTIMIZE_GLOBS# }
+printf "\n"
+fi
+
+# Always try -pipe
 tryflag CFLAGS_AUTO -pipe
 
 #
@@ -265,14 +314,6 @@ tryflag CFLAGS_AUTO -fno-asynchronous-unwind-tables
 # linked with such object files. Fix this.
 #
 tryflag CFLAGS_AUTO -Wa,--noexecstack
-
-#
-# Some optimization levels add bloated alignment that hurt performance
-#
-tryflag CFLAGS_AUTO -falign-functions=1
-tryflag CFLAGS_AUTO -falign-labels=1
-tryflag CFLAGS_AUTO -falign-loops=1
-tryflag CFLAGS_AUTO -falign-jumps=1
 
 #
 # On x86, make sure we don't have incompatible instruction set
@@ -366,6 +407,7 @@ CPPFLAGS = $CPPFLAGS
 LDFLAGS = $LDFLAGS_AUTO $LDFLAGS
 CROSS_COMPILE = $CROSS_COMPILE
 LIBCC = $LIBCC
+OPTIMIZE_GLOBS = $OPTIMIZE_GLOBS
 EOF
 test "x$static" = xno && echo "STATIC_LIBS ="
 test "x$shared" = xno && echo "SHARED_LIBS ="
