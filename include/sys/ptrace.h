@@ -4,6 +4,8 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
+
 #define PTRACE_TRACEME 0
 #define PT_TRACE_ME PTRACE_TRACEME
 
@@ -34,6 +36,7 @@ extern "C" {
 #define PTRACE_SEIZE 0x4206
 #define PTRACE_INTERRUPT 0x4207
 #define PTRACE_LISTEN 0x4208
+#define PTRACE_PEEKSIGINFO 0x4209
 
 #define PT_READ_I PTRACE_PEEKTEXT
 #define PT_READ_D PTRACE_PEEKDATA
@@ -76,6 +79,14 @@ extern "C" {
 #define PTRACE_EVENT_VFORK_DONE 5
 #define PTRACE_EVENT_EXIT 6
 #define PTRACE_EVENT_SECCOMP 7
+
+#define PTRACE_PEEKSIGINFO_SHARED 1
+
+struct ptrace_peeksiginfo_args {
+	uint64_t off;
+	uint32_t flags;
+	int32_t nr;
+};
 
 long ptrace(int, ...);
 
