@@ -101,7 +101,7 @@ static int runtime;
 static int ldd_mode;
 static int ldso_fail;
 static int noload;
-static jmp_buf rtld_fail;
+static jmp_buf *rtld_fail;
 static pthread_rwlock_t lock;
 static struct debug debug;
 static size_t tls_cnt, tls_offset, tls_align = 4*sizeof(size_t);
@@ -255,7 +255,7 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 				snprintf(errbuf, sizeof errbuf,
 					"Error relocating %s: %s: symbol not found",
 					dso->name, name);
-				if (runtime) longjmp(rtld_fail, 1);
+				if (runtime) longjmp(*rtld_fail, 1);
 				dprintf(2, "%s\n", errbuf);
 				ldso_fail = 1;
 				continue;
@@ -613,14 +613,14 @@ static void load_deps(struct dso *p)
 				snprintf(errbuf, sizeof errbuf,
 					"Error loading shared library %s: %m (needed by %s)",
 					p->strings + p->dynv[i+1], p->name);
-				if (runtime) longjmp(rtld_fail, 1);
+				if (runtime) longjmp(*rtld_fail, 1);
 				dprintf(2, "%s\n", errbuf);
 				ldso_fail = 1;
 				continue;
 			}
 			if (runtime) {
 				tmp = realloc(*deps, sizeof(*tmp)*(ndeps+2));
-				if (!tmp) longjmp(rtld_fail, 1);
+				if (!tmp) longjmp(*rtld_fail, 1);
 				tmp[ndeps++] = dep;
 				tmp[ndeps] = 0;
 				*deps = tmp;
@@ -1057,6 +1057,7 @@ void *dlopen(const char *file, int mode)
 	size_t orig_tls_cnt, orig_tls_offset, orig_tls_align;
 	size_t i;
 	int cs;
+	jmp_buf jb;
 
 	if (!file) return head;
 
@@ -1071,7 +1072,8 @@ void *dlopen(const char *file, int mode)
 	orig_tail = tail;
 	noload = mode & RTLD_NOLOAD;
 
-	if (setjmp(rtld_fail)) {
+	rtld_fail = &jb;
+	if (setjmp(*rtld_fail)) {
 		/* Clean up anything new that was (partially) loaded */
 		if (p && p->deps) for (i=0; p->deps[i]; i++)
 			if (p->deps[i]->global < 0)
