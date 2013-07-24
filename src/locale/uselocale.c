@@ -1,5 +1,6 @@
 #include "locale_impl.h"
 #include "pthread_impl.h"
+#include "libc.h"
 
 locale_t uselocale(locale_t l)
 {
@@ -8,3 +9,5 @@ locale_t uselocale(locale_t l)
 	if (l) self->locale = l;
 	return old;
 }
+
+weak_alias(uselocale, __uselocale);
