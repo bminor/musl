@@ -67,6 +67,8 @@ extern "C" {
 #define BUS_ADRALN 1
 #define BUS_ADRERR 2
 #define BUS_OBJERR 3
+#define BUS_MCEERR_AR 4
+#define BUS_MCEERR_AO 5
 
 #define CLD_EXITED 1
 #define CLD_KILLED 2
@@ -106,11 +108,17 @@ typedef struct {
 		} __sigchld;
 		struct {
 			void *si_addr;
+			short int si_addr_lsb;
 		} __sigfault;
 		struct {
 			long si_band;
 			int si_fd;
 		} __sigpoll;
+		struct {
+			unsigned int si_call_addr;
+			int si_syscall;
+			unsigned int si_arch;
+		} __sigsys;
 	} __si_fields;
 } siginfo_t;
 #define si_pid     __si_fields.__sigchld.si_pid
@@ -120,12 +128,16 @@ typedef struct {
 #define si_stime   __si_fields.__sigchld.si_stime
 #define si_value   __si_fields.__rt.si_sigval
 #define si_addr    __si_fields.__sigfault.si_addr
+#define si_addr_lsb __si_fields.__sigfault.si_addr_lsb
 #define si_band    __si_fields.__sigpoll.si_band
 #define si_fd      __si_fields.__sigpoll.si_fd
 #define si_timer1  __si_fields.__timer.si_timer1
 #define si_timer2  __si_fields.__timer.si_timer2
 #define si_ptr     __si_fields.__rt.si_sigval.sival_ptr
 #define si_int     __si_fields.__rt.si_sigval.sival_int
+#define si_call_addr __si_fields.__sigsys.si_call_addr
+#define si_syscall __si_fields.__sigsys.si_syscall
+#define si_arch    __si_fields.__sigsys.si_arch
 
 struct sigaction {
 	union {
@@ -134,7 +146,7 @@ struct sigaction {
 	} __sa_handler;
 	sigset_t sa_mask;
 	int sa_flags;
-	void (*sa_restorer)(void);	
+	void (*sa_restorer)(void);
 };
 #define sa_handler   __sa_handler.sa_handler
 #define sa_sigaction __sa_handler.sa_sigaction
