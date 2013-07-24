@@ -100,21 +100,30 @@ int getaddrinfo(const char *restrict host, const char *restrict serv, const stru
 	}
 
 	if (!host) {
-		if (family == AF_UNSPEC) family = AF_INET;
-		buf = calloc(sizeof *buf, 1+EXTRA);
+		if (family == AF_UNSPEC) {
+			cnt = 2; family = AF_INET;
+		} else {
+			cnt = 1;
+		}
+		buf = calloc(sizeof *buf, cnt);
 		if (!buf) return EAI_MEMORY;
-		buf->ai.ai_protocol = proto;
-		buf->ai.ai_socktype = type;
-		buf->ai.ai_addr = (void *)&buf->sa;
-		buf->ai.ai_addrlen = family==AF_INET6 ? sizeof sa.sin6 : sizeof sa.sin;
-		buf->ai.ai_family = family;
-		buf->sa.sin.sin_family = family;
-		buf->sa.sin.sin_port = port;
-		if (!(flags & AI_PASSIVE)) {
-			if (family == AF_INET) {
-				0[(uint8_t*)&buf->sa.sin.sin_addr.s_addr]=127;
-				3[(uint8_t*)&buf->sa.sin.sin_addr.s_addr]=1;
-			} else buf[0].sa.sin6.sin6_addr.s6_addr[15] = 1;
+		for (i=0; i<cnt; i++) {
+			if (i) family = AF_INET6;
+			buf[i].ai.ai_protocol = proto;
+			buf[i].ai.ai_socktype = type;
+			buf[i].ai.ai_addr = (void *)&buf[i].sa;
+			buf[i].ai.ai_addrlen = family==AF_INET6
+				? sizeof sa.sin6 : sizeof sa.sin;
+			buf[i].ai.ai_family = family;
+			buf[i].sa.sin.sin_family = family;
+			buf[i].sa.sin.sin_port = port;
+			if (i+1<cnt) buf[i].ai.ai_next = &buf[i+1].ai;
+			if (!(flags & AI_PASSIVE)) {
+				if (family == AF_INET) {
+					0[(uint8_t*)&buf[i].sa.sin.sin_addr.s_addr]=127;
+					3[(uint8_t*)&buf[i].sa.sin.sin_addr.s_addr]=1;
+				} else buf[i].sa.sin6.sin6_addr.s6_addr[15] = 1;
+			}
 		}
 		*res = &buf->ai;
 		return 0;
