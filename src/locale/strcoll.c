@@ -1,6 +1,15 @@
 #include <string.h>
+#include <locale.h>
+#include "libc.h"
 
-int strcoll(const char *l, const char *r)
+int __strcoll_l(const char *l, const char *r, locale_t loc)
 {
 	return strcmp(l, r);
 }
+
+int strcoll(const char *l, const char *r)
+{
+	return __strcoll_l(l, r, LC_GLOBAL_LOCALE);
+}
+
+weak_alias(__strcoll_l, strcoll_l);
