@@ -190,7 +190,7 @@ static Sym *gnu_lookup(const char *s, uint32_t h1, struct dso *dso)
 }
 
 #define OK_TYPES (1<<STT_NOTYPE | 1<<STT_OBJECT | 1<<STT_FUNC | 1<<STT_COMMON | 1<<STT_TLS)
-#define OK_BINDS (1<<STB_GLOBAL | 1<<STB_WEAK)
+#define OK_BINDS (1<<STB_GLOBAL | 1<<STB_WEAK | 1<<STB_GNU_UNIQUE)
 
 static struct symdef find_sym(struct dso *dso, const char *s, int need_def)
 {
