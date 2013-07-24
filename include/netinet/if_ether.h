@@ -20,6 +20,7 @@
 #define	ETH_P_BPQ	0x08FF
 #define ETH_P_IEEEPUP	0x0a00
 #define ETH_P_IEEEPUPAT	0x0a01
+#define ETH_P_BATMAN	0x4305
 #define ETH_P_DEC       0x6000
 #define ETH_P_DNA_DL    0x6001
 #define ETH_P_DNA_RC    0x6002
@@ -61,6 +62,8 @@
 #define ETH_P_QINQ3	0x9300
 #define ETH_P_EDSA	0xDADA
 #define ETH_P_AF_IUCV	0xFBFB
+
+#define ETH_P_802_3_MIN	0x0600
 
 #define ETH_P_802_3	0x0001
 #define ETH_P_AX25	0x0002
