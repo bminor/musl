@@ -50,7 +50,7 @@ void *__memalign(size_t align, size_t len)
 	((size_t *)new)[-1] = header&7 | end-new;
 	((size_t *)end)[-2] = footer&7 | end-new;
 
-	if (new != mem) free(mem);
+	free(mem);
 	return new;
 }
 
