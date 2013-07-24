@@ -31,8 +31,10 @@ void *__memalign(size_t align, size_t len)
 	if (!(mem = malloc(len + align-1)))
 		return NULL;
 
-	header = ((size_t *)mem)[-1];
 	new = (void *)((uintptr_t)mem + align-1 & -align);
+	if (new == mem) return mem;
+
+	header = ((size_t *)mem)[-1];
 
 	if (!(header & 7)) {
 		((size_t *)new)[-2] = ((size_t *)mem)[-2] + (new-mem);
