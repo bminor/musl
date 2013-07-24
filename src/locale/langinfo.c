@@ -25,7 +25,7 @@ static const char c_time[] =
 static const char c_messages[] = "^[yY]\0" "^[nN]";
 static const char c_numeric[] = ".\0" "";
 
-char *__langinfo(nl_item item)
+char *__nl_langinfo_l(nl_item item, locale_t loc)
 {
 	int cat = item >> 16;
 	int idx = item & 65535;
@@ -58,4 +58,10 @@ char *__langinfo(nl_item item)
 	return (char *)str;
 }
 
-weak_alias(__langinfo, nl_langinfo);
+char *__nl_langinfo(nl_item item)
+{
+	return __nl_langinfo_l(item, LC_GLOBAL_LOCALE);
+}
+
+weak_alias(__nl_langinfo, nl_langinfo);
+weak_alias(__nl_langinfo_l, nl_langinfo_l);

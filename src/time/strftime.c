@@ -8,7 +8,7 @@
 
 // FIXME: integer overflows
 
-const char *__langinfo(nl_item);
+const char *__nl_langinfo_l(nl_item, locale_t);
 
 static int is_leap(int y)
 {
@@ -200,12 +200,12 @@ number:
 		l += snprintf(s+l, n-l, fmt, val);
 		continue;
 nl_strcat:
-		l += snprintf(s+l, n-l, "%s", __langinfo(item));
+		l += snprintf(s+l, n-l, "%s", __nl_langinfo_l(item, loc));
 		continue;
 nl_strftime:
-		fmt = __langinfo(item);
+		fmt = __nl_langinfo_l(item, loc);
 recu_strftime:
-		l += strftime(s+l, n-l, fmt, tm);
+		l += __strftime_l(s+l, n-l, fmt, tm, loc);
 	}
 	if (l >= n) return 0;
 	s[l] = 0;

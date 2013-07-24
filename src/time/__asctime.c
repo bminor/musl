@@ -3,14 +3,15 @@
 #include <langinfo.h>
 #include "atomic.h"
 
-const char *__langinfo(nl_item);
+const char *__nl_langinfo(nl_item);
 
 char *__asctime(const struct tm *restrict tm, char *restrict buf)
 {
-	/* FIXME: change __langinfo to __C_langinfo once we have locales */
+	/* FIXME: change __nl_langinfo to __nl_langinfo_l with explicit C
+	 * locale once we have locales */
 	if (snprintf(buf, 26, "%.3s %.3s%3d %.2d:%.2d:%.2d %d\n",
-		__langinfo(ABDAY_1+tm->tm_wday),
-		__langinfo(ABMON_1+tm->tm_mon),
+		__nl_langinfo(ABDAY_1+tm->tm_wday),
+		__nl_langinfo(ABMON_1+tm->tm_mon),
 		tm->tm_mday, tm->tm_hour,
 		tm->tm_min, tm->tm_sec,
 		1900 + tm->tm_year) >= 26)
