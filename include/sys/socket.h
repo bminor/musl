@@ -194,6 +194,7 @@ struct linger
 #define SO_PEEK_OFF             42
 #define SO_NOFCS                43
 #define SO_LOCK_FILTER          44
+#define SO_SELECT_ERR_QUEUE     45
 
 #ifndef SOL_SOCKET
 #define SOL_SOCKET      1
