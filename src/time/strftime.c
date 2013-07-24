@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <langinfo.h>
+#include <locale.h>
 #include <time.h>
 #include <limits.h>
+#include "libc.h"
 
 // FIXME: integer overflows
 
@@ -42,7 +44,7 @@ static int week_num(const struct tm *tm)
 	return val;
 }
 
-size_t strftime(char *restrict s, size_t n, const char *restrict f, const struct tm *restrict tm)
+size_t __strftime_l(char *restrict s, size_t n, const char *restrict f, const struct tm *restrict tm, locale_t loc)
 {
 	nl_item item;
 	int val;
@@ -209,3 +211,10 @@ recu_strftime:
 	s[l] = 0;
 	return l;
 }
+
+size_t strftime(char *restrict s, size_t n, const char *restrict f, const struct tm *restrict tm)
+{
+	return __strftime_l(s, n, f, tm, LC_GLOBAL_LOCALE);
+}
+
+weak_alias(__strftime_l, strftime_l);
