@@ -1,8 +1,11 @@
 #include <wchar.h>
 #include <time.h>
 #include <string.h>
+#include <locale.h>
 
-size_t wcsftime(wchar_t *restrict wcs, size_t n, const wchar_t *restrict f, const struct tm *restrict tm)
+size_t __strftime_l(char *restrict, size_t, const char *restrict, const struct tm *restrict, locale_t);
+
+size_t __wcsftime_l(wchar_t *restrict wcs, size_t n, const wchar_t *restrict f, const struct tm *restrict tm, locale_t loc)
 {
 	size_t k, n0=n;
 	char out[100], in[4];
@@ -17,7 +20,7 @@ size_t wcsftime(wchar_t *restrict wcs, size_t n, const wchar_t *restrict f, cons
 		in[0] = *f++;
 		if (strchr("EO", (in[1]=*f++)))
 			in[2] = *f++;
-		k = strftime(out, sizeof out, in, tm);
+		k = __strftime_l(out, sizeof out, in, tm, loc);
 		if (!k) return 0;
 		k = mbsrtowcs(wcs, (const char *[]){out}, n, 0);
 		if (k==(size_t)-1) return 0;
@@ -29,4 +32,7 @@ size_t wcsftime(wchar_t *restrict wcs, size_t n, const wchar_t *restrict f, cons
 	return n0-n;
 }
 
-
+size_t wcsftime(wchar_t *restrict wcs, size_t n, const wchar_t *restrict f, const struct tm *restrict tm)
+{
+	return __wcsftime_l(wcs, n, f, tm, LC_GLOBAL_LOCALE);
+}
