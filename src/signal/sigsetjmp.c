@@ -11,5 +11,5 @@ int sigsetjmp(sigjmp_buf buf, int save)
 {
 	if ((buf->__fl = save))
 		pthread_sigmask(SIG_SETMASK, 0, (sigset_t *)buf->__ss);
-	return setjmp(buf->__jb);
+	return setjmp(buf);
 }
