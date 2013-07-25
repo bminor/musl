@@ -82,6 +82,7 @@ struct linger
 #define PF_PPPOX        24
 #define PF_WANPIPE      25
 #define PF_LLC          26
+#define PF_IB           27
 #define PF_CAN          29
 #define PF_TIPC         30
 #define PF_BLUETOOTH    31
@@ -93,7 +94,8 @@ struct linger
 #define PF_CAIF         37
 #define PF_ALG          38
 #define PF_NFC          39
-#define PF_MAX          40
+#define PF_VSOCK        40
+#define PF_MAX          41
 
 #define AF_UNSPEC       PF_UNSPEC
 #define AF_LOCAL        PF_LOCAL
@@ -125,6 +127,7 @@ struct linger
 #define AF_PPPOX        PF_PPPOX
 #define AF_WANPIPE      PF_WANPIPE
 #define AF_LLC          PF_LLC
+#define AF_IB           PF_IB
 #define AF_CAN          PF_CAN
 #define AF_TIPC         PF_TIPC
 #define AF_BLUETOOTH    PF_BLUETOOTH
@@ -136,6 +139,7 @@ struct linger
 #define AF_CAIF         PF_CAIF
 #define AF_ALG          PF_ALG
 #define AF_NFC          PF_NFC
+#define AF_VSOCK        PF_VSOCK
 #define AF_MAX          PF_MAX
 
 #ifndef SO_DEBUG
