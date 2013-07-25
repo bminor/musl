@@ -108,16 +108,16 @@ typedef struct {
 		} __sigchld;
 		struct {
 			void *si_addr;
-			short int si_addr_lsb;
+			short si_addr_lsb;
 		} __sigfault;
 		struct {
 			long si_band;
 			int si_fd;
 		} __sigpoll;
 		struct {
-			unsigned int si_call_addr;
+			void *si_call_addr;
 			int si_syscall;
-			unsigned int si_arch;
+			unsigned si_arch;
 		} __sigsys;
 	} __si_fields;
 } siginfo_t;
