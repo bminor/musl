@@ -458,6 +458,18 @@ static struct dso *load_library(const char *name)
 			size_t l = z-name;
 			for (rp=reserved; *rp && memcmp(name+3, rp, l-3); rp+=strlen(rp)+1);
 			if (*rp) {
+				if (ldd_mode) {
+					/* Track which names have been resolved
+					 * and only report each one once. */
+					static unsigned reported;
+					unsigned mask = 1U<<(rp-reserved);
+					if (!(reported & mask)) {
+						reported |= mask;
+						dprintf(1, "\t%s => %s (%p)\n",
+							name, ldso->name,
+							ldso->base);
+					}
+				}
 				if (!ldso->prev) {
 					tail->next = ldso;
 					ldso->prev = tail;
@@ -941,6 +953,16 @@ void *__dynlink(int argc, char **argv)
 		lib->name = ldname;
 		app->name = argv[0];
 		aux[AT_ENTRY] = (size_t)app->base + ehdr->e_entry;
+		/* Find the name that would have been used for the dynamic
+		 * linker had ldd not taken its place. */
+		if (ldd_mode) {
+			for (i=0; i<app->phnum; i++) {
+				if (app->phdr[i].p_type == PT_INTERP)
+					lib->name = (void *)(app->base
+						+ app->phdr[i].p_vaddr);
+			}
+			dprintf(1, "\t%s (%p)\n", lib->name, lib->base);
+		}
 	}
 	if (app->tls_size) {
 		app->tls_id = tls_cnt = 1;
