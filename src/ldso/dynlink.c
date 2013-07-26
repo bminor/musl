@@ -940,9 +940,7 @@ void *__dynlink(int argc, char **argv)
 		close(fd);
 		lib->name = ldname;
 		app->name = argv[0];
-		app->phnum = ehdr->e_phnum;
-		app->phdr = (void *)(app->base + ehdr->e_phoff);
-		aux[AT_ENTRY] = ehdr->e_entry;
+		aux[AT_ENTRY] = (size_t)app->base + ehdr->e_entry;
 	}
 	if (app->tls_size) {
 		app->tls_id = tls_cnt = 1;
