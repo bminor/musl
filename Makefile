@@ -80,6 +80,10 @@ include/bits/alltypes.h: include/bits/alltypes.h.in include/alltypes.h.in tools/
 
 src/ldso/dynlink.lo: arch/$(ARCH)/reloc.h
 
+crt/crt1.o crt/Scrt1.o: $(wildcard arch/$(ARCH)/crt_arch.h)
+
+crt/Scrt1.o: CFLAGS += -fPIC
+
 OPTIMIZE_SRCS = $(wildcard $(OPTIMIZE_GLOBS:%=src/%))
 $(OPTIMIZE_SRCS:%.c=%.o) $(OPTIMIZE_SRCS:%.c=%.lo): CFLAGS += -O3
 
