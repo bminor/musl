@@ -171,7 +171,7 @@ long sysconf(int name)
 		[_SC_REGEX_VERSION] = -1,
 		[_SC_SHELL] = 1,
 		[_SC_SIGNALS] = -1,
-		[_SC_SPAWN] = -1,
+		[_SC_SPAWN] = VER,
 		[_SC_SPORADIC_SERVER] = -1,
 		[_SC_THREAD_SPORADIC_SERVER] = -1,
 		[_SC_SYSTEM_DATABASE] = -1,

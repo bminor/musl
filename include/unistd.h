@@ -215,6 +215,7 @@ void syncfs(int);
 #define _POSIX_REGEXP           1
 #define _POSIX_SAVED_IDS        1
 #define _POSIX_SHELL            1
+#define _POSIX_SPAWN            _POSIX_VERSION
 #define _POSIX_VDISABLE         0
 
 #define _POSIX_THREADS          _POSIX_VERSION
