@@ -51,7 +51,11 @@ size_t __strftime_l(char *restrict s, size_t n, const char *restrict f, const st
 	const char *fmt;
 	size_t l;
 	for (l=0; *f && l<n; f++) {
-		if (*f == '%') {
+		if (*f != '%') {
+literal:
+			s[l++] = *f;
+			continue;
+		}
 do_fmt:
 		switch (*++f) {
 		case '%':
@@ -192,10 +196,6 @@ do_fmt:
 		default:
 			return 0;
 		}
-		}
-literal:
-		s[l++] = *f;
-		continue;
 number:
 		l += snprintf(s+l, n-l, fmt, val);
 		continue;
