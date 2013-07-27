@@ -201,6 +201,7 @@ void syncfs(int);
 #define _POSIX_VERSION          200809L
 #define _POSIX2_VERSION         _POSIX_VERSION
 
+#define _POSIX_ADVISORY_INFO    _POSIX_VERSION
 #define _POSIX_CHOWN_RESTRICTED 1
 #define _POSIX_IPV6             _POSIX_VERSION
 #define _POSIX_JOB_CONTROL      1
@@ -208,6 +209,7 @@ void syncfs(int);
 #define _POSIX_MEMLOCK          _POSIX_VERSION
 #define _POSIX_MEMLOCK_RANGE    _POSIX_VERSION
 #define _POSIX_MEMORY_PROTECTION _POSIX_VERSION
+#define _POSIX_MESSAGE_PASSING  _POSIX_VERSION
 #define _POSIX_FSYNC            _POSIX_VERSION
 #define _POSIX_NO_TRUNC         1
 #define _POSIX_RAW_SOCKETS      _POSIX_VERSION
