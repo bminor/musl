@@ -214,7 +214,7 @@ recu_strftime:
 
 size_t strftime(char *restrict s, size_t n, const char *restrict f, const struct tm *restrict tm)
 {
-	return __strftime_l(s, n, f, tm, LC_GLOBAL_LOCALE);
+	return __strftime_l(s, n, f, tm, 0);
 }
 
 weak_alias(__strftime_l, strftime_l);

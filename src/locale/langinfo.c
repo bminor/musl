@@ -60,7 +60,7 @@ char *__nl_langinfo_l(nl_item item, locale_t loc)
 
 char *__nl_langinfo(nl_item item)
 {
-	return __nl_langinfo_l(item, LC_GLOBAL_LOCALE);
+	return __nl_langinfo_l(item, 0);
 }
 
 weak_alias(__nl_langinfo, nl_langinfo);

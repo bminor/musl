@@ -15,7 +15,7 @@ size_t __wcsxfrm_l(wchar_t *restrict dest, const wchar_t *restrict src, size_t n
 
 size_t wcsxfrm(wchar_t *restrict dest, const wchar_t *restrict src, size_t n)
 {
-	return __wcsxfrm_l(dest, src, n, LC_GLOBAL_LOCALE);
+	return __wcsxfrm_l(dest, src, n, 0);
 }
 
 weak_alias(__wcsxfrm_l, wcsxfrm_l);
