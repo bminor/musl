@@ -896,7 +896,7 @@ void *__dynlink(int argc, char **argv)
 	lib->phdr = (void *)(aux[AT_BASE]+ehdr->e_phoff);
 	find_map_range(lib->phdr, ehdr->e_phnum, ehdr->e_phentsize, lib);
 	lib->dynv = (void *)(lib->base + find_dyn(lib->phdr,
-                    ehdr->e_phnum, ehdr->e_phentsize));
+		ehdr->e_phnum, ehdr->e_phentsize));
 	decode_dyn(lib);
 
 	if (aux[AT_PHDR]) {
