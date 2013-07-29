@@ -958,3 +958,42 @@ minor conformance bugs fixed:
 arch-specific bugs fixed:
 - x86_64 sigsetjmp clobbered the signal mask rather than saving it
 - misaligned stack when calling ctors/dtors (crashing on x86_64)
+
+
+
+0.9.12 release notes
+
+new feastures:
+- zoneinfo time zone support
+- PIE support on all supported archs
+- named sub-archs for endian and float ABI variants
+- improved support for non-root installs of the dynamic linker
+- ability to selectively build only performance-critical modules with -O3
+- simple buffer overflow detection in free/realloc
+- inet_ntop now presents v4-mapped addresses in ::ffff:a.b.c.d form
+- ldd now reports libc and the dynamic linker in its output
+
+compatibility:
+- support for new init/fini array (needed for ctors/dtors on newer gcc)
+- C++ ABI fully matches glibc/LSB, at least on x86
+- many added ABI compatibility symbols for using glibc-linked libs
+- support for STB_GNU_UNIQUE symbol bindings (found in some C++ libs)
+- macros/types for new Linux kernel features in headers
+
+bugs fixed:
+- crashes in scanf on literal mismatches (regression from adding %m)
+- dl_iterate_phdr was passing invalid phdr pointers to its callback
+- getaddrinfo with null host and AF_UNSPEC was failing to report IPv6
+- integer overflows in date/time conversion code
+- misinterpretation of pre-1930s dates as post-2038 on 32-bit archs
+- make install failed to install bits headers if make was not run first
+- shm_open was wrongly cancellable
+- low- or no-impact heap corruption in memalign
+- explicitly running the dynamic linker on PIE programs did not work
+- missing macros and sysconf for some supported POSIX option groups
+- missing close-on-exec flags for several internal fd uses
+
+arch-specific bugs:
+- wrong SIG_ATOMIC_MIN/MAX macros on x86_64
+- erfcl was missing on archs where long double is same as double
+- broken dynamic-model TLS in static-linked arm/mips/powerpc programs
