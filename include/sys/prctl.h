@@ -39,9 +39,9 @@ extern "C" {
 #define PR_GET_NAME    16
 #define PR_GET_ENDIAN 19
 #define PR_SET_ENDIAN 20
-#define PR_ENDIAN_BIG
-#define PR_ENDIAN_LITTLE
-#define PR_ENDIAN_PPC_LITTLE
+#define PR_ENDIAN_BIG 0
+#define PR_ENDIAN_LITTLE 1
+#define PR_ENDIAN_PPC_LITTLE 2
 #define PR_GET_SECCOMP 21
 #define PR_SET_SECCOMP 22
 #define PR_CAPBSET_READ 23
