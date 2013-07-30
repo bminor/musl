@@ -55,6 +55,43 @@ extern "C" {
 #define PR_SET_TIMERSLACK 29
 #define PR_GET_TIMERSLACK 30
 
+#define PR_TASK_PERF_EVENTS_DISABLE             31
+#define PR_TASK_PERF_EVENTS_ENABLE              32
+
+#define PR_MCE_KILL     33
+#define PR_MCE_KILL_CLEAR   0
+#define PR_MCE_KILL_SET     1
+#define PR_MCE_KILL_LATE    0
+#define PR_MCE_KILL_EARLY   1
+#define PR_MCE_KILL_DEFAULT 2
+#define PR_MCE_KILL_GET 34
+
+#define PR_SET_MM               35
+#define PR_SET_MM_START_CODE           1
+#define PR_SET_MM_END_CODE             2
+#define PR_SET_MM_START_DATA           3
+#define PR_SET_MM_END_DATA             4
+#define PR_SET_MM_START_STACK          5
+#define PR_SET_MM_START_BRK            6
+#define PR_SET_MM_BRK                  7
+#define PR_SET_MM_ARG_START            8
+#define PR_SET_MM_ARG_END              9
+#define PR_SET_MM_ENV_START            10
+#define PR_SET_MM_ENV_END              11
+#define PR_SET_MM_AUXV                 12
+#define PR_SET_MM_EXE_FILE             13
+
+#define PR_SET_PTRACER 0x59616d61
+#define PR_SET_PTRACER_ANY (-1UL)
+
+#define PR_SET_CHILD_SUBREAPER  36
+#define PR_GET_CHILD_SUBREAPER  37
+
+#define PR_SET_NO_NEW_PRIVS     38
+#define PR_GET_NO_NEW_PRIVS     39
+
+#define PR_GET_TID_ADDRESS      40
+
 int prctl (int, ...);
 
 #ifdef __cplusplus
