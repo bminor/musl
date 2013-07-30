@@ -14,7 +14,7 @@ weak_alias(dummy, __pthread_self_def);
 
 int __libc_sigaction(int sig, const struct sigaction *restrict sa, struct sigaction *restrict old)
 {
-	struct k_sigaction ksa;
+	struct k_sigaction ksa, ksa_old;
 	if (sa) {
 		if ((uintptr_t)sa->sa_handler > 1UL)
 			__pthread_self_def();
@@ -23,12 +23,12 @@ int __libc_sigaction(int sig, const struct sigaction *restrict sa, struct sigact
 		ksa.restorer = (sa->sa_flags & SA_SIGINFO) ? __restore_rt : __restore;
 		memcpy(&ksa.mask, &sa->sa_mask, sizeof ksa.mask);
 	}
-	if (syscall(SYS_rt_sigaction, sig, sa?&ksa:0, old?&ksa:0, sizeof ksa.mask))
+	if (syscall(SYS_rt_sigaction, sig, sa?&ksa:0, old?&ksa_old:0, sizeof ksa.mask))
 		return -1;
 	if (old) {
-		old->sa_handler = ksa.handler;
-		old->sa_flags = ksa.flags;
-		memcpy(&old->sa_mask, &ksa.mask, sizeof ksa.mask);
+		old->sa_handler = ksa_old.handler;
+		old->sa_flags = ksa_old.flags;
+		memcpy(&old->sa_mask, &ksa_old.mask, sizeof ksa_old.mask);
 	}
 	return 0;
 }
