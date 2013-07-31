@@ -318,7 +318,7 @@ static void *map_library(int fd, struct dso *dso)
 	size_t i;
 
 	ssize_t l = read(fd, buf, sizeof buf);
-	if (l<sizeof *eh) return 0;
+	if (l<(int)sizeof *eh) return 0;
 	eh = buf;
 	phsize = eh->e_phentsize * eh->e_phnum;
 	if (phsize + sizeof *eh > l) return 0;
