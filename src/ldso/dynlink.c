@@ -458,6 +458,7 @@ static struct dso *load_library(const char *name)
 	struct stat st;
 	size_t alloc_size;
 	int n_th = 0;
+	int is_self = 0;
 
 	/* Catch and block attempts to reload the implementation itself */
 	if (name[0]=='l' && name[1]=='i' && name[2]=='b') {
@@ -480,14 +481,18 @@ static struct dso *load_library(const char *name)
 							ldso->base);
 					}
 				}
-				if (!ldso->prev) {
-					tail->next = ldso;
-					ldso->prev = tail;
-					tail = ldso->next ? ldso->next : ldso;
-				}
-				return ldso;
+				is_self = 1;
 			}
 		}
+	}
+	if (!strcmp(name, ldso->name)) is_self = 1;
+	if (is_self) {
+		if (!ldso->prev) {
+			tail->next = ldso;
+			ldso->prev = tail;
+			tail = ldso->next ? ldso->next : ldso;
+		}
+		return ldso;
 	}
 	if (strchr(name, '/')) {
 		pathname = name;
