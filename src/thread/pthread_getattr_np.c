@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include "pthread_impl.h"
 #include <sys/mman.h>
 
@@ -13,7 +14,7 @@ int pthread_getattr_np(pthread_t t, pthread_attr_t *a)
 		size_t l = PAGE_SIZE;
 		p += -(uintptr_t)p & PAGE_SIZE-1;
 		a->_a_stackaddr = (uintptr_t)p;
-		while (!posix_madvise(p-l-PAGE_SIZE, PAGE_SIZE, POSIX_MADV_NORMAL))
+		while (mremap(p-l-PAGE_SIZE, PAGE_SIZE, 2*PAGE_SIZE, 0)==MAP_FAILED && errno==ENOMEM)
 			l += PAGE_SIZE;
 		a->_a_stacksize = l - DEFAULT_STACK_SIZE;
 	}
