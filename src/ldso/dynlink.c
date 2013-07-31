@@ -320,6 +320,10 @@ static void *map_library(int fd, struct dso *dso)
 	ssize_t l = read(fd, buf, sizeof buf);
 	if (l<(int)sizeof *eh) return 0;
 	eh = buf;
+	if (eh->e_type != ET_DYN && eh->e_type != ET_EXEC) {
+		errno = ENOEXEC;
+		return 0;
+	}
 	phsize = eh->e_phentsize * eh->e_phnum;
 	if (phsize + sizeof *eh > l) return 0;
 	if (eh->e_phoff + phsize > l) {
@@ -362,6 +366,12 @@ static void *map_library(int fd, struct dso *dso)
 	 * amount of virtual address space to map over later. */
 	map = mmap((void *)addr_min, map_len, prot, MAP_PRIVATE, fd, off_start);
 	if (map==MAP_FAILED) return 0;
+	/* If the loaded file is not relocatable and the requested address is
+	 * not available, then the load operation must fail. */
+	if (eh->e_type != ET_DYN && addr_min && map!=(void *)addr_min) {
+		errno = EBUSY;
+		goto error;
+	}
 	base = map - addr_min;
 	dso->phdr = 0;
 	dso->phnum = 0;
