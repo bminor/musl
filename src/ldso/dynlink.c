@@ -467,7 +467,7 @@ static struct dso *load_library(const char *name)
 		char *z = strchr(name, '.');
 		if (z) {
 			size_t l = z-name;
-			for (rp=reserved; *rp && memcmp(name+3, rp, l-3); rp+=strlen(rp)+1);
+			for (rp=reserved; *rp && strncmp(name+3, rp, l-3); rp+=strlen(rp)+1);
 			if (*rp) {
 				if (ldd_mode) {
 					/* Track which names have been resolved
