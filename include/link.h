@@ -1,6 +1,10 @@
 #ifndef _LINK_H
 #define _LINK_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <elf.h>
 #define __NEED_size_t
 #define __NEED_uint32_t
@@ -42,5 +46,9 @@ struct r_debug {
 };
 
 int dl_iterate_phdr(int (*)(struct dl_phdr_info *, size_t, void *), void *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
