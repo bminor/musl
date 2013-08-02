@@ -2,11 +2,10 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
-#include "libc.h"
 
 char *__randname(char *);
 
-char *__mktemp(char *template)
+char *mktemp(char *template)
 {
 	size_t l = strlen(template);
 	int retries = 10000;
@@ -24,5 +23,3 @@ char *__mktemp(char *template)
 	errno = EEXIST;
 	return template;
 }
-
-weak_alias(__mktemp, mktemp);
