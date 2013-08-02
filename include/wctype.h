@@ -11,7 +11,7 @@ extern "C" {
 #define __NEED_wctype_t
 
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
- || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+ || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 #define __NEED_locale_t
 #endif
 
@@ -47,7 +47,7 @@ wctype_t  wctype(const char *);
 #define iswdigit(a) (((unsigned)(a)-L'0') < 10)
 
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
- || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+ || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 
 int iswalnum_l(wint_t, locale_t);
 int iswalpha_l(wint_t, locale_t);
