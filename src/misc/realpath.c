@@ -6,6 +6,8 @@
 #include <errno.h>
 #include <unistd.h>
 
+void __procfdname(char *, unsigned);
+
 char *realpath(const char *restrict filename, char *restrict resolved)
 {
 	int fd;
@@ -21,7 +23,7 @@ char *realpath(const char *restrict filename, char *restrict resolved)
 
 	fd = open(filename, O_RDONLY|O_NONBLOCK|O_CLOEXEC);
 	if (fd < 0) return 0;
-	snprintf(buf, sizeof buf, "/proc/self/fd/%d", fd);
+	__procfdname(buf, fd);
 
 	if (!resolved) {
 		alloc = 1;

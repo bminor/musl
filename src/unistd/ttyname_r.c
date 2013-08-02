@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <string.h>
 
+void __procfdname(char *, unsigned);
+
 int ttyname_r(int fd, char *name, size_t size)
 {
 	char procname[sizeof "/proc/self/fd/" + 3*sizeof(int) + 2];
@@ -10,7 +12,7 @@ int ttyname_r(int fd, char *name, size_t size)
 
 	if (!isatty(fd)) return ENOTTY;
 
-	snprintf(procname, sizeof procname, "/proc/self/fd/%d", fd);
+	__procfdname(procname, fd);
 	l = readlink(procname, name, size);
 
 	if (l < 0) return errno;

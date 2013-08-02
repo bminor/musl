@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include "syscall.h"
 
+void __procfdname(char *, unsigned);
+
 int fchmodat(int fd, const char *path, mode_t mode, int flag)
 {
 	if (!flag) return syscall(SYS_fchmodat, fd, path, mode, flag);
@@ -26,7 +28,7 @@ int fchmodat(int fd, const char *path, mode_t mode, int flag)
 		return __syscall_ret(fd2);
 	}
 
-	snprintf(proc, sizeof proc, "/proc/self/fd/%d", fd2);
+	__procfdname(proc, fd2);
 	if (!(ret = __syscall(SYS_stat, proc, &st)) && !S_ISLNK(st.st_mode))
 		ret = __syscall(SYS_chmod, proc, mode);
 

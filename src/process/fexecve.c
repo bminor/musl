@@ -2,11 +2,12 @@
 #include <stdio.h>
 #include <errno.h>
 
+void __procfdname(char *, unsigned);
+
 int fexecve(int fd, char *const argv[], char *const envp[])
 {
-	static const char proc[] = "/proc/self/fd/%d";
-	char buf[sizeof proc + 3*sizeof(int)];
-	snprintf(buf, sizeof buf, proc, fd);
+	char buf[15 + 3*sizeof(int)];
+	__procfdname(buf, fd);
 	execve(buf, argv, envp);
 	if (errno == ENOENT) errno = EBADF;
 	return -1;
