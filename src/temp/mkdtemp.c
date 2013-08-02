@@ -8,19 +8,23 @@
 #include <sys/stat.h>
 #include "libc.h"
 
-char *__mktemp(char *);
+char *__randname(char *);
 
 char *mkdtemp(char *template)
 {
-	int retries = 100, t0 = *template;
-	while (retries--) {
-		if (!*__mktemp(template)) return 0;
-		if (!mkdir(template, 0700)) return template;
-		if (errno != EEXIST) return 0;
-		/* this is safe because mktemp verified
-		 * that we have a valid template string */
-		template[0] = t0;
-		strcpy(template+strlen(template)-6, "XXXXXX");
+	size_t l = strlen(template);
+	int retries = 100;
+
+	if (l<6 || memcmp(template+l-6, "XXXXXX", 6)) {
+		errno = EINVAL;
+		return 0;
 	}
+
+	do {
+		__randname(template+l-6);
+		if (!mkdir(template, 0700)) return template;
+	} while (--retries && errno == EEXIST);
+
+	memcpy(template+l-6, "XXXXXX", 6);
 	return 0;
 }
