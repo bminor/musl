@@ -305,6 +305,7 @@ static void reclaim_gaps(unsigned char *base, Phdr *ph, size_t phent, size_t phc
 static void *map_library(int fd, struct dso *dso)
 {
 	Ehdr buf[(896+sizeof(Ehdr))/sizeof(Ehdr)];
+	void *allocated_buf=0;
 	size_t phsize;
 	size_t addr_min=SIZE_MAX, addr_max=0, map_len;
 	size_t this_min, this_max;
@@ -312,23 +313,28 @@ static void *map_library(int fd, struct dso *dso)
 	Ehdr *eh;
 	Phdr *ph, *ph0;
 	unsigned prot;
-	unsigned char *map, *base;
+	unsigned char *map=MAP_FAILED, *base;
 	size_t dyn=0;
 	size_t tls_image=0;
 	size_t i;
 
 	ssize_t l = read(fd, buf, sizeof buf);
-	if (l<(int)sizeof *eh) return 0;
 	eh = buf;
-	if (eh->e_type != ET_DYN && eh->e_type != ET_EXEC) {
-		errno = ENOEXEC;
-		return 0;
-	}
+	if (l<0) return 0;
+	if (l<sizeof *eh || (eh->e_type != ET_DYN && eh->e_type != ET_EXEC))
+		goto noexec;
 	phsize = eh->e_phentsize * eh->e_phnum;
-	if (phsize + sizeof *eh > l) return 0;
-	if (eh->e_phoff + phsize > l) {
+	if (phsize > sizeof buf - sizeof *eh) {
+		allocated_buf = malloc(phsize);
+		if (!allocated_buf) return 0;
+		l = pread(fd, allocated_buf, phsize, eh->e_phoff);
+		if (l < 0) goto error;
+		if (l != phsize) goto noexec;
+		ph = ph0 = allocated_buf;
+	} else if (eh->e_phoff + phsize > l) {
 		l = pread(fd, buf+1, phsize, eh->e_phoff);
-		if (l != phsize) return 0;
+		if (l < 0) goto error;
+		if (l != phsize) goto noexec;
 		ph = ph0 = (void *)(buf + 1);
 	} else {
 		ph = ph0 = (void *)((char *)buf + eh->e_phoff);
@@ -354,7 +360,7 @@ static void *map_library(int fd, struct dso *dso)
 			addr_max = ph->p_vaddr+ph->p_memsz;
 		}
 	}
-	if (!dyn) return 0;
+	if (!dyn) goto noexec;
 	addr_max += PAGE_SIZE-1;
 	addr_max &= -PAGE_SIZE;
 	addr_min &= -PAGE_SIZE;
@@ -365,7 +371,7 @@ static void *map_library(int fd, struct dso *dso)
 	 * use the invalid part; we just need to reserve the right
 	 * amount of virtual address space to map over later. */
 	map = mmap((void *)addr_min, map_len, prot, MAP_PRIVATE, fd, off_start);
-	if (map==MAP_FAILED) return 0;
+	if (map==MAP_FAILED) goto error;
 	/* If the loaded file is not relocatable and the requested address is
 	 * not available, then the load operation must fail. */
 	if (eh->e_type != ET_DYN && addr_min && map!=(void *)addr_min) {
@@ -416,8 +422,11 @@ static void *map_library(int fd, struct dso *dso)
 	dso->dynv = (void *)(base+dyn);
 	if (dso->tls_size) dso->tls_image = (void *)(base+tls_image);
 	return map;
+noexec:
+	errno = ENOEXEC;
 error:
-	munmap(map, map_len);
+	if (map!=MAP_FAILED) munmap(map, map_len);
+	free(allocated_buf);
 	return 0;
 }
 
