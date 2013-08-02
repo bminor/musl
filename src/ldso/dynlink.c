@@ -517,8 +517,8 @@ static struct dso *load_library(const char *name)
 		}
 		if (strlen(name) > NAME_MAX) return 0;
 		fd = -1;
-		if (r_path) fd = path_open(name, r_path, buf, sizeof buf);
-		if (fd < 0 && env_path) fd = path_open(name, env_path, buf, sizeof buf);
+		if (env_path) fd = path_open(name, env_path, buf, sizeof buf);
+		if (fd < 0 && r_path) fd = path_open(name, r_path, buf, sizeof buf);
 		if (fd < 0) {
 			if (!sys_path) {
 				char *prefix = 0;
