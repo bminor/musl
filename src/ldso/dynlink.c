@@ -313,7 +313,7 @@ static void *map_library(int fd, struct dso *dso)
 	Phdr *ph, *ph0;
 	unsigned prot;
 	unsigned char *map, *base;
-	size_t dyn;
+	size_t dyn=0;
 	size_t tls_image=0;
 	size_t i;
 
