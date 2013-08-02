@@ -198,6 +198,13 @@ static char *fmt_u(uintmax_t x, char *s)
 	return s;
 }
 
+/* Do not override this check. The floating point printing code below
+ * depends on the float.h constants being right. If they are wrong, it
+ * may overflow the stack. */
+#if LDBL_MANT_DIG == 53
+typedef char compiler_defines_long_double_incorrectly[9-(int)sizeof(long double)];
+#endif
+
 static int fmt_fp(FILE *f, long double y, int w, int p, int fl, int t)
 {
 	uint32_t big[(LDBL_MAX_EXP+LDBL_MANT_DIG)/9+1];

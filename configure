@@ -393,6 +393,27 @@ test "$ARCH" = "microblaze" && trycppif __MICROBLAZEEL__ "$t" \
 test "$SUBARCH" \
 && printf "configured for %s variant: %s\n" "$ARCH" "$ARCH$SUBARCH"
 
+#
+# Some archs (powerpc) have different possible long double formats
+# that the compiler can be configured for. The logic for whether this
+# is supported is in bits/float.h; in general, it is not. We need to
+# check for mismatches here or code in printf, strotd, and scanf will
+# be dangerously incorrect because it depends on (1) the macros being
+# correct, and (2) IEEE semantics.
+#
+printf "checking whether compiler's long double definition matches float.h... "
+echo '#include <float.h>' > "$tmpc"
+echo '#if LDBL_MANT_DIG == 53' >> "$tmpc"
+echo 'typedef char ldcheck[9-(int)sizeof(long double)];' >> "$tmpc"
+echo '#endif' >> "$tmpc"
+if $CC $CFLAGS_C99FSE -I./arch/$ARCH -I./include $CPPFLAGS $CFLAGS \
+  -c -o /dev/null "$tmpc" >/dev/null 2>&1 ; then
+printf "yes\n"
+else
+printf "no\n"
+fail "$0: error: unsupported long double type"
+fi
+
 printf "creating config.mak... "
 
 exec 3>&1 1>config.mak
