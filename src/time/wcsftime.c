@@ -2,6 +2,7 @@
 #include <time.h>
 #include <string.h>
 #include <locale.h>
+#include "libc.h"
 
 size_t __strftime_l(char *restrict, size_t, const char *restrict, const struct tm *restrict, locale_t);
 
@@ -36,3 +37,5 @@ size_t wcsftime(wchar_t *restrict wcs, size_t n, const wchar_t *restrict f, cons
 {
 	return __wcsftime_l(wcs, n, f, tm, 0);
 }
+
+weak_alias(__wcsftime_l, wcsftime_l);
