@@ -421,6 +421,7 @@ static void *map_library(int fd, struct dso *dso)
 	dso->base = base;
 	dso->dynv = (void *)(base+dyn);
 	if (dso->tls_size) dso->tls_image = (void *)(base+tls_image);
+	free(allocated_buf);
 	return map;
 noexec:
 	errno = ENOEXEC;
