@@ -138,9 +138,13 @@ static struct node *remove(struct node **n, const void *k,
 void *tdelete(const void *restrict key, void **restrict rootp,
 	int(*compar)(const void *, const void *))
 {
+	struct node *n = *rootp;
+	struct node *ret;
 	/* last argument is arbitrary non-null pointer
 	   which is returned when the root node is deleted */
-	return remove((void*)rootp, key, compar, *rootp);
+	ret = remove(&n, key, compar, n);
+	*rootp = n;
+	return ret;
 }
 
 void *tfind(const void *key, void *const *rootp,
@@ -153,7 +157,11 @@ void *tsearch(const void *key, void **rootp,
 	int (*compar)(const void *, const void *))
 {
 	int new = 0;
-	return insert((void*)rootp, key, compar, &new);
+	struct node *n = *rootp;
+	struct node *ret;
+	ret = insert(&n, key, compar, &new);
+	*rootp = n;
+	return ret;
 }
 
 static void walk(const struct node *r, void (*action)(const void *, VISIT, int), int d)
