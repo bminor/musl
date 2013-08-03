@@ -55,8 +55,6 @@ static void install_handler()
 		.sa_flags = SA_SIGINFO | SA_RESTART
 	};
 	__libc_sigaction(SIGTIMER, &sa, 0);
-	__syscall(SYS_rt_sigprocmask, SIG_UNBLOCK,
-		SIGTIMER_SET, 0, _NSIG/8);
 }
 
 static void *start(void *arg)
@@ -72,6 +70,8 @@ static void *start(void *arg)
 
 	pthread_barrier_wait(&args->b);
 	if ((id = self->timer_id) >= 0) {
+		__syscall(SYS_rt_sigprocmask, SIG_UNBLOCK,
+			SIGTIMER_SET, 0, _NSIG/8);
 		__wait(&self->timer_id, 0, id, 1);
 		__syscall(SYS_timer_delete, id);
 	}
