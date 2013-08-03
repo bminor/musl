@@ -1,7 +1,52 @@
 #include <unistd.h>
+#include <fcntl.h>
 #include "syscall.h"
+#include "pthread_impl.h"
+
+struct ctx {
+	int fd;
+	const char *filename;
+	int amode;
+	int p;
+};
+
+static int checker(void *p)
+{
+	struct ctx *c = p;
+	int ret;
+	if (__syscall(SYS_setgid, __syscall(SYS_getegid))
+	    || __syscall(SYS_setuid, __syscall(SYS_geteuid)))
+		__syscall(SYS_exit, 1);
+	ret = __syscall(SYS_faccessat, c->fd, c->filename, c->amode, 0);
+	__syscall(SYS_write, c->p, &ret, sizeof ret);
+	__syscall(SYS_exit, 0);
+}
 
 int faccessat(int fd, const char *filename, int amode, int flag)
 {
-	return syscall(SYS_faccessat, fd, filename, amode, flag);
+	if (!flag || (flag==AT_EACCESS && getuid()==geteuid() && getgid()==getegid()))
+		return syscall(SYS_faccessat, fd, filename, amode, flag);
+
+	if (flag != AT_EACCESS)
+		return __syscall_ret(-EINVAL);
+
+	char stack[1024];
+	sigset_t set;
+	int ret, p[2];
+
+	if (pipe(p)) return __syscall_ret(-EBUSY);
+	struct ctx c = { .fd = fd, .filename = filename, .amode = amode, .p = p[1] };
+
+	__block_app_sigs(&set);
+	
+	ret = __clone(checker, stack+sizeof stack, 0, &c);
+	__syscall(SYS_close, p[1]);
+
+	if (ret<0 || __syscall(SYS_read, p[0], &ret, sizeof ret) != sizeof(ret))
+		ret = -EBUSY;
+	__syscall(SYS_close, p[0]);
+
+	__restore_sigs(&set);
+
+	return __syscall_ret(ret);
 }
