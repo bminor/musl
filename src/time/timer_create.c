@@ -60,20 +60,18 @@ static void *start(void *arg)
 {
 	pthread_t self = __pthread_self();
 	struct start_args *args = arg;
-	sigset_t set;
+	int id;
 
 	/* Reuse no-longer-needed thread structure fields to avoid
 	 * needing the timer address in the signal handler. */
 	self->start = (void *(*)(void *))args->sev->sigev_notify_function;
 	self->start_arg = args->sev->sigev_value.sival_ptr;
-	self->result = (void *)-1;
-
-	sigfillset(&set);
-	pthread_sigmask(SIG_BLOCK, &set, 0);
 
 	pthread_barrier_wait(&args->b);
-	__wait(&self->delete_timer, 0, 0, 1);
-	__syscall(SYS_timer_delete, self->result);
+	if ((id = self->timer_id) >= 0) {
+		__wait(&self->timer_id, 0, id, 1);
+		__syscall(SYS_timer_delete, id);
+	}
 	return 0;
 }
 
@@ -86,6 +84,7 @@ int timer_create(clockid_t clk, struct sigevent *restrict evp, timer_t *restrict
 	struct start_args args;
 	struct ksigevent ksev, *ksevp=0;
 	int timerid;
+	sigset_t set;
 
 	switch (evp ? evp->sigev_notify : SIGEV_SIGNAL) {
 	case SIGEV_NONE:
@@ -110,23 +109,25 @@ int timer_create(clockid_t clk, struct sigevent *restrict evp, timer_t *restrict
 		pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 		pthread_barrier_init(&args.b, 0, 2);
 		args.sev = evp;
+
+		__block_app_sigs(&set);
 		r = pthread_create(&td, &attr, start, &args);
+		__restore_sigs(&set);
 		if (r) {
 			errno = r;
 			return -1;
 		}
+
 		ksev.sigev_value.sival_ptr = 0;
 		ksev.sigev_signo = SIGTIMER;
 		ksev.sigev_notify = 4; /* SIGEV_THREAD_ID */
 		ksev.sigev_tid = td->tid;
-		r = syscall(SYS_timer_create, clk, &ksev, &timerid);
+		if (syscall(SYS_timer_create, clk, &ksev, &timerid) < 0)
+			timerid = -1;
+		td->timer_id = timerid;
 		pthread_barrier_wait(&args.b);
-		if (r < 0) {
-			pthread_cancel(td);
-			return -1;
-		}
-		td->result = (void *)(intptr_t)timerid;
-		*res = td;
+		if (timerid < 0) return -1;
+		*res = (void *)(INTPTR_MIN | (uintptr_t)td>>1);
 		break;
 	default:
 		errno = EINVAL;

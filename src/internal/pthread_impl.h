@@ -38,7 +38,7 @@ struct pthread {
 		void *pending;
 	} robust_list;
 	int unblock_cancel;
-	int delete_timer;
+	int timer_id;
 	locale_t locale;
 	int killlock[2];
 	int exitlock[2];
