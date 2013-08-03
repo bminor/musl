@@ -783,6 +783,19 @@ void _dl_debug_state(void)
 {
 }
 
+void __reset_tls()
+{
+	pthread_t self = __pthread_self();
+	struct dso *p;
+	for (p=head; p; p=p->next) {
+		if (!p->tls_id || !self->dtv[p->tls_id]) continue;
+		memcpy(self->dtv[p->tls_id], p->tls_image, p->tls_len);
+		memset((char *)self->dtv[p->tls_id]+p->tls_len, 0,
+			p->tls_size - p->tls_len);
+		if (p->tls_id == (size_t)self->dtv[0]) break;
+	}
+}
+
 void *__copy_tls(unsigned char *mem)
 {
 	pthread_t td;

@@ -19,6 +19,8 @@ static void dummy_1(pthread_t self)
 }
 weak_alias(dummy_1, __pthread_tsd_run_dtors);
 
+void __reset_tls();
+
 static void cleanup_fromsig(void *p)
 {
 	pthread_t self = __pthread_self();
@@ -28,6 +30,7 @@ static void cleanup_fromsig(void *p)
 	self->canceldisable = 0;
 	self->cancelasync = 0;
 	self->unblock_cancel = 0;
+	__reset_tls();
 	longjmp(p, 1);
 }
 

@@ -8,29 +8,33 @@
 
 #ifndef SHARED
 
-static void *image;
-static size_t len, size, align;
+struct tls_image {
+	void *image;
+	size_t len, size, align;
+} __static_tls ATTR_LIBC_VISIBILITY;
+
+#define T __static_tls
 
 void *__copy_tls(unsigned char *mem)
 {
 	pthread_t td;
-	if (!image) return mem;
+	if (!T.image) return mem;
 	void **dtv = (void *)mem;
 	dtv[0] = (void *)1;
 #ifdef TLS_ABOVE_TP
 	mem += sizeof(void *) * 2;
-	mem += -((uintptr_t)mem + sizeof(struct pthread)) & (align-1);
+	mem += -((uintptr_t)mem + sizeof(struct pthread)) & (T.align-1);
 	td = (pthread_t)mem;
 	mem += sizeof(struct pthread);
 #else
 	mem += libc.tls_size - sizeof(struct pthread);
-	mem -= (uintptr_t)mem & (align-1);
+	mem -= (uintptr_t)mem & (T.align-1);
 	td = (pthread_t)mem;
-	mem -= size;
+	mem -= T.size;
 #endif
 	td->dtv = dtv;
 	dtv[1] = mem;
-	memcpy(mem, image, len);
+	memcpy(mem, T.image, T.len);
 	return td;
 }
 
@@ -73,15 +77,15 @@ void __init_tls(size_t *aux)
 	}
 	if (!tls_phdr) return;
 
-	image = (void *)(base + tls_phdr->p_vaddr);
-	len = tls_phdr->p_filesz;
-	size = tls_phdr->p_memsz;
-	align = tls_phdr->p_align;
+	T.image = (void *)(base + tls_phdr->p_vaddr);
+	T.len = tls_phdr->p_filesz;
+	T.size = tls_phdr->p_memsz;
+	T.align = tls_phdr->p_align;
 
-	size += (-size - (uintptr_t)image) & (align-1);
-	if (align < 4*sizeof(size_t)) align = 4*sizeof(size_t);
+	T.size += (-T.size - (uintptr_t)T.image) & (T.align-1);
+	if (T.align < 4*sizeof(size_t)) T.align = 4*sizeof(size_t);
 
-	libc.tls_size = 2*sizeof(void *)+size+align+sizeof(struct pthread);
+	libc.tls_size = 2*sizeof(void *)+T.size+T.align+sizeof(struct pthread);
 
 	mem = __mmap(0, libc.tls_size, PROT_READ|PROT_WRITE,
 		MAP_ANONYMOUS|MAP_PRIVATE, -1, 0);
