@@ -20,6 +20,7 @@
 #define GB18030     0330
 #define GBK         0331
 #define GB2312      0332
+#define EUC_KR      0350
 
 /* FIXME: these are not implemented yet
  * EUC:   A1-FE A1-FE
@@ -47,6 +48,7 @@ static const unsigned char charmaps[] =
 "gb18030\0\0\330"
 "gbk\0\0\331"
 "gb2312\0\0\332"
+"euckr\0ksc5601\0ksx1001\0cp949\0\0\350"
 #include "codepages.h"
 ;
 
@@ -60,6 +62,10 @@ static const unsigned short jis0208[84][94] = {
 
 static const unsigned short gb18030[126][190] = {
 #include "gb18030.h"
+};
+
+static const unsigned short ksc[93][94] = {
+#include "ksc.h"
 };
 
 static int fuzzycmp(const unsigned char *a, const unsigned char *b)
@@ -277,6 +283,38 @@ size_t iconv(iconv_t cd0, char **restrict in, size_t *restrict inb, char **restr
 			d -= 0x40;
 			if (d>63) d--;
 			c = gb18030[c][d];
+			break;
+		case EUC_KR:
+			l = 2;
+			if (*inb < 2) goto starved;
+			d = *((unsigned char *)*in + 1);
+			c -= 0xa1;
+			d -= 0xa1;
+			if (c >= 93 || d >= 94) {
+				c += (0xa1-0x81);
+				d += 0xa1;
+				if (c >= 93 || c>=0xc6-0x81 && d>0x52)
+					goto ilseq;
+				if (d-'A'<26) d = d-'A';
+				else if (d-'a'<26) d = d-'a'+26;
+				else if (d-0x81<0xff-0x81) d = d-0x81+52;
+				else goto ilseq;
+				if (c < 0x20) c = 178*c + d;
+				else c = 178*0x20 + 84*(c-0x20) + d;
+				c += 0xac00;
+				for (d=0xac00; d<=c; ) {
+					k = 0;
+					for (int i=0; i<93; i++)
+						for (int j=0; j<94; j++)
+							if (ksc[i][j]-d <= c-d)
+								k++;
+					d = c+1;
+					c += k;
+				}
+				break;
+			}
+			c = ksc[c][d];
+			if (!c) goto ilseq;
 			break;
 		default:
 			if (c < 128+type) break;
