@@ -16,7 +16,7 @@ char *fcvt(double x, int n, int *dp, int *sign)
 
 	if (n<=lz) {
 		*sign = i;
-		*dp = 0;
+		*dp = 1;
 		if (n>14U) n = 14;
 		return "000000000000000"+14-n;
 	}
