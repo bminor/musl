@@ -20,6 +20,7 @@
 #define GB18030     0330
 #define GBK         0331
 #define GB2312      0332
+#define BIG5        0340
 #define EUC_KR      0350
 
 /* FIXME: these are not implemented yet
@@ -48,6 +49,7 @@ static const unsigned char charmaps[] =
 "gb18030\0\0\330"
 "gbk\0\0\331"
 "gb2312\0\0\332"
+"big5\0bigfive\0cp950\0\0\340"
 "euckr\0ksc5601\0ksx1001\0cp949\0\0\350"
 #include "codepages.h"
 ;
@@ -62,6 +64,10 @@ static const unsigned short jis0208[84][94] = {
 
 static const unsigned short gb18030[126][190] = {
 #include "gb18030.h"
+};
+
+static const unsigned short big5[89][157] = {
+#include "big5.h"
 };
 
 static const unsigned short ksc[93][94] = {
@@ -283,6 +289,18 @@ size_t iconv(iconv_t cd0, char **restrict in, size_t *restrict inb, char **restr
 			d -= 0x40;
 			if (d>63) d--;
 			c = gb18030[c][d];
+			break;
+		case BIG5:
+			l = 2;
+			if (*inb < 2) goto starved;
+			d = *((unsigned char *)*in + 1);
+			if (c-0xa1>=0xfa-0xa1) goto ilseq;
+			c -= 0xa1;
+			if (d-0x40>=0xff-0x40 || d-0x7f<0xa1-0x7f) goto ilseq;
+			d -= 0x40;
+			if (d > 0x3e) d -= 0x22;
+			c = big5[c][d];
+			if (!c) goto ilseq;
 			break;
 		case EUC_KR:
 			l = 2;
