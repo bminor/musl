@@ -1,6 +1,10 @@
 #ifndef _PERSONALITY_H
 #define _PERSONALITY_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define ADDR_NO_RANDOMIZE  0x0040000
 #define MMAP_PAGE_ZERO     0x0100000
 #define ADDR_COMPAT_LAYOUT 0x0200000
@@ -36,4 +40,7 @@
 
 int personality(unsigned long);
 
+#ifdef __cplusplus
+}
+#endif
 #endif
