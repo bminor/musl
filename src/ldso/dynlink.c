@@ -63,6 +63,7 @@ struct dso {
 	Sym *syms;
 	uint32_t *hashtab;
 	uint32_t *ghashtab;
+	int16_t *versym;
 	char *strings;
 	unsigned char *map;
 	size_t map_len;
@@ -156,7 +157,8 @@ static Sym *sysv_lookup(const char *s, uint32_t h, struct dso *dso)
 	uint32_t *hashtab = dso->hashtab;
 	char *strings = dso->strings;
 	for (i=hashtab[2+h%hashtab[0]]; i; i=hashtab[2+hashtab[0]+i]) {
-		if (!strcmp(s, strings+syms[i].st_name))
+		if ((!dso->versym || dso->versym[i] >= 0)
+		    && (!strcmp(s, strings+syms[i].st_name)))
 			return syms+i;
 	}
 	return 0;
@@ -164,25 +166,24 @@ static Sym *sysv_lookup(const char *s, uint32_t h, struct dso *dso)
 
 static Sym *gnu_lookup(const char *s, uint32_t h1, struct dso *dso)
 {
-	Sym *sym;
-	char *strings;
+	Sym *syms = dso->syms;
+	char *strings = dso->strings;
 	uint32_t *hashtab = dso->ghashtab;
 	uint32_t nbuckets = hashtab[0];
 	uint32_t *buckets = hashtab + 4 + hashtab[2]*(sizeof(size_t)/4);
 	uint32_t h2;
 	uint32_t *hashval;
-	uint32_t n = buckets[h1 % nbuckets];
+	uint32_t i = buckets[h1 % nbuckets];
 
-	if (!n) return 0;
+	if (!i) return 0;
 
-	strings = dso->strings;
-	sym = dso->syms + n;
-	hashval = buckets + nbuckets + (n - hashtab[1]);
+	hashval = buckets + nbuckets + (i - hashtab[1]);
 
-	for (h1 |= 1; ; sym++) {
+	for (h1 |= 1; ; i++) {
 		h2 = *hashval++;
-		if ((h1 == (h2|1)) && !strcmp(s, strings + sym->st_name))
-			return sym;
+		if ((!dso->versym || dso->versym[i] >= 0)
+		    && (h1 == (h2|1)) && !strcmp(s, strings + syms[i].st_name))
+			return syms+i;
 		if (h2 & 1) break;
 	}
 
@@ -456,6 +457,8 @@ static void decode_dyn(struct dso *p)
 		p->hashtab = (void *)(p->base + dyn[DT_HASH]);
 	if (search_vec(p->dynv, dyn, DT_GNU_HASH))
 		p->ghashtab = (void *)(p->base + *dyn);
+	if (search_vec(p->dynv, dyn, DT_VERSYM))
+		p->versym = (void *)(p->base + *dyn);
 }
 
 static struct dso *load_library(const char *name)
