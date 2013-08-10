@@ -12,12 +12,26 @@ void __restore(), __restore_rt();
 static pthread_t dummy(void) { return 0; }
 weak_alias(dummy, __pthread_self_def);
 
+static unsigned long handler_set[_NSIG/(8*sizeof(long))];
+
+void __get_handler_set(sigset_t *set)
+{
+	memcpy(set, handler_set, sizeof handler_set);
+}
+
 int __libc_sigaction(int sig, const struct sigaction *restrict sa, struct sigaction *restrict old)
 {
 	struct k_sigaction ksa, ksa_old;
+	if (sig >= (unsigned)_NSIG) {
+		errno = EINVAL;
+		return -1;
+	}
 	if (sa) {
-		if ((uintptr_t)sa->sa_handler > 1UL)
+		if ((uintptr_t)sa->sa_handler > 1UL) {
+			a_or_l(handler_set+(sig-1)/(8*sizeof(long)),
+				1UL<<(sig-1)%(8*sizeof(long)));
 			__pthread_self_def();
+		}
 		ksa.handler = sa->sa_handler;
 		ksa.flags = sa->sa_flags | SA_RESTORER;
 		ksa.restorer = (sa->sa_flags & SA_SIGINFO) ? __restore_rt : __restore;

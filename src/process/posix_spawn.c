@@ -20,29 +20,43 @@ struct args {
 	char *const *argv, *const *envp;
 };
 
+void __get_handler_set(sigset_t *);
+
 static int child(void *args_vp)
 {
 	int i, ret;
-	struct sigaction sa;
+	struct sigaction sa = {0};
 	struct args *args = args_vp;
 	int p = args->p[1];
 	const posix_spawn_file_actions_t *fa = args->fa;
 	const posix_spawnattr_t *restrict attr = args->attr;
+	sigset_t hset;
 
 	close(args->p[0]);
 
 	/* All signal dispositions must be either SIG_DFL or SIG_IGN
 	 * before signals are unblocked. Otherwise a signal handler
 	 * from the parent might get run in the child while sharing
-	 * memory, with unpredictable and dangerous results. */
+	 * memory, with unpredictable and dangerous results. To
+	 * reduce overhead, sigaction has tracked for us which signals
+	 * potentially have a signal handler. */
+	__get_handler_set(&hset);
 	for (i=1; i<_NSIG; i++) {
-		__libc_sigaction(i, 0, &sa);
-		if (sa.sa_handler!=SIG_DFL && (sa.sa_handler!=SIG_IGN ||
-		    ((attr->__flags & POSIX_SPAWN_SETSIGDEF)
-		     && sigismember(&attr->__def, i) ))) {
+		if ((attr->__flags & POSIX_SPAWN_SETSIGDEF)
+		     && sigismember(&attr->__def, i)) {
 			sa.sa_handler = SIG_DFL;
-			__libc_sigaction(i, &sa, 0);
+		} else if (sigismember(&hset, i)) {
+			if (i-32<3U) {
+				sa.sa_handler = SIG_IGN;
+			} else {
+				__libc_sigaction(i, 0, &sa);
+				if (sa.sa_handler==SIG_IGN) continue;
+				sa.sa_handler = SIG_DFL;
+			}
+		} else {
+			continue;
 		}
+		__libc_sigaction(i, &sa, 0);
 	}
 
 	if (attr->__flags & POSIX_SPAWN_SETPGROUP)
