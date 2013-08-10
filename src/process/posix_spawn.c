@@ -105,6 +105,7 @@ static int child(void *args_vp)
 		? &attr->__mask : &args->oldmask, 0);
 
 	args->exec(args->path, args->argv, args->envp);
+	ret = -errno;
 
 fail:
 	/* Since sizeof errno < PIPE_BUF, the write is atomic. */
