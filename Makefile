@@ -99,6 +99,9 @@ $(MEMOPS_SRCS:%.c=%.o) $(MEMOPS_SRCS:%.c=%.lo): CFLAGS += $(CFLAGS_MEMOPS)
 %.o: %.c $(GENH) $(IMPH)
 	$(CC) $(CFLAGS_ALL_STATIC) -c -o $@ $<
 
+%.lo: $(ARCH)$(ASMSUBARCH)/%.s
+	$(CC) $(CFLAGS_ALL_SHARED) -c -o $@ $<
+
 %.lo: $(ARCH)/%.s
 	$(CC) $(CFLAGS_ALL_SHARED) -c -o $@ $<
 
