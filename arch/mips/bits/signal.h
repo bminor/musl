@@ -100,4 +100,4 @@ typedef struct __ucontext {
 #define SIGXFSZ   31
 #define SIGUNUSED SIGSYS
 
-#define _NSIG 129
+#define _NSIG 128
