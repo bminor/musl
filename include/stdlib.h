@@ -88,8 +88,8 @@ size_t wcstombs (char *__restrict, const wchar_t *__restrict, size_t);
 #define WTERMSIG(s) ((s) & 0x7f)
 #define WSTOPSIG(s) WEXITSTATUS(s)
 #define WIFEXITED(s) (!WTERMSIG(s))
-#define WIFSTOPPED(s) (((s) & 0xff) == 0x7f)
-#define WIFSIGNALED(s) (((signed char) (((s) & 0x7f) + 1) >> 1) > 0)
+#define WIFSTOPPED(s) ((short)((((s)&0xffff)*0x10001)>>8) > 0x7f00)
+#define WIFSIGNALED(s) (((s)&0xffff)-1 < 0xffu)
 
 int posix_memalign (void **, size_t, size_t);
 int setenv (const char *, const char *, int);
