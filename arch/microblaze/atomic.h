@@ -134,6 +134,11 @@ static inline void a_or(volatile int *p, int v)
 	while (a_cas(p, old, old|v) != old);
 }
 
+static inline void a_or_l(volatile void *p, long v)
+{
+	a_or(p, v);
+}
+
 static inline void a_and_64(volatile uint64_t *p, uint64_t v)
 {
 	union { uint64_t v; uint32_t r[2]; } u = { v };
