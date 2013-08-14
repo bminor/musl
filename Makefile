@@ -90,8 +90,16 @@ $(OPTIMIZE_SRCS:%.c=%.o) $(OPTIMIZE_SRCS:%.c=%.lo): CFLAGS += -O3
 MEMOPS_SRCS = src/string/memcpy.c src/string/memmove.c src/string/memcmp.c src/string/memset.c
 $(MEMOPS_SRCS:%.c=%.o) $(MEMOPS_SRCS:%.c=%.lo): CFLAGS += $(CFLAGS_MEMOPS)
 
-%.o: $(ARCH)$(ASMSUBARCH)/%.s
-	$(CC) $(CFLAGS_ALL_STATIC) -c -o $@ $<
+# This incantation ensures that changes to any subarch asm files will
+# force the corresponding object file to be rebuilt, even if the implicit
+# rule below goes indirectly through a .sub file.
+define mkasmdep
+$(dir $(patsubst %/,%,$(dir $(1))))$(notdir $(1:.s=.o)): $(1)
+endef
+$(foreach s,$(wildcard src/*/$(ARCH)*/*.s),$(eval $(call mkasmdep,$(s))))
+
+%.o: $(ARCH)$(ASMSUBARCH)/%.sub
+	$(CC) $(CFLAGS_ALL_STATIC) -c -o $@ $(dir $<)$(shell cat $<)
 
 %.o: $(ARCH)/%.s
 	$(CC) $(CFLAGS_ALL_STATIC) -c -o $@ $<
@@ -99,8 +107,8 @@ $(MEMOPS_SRCS:%.c=%.o) $(MEMOPS_SRCS:%.c=%.lo): CFLAGS += $(CFLAGS_MEMOPS)
 %.o: %.c $(GENH) $(IMPH)
 	$(CC) $(CFLAGS_ALL_STATIC) -c -o $@ $<
 
-%.lo: $(ARCH)$(ASMSUBARCH)/%.s
-	$(CC) $(CFLAGS_ALL_SHARED) -c -o $@ $<
+%.lo: $(ARCH)$(ASMSUBARCH)/%.sub
+	$(CC) $(CFLAGS_ALL_SHARED) -c -o $@ $(dir $<)$(shell cat $<)
 
 %.lo: $(ARCH)/%.s
 	$(CC) $(CFLAGS_ALL_SHARED) -c -o $@ $<
