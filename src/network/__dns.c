@@ -195,32 +195,7 @@ int __dns_query(unsigned char *r, const void *a, int family, int ptr)
 	return __dns_doqueries(r, a, rr, rrcnt);
 }
 
-
-#define BITOP(a,b,op) \
- ((a)[(size_t)(b)/(8*sizeof *(a))] op (size_t)1<<((size_t)(b)%(8*sizeof *(a))))
-
-static int decname(char *s, const unsigned char *b, const unsigned char *p)
-{
-	/* Remember jump destinations to detect loops and abort */
-	size_t seen[PACKET_MAX/8/sizeof(size_t)] = { 0 };
-	char *sz = s + HOST_NAME_MAX;
-	const unsigned char *pz = b+512;
-	for (;;) {
-		if (p>=pz) return -1;
-		else if (*p&0xc0) {
-			int j = (p[0]&1) | p[1];
-			if (BITOP(seen, j, &)) return -1;
-			BITOP(seen, j, |=);
-			p = b + j;
-		} else if (*p) {
-			if (p+*p+1>=pz || s+*p>=sz) return -1;
-			memcpy(s, p+1, *p);
-			s += *p+1;
-			p += *p+1;
-			s[-1] = *p ? '.' : 0;
-		} else return 0;
-	}
-}
+int __dn_expand(const unsigned char *, const unsigned char *, const unsigned char *, char *, int);
 
 int __dns_get_rr(void *dest, size_t stride, size_t maxlen, size_t limit, const unsigned char *r, int rr, int dec)
 {
@@ -249,7 +224,8 @@ int __dns_get_rr(void *dest, size_t stride, size_t maxlen, size_t limit, const u
 		len = p[8]*256 + p[9];
 		if (p+len > r+512) return -1;
 		if (p[1]==rr && len <= maxlen) {
-			if (dec && decname(tmp, r, p+10)<0) return -1;
+			if (dec && __dn_expand(r, r+512, p+10, tmp, sizeof tmp)<0)
+				return -1;
 			if (dest && limit) {
 				if (dec) strcpy(dest, tmp);
 				else memcpy(dest, p+10, len);
