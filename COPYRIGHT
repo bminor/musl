@@ -74,6 +74,10 @@ The powerpc port was also originally written by Richard Pennington,
 and later supplemented and integrated by John Spencer. It is licensed
 under the standard MIT terms.
 
+The ARM memcpy code is Copyright © 2008 The Android Open Source
+Project and is licensed under a two-clause BSD license. It was taken
+from Bionic libc, used on Android.
+
 All other files which have no copyright comments are original works
 Copyright © 2005-2013 Rich Felker, the main author of this library.
 The decision to exclude such comments is intentional, as it should be
