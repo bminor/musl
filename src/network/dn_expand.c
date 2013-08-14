@@ -6,7 +6,7 @@ int __dn_expand(const unsigned char *base, const unsigned char *end, const unsig
 	const unsigned char *p = src;
 	int len = -1, j;
 	if (space > 256) space = 256;
-	if (p==end) return -1;
+	if (p==end || !*p) return -1;
 	for (;;) {
 		if (*p & 0xc0) {
 			if (p+1==end) return -1;
@@ -16,11 +16,13 @@ int __dn_expand(const unsigned char *base, const unsigned char *end, const unsig
 			p = base+j;
 		} else if (*p) {
 			j = *p+1;
-			if (len < 0) len = p+1-src;
 			if (j>=end-p || j>space) return -1;
 			while (--j) *dest++ = *p++;
 			*dest++ = *++p ? '.' : 0;
-		} else return len;
+		} else {
+			if (len < 0) len = p+1-src;
+			return len;
+		}
 	}
 }
 
