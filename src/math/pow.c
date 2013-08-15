@@ -146,8 +146,20 @@ double pow(double x, double y)
 			else if ((ix|lx) != 0)     /* (|x|<1)**+-inf = 0,inf if x!=0 */
 				return hy >= 0 ? 0.0 : -y;
 		}
-		if (iy == 0x3ff00000)    /* y is +-1 */
-			return hy >= 0 ? x : 1.0/x;
+		if (iy == 0x3ff00000) {    /* y is +-1 */
+			if (hy >= 0)
+				return x;
+			y = 1/x;
+#if FLT_EVAL_METHOD!=0
+			{
+				union {double f; uint64_t i;} u = {y};
+				uint64_t i = u.i & -1ULL/2;
+				if (i>>52 == 0 && (i&(i-1)))
+					FORCE_EVAL((float)y);
+			}
+#endif
+			return y;
+		}
 		if (hy == 0x40000000)    /* y is 2 */
 			return x*x;
 		if (hy == 0x3fe00000) {  /* y is 0.5 */
