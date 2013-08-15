@@ -23,8 +23,8 @@ double sinh(double x)
 		t = expm1(absx);
 		if (w < 0x3ff00000) {
 			if (w < 0x3ff00000 - (26<<20))
-				/* note: inexact is raised by expm1 */
-				/* note: this branch avoids underflow */
+				/* note: inexact and underflow are raised by expm1 */
+				/* note: this branch avoids spurious underflow */
 				return x;
 			return h*(2*t - t*t/(t+1));
 		}

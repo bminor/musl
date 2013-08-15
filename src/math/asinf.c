@@ -46,10 +46,9 @@ float asinf(float x)
 		return 0/(x-x);  /* asin(|x|>1) is NaN */
 	}
 	if (ix < 0x3f000000) {  /* |x| < 0.5 */
-		if (ix < 0x39800000) {  /* |x| < 2**-12 */
-			FORCE_EVAL(x + 0x1p120f);
-			return x; /* return x with inexact if x!=0 */
-		}
+		/* if 0x1p-126 <= |x| < 0x1p-12, avoid raising underflow */
+		if (ix < 0x39800000 && ix >= 0x00800000)
+			return x;
 		return x + x*R(x*x);
 	}
 	/* 1 > |x| >= 0.5 */

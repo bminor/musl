@@ -9,7 +9,7 @@ double tanh(double x)
 	union {double f; uint64_t i;} u = {.f = x};
 	uint32_t w;
 	int sign;
-	double t;
+	double_t t;
 
 	/* x = |x| */
 	sign = u.i >> 63;
@@ -22,8 +22,7 @@ double tanh(double x)
 		if (w > 0x40340000) {
 			/* |x| > 20 or nan */
 			/* note: this branch avoids raising overflow */
-			/* raise inexact if x!=+-inf and handle nan */
-			t = 1 + 0/(x + 0x1p-120f);
+			t = 1 - 0/x;
 		} else {
 			t = expm1(2*x);
 			t = 1 - 2/(t+2);
@@ -32,10 +31,15 @@ double tanh(double x)
 		/* |x| > log(5/3)/2 ~= 0.2554 */
 		t = expm1(2*x);
 		t = t/(t+2);
-	} else {
-		/* |x| is small, up to 2ulp error in [0.1,0.2554] */
+	} else if (w >= 0x00100000) {
+		/* |x| >= 0x1p-1022, up to 2ulp error in [0.1,0.2554] */
 		t = expm1(-2*x);
 		t = -t/(t+2);
+	} else {
+		/* |x| is subnormal */
+		/* note: the branch above would not raise underflow in [0x1p-1023,0x1p-1022) */
+		FORCE_EVAL((float)x);
+		t = x;
 	}
 	return sign ? -t : t;
 }

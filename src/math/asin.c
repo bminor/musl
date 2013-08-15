@@ -82,11 +82,9 @@ double asin(double x)
 	}
 	/* |x| < 0.5 */
 	if (ix < 0x3fe00000) {
-		if (ix < 0x3e500000) {
-			/* |x|<0x1p-26, return x with inexact if x!=0*/
-			FORCE_EVAL(x + 0x1p120f);
+		/* if 0x1p-1022 <= |x| < 0x1p-26, avoid raising underflow */
+		if (ix < 0x3e500000 && ix >= 0x00100000)
 			return x;
-		}
 		return x + x*R(x*x);
 	}
 	/* 1 > |x| >= 0.5 */

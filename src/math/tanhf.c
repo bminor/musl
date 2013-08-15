@@ -17,7 +17,7 @@ float tanhf(float x)
 		/* |x| > log(3)/2 ~= 0.5493 or nan */
 		if (w > 0x41200000) {
 			/* |x| > 10 */
-			t = 1 + 0/(x + 0x1p-120f);
+			t = 1 + 0/x;
 		} else {
 			t = expm1f(2*x);
 			t = 1 - 2/(t+2);
@@ -26,10 +26,14 @@ float tanhf(float x)
 		/* |x| > log(5/3)/2 ~= 0.2554 */
 		t = expm1f(2*x);
 		t = t/(t+2);
-	} else {
-		/* |x| is small */
+	} else if (w >= 0x00800000) {
+		/* |x| >= 0x1p-126 */
 		t = expm1f(-2*x);
 		t = -t/(t+2);
+	} else {
+		/* |x| is subnormal */
+		FORCE_EVAL(x*x);
+		t = x;
 	}
 	return sign ? -t : t;
 }

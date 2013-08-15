@@ -43,9 +43,12 @@ float log1pf(float x)
 			return (x-x)/(x-x);         /* log1p(x<-1)=NaN */
 		}
 		if (ax < 0x38000000) {   /* |x| < 2**-15 */
-			/* raise inexact */
-			if (two25 + x > 0.0f && ax < 0x33800000)  /* |x| < 2**-24 */
+			/* if 0x1p-126 <= |x| < 0x1p-24, avoid raising underflow */
+			if (ax < 0x33800000 && ax >= 0x00800000)
 				return x;
+#if FLT_EVAL_METHOD != 0
+			FORCE_EVAL(x*x);
+#endif
 			return x - x*x*0.5f;
 		}
 		if (hx > 0 || hx <= (int32_t)0xbe95f619) { /* sqrt(2)/2- <= 1+x < sqrt(2)+ */
