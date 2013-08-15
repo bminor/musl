@@ -1,6 +1,7 @@
 .weak _init
 .weak _fini
 .global _start
+.type _start,%function
 _start:
 	mov fp,#0
 	mov lr,#0
