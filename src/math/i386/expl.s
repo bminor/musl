@@ -8,34 +8,27 @@
 expl:
 	fldt 4(%esp)
 
-		# special cases: 2*x is +-inf, nan or |x| < 0x1p-32
-		# check (exponent|0x8000)+2 < 0xbfff+2-32
-	movw 12(%esp), %ax
-	movw %ax, %dx
-	orw $0x8000, %dx
-	addw $2, %dx
-	cmpw $0xbfff-30, %dx
-	jnb 3f
-	cmpw $1, %dx
-	jbe 1f
-		# if |x|<0x1p-32 return 1+x
+		# interesting case: 0x1p-32 <= |x| < 16384
+		# check if (exponent|0x8000) is in [0xbfff-32, 0xbfff+13]
+	mov 12(%esp), %ax
+	or $0x8000, %ax
+	sub $0xbfdf, %ax
+	cmp $45, %ax
+	jbe 2f
+	test %ax, %ax
 	fld1
-	jmp 2f
-1:	testw %ax, %ax
-	jns 1f
-		# if 2*x == -inf,-nan return -0/x
-	fldz
-	fchs
-	fdivp
+	js 1f
+		# if |x|>=0x1p14 or nan return 2^trunc(x)
+	fscale
+	fstp %st(1)
 	ret
-		# if 2*x == inf,nan return 2*x
-1:	fld %st(0)
-2:	faddp
+		# if |x|<0x1p-32 return 1+x
+1:	faddp
 	ret
 
-		# should be 0x1.71547652b82fe178p0 == 0x3fff b8aa3b29 5c17f0bc
+		# should be 0x1.71547652b82fe178p0L == 0x3fff b8aa3b29 5c17f0bc
 		# it will be wrong on non-nearest rounding mode
-3:	fldl2e
+2:	fldl2e
 	subl $44, %esp
 		# hi = log2e_hi*x
 		# 2^hi = exp2l(hi)
