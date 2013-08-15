@@ -2,7 +2,18 @@
 .type expm1f,@function
 expm1f:
 	flds 4(%esp)
-	jmp 1f
+	mov 4(%esp),%eax
+	add %eax,%eax
+	cmp $0x01000000,%eax
+	jae 1f
+		# subnormal x, return x with underflow
+	fnstsw %ax
+	and $16,%ax
+	jnz 2f
+	fld %st(0)
+	fmul %st(1)
+	fstps 4(%esp)
+2:	ret
 
 .global expm1l
 .type expm1l,@function
@@ -14,10 +25,32 @@ expm1l:
 .type expm1,@function
 expm1:
 	fldl 4(%esp)
+	mov 8(%esp),%eax
+	add %eax,%eax
+	cmp $0x00200000,%eax
+	jae 1f
+		# subnormal x, return x with underflow
+	fnstsw %ax
+	and $16,%ax
+	jnz 2f
+	fsts 4(%esp)
+2:	ret
 1:	fldl2e
 	fmulp
+	mov $0xc2820000,%eax
+	push %eax
+	flds (%esp)
+	pop %eax
+	fucomp %st(1)
+	fnstsw %ax
+	sahf
 	fld1
-	fld %st(1)
+	jb 1f
+		# x*log2e < -65, return -1 without underflow
+	fstp %st(1)
+	fchs
+	ret
+1:	fld %st(1)
 	fabs
 	fucom %st(1)
 	fnstsw %ax
