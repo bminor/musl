@@ -17,7 +17,7 @@ long double scalbnl(long double x, int n)
 			x *= 0x1p16383L;
 			n -= 16383;
 			if (n > 16383)
-				return x * 0x1p16383L;
+				n = 16383;
 		}
 	} else if (n < -16382) {
 		x *= 0x1p-16382L;
@@ -26,7 +26,7 @@ long double scalbnl(long double x, int n)
 			x *= 0x1p-16382L;
 			n += 16382;
 			if (n < -16382)
-				return x * 0x1p-16382L;
+				n = -16382;
 		}
 	}
 	scale.e = 1.0;
