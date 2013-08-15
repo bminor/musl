@@ -70,8 +70,8 @@ long double atanl(long double x)
 	union IEEEl2bits u;
 	long double w,s1,s2,z;
 	int id;
-	int16_t expsign, expt;
-	int32_t expman;
+	uint16_t expsign, expt;
+	uint32_t expman;
 
 	u.e = x;
 	expsign = u.xbits.expsign;
@@ -81,15 +81,16 @@ long double atanl(long double x)
 		    ((u.bits.manh&~LDBL_NBIT)|u.bits.manl)!=0)  /* NaN */
 			return x+x;
 		z = atanhi[3] + 0x1p-120f;
-		return expsign < 0 ? -z : z;
+		return expsign>>15 ? -z : z;
 	}
 	/* Extract the exponent and the first few bits of the mantissa. */
 	/* XXX There should be a more convenient way to do this. */
 	expman = (expt << 8) | ((u.bits.manh >> (LDBL_MANH_SIZE - 9)) & 0xff);
 	if (expman < ((0x3fff - 2) << 8) + 0xc0) {  /* |x| < 0.4375 */
 		if (expt < 0x3fff - 32) {   /* if |x| is small, atanl(x)~=x */
-			/* raise inexact if x!=0 */
-			FORCE_EVAL(x + 0x1p120f);
+			/* raise underflow if subnormal */
+			if (expt == 0)
+				FORCE_EVAL((float)x);
 			return x;
 		}
 		id = -1;
@@ -122,6 +123,6 @@ long double atanl(long double x)
 	if (id < 0)
 		return x - x*(s1+s2);
 	z = atanhi[id] - ((x*(s1+s2) - atanlo[id]) - x);
-	return expsign < 0 ? -z : z;
+	return expsign>>15 ? -z : z;
 }
 #endif

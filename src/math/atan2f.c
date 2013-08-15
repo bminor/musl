@@ -15,72 +15,63 @@
 
 #include "libm.h"
 
-static const volatile float
-tiny = 1.0e-30;
 static const float
-pi_o_4 = 7.8539818525e-01, /* 0x3f490fdb */
-pi_o_2 = 1.5707963705e+00, /* 0x3fc90fdb */
-pi     = 3.1415927410e+00; /* 0x40490fdb */
-static const volatile float
+pi     = 3.1415927410e+00, /* 0x40490fdb */
 pi_lo  = -8.7422776573e-08; /* 0xb3bbbd2e */
 
 float atan2f(float y, float x)
 {
 	float z;
-	int32_t k,m,hx,hy,ix,iy;
+	uint32_t m,ix,iy;
 
-	GET_FLOAT_WORD(hx, x);
-	ix = hx & 0x7fffffff;
-	GET_FLOAT_WORD(hy, y);
-	iy = hy & 0x7fffffff;
-	if (ix > 0x7f800000 || iy > 0x7f800000)  /* x or y is NaN */
+	if (isnan(x) || isnan(y))
 		return x+y;
-	if (hx == 0x3f800000)  /* x=1.0 */
+	GET_FLOAT_WORD(ix, x);
+	GET_FLOAT_WORD(iy, y);
+	if (ix == 0x3f800000)  /* x=1.0 */
 		return atanf(y);
-	m = ((hy>>31)&1) | ((hx>>30)&2);  /* 2*sign(x)+sign(y) */
+	m = ((iy>>31)&1) | ((ix>>30)&2);  /* 2*sign(x)+sign(y) */
+	ix &= 0x7fffffff;
+	iy &= 0x7fffffff;
 
 	/* when y = 0 */
 	if (iy == 0) {
 		switch (m) {
 		case 0:
-		case 1: return y;        /* atan(+-0,+anything)=+-0 */
-		case 2: return  pi+tiny; /* atan(+0,-anything) = pi */
-		case 3: return -pi-tiny; /* atan(-0,-anything) =-pi */
+		case 1: return y;   /* atan(+-0,+anything)=+-0 */
+		case 2: return  pi; /* atan(+0,-anything) = pi */
+		case 3: return -pi; /* atan(-0,-anything) =-pi */
 		}
 	}
 	/* when x = 0 */
 	if (ix == 0)
-		return hy < 0 ? -pi_o_2-tiny : pi_o_2+tiny;
+		return m&1 ? -pi/2 : pi/2;
 	/* when x is INF */
 	if (ix == 0x7f800000) {
 		if (iy == 0x7f800000) {
 			switch (m) {
-			case 0: return  pi_o_4+tiny; /* atan(+INF,+INF) */
-			case 1: return -pi_o_4-tiny; /* atan(-INF,+INF) */
-			case 2: return 3.0f*pi_o_4+tiny;  /*atan(+INF,-INF)*/
-			case 3: return -3.0f*pi_o_4-tiny; /*atan(-INF,-INF)*/
+			case 0: return  pi/4; /* atan(+INF,+INF) */
+			case 1: return -pi/4; /* atan(-INF,+INF) */
+			case 2: return 3*pi/4;  /*atan(+INF,-INF)*/
+			case 3: return -3*pi/4; /*atan(-INF,-INF)*/
 			}
 		} else {
 			switch (m) {
 			case 0: return  0.0f;    /* atan(+...,+INF) */
 			case 1: return -0.0f;    /* atan(-...,+INF) */
-			case 2: return  pi+tiny; /* atan(+...,-INF) */
-			case 3: return -pi-tiny; /* atan(-...,-INF) */
+			case 2: return  pi; /* atan(+...,-INF) */
+			case 3: return -pi; /* atan(-...,-INF) */
 			}
 		}
 	}
-	/* when y is INF */
-	if (iy == 0x7f800000)
-		return hy < 0 ? -pi_o_2-tiny : pi_o_2+tiny;
+	/* |y/x| > 0x1p26 */
+	if (ix+(26<<23) < iy || iy == 0x7f800000)
+		return m&1 ? -pi/2 : pi/2;
 
-	/* compute y/x */
-	k = (iy-ix)>>23;
-	if (k > 26) {                  /* |y/x| >  2**26 */
-		z = pi_o_2 + 0.5f*pi_lo;
-		m &= 1;
-	} else if (k < -26 && hx < 0)  /* 0 > |y|/x > -2**-26 */
+	/* z = atan(|y/x|) with correct underflow */
+	if ((m&2) && iy+(26<<23) < ix)  /*|y/x| < 0x1p-26, x < 0 */
 		z = 0.0;
-	else                           /* safe to do y/x */
+	else
 		z = atanf(fabsf(y/x));
 	switch (m) {
 	case 0: return z;              /* atan(+,+) */
