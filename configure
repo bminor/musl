@@ -381,7 +381,7 @@ t="$CFLAGS_C99FSE $CPPFLAGS $CFLAGS_AUTO $CFLAGS"
 
 if test "$ARCH" = "arm" ; then
 trycppif __ARMEB__ "$t" && SUBARCH=${SUBARCH}eb
-trycppif __SOFTFP__ "$t" || SUBARCH=${SUBARCH}hf
+trycppif __ARM_PCS_VFP "$t" && SUBARCH=${SUBARCH}hf
 fi
 
 test "$ARCH" = "mips" && trycppif "_MIPSEL || __MIPSEL || __MIPSEL__" "$t" \

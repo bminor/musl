@@ -1,4 +1,4 @@
-#ifdef __SOFTFP__
+#ifndef __ARM_PCS_VFP
 #define FE_ALL_EXCEPT 0
 #define FE_TONEAREST  0
 #else
