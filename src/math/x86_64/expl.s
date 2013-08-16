@@ -28,7 +28,7 @@ expl:
 
 		# should be 0x1.71547652b82fe178p0L == 0x3fff b8aa3b29 5c17f0bc
 		# it will be wrong on non-nearest rounding mode
-3:	fldl2e
+2:	fldl2e
 	subq $48, %rsp
 		# hi = log2e_hi*x
 		# 2^hi = exp2l(hi)
