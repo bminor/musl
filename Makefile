@@ -155,11 +155,9 @@ $(DESTDIR)$(includedir)/bits/%: arch/$(ARCH)/bits/%
 $(DESTDIR)$(includedir)/%: include/%
 	install -D -m 644 $< $@
 
-$(DESTDIR)$(LDSO_PATHNAME): $(DESTDIR)$(syslibdir)
-	ln -sf $(libdir)/libc.so $@ || true
-
-$(DESTDIR)$(syslibdir):
-	install -d -m 755 $(DESTDIR)$(syslibdir)
+$(DESTDIR)$(LDSO_PATHNAME): $(DESTDIR)$(libdir)/libc.so
+	test -d $(DESTDIR)$(syslibdir) || install -d -m 755 $(DESTDIR)$(syslibdir) || true
+	{ ln -sf $(libdir)/libc.so $@.tmp.$$$$ && mv -f $@.tmp.$$$$ $@ ; } || true
 
 install-libs: $(ALL_LIBS:lib/%=$(DESTDIR)$(libdir)/%) $(if $(SHARED_LIBS),$(DESTDIR)$(LDSO_PATHNAME),)
 
