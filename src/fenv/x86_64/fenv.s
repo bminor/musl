@@ -28,9 +28,6 @@ feraiseexcept:
 	stmxcsr -8(%rsp)
 	or %edi,-8(%rsp)
 	ldmxcsr -8(%rsp)
-	fnstenv -32(%rsp)
-	or %edi,-28(%rsp)
-	fldenv -32(%rsp)
 	xor %eax,%eax
 	ret
 
