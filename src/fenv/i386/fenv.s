@@ -66,9 +66,9 @@ fegetenv:
 fesetenv:
 	mov 4(%esp),%ecx
 	xor %eax,%eax
-	test %ecx,%ecx
+	inc %ecx
 	jz 1f
-	fldenv (%ecx)
+	fldenv -1(%ecx)
 	ret
 1:	push %eax
 	push %eax
