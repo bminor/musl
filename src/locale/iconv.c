@@ -49,7 +49,7 @@ static const unsigned char charmaps[] =
 "gb18030\0\0\330"
 "gbk\0\0\331"
 "gb2312\0\0\332"
-"big5\0bigfive\0cp950\0\0\340"
+"big5\0bigfive\0cp950\0big5hkscs\0\0\340"
 "euckr\0ksc5601\0ksx1001\0cp949\0\0\350"
 #include "codepages.h"
 ;
@@ -68,6 +68,10 @@ static const unsigned short gb18030[126][190] = {
 
 static const unsigned short big5[89][157] = {
 #include "big5.h"
+};
+
+static const unsigned short hkscs[] = {
+#include "hkscs.h"
 };
 
 static const unsigned short ksc[93][94] = {
@@ -294,12 +298,37 @@ size_t iconv(iconv_t cd0, char **restrict in, size_t *restrict inb, char **restr
 			l = 2;
 			if (*inb < 2) goto starved;
 			d = *((unsigned char *)*in + 1);
-			if (c-0xa1>=0xfa-0xa1) goto ilseq;
-			c -= 0xa1;
 			if (d-0x40>=0xff-0x40 || d-0x7f<0xa1-0x7f) goto ilseq;
 			d -= 0x40;
 			if (d > 0x3e) d -= 0x22;
-			c = big5[c][d];
+			if (c-0xa1>=0xfa-0xa1) {
+				if (c-0x87>=0xff-0x87) goto ilseq;
+				if (c < 0xa1) c -= 0x87;
+				else c -= 0x87 + (0xfa-0xa1);
+				c = (hkscs[4867+(c*157+d)/16]>>(c*157+d)%16)%2<<17
+					| hkscs[c*157+d];
+				/* A few HKSCS characters map to pairs of UCS
+				 * characters. These are mapped to surrogate
+				 * range in the hkscs table then hard-coded
+				 * here. Ugly, yes. */
+				if (c/256 == 0xdc) {
+					if (totype-0300U > 8) k = 2;
+					else k = "\10\4\4\10\4\4\10\2\4"[totype-0300];
+					if (k > *outb) goto toobig;
+					x += iconv((iconv_t)(uintptr_t)to,
+						&(char *){"\303\212\314\204"
+						"\303\212\314\214"
+						"\303\252\314\204"
+						"\303\252\314\214"
+						+c%256}, &(size_t){4},
+						out, outb);
+					continue;
+				}
+				if (!c) goto ilseq;
+				break;
+			}
+			c -= 0xa1;
+			c = big5[c][d]|(c==0x27&&(d==0x3a||d==0x3c||d==0x42))<<17;
 			if (!c) goto ilseq;
 			break;
 		case EUC_KR:
