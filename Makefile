@@ -36,6 +36,7 @@ CFLAGS_ALL_SHARED = $(CFLAGS_ALL) -fPIC -DSHARED
 
 AR      = $(CROSS_COMPILE)ar
 RANLIB  = $(CROSS_COMPILE)ranlib
+INSTALL = ./tools/install.sh
 
 ARCH_INCLUDES = $(wildcard arch/$(ARCH)/bits/*.h)
 ALL_INCLUDES = $(sort $(wildcard include/*.h include/*/*.h) $(GENH) $(ARCH_INCLUDES:arch/$(ARCH)/%=include/%))
@@ -141,23 +142,22 @@ tools/musl-gcc: config.mak
 	chmod +x $@
 
 $(DESTDIR)$(bindir)/%: tools/%
-	install -D $< $@
+	$(INSTALL) -D $< $@
 
 $(DESTDIR)$(libdir)/%.so: lib/%.so
-	install -D -m 755 $< $@
+	$(INSTALL) -D -m 755 $< $@
 
 $(DESTDIR)$(libdir)/%: lib/%
-	install -D -m 644 $< $@
+	$(INSTALL) -D -m 644 $< $@
 
 $(DESTDIR)$(includedir)/bits/%: arch/$(ARCH)/bits/%
-	install -D -m 644 $< $@
+	$(INSTALL) -D -m 644 $< $@
 
 $(DESTDIR)$(includedir)/%: include/%
-	install -D -m 644 $< $@
+	$(INSTALL) -D -m 644 $< $@
 
 $(DESTDIR)$(LDSO_PATHNAME): $(DESTDIR)$(libdir)/libc.so
-	test -d $(DESTDIR)$(syslibdir) || install -d -m 755 $(DESTDIR)$(syslibdir) || true
-	{ ln -sf $(libdir)/libc.so $@.tmp.$$$$ && mv -f $@.tmp.$$$$ $@ ; } || true
+	$(INSTALL) -D -l $< $@
 
 install-libs: $(ALL_LIBS:lib/%=$(DESTDIR)$(libdir)/%) $(if $(SHARED_LIBS),$(DESTDIR)$(LDSO_PATHNAME),)
 
