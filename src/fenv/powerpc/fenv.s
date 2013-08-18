@@ -1,6 +1,7 @@
 .global feclearexcept
 .type feclearexcept,@function
 feclearexcept:
+	andis 3,3,0x3e00
 	# if (r3 & FE_INVALID) r3 |= all_invalid_flags
 	andis. 0,3,0x2000
 	stwu 1,-16(1)
@@ -28,6 +29,7 @@ feclearexcept:
 .global feraiseexcept
 .type feraiseexcept,@function
 feraiseexcept:
+	andis 3,3,0x3e00
 	# if (r3 & FE_INVALID) r3 |= software_invalid_flag
 	andis. 0,3,0x2000
 	stwu 1,-16(1)
@@ -51,6 +53,7 @@ feraiseexcept:
 .global fetestexcept
 .type fetestexcept,@function
 fetestexcept:
+	andis 3,3,0x3e00
 	# return r3 & fpscr
 	stwu 1,-16(1)
 	mffs 0
@@ -72,9 +75,9 @@ fegetround:
 	clrlwi 3,3,30
 	blr
 
-.global fesetround
-.type fesetround,@function
-fesetround:
+.global __fesetround
+.type __fesetround,@function
+__fesetround:
 	# note: invalid input is not checked, r3 < 4 must hold
 	# fpscr = (fpscr & -4U) | r3
 	stwu 1,-16(1)

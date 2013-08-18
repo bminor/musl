@@ -22,7 +22,7 @@ int fegetround(void)
 	return FE_TONEAREST;
 }
 
-int fesetround(int r)
+int __fesetround(int r)
 {
 	return 0;
 }

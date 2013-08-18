@@ -4,6 +4,7 @@
 .type feclearexcept,@function
 feclearexcept:	
 	mov 4(%esp),%ecx
+	and $0x3f,%ecx
 	fnstsw %ax
 		# consider sse fenv as well if the cpu has XMM capability
 	call 1f
@@ -50,6 +51,7 @@ feclearexcept:
 .type feraiseexcept,@function
 feraiseexcept:	
 	mov 4(%esp),%eax
+	and $0x3f,%eax
 	sub $32,%esp
 	fnstenv (%esp)
 	or %al,4(%esp)
@@ -58,9 +60,9 @@ feraiseexcept:
 	xor %eax,%eax
 	ret
 
-.global fesetround
-.type fesetround,@function
-fesetround:
+.global __fesetround
+.type __fesetround,@function
+__fesetround:
 	mov 4(%esp),%ecx
 	push %eax
 	xor %eax,%eax
@@ -147,6 +149,7 @@ fesetenv:
 .type fetestexcept,@function
 fetestexcept:
 	mov 4(%esp),%ecx
+	and $0x3f,%ecx
 	fnstsw %ax
 		# consider sse fenv as well if the cpu has XMM capability
 	call 1f
