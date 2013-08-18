@@ -4,26 +4,41 @@
 .type feclearexcept,@function
 feclearexcept:	
 	mov 4(%esp),%ecx
-	not %ecx
+	fnstsw %ax
 		# consider sse fenv as well if the cpu has XMM capability
 	call 1f
 1:	addl $__hwcap-1b,(%esp)
 	pop %edx
 	testl $0x02000000,(%edx)
+	jz 2f
+		# maintain exceptions in the sse mxcsr, clear x87 exceptions
+	test %eax,%ecx
 	jz 1f
-	stmxcsr 4(%esp)
-	and %ecx,4(%esp)
-	ldmxcsr 4(%esp)
-1:	test $0x3f,%ecx
-	jnz 2f
-1:	fnclex
-	xor %eax,%eax
+	fnclex
+1:	push %edx
+	stmxcsr (%esp)
+	pop %edx
+	and $0x3f,%eax
+	or %eax,%edx
+	test %edx,%ecx
+	jz 1f
+	not %ecx
+	and %ecx,%edx
+	push %edx
+	ldmxcsr (%esp)
+	pop %edx
+1:	xor %eax,%eax
 	ret
-2:	fnstsw %ax
-		# TODO: only load/store fenv if exceptions arent clear yet
-	and %ecx,%eax
+		# only do the expensive x87 fenv load/store when needed
+2:	test %eax,%ecx
 	jz 1b
-	sub $32,%esp
+	not %ecx
+	and %ecx,%eax
+	test $0x3f,%eax
+	jz 1f
+	fnclex
+	jmp 1b
+1:	sub $32,%esp
 	fnstenv (%esp)
 	mov %al,4(%esp)
 	fldenv (%esp)
