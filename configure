@@ -49,7 +49,7 @@ quote () {
 tr '\n' ' ' <<EOF | grep '^[-[:alnum:]_=,./:]* $' >/dev/null 2>&1 && { echo "$1" ; return 0 ; }
 $1
 EOF
-printf %s\\n "$1" | sed -e "s/'/'\\\\''/g" -e "1s/^/'/;\$s/\$/'/" -e "s/^'\([-[:alnum:]_,./:]*\)=\(.*\)\$/\1='\2/"
+printf %s\\n "$1" | sed -e "s/'/'\\\\''/g" -e "1s/^/'/" -e "\$s/\$/'/" -e "s#^'\([-[:alnum:]_,./:]*\)=\(.*\)\$#\1='\2#"
 }
 echo () { printf "%s\n" "$*" ; }
 fail () { echo "$*" ; exit 1 ; }
