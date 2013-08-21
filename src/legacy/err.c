@@ -8,8 +8,11 @@ extern char *__progname;
 void vwarn(const char *fmt, va_list ap)
 {
 	fprintf (stderr, "%s: ", __progname);
-	if (fmt) vfprintf(stderr, fmt, ap);
-	perror("");
+	if (fmt) {
+		vfprintf(stderr, fmt, ap);
+		fputs (": ", stderr);
+	}
+	perror(0);
 }
 
 void vwarnx(const char *fmt, va_list ap)
