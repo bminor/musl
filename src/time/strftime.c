@@ -46,12 +46,11 @@ static int week_num(const struct tm *tm)
 
 size_t __strftime_l(char *restrict, size_t, const char *restrict, const struct tm *restrict, locale_t);
 
-const char *__strftime_fmt_1(char (*s)[100], int f, const struct tm *tm, locale_t loc)
+const char *__strftime_fmt_1(char (*s)[100], size_t *l, int f, const struct tm *tm, locale_t loc)
 {
 	nl_item item;
 	int val;
 	const char *fmt;
-	size_t l;
 
 	switch (f) {
 	case 'a':
@@ -122,6 +121,7 @@ const char *__strftime_fmt_1(char (*s)[100], int f, const struct tm *tm, locale_
 		fmt = "%02d";
 		goto number;
 	case 'n':
+		*l = 1;
 		return "\n";
 	case 'p':
 		item = tm->tm_hour >= 12 ? PM_STR : AM_STR;
@@ -137,6 +137,7 @@ const char *__strftime_fmt_1(char (*s)[100], int f, const struct tm *tm, locale_
 		fmt = "%02d";
 		goto number;
 	case 't':
+		*l = 1;
 		return "\t";
 	case 'T':
 		fmt = "%H:%M:%S";
@@ -177,25 +178,30 @@ const char *__strftime_fmt_1(char (*s)[100], int f, const struct tm *tm, locale_
 		goto number;
 	case 'z':
 		val = -tm->__tm_gmtoff;
-		snprintf(*s, sizeof *s, "%+.2d%.2d", val/3600, abs(val%3600)/60);
+		*l = snprintf(*s, sizeof *s, "%+.2d%.2d", val/3600, abs(val%3600)/60);
 		return *s;
 	case 'Z':
-		return tm->__tm_zone;
+		fmt = tm->__tm_zone;
+		goto string;
 	case '%':
+		*l = 1;
 		return "%";
 	default:
 		return 0;
 	}
 number:
-	snprintf(*s, sizeof *s, fmt, val);
+	*l = snprintf(*s, sizeof *s, fmt, val);
 	return *s;
 nl_strcat:
-	return __nl_langinfo_l(item, loc);
+	fmt = __nl_langinfo_l(item, loc);
+string:
+	*l = strlen(fmt);
+	return fmt;
 nl_strftime:
 	fmt = __nl_langinfo_l(item, loc);
 recu_strftime:
-	l = __strftime_l(*s, sizeof *s, fmt, tm, loc);
-	if (!l) return 0;
+	*l = __strftime_l(*s, sizeof *s, fmt, tm, loc);
+	if (!*l) return 0;
 	return *s;
 }
 
@@ -215,8 +221,8 @@ size_t __strftime_l(char *restrict s, size_t n, const char *restrict f, const st
 		}
 		f++;
 		if (*f == 'E' || *f == 'O') f++;
-		t = __strftime_fmt_1(&buf, *f, tm, loc);
-		if (!t || (k = strlen(t)) >= n-l)
+		t = __strftime_fmt_1(&buf, &k, *f, tm, loc);
+		if (!t || k >= n-l)
 			return 0;
 		memcpy(s+l, t, k);
 		l += k;
