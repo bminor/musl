@@ -46,14 +46,12 @@ static int week_num(const struct tm *tm)
 
 size_t __strftime_l(char *restrict, size_t, const char *restrict, const struct tm *restrict, locale_t);
 
-int __strftime_fmt_1(char *s, size_t n, int f, const struct tm *tm, locale_t loc)
+const char *__strftime_fmt_1(char (*s)[100], int f, const struct tm *tm, locale_t loc)
 {
 	nl_item item;
 	int val;
 	const char *fmt;
 	size_t l;
-
-	if (n<2) return 0;
 
 	switch (f) {
 	case 'a':
@@ -124,9 +122,7 @@ int __strftime_fmt_1(char *s, size_t n, int f, const struct tm *tm, locale_t loc
 		fmt = "%02d";
 		goto number;
 	case 'n':
-		s[0] = '\n';
-		s[1] = 0;
-		return 1;
+		return "\n";
 	case 'p':
 		item = tm->tm_hour >= 12 ? PM_STR : AM_STR;
 		goto nl_strcat;
@@ -141,9 +137,7 @@ int __strftime_fmt_1(char *s, size_t n, int f, const struct tm *tm, locale_t loc
 		fmt = "%02d";
 		goto number;
 	case 't':
-		s[0] = '\t';
-		s[1] = 0;
-		return 1;
+		return "\t";
 	case 'T':
 		fmt = "%H:%M:%S";
 		goto recu_strftime;
@@ -183,43 +177,51 @@ int __strftime_fmt_1(char *s, size_t n, int f, const struct tm *tm, locale_t loc
 		goto number;
 	case 'z':
 		val = -tm->__tm_gmtoff;
-		return snprintf(s, n, "%+.2d%.2d", val/3600, abs(val%3600)/60);
+		snprintf(*s, sizeof *s, "%+.2d%.2d", val/3600, abs(val%3600)/60);
+		return *s;
 	case 'Z':
-		return snprintf(s, n, "%s", tm->__tm_zone);
+		return tm->__tm_zone;
 	case '%':
-		s[0] = '%';
-		s[1] = 0;
-		return 1;
+		return "%";
 	default:
 		return 0;
 	}
 number:
-	return snprintf(s, n, fmt, val);
+	snprintf(*s, sizeof *s, fmt, val);
+	return *s;
 nl_strcat:
-	return snprintf(s, n, "%s", __nl_langinfo_l(item, loc));
+	return __nl_langinfo_l(item, loc);
 nl_strftime:
 	fmt = __nl_langinfo_l(item, loc);
 recu_strftime:
-	return __strftime_l(s, n, fmt, tm, loc);
+	l = __strftime_l(*s, sizeof *s, fmt, tm, loc);
+	if (!l) return 0;
+	return *s;
 }
 
 size_t __strftime_l(char *restrict s, size_t n, const char *restrict f, const struct tm *restrict tm, locale_t loc)
 {
 	size_t l, k;
-	for (l=0; *f && l<n; f++) {
+	char buf[100];
+	const char *t;
+	for (l=0; l+1<n; f++) {
+		if (!*f) {
+			s[l] = 0;
+			return l;
+		}
 		if (*f != '%') {
 			s[l++] = *f;
 			continue;
 		}
 		f++;
 		if (*f == 'E' || *f == 'O') f++;
-		k = __strftime_fmt_1(s+l, n-l, *f, tm, loc);
-		if (!k) return 0;
+		t = __strftime_fmt_1(&buf, *f, tm, loc);
+		if (!t || (k = strlen(t)) >= n-l)
+			return 0;
+		memcpy(s+l, t, k);
 		l += k;
 	}
-	if (l >= n) return 0;
-	s[l] = 0;
-	return l;
+	return 0;
 }
 
 size_t strftime(char *restrict s, size_t n, const char *restrict f, const struct tm *restrict tm)
