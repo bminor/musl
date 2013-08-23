@@ -462,7 +462,9 @@ static int fixup_rpath(struct dso *p, char *buf, size_t buf_size)
 	}
 	n = 0;
 	s = p->rpath_orig;
-	while ((t=strstr(s, "$ORIGIN")) || (t=strstr(s, "${ORIGIN}"))) {
+	while ((t=strchr(s, '$'))) {
+		if (strncmp(t, "$ORIGIN", 7) && strncmp(t, "${ORIGIN}", 9))
+			return -1;
 		s = t+1;
 		n++;
 	}
@@ -477,8 +479,10 @@ static int fixup_rpath(struct dso *p, char *buf, size_t buf_size)
 		 * (either system paths or a call to dlopen). */
 		if (libc.secure)
 			return -1;
-		if (readlink("/proc/self/exe", buf, buf_size) >= buf_size)
+		l = readlink("/proc/self/exe", buf, buf_size);
+		if (l >= buf_size)
 			return -1;
+		buf[l] = 0;
 		origin = buf;
 	} else {
 		origin = p->name;
@@ -490,11 +494,13 @@ static int fixup_rpath(struct dso *p, char *buf, size_t buf_size)
 
 	d = p->rpath;
 	s = p->rpath_orig;
-	while ((t=strstr(s, "$ORIGIN")) || (t=strstr(s, "${ORIGIN}"))) {
+	while ((t=strchr(s, '$'))) {
 		memcpy(d, s, t-s);
 		d += t-s;
 		memcpy(d, origin, l);
 		d += l;
+		/* It was determined previously that the '$' is followed
+		 * either by "ORIGIN" or "{ORIGIN}". */
 		s = t + 7 + 2*(t[1]=='{');
 	}
 	strcpy(d, s);
