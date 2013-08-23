@@ -72,7 +72,8 @@ struct dso {
 	signed char global;
 	char relocated;
 	char constructed;
-	struct dso **deps;
+	struct dso **deps, *needed_by;
+	char *rpath;
 	void *tls_image;
 	size_t tls_len, tls_size, tls_align, tls_id, tls_offset;
 	void **new_dtv;
@@ -95,7 +96,7 @@ void *__install_initial_tls(void *);
 void __init_libc(char **, char *);
 
 static struct dso *head, *tail, *ldso, *fini_head;
-static char *env_path, *sys_path, *r_path;
+static char *env_path, *sys_path;
 static unsigned long long gencnt;
 static int ssp_used;
 static int runtime;
@@ -455,13 +456,15 @@ static void decode_dyn(struct dso *p)
 	p->strings = (void *)(p->base + dyn[DT_STRTAB]);
 	if (dyn[0]&(1<<DT_HASH))
 		p->hashtab = (void *)(p->base + dyn[DT_HASH]);
+	if (dyn[0]&(1<<DT_RPATH))
+		p->rpath = (void *)(p->strings + dyn[DT_RPATH]);
 	if (search_vec(p->dynv, dyn, DT_GNU_HASH))
 		p->ghashtab = (void *)(p->base + *dyn);
 	if (search_vec(p->dynv, dyn, DT_VERSYM))
 		p->versym = (void *)(p->base + *dyn);
 }
 
-static struct dso *load_library(const char *name)
+static struct dso *load_library(const char *name, struct dso *needed_by)
 {
 	char buf[2*NAME_MAX+2];
 	const char *pathname;
@@ -521,7 +524,9 @@ static struct dso *load_library(const char *name)
 		if (strlen(name) > NAME_MAX) return 0;
 		fd = -1;
 		if (env_path) fd = path_open(name, env_path, buf, sizeof buf);
-		if (fd < 0 && r_path) fd = path_open(name, r_path, buf, sizeof buf);
+		for (p=needed_by; fd < 0 && p; p=p->needed_by)
+			if (p->rpath)
+				fd = path_open(name, p->rpath, buf, sizeof buf);
 		if (fd < 0) {
 			if (!sys_path) {
 				char *prefix = 0;
@@ -601,6 +606,7 @@ static struct dso *load_library(const char *name)
 	p->dev = st.st_dev;
 	p->ino = st.st_ino;
 	p->refcnt = 1;
+	p->needed_by = needed_by;
 	p->name = p->buf;
 	strcpy(p->name, pathname);
 	/* Add a shortname only if name arg was not an explicit pathname. */
@@ -643,12 +649,8 @@ static void load_deps(struct dso *p)
 	struct dso ***deps = &p->deps, **tmp, *dep;
 	for (; p; p=p->next) {
 		for (i=0; p->dynv[i]; i+=2) {
-			if (p->dynv[i] != DT_RPATH) continue;
-			r_path = (void *)(p->strings + p->dynv[i+1]);
-		}
-		for (i=0; p->dynv[i]; i+=2) {
 			if (p->dynv[i] != DT_NEEDED) continue;
-			dep = load_library(p->strings + p->dynv[i+1]);
+			dep = load_library(p->strings + p->dynv[i+1], p);
 			if (!dep) {
 				snprintf(errbuf, sizeof errbuf,
 					"Error loading shared library %s: %m (needed by %s)",
@@ -666,7 +668,6 @@ static void load_deps(struct dso *p)
 				*deps = tmp;
 			}
 		}
-		r_path = 0;
 	}
 }
 
@@ -679,7 +680,7 @@ static void load_preload(char *s)
 		for (z=s; *z && !isspace(*z); z++);
 		tmp = *z;
 		*z = 0;
-		load_library(s);
+		load_library(s, 0);
 		*z = tmp;
 	}
 }
@@ -1153,7 +1154,7 @@ void *dlopen(const char *file, int mode)
 		p = 0;
 		errflag = 1;
 		goto end;
-	} else p = load_library(file);
+	} else p = load_library(file, 0);
 
 	if (!p) {
 		snprintf(errbuf, sizeof errbuf, noload ?
