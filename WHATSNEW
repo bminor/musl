@@ -963,7 +963,7 @@ arch-specific bugs fixed:
 
 0.9.12 release notes
 
-new feastures:
+new features:
 - zoneinfo time zone support
 - PIE support on all supported archs
 - named sub-archs for endian and float ABI variants

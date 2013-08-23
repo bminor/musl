@@ -120,7 +120,7 @@ main host system library directories.
 
 Finally, it's worth noting that musl's include and lib directories in
 the build tree are setup to be usable without installation, if
-necessary. Just modify the the paths in the spec file used by musl-gcc
+necessary. Just modify the paths in the spec file used by musl-gcc
 (it's located at $prefix/lib/musl-gcc.specs) to point to the
 source/build tree.
 
