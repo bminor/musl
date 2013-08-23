@@ -4,33 +4,61 @@
 #include <locale.h>
 #include "libc.h"
 
-size_t __strftime_l(char *restrict, size_t, const char *restrict, const struct tm *restrict, locale_t);
+const char *__strftime_fmt_1(char (*s)[100], size_t *l, int f, const struct tm *tm, locale_t loc);
 
-size_t __wcsftime_l(wchar_t *restrict wcs, size_t n, const wchar_t *restrict f, const struct tm *restrict tm, locale_t loc)
+size_t __wcsftime_l(wchar_t *restrict s, size_t n, const wchar_t *restrict f, const struct tm *restrict tm, locale_t loc)
 {
-	size_t k, n0=n;
-	char out[100], in[4];
-	while (*f) {
-		if (!n) return 0;
+	size_t l, k;
+	char buf[100];
+	wchar_t wbuf[100];
+	wchar_t *p;
+	const char *t_mb;
+	const wchar_t *t;
+	int plus;
+	unsigned long width;
+	for (l=0; l+1<n; f++) {
+		if (!*f) {
+			s[l] = 0;
+			return l;
+		}
 		if (*f != '%') {
-			*wcs++ = *f++;
-			n--;
+			s[l++] = *f;
 			continue;
 		}
-		in[2] = in[3] = 0;
-		in[0] = *f++;
-		if (strchr("EO", (in[1]=*f++)))
-			in[2] = *f++;
-		k = __strftime_l(out, sizeof out, in, tm, loc);
-		if (!k) return 0;
-		k = mbsrtowcs(wcs, (const char *[]){out}, n, 0);
-		if (k==(size_t)-1) return 0;
-		wcs += k;
-		n -= k;
+		f++;
+		if ((plus = (*f == '+'))) f++;
+		width = wcstoul(f, &p, 10);
+		if (*p == 'C' || *p == 'F' || *p == 'G' || *p == 'Y') {
+			if (!width && p!=f) width = 1;
+			if (width >= n-l) return 0;
+		} else {
+			width = 0;
+		}
+		f = p;
+		if (*f == 'E' || *f == 'O') f++;
+		t_mb = __strftime_fmt_1(&buf, &k, *f, tm, loc);
+		if (!t_mb) return 0;
+		k = mbstowcs(wbuf, t_mb, sizeof wbuf / sizeof *wbuf);
+		if (k == (size_t)-1) return 0;
+		t = wbuf;
+		if (width) {
+			for (; *t=='+' || *t=='-' || (*t=='0'&&t[1]); t++, k--);
+			width--;
+			if (plus && tm->tm_year >= 10000-1900)
+				s[l++] = '+';
+			else if (tm->tm_year < -1900)
+				s[l++] = '-';
+			else
+				width++;
+			if (width >= n-l) return 0;
+			for (; width > k; width--)
+				s[l++] = '0';
+		}
+		if (k >= n-l) return 0;
+		wmemcpy(s+l, t, k);
+		l += k;
 	}
-	if (!n) return 0;
-	*wcs++ = 0;
-	return n0-n;
+	return 0;
 }
 
 size_t wcsftime(wchar_t *restrict wcs, size_t n, const wchar_t *restrict f, const struct tm *restrict tm)

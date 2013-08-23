@@ -157,7 +157,11 @@ const char *__strftime_fmt_1(char (*s)[100], size_t *l, int f, const struct tm *
 		val = tm->tm_year % 100;
 		goto number;
 	case 'Y':
-		val = tm->tm_year + 1900LL;
+		val = tm->tm_year + 1900;
+		if (val >= 10000) {
+			*l = snprintf(*s, sizeof *s, "+%lld", val);
+			return *s;
+		}
 		width = 4;
 		goto number;
 	case 'z':
@@ -193,7 +197,10 @@ size_t __strftime_l(char *restrict s, size_t n, const char *restrict f, const st
 {
 	size_t l, k;
 	char buf[100];
+	char *p;
 	const char *t;
+	int plus;
+	unsigned long width;
 	for (l=0; l+1<n; f++) {
 		if (!*f) {
 			s[l] = 0;
@@ -204,10 +211,32 @@ size_t __strftime_l(char *restrict s, size_t n, const char *restrict f, const st
 			continue;
 		}
 		f++;
+		if ((plus = (*f == '+'))) f++;
+		width = strtoul(f, &p, 10);
+		if (*p == 'C' || *p == 'F' || *p == 'G' || *p == 'Y') {
+			if (!width && p!=f) width = 1;
+			if (width >= n-l) return 0;
+		} else {
+			width = 0;
+		}
+		f = p;
 		if (*f == 'E' || *f == 'O') f++;
 		t = __strftime_fmt_1(&buf, &k, *f, tm, loc);
-		if (!t || k >= n-l)
-			return 0;
+		if (!t) return 0;
+		if (width) {
+			for (; *t=='+' || *t=='-' || (*t=='0'&&t[1]); t++, k--);
+			width--;
+			if (plus && tm->tm_year >= 10000-1900)
+				s[l++] = '+';
+			else if (tm->tm_year < -1900)
+				s[l++] = '-';
+			else
+				width++;
+			if (width >= n-l) return 0;
+			for (; width > k; width--)
+				s[l++] = '0';
+		}
+		if (k >= n-l) return 0;
 		memcpy(s+l, t, k);
 		l += k;
 	}
