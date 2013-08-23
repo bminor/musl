@@ -1016,7 +1016,11 @@ void *__dynlink(int argc, char **argv)
 		}
 		if (app->tls_size) app->tls_image = (char *)app->base + tls_image;
 		if (interp_off) lib->name = (char *)app->base + interp_off;
-		app->name = argv[0];
+		if ((aux[0] & (1UL<<AT_EXECFN))
+		    && strncmp((char *)aux[AT_EXECFN], "/proc/", 6))
+			app->name = (char *)aux[AT_EXECFN];
+		else
+			app->name = argv[0];
 		app->kernel_mapped = 1;
 		app->dynv = (void *)(app->base + find_dyn(
 			(void *)aux[AT_PHDR], aux[AT_PHNUM], aux[AT_PHENT]));
