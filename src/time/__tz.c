@@ -15,11 +15,12 @@ weak_alias(__tzname, tzname);
 
 static char std_name[TZNAME_MAX+1];
 static char dst_name[TZNAME_MAX+1];
+const char __gmt[] = "GMT";
 
 static int dst_off;
 static int r0[5], r1[5];
 
-static const unsigned char *zi, *trans, *index, *types, *abbrevs;
+static const unsigned char *zi, *trans, *index, *types, *abbrevs, *abbrevs_end;
 static size_t map_size;
 
 static char old_tz_buf[32];
@@ -127,7 +128,7 @@ static void do_tzset()
 		"/usr/share/zoneinfo/\0/share/zoneinfo/\0/etc/zoneinfo/\0";
 
 	s = getenv("TZ");
-	if (!s || !*s) s = "GMT0";
+	if (!s || !*s) s = __gmt;
 
 	if (old_tz && !strcmp(s, old_tz)) return;
 
@@ -184,6 +185,7 @@ static void do_tzset()
 		index = trans + (zi_read32(trans-12) << scale);
 		types = index + zi_read32(trans-12);
 		abbrevs = types + 6*zi_read32(trans-8);
+		abbrevs_end = abbrevs + zi_read32(trans-4);
 		if (zi[map_size-1] == '\n') {
 			for (s = (const char *)zi+map_size-2; *s!='\n'; s--);
 			s++;
@@ -192,7 +194,7 @@ static void do_tzset()
 		}
 	}
 
-	if (!s) s = "GMT0";
+	if (!s) s = __gmt;
 	getname(std_name, &s);
 	__tzname[0] = std_name;
 	__timezone = getoff(&s);
@@ -387,3 +389,15 @@ void __tzset()
 }
 
 weak_alias(__tzset, tzset);
+
+const char *__tm_to_tzname(const struct tm *tm)
+{
+	const void *p = tm->__tm_zone;
+	LOCK(lock);
+	do_tzset();
+	if (p != __gmt && p != __tzname[0] && p != __tzname[1]
+	    && (uintptr_t)p-(uintptr_t)abbrevs >= abbrevs_end - abbrevs)
+		p = "";
+	UNLOCK(lock);
+	return p;
+}

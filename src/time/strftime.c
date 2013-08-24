@@ -43,6 +43,7 @@ static int week_num(const struct tm *tm)
 	return val;
 }
 
+const char *__tm_to_tzname(const struct tm *);
 size_t __strftime_l(char *restrict, size_t, const char *restrict, const struct tm *restrict, locale_t);
 
 const char *__strftime_fmt_1(char (*s)[100], size_t *l, int f, const struct tm *tm, locale_t loc)
@@ -166,11 +167,20 @@ const char *__strftime_fmt_1(char (*s)[100], size_t *l, int f, const struct tm *
 		width = 4;
 		goto number;
 	case 'z':
-		val = -tm->__tm_gmtoff;
-		*l = snprintf(*s, sizeof *s, "%+.2d%.2d", val/3600, abs(val%3600)/60);
+		if (tm->tm_isdst < 0) {
+			*l = 0;
+			return "";
+		}
+		*l = snprintf(*s, sizeof *s, "%+.2d%.2d",
+			(-tm->__tm_gmtoff)/3600,
+			abs(tm->__tm_gmtoff%3600)/60);
 		return *s;
 	case 'Z':
-		fmt = tm->__tm_zone;
+		if (tm->tm_isdst < 0) {
+			*l = 0;
+			return "";
+		}
+		fmt = __tm_to_tzname(tm);
 		goto string;
 	case '%':
 		*l = 1;
