@@ -1220,7 +1220,7 @@ void *dlopen(const char *file, int mode)
 		p = 0;
 		errflag = 1;
 		goto end;
-	} else p = load_library(file, 0);
+	} else p = load_library(file, head);
 
 	if (!p) {
 		snprintf(errbuf, sizeof errbuf, noload ?
