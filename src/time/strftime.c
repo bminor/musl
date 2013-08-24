@@ -80,8 +80,8 @@ const char *__strftime_fmt_1(char (*s)[100], size_t *l, int f, const struct tm *
 		fmt = "%m/%d/%y";
 		goto recu_strftime;
 	case 'e':
-		val = tm->tm_mday;
-		goto number;
+		*l = snprintf(*s, sizeof *s, "%2d", tm->tm_mday);
+		return *s;
 	case 'F':
 		fmt = "%Y-%m-%d";
 		goto recu_strftime;
