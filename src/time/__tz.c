@@ -190,7 +190,28 @@ static void do_tzset()
 			for (s = (const char *)zi+map_size-2; *s!='\n'; s--);
 			s++;
 		} else {
-			s = 0;
+			const unsigned char *p;
+			__tzname[0] = __tzname[1] = 0;
+			__daylight = __timezone = dst_off = 0;
+			for (i=0; i<5; i++) r0[i] = r1[i] = 0;
+			for (p=types; p<abbrevs; p+=6) {
+				if (!p[4] && !__tzname[0]) {
+					__tzname[0] = (char *)abbrevs + p[5];
+					__timezone = -zi_read32(p);
+				}
+				if (p[4] && !__tzname[1]) {
+					__tzname[1] = (char *)abbrevs + p[5];
+					dst_off = -zi_read32(p);
+					__daylight = 1;
+				}
+			}
+			if (!__tzname[0]) __tzname[0] = __tzname[1];
+			if (!__tzname[0]) __tzname[0] = (char *)__gmt;
+			if (!__daylight) {
+				__tzname[1] = __tzname[0];
+				dst_off = __timezone;
+			}
+			return;
 		}
 	}
 
