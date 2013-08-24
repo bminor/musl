@@ -395,8 +395,8 @@ const char *__tm_to_tzname(const struct tm *tm)
 	const void *p = tm->__tm_zone;
 	LOCK(lock);
 	do_tzset();
-	if (p != __gmt && p != __tzname[0] && p != __tzname[1]
-	    && (uintptr_t)p-(uintptr_t)abbrevs >= abbrevs_end - abbrevs)
+	if (p != __gmt && p != __tzname[0] && p != __tzname[1] &&
+	    (!zi || (uintptr_t)p-(uintptr_t)abbrevs >= abbrevs_end - abbrevs))
 		p = "";
 	UNLOCK(lock);
 	return p;
