@@ -17,7 +17,7 @@ int __dn_expand(const unsigned char *base, const unsigned char *end, const unsig
 		} else if (*p) {
 			j = *p+1;
 			if (j>=end-p || j>space) return -1;
-			while (--j) *dest++ = *p++;
+			while (--j) *dest++ = *++p;
 			*dest++ = *++p ? '.' : 0;
 		} else {
 			if (len < 0) len = p+1-src;
