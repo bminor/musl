@@ -127,7 +127,7 @@ static void do_tzset()
 		"/usr/share/zoneinfo/\0/share/zoneinfo/\0/etc/zoneinfo/\0";
 
 	s = getenv("TZ");
-	if (!s) s = "";
+	if (!s || !*s) s = "GMT0";
 
 	if (old_tz && !strcmp(s, old_tz)) return;
 
