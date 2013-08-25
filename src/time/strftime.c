@@ -6,6 +6,7 @@
 #include <time.h>
 #include <limits.h>
 #include "libc.h"
+#include "time_impl.h"
 
 const char *__nl_langinfo_l(nl_item, locale_t);
 
@@ -123,6 +124,9 @@ const char *__strftime_fmt_1(char (*s)[100], size_t *l, int f, const struct tm *
 	case 'R':
 		fmt = "%H:%M";
 		goto recu_strftime;
+	case 's':
+		val = __tm_to_secs(tm) + tm->__tm_gmtoff;
+		goto number;
 	case 'S':
 		val = tm->tm_sec;
 		goto number;
