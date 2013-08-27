@@ -244,6 +244,27 @@ tryflag CFLAGS_C99FSE -fexcess-precision=standard \
 tryflag CFLAGS_C99FSE -frounding-math
 
 #
+# We may use the may_alias attribute if __GNUC__ is defined, so
+# if the compiler defines __GNUC__ but does not provide it,
+# it must be defined away as part of the CFLAGS.
+#
+printf "checking whether compiler needs attribute((may_alias)) suppression... "
+cat > "$tmpc" <<EOF
+typedef int
+#ifdef __GNUC__
+__attribute__((__may_alias__))
+#endif
+x;
+EOF
+if $CC $CFLAGS_C99FSE -I./arch/$ARCH -I./include $CPPFLAGS $CFLAGS \
+  -c -o /dev/null "$tmpc" >/dev/null 2>&1 ; then
+printf "no\n"
+else
+printf "yes\n"
+CFLAGS_C99FSE="$CFLAGS_C99FSE -D__may_alias__="
+fi
+
+#
 # Check for options that may be needed to prevent the compiler from
 # generating self-referential versions of memcpy,, memmove, memcmp,
 # and memset. Really, we should add a check to determine if this
