@@ -375,7 +375,6 @@ tryflag CFLAGS_AUTO -Werror=pointer-arith
 
 if test "x$warnings" = xyes ; then
 tryflag CFLAGS_AUTO -Wall
-tryflag CFLAGS_AUTO -Wcast-align
 tryflag CFLAGS_AUTO -Wno-parentheses
 tryflag CFLAGS_AUTO -Wno-uninitialized
 tryflag CFLAGS_AUTO -Wno-missing-braces
