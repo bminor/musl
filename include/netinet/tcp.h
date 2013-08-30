@@ -31,8 +31,10 @@
 #define SOL_TCP 6
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <endian.h>
+#endif
 
+#ifdef _GNU_SOURCE
+#include <endian.h>
 struct tcphdr
 {
 	u_int16_t source;
