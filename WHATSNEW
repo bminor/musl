@@ -997,3 +997,58 @@ arch-specific bugs:
 - wrong SIG_ATOMIC_MIN/MAX macros on x86_64
 - erfcl was missing on archs where long double is same as double
 - broken dynamic-model TLS in static-linked arm/mips/powerpc programs
+
+
+
+0.9.13 release notes
+
+new features:
+- iconv support for EUC-KR and Big5 (including HKSCS) encodings
+- field widths (POSIX 2008 feature) in strftime
+- recurive rpath and $ORIGIN support in dynamic linker
+- cpu affinity interfaces
+- support for armhf (hardfloat) floating point environment (fenv)
+- support for SSE fenv on i386 (for apps using -mfpmath=sse -msse2)
+- strftime %s format (seconds since the epoch, future POSIX requirement)
+- configure script now saves its command line as a comment in config.mak
+- legacy functions valloc and euidaccess
+
+performance:
+- optimized asm memcpy for arm
+- optimized asm memset for i386 and x86_64
+- optimized C versions of memcpy and memset for all archs
+- eliminated major spurious syscalls from posix_spawn
+- some math asm for armhf (hardfloat)
+
+workarounds for:
+- qemu-user's rt_sigaction syscall does not allow old to alias new
+- qemu-user's madvise always succeeds (broke pthread_getattr_np)
+- passing PT_INTERP to dlopen attempted to double-load libc
+- gcc 4.8.x generating self-referential (infinite recursion) memcpy/memset
+- linux's lack of support for fchdir, fchmod, fchown, fstat on O_PATH fds
+
+bugs fixed:
+- failure to honor flags for fchmodat and faccessat (linux syscall api flaws)
+- SIGEV_THREAD timer id corruption and race condition issues
+- timer thread TLS incorrectly keeping values from previous expiry run
+- ecvt/fcvt decimal position off-by-one
+- in symbol-versioned libs, symbol resolved to oldest instead of newest
+- posix_spawn not correctly reporting errno from exec failure
+- "make install" was not atomic (overwrote files rather than replacing)
+- integer overflows in strftime
+- unset/empty TZ variable was mishandled
+- strftime could crash if the struct tm did not have valid tm_zone field
+- failure of fenv functions to handle invalid arguments (required by ISO C)
+- failure of some math functions (C and i386 asm) to raise underflow flag
+- broken dn_expand function (previously not used internally)
+- race conditions with signals during fork
+- incorrect access check in mktemp (obsolete function)
+- unnecessary arbitrary limits on size of program headers in dynamic loader
+- text formatting bugs in output of err.h functions
+
+arch-specific bugs:
+- fesetenv(FE_DFL_ENV) crashed on i386
+- breakage of arm crt code when libc is compiled as thumb
+- arm/armhf (hardfloat) misidentified by configure
+- ambiguity of wait (exit status) macros on mips with signal number 127
+- wrong value of _NSIG and SIGRTMAX on mips
