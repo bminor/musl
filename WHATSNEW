@@ -1005,7 +1005,7 @@ arch-specific bugs:
 new features:
 - iconv support for EUC-KR and Big5 (including HKSCS) encodings
 - field widths (POSIX 2008 feature) in strftime
-- recurive rpath and $ORIGIN support in dynamic linker
+- recursive rpath and $ORIGIN support in dynamic linker
 - cpu affinity interfaces
 - support for armhf (hardfloat) floating point environment (fenv)
 - support for SSE fenv on i386 (for apps using -mfpmath=sse -msse2)
