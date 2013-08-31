@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <stdint.h>
 #include "syscall.h"
+#include "pthread_impl.h"
 
 int sigqueue(pid_t pid, int sig, const union sigval value)
 {
@@ -14,9 +15,9 @@ int sigqueue(pid_t pid, int sig, const union sigval value)
 	si.si_code = SI_QUEUE;
 	si.si_value = value;
 	si.si_uid = getuid();
-	pthread_sigmask(SIG_BLOCK, (void *)(uint64_t[1]){-1}, &set);
+	__block_app_sigs(&set);
 	si.si_pid = getpid();
 	r = syscall(SYS_rt_sigqueueinfo, pid, sig, &si);
-	pthread_sigmask(SIG_SETMASK, &set, 0);
+	__restore_sigs(&set);
 	return r;
 }
