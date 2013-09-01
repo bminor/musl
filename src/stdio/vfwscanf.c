@@ -143,6 +143,8 @@ int vfwscanf(FILE *restrict f, const wchar_t *restrict fmt, va_list ap)
 		}
 
 		if (*p=='m') {
+			wcs = 0;
+			s = 0;
 			alloc = !!dest;
 			p++;
 		} else {
