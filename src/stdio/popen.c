@@ -39,7 +39,7 @@ FILE *popen(const char *cmd, const char *mode)
 	 * remove the close-on-exec flag in the child without also creating
 	 * a file descriptor leak race condition in the parent. */
 	if (p[1-op] == 1-op) {
-		int tmp = fcntl(F_DUPFD_CLOEXEC, 1-op, 0);
+		int tmp = fcntl(1-op, F_DUPFD_CLOEXEC, 0);
 		if (tmp < 0) {
 			e = errno;
 			goto fail;
