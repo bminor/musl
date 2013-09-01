@@ -118,6 +118,8 @@ int vfscanf(FILE *restrict f, const char *restrict fmt, va_list ap)
 		}
 
 		if (*p=='m') {
+			wcs = 0;
+			s = 0;
 			alloc = !!dest;
 			p++;
 		} else {
