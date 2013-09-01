@@ -19,7 +19,7 @@ static int checker(void *p)
 		__syscall(SYS_exit, 1);
 	ret = __syscall(SYS_faccessat, c->fd, c->filename, c->amode, 0);
 	__syscall(SYS_write, c->p, &ret, sizeof ret);
-	__syscall(SYS_exit, 0);
+	return 0;
 }
 
 int faccessat(int fd, const char *filename, int amode, int flag)
