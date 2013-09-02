@@ -4,32 +4,6 @@
 #include <float.h>
 #include <stdint.h>
 
-#if LDBL_MANT_DIG == 53 && LDBL_MAX_EXP == 1024
-#elif LDBL_MANT_DIG == 64 && LDBL_MAX_EXP == 16384
-union ldshape {
-	long double value;
-	struct {
-		uint64_t m;
-		uint16_t exp:15;
-		uint16_t sign:1;
-		uint16_t pad;
-	} bits;
-};
-#elif LDBL_MANT_DIG == 113 && LDBL_MAX_EXP == 16384
-union ldshape {
-	long double value;
-	struct {
-		uint64_t mlo;
-		uint64_t mhi:48;
-		uint16_t exp:15;
-		uint16_t sign:1;
-	} bits;
-};
-#else
-#error Unsupported long double representation
-#endif
-
-
 // FIXME: hacks to make freebsd+openbsd long double code happy
 
 // union and macros for freebsd

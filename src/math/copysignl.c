@@ -9,8 +9,8 @@ long double copysignl(long double x, long double y)
 long double copysignl(long double x, long double y)
 {
 	union ldshape ux = {x}, uy = {y};
-
-	ux.bits.sign = uy.bits.sign;
-	return ux.value;
+	ux.i.se &= 0x7fff;
+	ux.i.se |= uy.i.se & 0x8000;
+	return ux.f;
 }
 #endif

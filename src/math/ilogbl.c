@@ -10,12 +10,12 @@ int ilogbl(long double x)
 int ilogbl(long double x)
 {
 	union ldshape u = {x};
-	uint64_t m = u.bits.m;
-	int e = u.bits.exp;
+	uint64_t m = u.i.m;
+	int e = u.i.se & 0x7fff;
 
 	if (!e) {
 		if (m == 0) {
-			FORCE_EVAL(0/0.0f);
+			FORCE_EVAL(x/x);
 			return FP_ILOGB0;
 		}
 		/* subnormal x */
@@ -25,7 +25,7 @@ int ilogbl(long double x)
 	if (e == 0x7fff) {
 		FORCE_EVAL(0/0.0f);
 		/* in ld80 msb is set in inf */
-		return m & (uint64_t)-1>>1 ? FP_ILOGBNAN : INT_MAX;
+		return m << 1 ? FP_ILOGBNAN : INT_MAX;
 	}
 	return e - 0x3fff;
 }

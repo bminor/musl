@@ -17,6 +17,7 @@
 #include <float.h>
 #include <math.h>
 #include <complex.h>
+#include <endian.h>
 
 #include "longdbl.h"
 
@@ -31,6 +32,33 @@ union dshape {
 	double value;
 	uint64_t bits;
 };
+
+#if LDBL_MANT_DIG == 53 && LDBL_MAX_EXP == 1024
+#elif LDBL_MANT_DIG == 64 && LDBL_MAX_EXP == 16384 && __BYTE_ORDER == __LITTLE_ENDIAN
+union ldshape {
+	long double f;
+	struct {
+		uint64_t m;
+		uint16_t se;
+	} i;
+};
+#elif LDBL_MANT_DIG == 113 && LDBL_MAX_EXP == 16384 && __BYTE_ORDER == __LITTLE_ENDIAN
+union ldshape {
+	long double f;
+	struct {
+		uint64_t lo;
+		uint32_t mid;
+		uint16_t top;
+		uint16_t se;
+	} i;
+	struct {
+		uint64_t lo;
+		uint64_t hi;
+	} i2;
+};
+#else
+#error Unsupported long double representation
+#endif
 
 #define FORCE_EVAL(x) do {                          \
 	if (sizeof(x) == sizeof(float)) {           \
