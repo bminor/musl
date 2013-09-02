@@ -43,7 +43,7 @@ void __synccall(void (*func)(void *), void *ctx)
 	pthread_t self;
 	struct sigaction sa;
 	struct chain *next;
-	uint64_t oldmask;
+	sigset_t oldmask;
 
 	if (!libc.threads_minus_1) {
 		func(ctx);
@@ -52,8 +52,7 @@ void __synccall(void (*func)(void *), void *ctx)
 
 	__inhibit_ptc();
 
-	__syscall(SYS_rt_sigprocmask, SIG_BLOCK, SIGALL_SET,
-		&oldmask, _NSIG/8);
+	__block_all_sigs(&oldmask);
 
 	sem_init(&chaindone, 0, 0);
 	sem_init(&chainlock, 0, 1);
@@ -86,8 +85,7 @@ void __synccall(void (*func)(void *), void *ctx)
 		sem_post(&cur->sem);
 	}
 
-	__syscall(SYS_rt_sigprocmask, SIG_SETMASK,
-		&oldmask, 0, _NSIG/8);
+	__restore_sigs(&oldmask);
 
 	__release_ptc();
 }
