@@ -71,6 +71,10 @@ void __synccall(void (*func)(void *), void *ctx)
 	sigqueue(self->pid, SIGSYNCCALL, (union sigval){0});
 	while (sem_wait(&chaindone));
 
+	sa.sa_flags = 0;
+	sa.sa_handler = SIG_IGN;
+	__libc_sigaction(SIGSYNCCALL, &sa, 0);
+
 	for (cur=head; cur; cur=cur->next) {
 		sem_post(&cur->sem);
 		while (sem_wait(&cur->sem2));
@@ -81,10 +85,6 @@ void __synccall(void (*func)(void *), void *ctx)
 		next = cur->next;
 		sem_post(&cur->sem);
 	}
-
-	sa.sa_flags = 0;
-	sa.sa_handler = SIG_IGN;
-	__libc_sigaction(SIGSYNCCALL, &sa, 0);
 
 	__syscall(SYS_rt_sigprocmask, SIG_SETMASK,
 		&oldmask, 0, _NSIG/8);
