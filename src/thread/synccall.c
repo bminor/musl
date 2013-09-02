@@ -58,6 +58,7 @@ void __synccall(void (*func)(void *), void *ctx)
 	sem_init(&chaindone, 0, 0);
 	sem_init(&chainlock, 0, 1);
 	chainlen = 0;
+	head = 0;
 	callback = func;
 	context = ctx;
 
