@@ -1,86 +1,35 @@
-/* origin: FreeBSD /usr/src/lib/msun/src/e_hypotf.c */
-/*
- * Conversion to float by Ian Lance Taylor, Cygnus Support, ian@cygnus.com.
- */
-/*
- * ====================================================
- * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
- *
- * Developed at SunPro, a Sun Microsystems, Inc. business.
- * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice
- * is preserved.
- * ====================================================
- */
-
-#include "libm.h"
+#include <math.h>
+#include <stdint.h>
 
 float hypotf(float x, float y)
 {
-	float a,b,t1,t2,y1,y2,w;
-	int32_t j,k,ha,hb;
+	union {float f; uint32_t i;} ux = {x}, uy = {y}, ut;
+	float_t z;
 
-	GET_FLOAT_WORD(ha,x);
-	ha &= 0x7fffffff;
-	GET_FLOAT_WORD(hb,y);
-	hb &= 0x7fffffff;
-	if (hb > ha) {
-		a = y;
-		b = x;
-		j=ha; ha=hb; hb=j;
-	} else {
-		a = x;
-		b = y;
+	ux.i &= -1U>>1;
+	uy.i &= -1U>>1;
+	if (ux.i < uy.i) {
+		ut = ux;
+		ux = uy;
+		uy = ut;
 	}
-	a = fabsf(a);
-	b = fabsf(b);
-	if (ha - hb > 0xf000000)  /* x/y > 2**30 */
-		return a+b;
-	k = 0;
-	if (ha > 0x58800000) {    /* a > 2**50 */
-		if(ha >= 0x7f800000) {  /* Inf or NaN */
-			/* Use original arg order iff result is NaN; quieten sNaNs. */
-			w = fabsf(x+0.0f) - fabsf(y+0.0f);
-			if (ha == 0x7f800000) w = a;
-			if (hb == 0x7f800000) w = b;
-			return w;
-		}
-		/* scale a and b by 2**-68 */
-		ha -= 0x22000000; hb -= 0x22000000; k += 68;
-		SET_FLOAT_WORD(a, ha);
-		SET_FLOAT_WORD(b, hb);
+
+	x = ux.f;
+	y = uy.f;
+	if (uy.i == 0xff<<23)
+		return y;
+	if (ux.i >= 0xff<<23 || uy.i == 0 || ux.i - uy.i >= 25<<23)
+		return x + y;
+
+	z = 1;
+	if (ux.i >= (0x7f+60)<<23) {
+		z = 0x1p90f;
+		x *= 0x1p-90f;
+		y *= 0x1p-90f;
+	} else if (uy.i < (0x7f-60)<<23) {
+		z = 0x1p-90f;
+		x *= 0x1p90f;
+		y *= 0x1p90f;
 	}
-	if (hb < 0x26800000) {    /* b < 2**-50 */
-		if (hb <= 0x007fffff) {  /* subnormal b or 0 */
-			if (hb == 0)
-				return a;
-			SET_FLOAT_WORD(t1, 0x7e800000);  /* t1 = 2^126 */
-			b *= t1;
-			a *= t1;
-			k -= 126;
-		} else {   /* scale a and b by 2^68 */
-			ha += 0x22000000;  /* a *= 2^68 */
-			hb += 0x22000000;  /* b *= 2^68 */
-			k -= 68;
-			SET_FLOAT_WORD(a, ha);
-			SET_FLOAT_WORD(b, hb);
-		}
-	}
-	/* medium size a and b */
-	w = a - b;
-	if (w > b) {
-		SET_FLOAT_WORD(t1, ha&0xfffff000);
-		t2 = a - t1;
-		w  = sqrtf(t1*t1-(b*(-b)-t2*(a+t1)));
-	} else {
-		a  = a + a;
-		SET_FLOAT_WORD(y1, hb&0xfffff000);
-		y2 = b - y1;
-		SET_FLOAT_WORD(t1,(ha+0x00800000)&0xfffff000);
-		t2 = a - t1;
-		w  = sqrtf(t1*y1-(w*(-w)-(t1*y2+t2*b)));
-	}
-	if (k)
-		w = scalbnf(w, k);
-	return w;
+	return z*sqrtf((double)x*x + (double)y*y);
 }

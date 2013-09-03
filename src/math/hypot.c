@@ -1,123 +1,67 @@
-/* origin: FreeBSD /usr/src/lib/msun/src/e_hypot.c */
-/*
- * ====================================================
- * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
- *
- * Developed at SunSoft, a Sun Microsystems, Inc. business.
- * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice
- * is preserved.
- * ====================================================
- */
-/* hypot(x,y)
- *
- * Method :
- *      If (assume round-to-nearest) z=x*x+y*y
- *      has error less than sqrt(2)/2 ulp, then
- *      sqrt(z) has error less than 1 ulp (exercise).
- *
- *      So, compute sqrt(x*x+y*y) with some care as
- *      follows to get the error below 1 ulp:
- *
- *      Assume x>y>0;
- *      (if possible, set rounding to round-to-nearest)
- *      1. if x > 2y  use
- *              x1*x1+(y*y+(x2*(x+x1))) for x*x+y*y
- *      where x1 = x with lower 32 bits cleared, x2 = x-x1; else
- *      2. if x <= 2y use
- *              t1*y1+((x-y)*(x-y)+(t1*y2+t2*y))
- *      where t1 = 2x with lower 32 bits cleared, t2 = 2x-t1,
- *      y1= y with lower 32 bits chopped, y2 = y-y1.
- *
- *      NOTE: scaling may be necessary if some argument is too
- *            large or too tiny
- *
- * Special cases:
- *      hypot(x,y) is INF if x or y is +INF or -INF; else
- *      hypot(x,y) is NAN if x or y is NAN.
- *
- * Accuracy:
- *      hypot(x,y) returns sqrt(x^2+y^2) with error less
- *      than 1 ulps (units in the last place)
- */
+#include <math.h>
+#include <stdint.h>
+#include <float.h>
 
-#include "libm.h"
+#if FLT_EVAL_METHOD > 1U && LDBL_MANT_DIG == 64
+#define SPLIT (0x1p32 + 1)
+#else
+#define SPLIT (0x1p27 + 1)
+#endif
+
+static void sq(double_t *hi, double_t *lo, double x)
+{
+	double_t xh, xl, xc;
+
+	xc = x*SPLIT;
+	xh = x - xc + xc;
+	xl = x - xh;
+	*hi = x*x;
+	*lo = xh*xh - *hi + 2*xh*xl + xl*xl;
+}
 
 double hypot(double x, double y)
 {
-	double a,b,t1,t2,y1,y2,w;
-	int32_t j,k,ha,hb;
+	union {double f; uint64_t i;} ux = {x}, uy = {y}, ut;
+	int ex, ey;
+	double_t hx, lx, hy, ly, z;
 
-	GET_HIGH_WORD(ha, x);
-	ha &= 0x7fffffff;
-	GET_HIGH_WORD(hb, y);
-	hb &= 0x7fffffff;
-	if (hb > ha) {
-		a = y;
-		b = x;
-		j=ha; ha=hb; hb=j;
-	} else {
-		a = x;
-		b = y;
+	/* arrange |x| >= |y| */
+	ux.i &= -1ULL>>1;
+	uy.i &= -1ULL>>1;
+	if (ux.i < uy.i) {
+		ut = ux;
+		ux = uy;
+		uy = ut;
 	}
-	a = fabs(a);
-	b = fabs(b);
-	if (ha - hb > 0x3c00000)  /* x/y > 2**60 */
-		return a+b;
-	k = 0;
-	if (ha > 0x5f300000) {    /* a > 2**500 */
-		if(ha >= 0x7ff00000) {  /* Inf or NaN */
-			uint32_t low;
-			/* Use original arg order iff result is NaN; quieten sNaNs. */
-			w = fabs(x+0.0) - fabs(y+0.0);
-			GET_LOW_WORD(low, a);
-			if (((ha&0xfffff)|low) == 0) w = a;
-			GET_LOW_WORD(low, b);
-			if (((hb^0x7ff00000)|low) == 0) w = b;
-			return w;
-		}
-		/* scale a and b by 2**-600 */
-		ha -= 0x25800000; hb -= 0x25800000;  k += 600;
-		SET_HIGH_WORD(a, ha);
-		SET_HIGH_WORD(b, hb);
+
+	/* special cases */
+	ex = ux.i>>52;
+	ey = uy.i>>52;
+	x = ux.f;
+	y = uy.f;
+	/* note: hypot(inf,nan) == inf */
+	if (ey == 0x7ff)
+		return y;
+	if (ex == 0x7ff || uy.i == 0)
+		return x;
+	/* note: hypot(x,y) ~= x + y*y/x/2 with inexact for small y/x */
+	/* 64 difference is enough for ld80 double_t */
+	if (ex - ey > 64)
+		return x + y;
+
+	/* precise sqrt argument in nearest rounding mode without overflow */
+	/* xh*xh must not overflow and xl*xl must not underflow in sq */
+	z = 1;
+	if (ex > 0x3ff+510) {
+		z = 0x1p700;
+		x *= 0x1p-700;
+		y *= 0x1p-700;
+	} else if (ey < 0x3ff-450) {
+		z = 0x1p-700;
+		x *= 0x1p700;
+		y *= 0x1p700;
 	}
-	if (hb < 0x20b00000) {    /* b < 2**-500 */
-		if (hb <= 0x000fffff) {  /* subnormal b or 0 */
-			uint32_t low;
-			GET_LOW_WORD(low, b);
-			if ((hb|low) == 0)
-				return a;
-			t1 = 0;
-			SET_HIGH_WORD(t1, 0x7fd00000);  /* t1 = 2^1022 */
-			b *= t1;
-			a *= t1;
-			k -= 1022;
-		} else {            /* scale a and b by 2^600 */
-			ha += 0x25800000;  /* a *= 2^600 */
-			hb += 0x25800000;  /* b *= 2^600 */
-			k -= 600;
-			SET_HIGH_WORD(a, ha);
-			SET_HIGH_WORD(b, hb);
-		}
-	}
-	/* medium size a and b */
-	w = a - b;
-	if (w > b) {
-		t1 = 0;
-		SET_HIGH_WORD(t1, ha);
-		t2 = a-t1;
-		w  = sqrt(t1*t1-(b*(-b)-t2*(a+t1)));
-	} else {
-		a  = a + a;
-		y1 = 0;
-		SET_HIGH_WORD(y1, hb);
-		y2 = b - y1;
-		t1 = 0;
-		SET_HIGH_WORD(t1, ha+0x00100000);
-		t2 = a - t1;
-		w  = sqrt(t1*y1-(w*(-w)-(t1*y2+t2*b)));
-	}
-	if (k)
-		w = scalbn(w, k);
-	return w;
+	sq(&hx, &lx, x);
+	sq(&hy, &ly, y);
+	return z*sqrt(ly+lx+hy+hx);
 }
