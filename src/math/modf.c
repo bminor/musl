@@ -2,36 +2,33 @@
 
 double modf(double x, double *iptr)
 {
-	union {double x; uint64_t n;} u = {x};
+	union {double f; uint64_t i;} u = {x};
 	uint64_t mask;
-	int e;
-
-	e = (int)(u.n>>52 & 0x7ff) - 0x3ff;
+	int e = (int)(u.i>>52 & 0x7ff) - 0x3ff;
 
 	/* no fractional part */
 	if (e >= 52) {
 		*iptr = x;
-		if (e == 0x400 && u.n<<12 != 0) /* nan */
+		if (e == 0x400 && u.i<<12 != 0) /* nan */
 			return x;
-		u.n &= (uint64_t)1<<63;
-		return u.x;
+		u.i &= 1ULL<<63;
+		return u.f;
 	}
 
 	/* no integral part*/
 	if (e < 0) {
-		u.n &= (uint64_t)1<<63;
-		*iptr = u.x;
+		u.i &= 1ULL<<63;
+		*iptr = u.f;
 		return x;
 	}
 
-	mask = (uint64_t)-1>>12 >> e;
-	if ((u.n & mask) == 0) {
+	mask = -1ULL>>12>>e;
+	if ((u.i & mask) == 0) {
 		*iptr = x;
-		u.n &= (uint64_t)1<<63;
-		return u.x;
+		u.i &= 1ULL<<63;
+		return u.f;
 	}
-	u.n &= ~mask;
-	*iptr = u.x;
-	STRICT_ASSIGN(double, x, x - *iptr);
-	return x;
+	u.i &= ~mask;
+	*iptr = u.f;
+	return x - u.f;
 }

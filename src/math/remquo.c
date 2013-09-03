@@ -1,171 +1,82 @@
-/* origin: FreeBSD /usr/src/lib/msun/src/s_remquo.c */
-/*-
- * ====================================================
- * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
- *
- * Developed at SunSoft, a Sun Microsystems, Inc. business.
- * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice
- * is preserved.
- * ====================================================
- */
-/*
- * Return the IEEE remainder and set *quo to the last n bits of the
- * quotient, rounded to the nearest integer.  We choose n=31 because
- * we wind up computing all the integer bits of the quotient anyway as
- * a side-effect of computing the remainder by the shift and subtract
- * method.  In practice, this is far more bits than are needed to use
- * remquo in reduction algorithms.
- */
-
-#include "libm.h"
-
-static const double Zero[] = {0.0, -0.0,};
+#include <math.h>
+#include <stdint.h>
 
 double remquo(double x, double y, int *quo)
 {
-	int32_t n,hx,hy,hz,ix,iy,sx,i;
-	uint32_t lx,ly,lz,q,sxy;
+	union {double f; uint64_t i;} ux = {x}, uy = {y};
+	int ex = ux.i>>52 & 0x7ff;
+	int ey = uy.i>>52 & 0x7ff;
+	int sx = ux.i>>63;
+	int sy = uy.i>>63;
+	uint32_t q;
+	uint64_t i;
+	uint64_t uxi = ux.i;
 
-	EXTRACT_WORDS(hx, lx, x);
-	EXTRACT_WORDS(hy, ly, y);
-	sxy = (hx ^ hy) & 0x80000000;
-	sx = hx & 0x80000000;   /* sign of x */
-	hx ^= sx;               /* |x| */
-	hy &= 0x7fffffff;       /* |y| */
-
-	/* purge off exception values */
-	if ((hy|ly) == 0 || hx >= 0x7ff00000 ||  /* y = 0, or x not finite */
-	    (hy|((ly|-ly)>>31)) > 0x7ff00000)    /* or y is NaN */
+	*quo = 0;
+	if (uy.i<<1 == 0 || isnan(y) || ex == 0x7ff)
 		return (x*y)/(x*y);
-	if (hx <= hy) {
-		if (hx < hy || lx < ly) {  /* |x| < |y| return x or x-y */
-			q = 0;
-			goto fixup;
-		}
-		if (lx == ly) {            /* |x| = |y| return x*0 */
-			*quo = sxy ? -1 : 1;
-			return Zero[(uint32_t)sx>>31];
-		}
+	if (ux.i<<1 == 0)
+		return x;
+
+	/* normalize x and y */
+	if (!ex) {
+		for (i = uxi<<12; i>>63 == 0; ex--, i <<= 1);
+		uxi <<= -ex + 1;
+	} else {
+		uxi &= -1ULL >> 12;
+		uxi |= 1ULL << 52;
+	}
+	if (!ey) {
+		for (i = uy.i<<12; i>>63 == 0; ey--, i <<= 1);
+		uy.i <<= -ey + 1;
+	} else {
+		uy.i &= -1ULL >> 12;
+		uy.i |= 1ULL << 52;
 	}
 
-	// FIXME: use ilogb?
-
-	/* determine ix = ilogb(x) */
-	if (hx < 0x00100000) {  /* subnormal x */
-		if (hx == 0) {
-			for (ix = -1043, i=lx; i>0; i<<=1) ix--;
-		} else {
-			for (ix = -1022, i=hx<<11; i>0; i<<=1) ix--;
-		}
-	} else
-		ix = (hx>>20) - 1023;
-
-	/* determine iy = ilogb(y) */
-	if (hy < 0x00100000) {  /* subnormal y */
-		if (hy == 0) {
-			for (iy = -1043, i=ly; i>0; i<<=1) iy--;
-		} else {
-			for (iy = -1022, i=hy<<11; i>0; i<<=1) iy--;
-		}
-	} else
-		iy = (hy>>20) - 1023;
-
-	/* set up {hx,lx}, {hy,ly} and align y to x */
-	if (ix >= -1022)
-		hx = 0x00100000|(0x000fffff&hx);
-	else {  /* subnormal x, shift x to normal */
-		n = -1022 - ix;
-		if (n <= 31) {
-			hx = (hx<<n)|(lx>>(32-n));
-			lx <<= n;
-		} else {
-			hx = lx<<(n-32);
-			lx = 0;
-		}
-	}
-	if (iy >= -1022)
-		hy = 0x00100000|(0x000fffff&hy);
-	else {  /* subnormal y, shift y to normal */
-		n = -1022 - iy;
-		if (n <= 31) {
-			hy = (hy<<n)|(ly>>(32-n));
-			ly <<= n;
-		} else {
-			hy = ly<<(n-32);
-			ly = 0;
-		}
-	}
-
-	/* fix point fmod */
-	n = ix - iy;
 	q = 0;
-	while (n--) {
-		hz = hx - hy;
-		lz = lx - ly;
-		if (lx < ly)
-			hz--;
-		if (hz < 0) {
-			hx = hx + hx + (lx>>31);
-			lx = lx + lx;
-		} else {
-			hx = hz + hz + (lz>>31);
-			lx = lz + lz;
+	if (ex < ey) {
+		if (ex+1 == ey)
+			goto end;
+		return x;
+	}
+
+	/* x mod y */
+	for (; ex > ey; ex--) {
+		i = uxi - uy.i;
+		if (i >> 63 == 0) {
+			uxi = i;
 			q++;
 		}
+		uxi <<= 1;
 		q <<= 1;
 	}
-	hz = hx - hy;
-	lz = lx - ly;
-	if (lx < ly)
-		hz--;
-	if (hz >= 0) {
-		hx = hz;
-		lx = lz;
+	i = uxi - uy.i;
+	if (i >> 63 == 0) {
+		uxi = i;
 		q++;
 	}
-
-	/* convert back to floating value and restore the sign */
-	if ((hx|lx) == 0) {  /* return sign(x)*0 */
-		q &= 0x7fffffff;
-		*quo = sxy ? -q : q;
-		return Zero[(uint32_t)sx>>31];
+	if (uxi == 0)
+		ex = -60;
+	else
+		for (; uxi>>52 == 0; uxi <<= 1, ex--);
+end:
+	/* scale result and decide between |x| and |x|-|y| */
+	if (ex > 0) {
+		uxi -= 1ULL << 52;
+		uxi |= (uint64_t)ex << 52;
+	} else {
+		uxi >>= -ex + 1;
 	}
-	while (hx < 0x00100000) {  /* normalize x */
-		hx = hx + hx + (lx>>31);
-		lx = lx + lx;
-		iy--;
-	}
-	if (iy >= -1022) {         /* normalize output */
-		hx = (hx-0x00100000)|((iy+1023)<<20);
-	} else {                   /* subnormal output */
-		n = -1022 - iy;
-		if (n <= 20) {
-			lx = (lx>>n)|((uint32_t)hx<<(32-n));
-			hx >>= n;
-		} else if (n <= 31) {
-			lx = (hx<<(32-n))|(lx>>n);
-			hx = 0;
-		} else {
-			lx = hx>>(n-32);
-			hx = 0;
-		}
-	}
-fixup:
-	INSERT_WORDS(x, hx, lx);
-	y = fabs(y);
-	if (y < 0x1p-1021) {
-		if (x + x > y || (x + x == y && (q & 1))) {
-			q++;
-			x -= y;
-		}
-	} else if (x > 0.5*y || (x == 0.5*y && (q & 1))) {
-		q++;
+	ux.i = uxi;
+	x = ux.f;
+	if (sy)
+		y = -y;
+	if (ex == ey || (ex+1 == ey && (2*x > y || (2*x == y && q%2)))) {
 		x -= y;
+		q++;
 	}
-	GET_HIGH_WORD(hx, x);
-	SET_HIGH_WORD(x, hx ^ sx);
 	q &= 0x7fffffff;
-	*quo = sxy ? -q : q;
-	return x;
+	*quo = sx^sy ? -(int)q : (int)q;
+	return sx ? -x : x;
 }

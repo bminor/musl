@@ -2,36 +2,33 @@
 
 float modff(float x, float *iptr)
 {
-	union {float x; uint32_t n;} u = {x};
+	union {float f; uint32_t i;} u = {x};
 	uint32_t mask;
-	int e;
-
-	e = (int)(u.n>>23 & 0xff) - 0x7f;
+	int e = (int)(u.i>>23 & 0xff) - 0x7f;
 
 	/* no fractional part */
 	if (e >= 23) {
 		*iptr = x;
-		if (e == 0x80 && u.n<<9 != 0) { /* nan */
+		if (e == 0x80 && u.i<<9 != 0) { /* nan */
 			return x;
 		}
-		u.n &= 0x80000000;
-		return u.x;
+		u.i &= 0x80000000;
+		return u.f;
 	}
 	/* no integral part */
 	if (e < 0) {
-		u.n &= 0x80000000;
-		*iptr = u.x;
+		u.i &= 0x80000000;
+		*iptr = u.f;
 		return x;
 	}
 
 	mask = 0x007fffff>>e;
-	if ((u.n & mask) == 0) {
+	if ((u.i & mask) == 0) {
 		*iptr = x;
-		u.n &= 0x80000000;
-		return u.x;
+		u.i &= 0x80000000;
+		return u.f;
 	}
-	u.n &= ~mask;
-	*iptr = u.x;
-	STRICT_ASSIGN(float, x, x - *iptr);
-	return x;
+	u.i &= ~mask;
+	*iptr = u.f;
+	return x - u.f;
 }

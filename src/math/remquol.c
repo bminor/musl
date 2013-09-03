@@ -1,15 +1,3 @@
-/* origin: FreeBSD /usr/src/lib/msun/src/s_remquol.c */
-/*-
- * ====================================================
- * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
- *
- * Developed at SunSoft, a Sun Microsystems, Inc. business.
- * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice
- * is preserved.
- * ====================================================
- */
-
 #include "libm.h"
 
 #if LDBL_MANT_DIG == 53 && LDBL_MAX_EXP == 1024
@@ -18,177 +6,119 @@ long double remquol(long double x, long double y, int *quo)
 	return remquo(x, y, quo);
 }
 #elif (LDBL_MANT_DIG == 64 || LDBL_MANT_DIG == 113) && LDBL_MAX_EXP == 16384
-
-#define BIAS (LDBL_MAX_EXP - 1)
-
-#if LDBL_MANL_SIZE > 32
-typedef uint64_t manl_t;
-#else
-typedef uint32_t manl_t;
-#endif
-
-#if LDBL_MANH_SIZE > 32
-typedef uint64_t manh_t;
-#else
-typedef uint32_t manh_t;
-#endif
-
-/*
- * These macros add and remove an explicit integer bit in front of the
- * fractional mantissa, if the architecture doesn't have such a bit by
- * default already.
- */
-#ifdef LDBL_IMPLICIT_NBIT
-#define SET_NBIT(hx)    ((hx) | (1ULL << LDBL_MANH_SIZE))
-#define HFRAC_BITS      LDBL_MANH_SIZE
-#else
-#define SET_NBIT(hx)    (hx)
-#define HFRAC_BITS      (LDBL_MANH_SIZE - 1)
-#endif
-
-#define MANL_SHIFT      (LDBL_MANL_SIZE - 1)
-
-static const long double Zero[] = {0.0, -0.0};
-
-/*
- * Return the IEEE remainder and set *quo to the last n bits of the
- * quotient, rounded to the nearest integer.  We choose n=31 because
- * we wind up computing all the integer bits of the quotient anyway as
- * a side-effect of computing the remainder by the shift and subtract
- * method.  In practice, this is far more bits than are needed to use
- * remquo in reduction algorithms.
- *
- * Assumptions:
- * - The low part of the mantissa fits in a manl_t exactly.
- * - The high part of the mantissa fits in an int64_t with enough room
- *   for an explicit integer bit in front of the fractional bits.
- */
 long double remquol(long double x, long double y, int *quo)
 {
-	union IEEEl2bits ux, uy;
-	int64_t hx,hz;  /* We need a carry bit even if LDBL_MANH_SIZE is 32. */
-	manh_t hy;
-	manl_t lx,ly,lz;
-	int ix,iy,n,q,sx,sxy;
+	union ldshape ux = {x}, uy = {y};
+	int ex = ux.i.se & 0x7fff;
+	int ey = uy.i.se & 0x7fff;
+	int sx = ux.i.se >> 15;
+	int sy = uy.i.se >> 15;
+	uint32_t q;
 
-	ux.e = x;
-	uy.e = y;
-	sx = ux.bits.sign;
-	sxy = sx ^ uy.bits.sign;
-	ux.bits.sign = 0;       /* |x| */
-	uy.bits.sign = 0;       /* |y| */
-	x = ux.e;
-
-	/* purge off exception values */
-	if ((uy.bits.exp|uy.bits.manh|uy.bits.manl)==0 || /* y=0 */
-	    (ux.bits.exp == BIAS + LDBL_MAX_EXP) ||       /* or x not finite */
-	    (uy.bits.exp == BIAS + LDBL_MAX_EXP &&
-		((uy.bits.manh&~LDBL_NBIT)|uy.bits.manl)!=0)) /* or y is NaN */
+	*quo = 0;
+	if (y == 0 || isnan(y) || ex == 0x7fff)
 		return (x*y)/(x*y);
-	if (ux.bits.exp <= uy.bits.exp) {
-		if ((ux.bits.exp < uy.bits.exp) ||
-		    (ux.bits.manh <= uy.bits.manh &&
-		     (ux.bits.manh < uy.bits.manh ||
-		      ux.bits.manl < uy.bits.manl))) {
-			q = 0;
-			goto fixup;       /* |x|<|y| return x or x-y */
-		}
-		if (ux.bits.manh == uy.bits.manh && ux.bits.manl == uy.bits.manl) {
-			*quo = sxy ? -1 : 1;
-			return Zero[sx];  /* |x|=|y| return x*0*/
-		}
+	if (x == 0)
+		return x;
+
+	/* normalize x and y */
+	if (!ex) {
+		ux.i.se = ex;
+		ux.f *= 0x1p120f;
+		ex = ux.i.se - 120;
+	}
+	if (!ey) {
+		uy.i.se = ey;
+		uy.f *= 0x1p120f;
+		ey = uy.i.se - 120;
 	}
 
-	/* determine ix = ilogb(x) */
-	if (ux.bits.exp == 0) {  /* subnormal x */
-		ux.e *= 0x1.0p512;
-		ix = ux.bits.exp - (BIAS + 512);
-	} else {
-		ix = ux.bits.exp - BIAS;
-	}
-
-	/* determine iy = ilogb(y) */
-	if (uy.bits.exp == 0) {  /* subnormal y */
-		uy.e *= 0x1.0p512;
-		iy = uy.bits.exp - (BIAS + 512);
-	} else {
-		iy = uy.bits.exp - BIAS;
-	}
-
-	/* set up {hx,lx}, {hy,ly} and align y to x */
-	hx = SET_NBIT(ux.bits.manh);
-	hy = SET_NBIT(uy.bits.manh);
-	lx = ux.bits.manl;
-	ly = uy.bits.manl;
-
-	/* fix point fmod */
-	n = ix - iy;
 	q = 0;
-
-	while (n--) {
-		hz = hx - hy;
-		lz = lx - ly;
-		if (lx < ly)
-			hz -= 1;
-		if (hz < 0) {
-			hx = hx + hx + (lx>>MANL_SHIFT);
-			lx = lx + lx;
-		} else {
-			hx = hz + hz + (lz>>MANL_SHIFT);
-			lx = lz + lz;
+	if (ex >= ey) {
+		/* x mod y */
+#if LDBL_MANT_DIG == 64
+		uint64_t i, mx, my;
+		mx = ux.i.m;
+		my = uy.i.m;
+		for (; ex > ey; ex--) {
+			i = mx - my;
+			if (mx >= my) {
+				mx = 2*i;
+				q++;
+				q <<= 1;
+			} else if (2*mx < mx) {
+				mx = 2*mx - my;
+				q <<= 1;
+				q++;
+			} else {
+				mx = 2*mx;
+				q <<= 1;
+			}
+		}
+		i = mx - my;
+		if (mx >= my) {
+			mx = i;
 			q++;
 		}
-		q <<= 1;
-	}
-	hz = hx - hy;
-	lz = lx - ly;
-	if (lx < ly)
-		hz -= 1;
-	if (hz >= 0) {
-		hx = hz;
-		lx = lz;
-		q++;
-	}
-
-	/* convert back to floating value and restore the sign */
-	if ((hx|lx) == 0) {  /* return sign(x)*0 */
-		q &= 0x7fffffff;
-		*quo = sxy ? -q : q;
-		return Zero[sx];
-	}
-	while (hx < (1ULL<<HFRAC_BITS)) {  /* normalize x */
-		hx = hx + hx + (lx>>MANL_SHIFT);
-		lx = lx + lx;
-		iy -= 1;
-	}
-	ux.bits.manh = hx; /* The integer bit is truncated here if needed. */
-	ux.bits.manl = lx;
-	if (iy < LDBL_MIN_EXP) {
-		ux.bits.exp = iy + (BIAS + 512);
-		ux.e *= 0x1p-512;
-	} else {
-		ux.bits.exp = iy + BIAS;
-	}
-	ux.bits.sign = 0;
-	x = ux.e;
-fixup:
-	y = fabsl(y);
-	if (y < LDBL_MIN * 2) {
-		if (x + x > y || (x + x == y && (q & 1))) {
-			q++;
-			x-=y;
+		if (mx == 0)
+			ex = -120;
+		else
+			for (; mx >> 63 == 0; mx *= 2, ex--);
+		ux.i.m = mx;
+#elif LDBL_MANT_DIG == 113
+		uint64_t hi, lo, xhi, xlo, yhi, ylo;
+		xhi = (ux.i2.hi & -1ULL>>16) | 1ULL<<48;
+		yhi = (uy.i2.hi & -1ULL>>16) | 1ULL<<48;
+		xlo = ux.i2.lo;
+		ylo = ux.i2.lo;
+		for (; ex > ey; ex--) {
+			hi = xhi - yhi;
+			lo = xlo - ylo;
+			if (xlo < ylo)
+				hi -= 1;
+			if (hi >> 63 == 0) {
+				xhi = 2*hi + (lo>>63);
+				xlo = 2*lo;
+				q++;
+			} else {
+				xhi = 2*xhi + (xlo>>63);
+				xlo = 2*xlo;
+			}
+			q <<= 1;
 		}
-	} else if (x > 0.5*y || (x == 0.5*y && (q & 1))) {
-		q++;
-		x-=y;
+		hi = xhi - yhi;
+		lo = xlo - ylo;
+		if (xlo < ylo)
+			hi -= 1;
+		if (hi >> 63 == 0) {
+			xhi = hi;
+			xlo = lo;
+			q++;
+		}
+		if ((xhi|xlo) == 0)
+			ex = -120;
+		else
+			for (; xhi >> 48 == 0; xhi = 2*xhi + (xlo>>63), xlo = 2*xlo, ex--);
+		ux.i2.hi = xhi;
+		ux.i2.lo = xlo;
+#endif
 	}
 
-	ux.e = x;
-	ux.bits.sign ^= sx;
-	x = ux.e;
-
+	/* scale result and decide between |x| and |x|-|y| */
+	if (ex <= 0) {
+		ux.i.se = ex + 120;
+		ux.f *= 0x1p-120f;
+	} else
+		ux.i.se = ex;
+	x = ux.f;
+	if (sy)
+		y = -y;
+	if (ex == ey || (ex+1 == ey && (2*x > y || (2*x == y && q%2)))) {
+		x -= y;
+		q++;
+	}
 	q &= 0x7fffffff;
-	*quo = sxy ? -q : q;
-	return x;
+	*quo = sx^sy ? -(int)q : (int)q;
+	return sx ? -x : x;
 }
 #endif
