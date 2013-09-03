@@ -1,23 +1,3 @@
-/* origin: FreeBSD /usr/src/lib/msun/src/s_truncl.c */
-/*
- * ====================================================
- * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
- *
- * Developed at SunPro, a Sun Microsystems, Inc. business.
- * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice
- * is preserved.
- * ====================================================
- */
-/*
- * truncl(x)
- * Return x rounded toward 0 to integral value
- * Method:
- *      Bit twiddling.
- * Exception:
- *      Inexact flag raised if x not equal to truncl(x).
- */
-
 #include "libm.h"
 
 #if LDBL_MANT_DIG == 53 && LDBL_MAX_EXP == 1024
@@ -26,43 +6,31 @@ long double truncl(long double x)
 	return trunc(x);
 }
 #elif (LDBL_MANT_DIG == 64 || LDBL_MANT_DIG == 113) && LDBL_MAX_EXP == 16384
-#ifdef LDBL_IMPLICIT_NBIT
-#define MANH_SIZE       (LDBL_MANH_SIZE + 1)
-#else
-#define MANH_SIZE       LDBL_MANH_SIZE
+#if LDBL_MANT_DIG == 64
+#define TOINT 0x1p63
+#elif LDBL_MANT_DIG == 113
+#define TOINT 0x1p112
 #endif
-
-static const long double huge = 1.0e300;
-static const float zero[] = { 0.0, -0.0 };
-
 long double truncl(long double x)
 {
-	union IEEEl2bits u = { .e = x };
-	int e = u.bits.exp - LDBL_MAX_EXP + 1;
+	union ldshape u = {x};
+	int e = u.i.se & 0x7fff;
+	int s = u.i.se >> 15;
+	long double y;
 
-	if (e < MANH_SIZE - 1) {
-		if (e < 0) {
-			/* raise inexact if x != 0 */
-			if (huge + x > 0.0)
-				u.e = zero[u.bits.sign];
-		} else {
-			uint64_t m = ((1llu << MANH_SIZE) - 1) >> (e + 1);
-			if (((u.bits.manh & m) | u.bits.manl) == 0)
-				return x;     /* x is integral */
-			/* raise inexact */
-			if (huge + x > 0.0) {
-				u.bits.manh &= ~m;
-				u.bits.manl = 0;
-			}
-		}
-	} else if (e < LDBL_MANT_DIG - 1) {
-		uint64_t m = (uint64_t)-1 >> (64 - LDBL_MANT_DIG + e + 1);
-		if ((u.bits.manl & m) == 0)
-			return x;     /* x is integral */
-		/* raise inexact */
-		if (huge + x > 0.0)
-			u.bits.manl &= ~m;
+	if (e >= 0x3fff+LDBL_MANT_DIG-1)
+		return x;
+	if (e <= 0x3fff-1) {
+		FORCE_EVAL(x + 0x1p120f);
+		return x*0;
 	}
-	return u.e;
+	/* y = int(|x|) - |x|, where int(|x|) is an integer neighbor of |x| */
+	if (s)
+		x = -x;
+	y = x + TOINT - TOINT - x;
+	if (y > 0)
+		y -= 1;
+	x += y;
+	return s ? -x : x;
 }
 #endif
