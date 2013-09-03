@@ -23,46 +23,45 @@ long double acosl(long double x)
 }
 #elif (LDBL_MANT_DIG == 64 || LDBL_MANT_DIG == 113) && LDBL_MAX_EXP == 16384
 #include "__invtrigl.h"
+#if LDBL_MANT_DIG == 64
+#define CLEARBOTTOM(u) (u.i.m &= -1ULL << 32)
+#elif LDBL_MANT_DIG == 113
+#define CLEARBOTTOM(u) (u.i.lo = 0)
+#endif
 
 long double acosl(long double x)
 {
-	union IEEEl2bits u;
-	long double z, w, s, c, df;
-	int16_t expsign, expt;
-	u.e = x;
-	expsign = u.xbits.expsign;
-	expt = expsign & 0x7fff;
+	union ldshape u = {x};
+	long double z, s, c, f;
+	uint16_t e = u.i.se & 0x7fff;
+
 	/* |x| >= 1 or nan */
-	if (expt >= 0x3fff) {
-		if (expt == 0x3fff &&
-			((u.bits.manh & ~LDBL_NBIT) | u.bits.manl) == 0) {
-			if (expsign > 0)
-				return 0;  /* acos(1) = 0 */
-			return 2*pio2_hi + 0x1p-120f;  /* acos(-1)= pi */
-		}
-		return 0/(x-x);  /* acos(|x|>1) is NaN */
+	if (e >= 0x3fff) {
+		if (x == 1)
+			return 0;
+		if (x == -1)
+			return 2*pio2_hi + 0x1p-120f;
+		return 0/(x-x);
 	}
 	/* |x| < 0.5 */
-	if (expt < 0x3fff - 1) {
-		if (expt < 0x3fff - 65)
-			return pio2_hi + 0x1p-120f;  /* x < 0x1p-65: acosl(x)=pi/2 */
-		return pio2_hi - (x - (pio2_lo - x * __invtrigl_R(x*x)));
+	if (e < 0x3fff - 1) {
+		if (e < 0x3fff - LDBL_MANT_DIG - 1)
+			return pio2_hi + 0x1p-120f;
+		return pio2_hi - (__invtrigl_R(x*x)*x - pio2_lo + x);
 	}
 	/* x < -0.5 */
-	if (expsign < 0) {
-		z = (1.0 + x) * 0.5;
+	if (u.i.se >> 15) {
+		z = (1 + x)*0.5;
 		s = sqrtl(z);
-		w = __invtrigl_R(z) * s - pio2_lo;
-		return 2*(pio2_hi - (s + w));
+		return 2*(pio2_hi - (__invtrigl_R(z)*s - pio2_lo + s));
 	}
 	/* x > 0.5 */
-	z = (1.0 - x) * 0.5;
+	z = (1 - x)*0.5;
 	s = sqrtl(z);
-	u.e = s;
-	u.bits.manl = 0;
-	df = u.e;
-	c = (z - df * df) / (s + df);
-	w = __invtrigl_R(z) * s + c;
-	return 2*(df + w);
+	u.f = s;
+	CLEARBOTTOM(u);
+	f = u.f;
+	c = (z - f*f)/(s + f);
+	return 2*(__invtrigl_R(z)*s + c + f);
 }
 #endif

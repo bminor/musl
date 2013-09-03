@@ -23,6 +23,9 @@ long double atanl(long double x)
 }
 #elif (LDBL_MANT_DIG == 64 || LDBL_MANT_DIG == 113) && LDBL_MAX_EXP == 16384
 
+#if LDBL_MANT_DIG == 64
+#define EXPMAN(u) ((u.i.se & 0x7fff)<<8 | (u.i.m>>55 & 0xff))
+
 static const long double atanhi[] = {
 	 4.63647609000806116202e-01L,
 	 7.85398163397448309628e-01L,
@@ -64,32 +67,85 @@ static long double T_odd(long double x)
 	return aT[1] + x * (aT[3] + x * (aT[5] + x * (aT[7] +
 		x * (aT[9] + x * aT[11]))));
 }
+#elif LDBL_MANT_DIG == 113
+#define EXPMAN(u) ((u.i.se & 0x7fff)<<8 | u.i.top>>8)
+
+const long double atanhi[] = {
+	 4.63647609000806116214256231461214397e-01L,
+	 7.85398163397448309615660845819875699e-01L,
+	 9.82793723247329067985710611014666038e-01L,
+	 1.57079632679489661923132169163975140e+00L,
+};
+
+const long double atanlo[] = {
+	 4.89509642257333492668618435220297706e-36L,
+	 2.16795253253094525619926100651083806e-35L,
+	-2.31288434538183565909319952098066272e-35L,
+	 4.33590506506189051239852201302167613e-35L,
+};
+
+const long double aT[] = {
+	 3.33333333333333333333333333333333125e-01L,
+	-1.99999999999999999999999999999180430e-01L,
+	 1.42857142857142857142857142125269827e-01L,
+	-1.11111111111111111111110834490810169e-01L,
+	 9.09090909090909090908522355708623681e-02L,
+	-7.69230769230769230696553844935357021e-02L,
+	 6.66666666666666660390096773046256096e-02L,
+	-5.88235294117646671706582985209643694e-02L,
+	 5.26315789473666478515847092020327506e-02L,
+	-4.76190476189855517021024424991436144e-02L,
+	 4.34782608678695085948531993458097026e-02L,
+	-3.99999999632663469330634215991142368e-02L,
+	 3.70370363987423702891250829918659723e-02L,
+	-3.44827496515048090726669907612335954e-02L,
+	 3.22579620681420149871973710852268528e-02L,
+	-3.03020767654269261041647570626778067e-02L,
+	 2.85641979882534783223403715930946138e-02L,
+	-2.69824879726738568189929461383741323e-02L,
+	 2.54194698498808542954187110873675769e-02L,
+	-2.35083879708189059926183138130183215e-02L,
+	 2.04832358998165364349957325067131428e-02L,
+	-1.54489555488544397858507248612362957e-02L,
+	 8.64492360989278761493037861575248038e-03L,
+	-2.58521121597609872727919154569765469e-03L,
+};
+
+static long double T_even(long double x)
+{
+	return (aT[0] + x * (aT[2] + x * (aT[4] + x * (aT[6] + x * (aT[8] +
+		x * (aT[10] + x * (aT[12] + x * (aT[14] + x * (aT[16] +
+		x * (aT[18] + x * (aT[20] + x * aT[22])))))))))));
+}
+
+static long double T_odd(long double x)
+{
+	return (aT[1] + x * (aT[3] + x * (aT[5] + x * (aT[7] + x * (aT[9] +
+		x * (aT[11] + x * (aT[13] + x * (aT[15] + x * (aT[17] +
+		x * (aT[19] + x * (aT[21] + x * aT[23])))))))))));
+}
+#endif
 
 long double atanl(long double x)
 {
-	union IEEEl2bits u;
-	long double w,s1,s2,z;
+	union ldshape u = {x};
+	long double w, s1, s2, z;
 	int id;
-	uint16_t expsign, expt;
-	uint32_t expman;
+	unsigned e = u.i.se & 0x7fff;
+	unsigned sign = u.i.se >> 15;
+	unsigned expman;
 
-	u.e = x;
-	expsign = u.xbits.expsign;
-	expt = expsign & 0x7fff;
-	if (expt >= 0x3fff + 65) { /* if |x| is large, atan(x)~=pi/2 */
-		if (expt == 0x7fff &&
-		    ((u.bits.manh&~LDBL_NBIT)|u.bits.manl)!=0)  /* NaN */
-			return x+x;
-		z = atanhi[3] + 0x1p-120f;
-		return expsign>>15 ? -z : z;
+	if (e >= 0x3fff + LDBL_MANT_DIG + 1) { /* if |x| is large, atan(x)~=pi/2 */
+		if (isnan(x))
+			return x;
+		return sign ? -atanhi[3] : atanhi[3];
 	}
 	/* Extract the exponent and the first few bits of the mantissa. */
-	/* XXX There should be a more convenient way to do this. */
-	expman = (expt << 8) | ((u.bits.manh >> (LDBL_MANH_SIZE - 9)) & 0xff);
+	expman = EXPMAN(u);
 	if (expman < ((0x3fff - 2) << 8) + 0xc0) {  /* |x| < 0.4375 */
-		if (expt < 0x3fff - 32) {   /* if |x| is small, atanl(x)~=x */
+		if (e < 0x3fff - (LDBL_MANT_DIG+1)/2) {   /* if |x| is small, atanl(x)~=x */
 			/* raise underflow if subnormal */
-			if (expt == 0)
+			if (e == 0)
 				FORCE_EVAL((float)x);
 			return x;
 		}
@@ -108,7 +164,7 @@ long double atanl(long double x)
 			if (expman < ((0x3fff + 1) << 8) + 0x38) { /* |x| < 2.4375 */
 				id = 2;
 				x = (x-1.5)/(1.0+1.5*x);
-			} else {                                 /* 2.4375 <= |x| < 2^ATAN_CONST */
+			} else {                                 /* 2.4375 <= |x| */
 				id = 3;
 				x = -1.0/x;
 			}
@@ -123,6 +179,6 @@ long double atanl(long double x)
 	if (id < 0)
 		return x - x*(s1+s2);
 	z = atanhi[id] - ((x*(s1+s2) - atanlo[id]) - x);
-	return expsign>>15 ? -z : z;
+	return sign ? -z : z;
 }
 #endif
