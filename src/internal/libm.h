@@ -19,8 +19,6 @@
 #include <complex.h>
 #include <endian.h>
 
-#include "longdbl.h"
-
 #include "libc.h"
 
 union fshape {
