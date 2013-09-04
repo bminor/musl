@@ -9,10 +9,7 @@ long double asinhl(long double x)
 /* asinh(x) = sign(x)*log(|x|+sqrt(x*x+1)) ~= x - x^3/6 + o(x^5) */
 long double asinhl(long double x)
 {
-	union {
-		long double f;
-		struct{uint64_t m; uint16_t se; uint16_t pad;} i;
-	} u = {.f = x};
+	union ldshape u = {x};
 	unsigned e = u.i.se & 0x7fff;
 	unsigned s = u.i.se >> 15;
 

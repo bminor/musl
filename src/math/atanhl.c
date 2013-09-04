@@ -9,10 +9,7 @@ long double atanhl(long double x)
 /* atanh(x) = log((1+x)/(1-x))/2 = log1p(2x/(1-x))/2 ~= x + x^3/3 + o(x^5) */
 long double atanhl(long double x)
 {
-	union {
-		long double f;
-		struct{uint64_t m; uint16_t se; uint16_t pad;} i;
-	} u = {.f = x};
+	union ldshape u = {x};
 	unsigned e = u.i.se & 0x7fff;
 	unsigned s = u.i.se >> 15;
 

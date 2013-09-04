@@ -2,8 +2,6 @@
 
 long double sqrtl(long double x)
 {
-	/* FIXME: implement sqrtl in C. At least this works for now on
-	 * ARM (which uses ld64), the only arch without sqrtl asm
-	 * that's supported so far. */
+	/* FIXME: implement in C, this is for LDBL_MANT_DIG == 64 only */
 	return sqrt(x);
 }
