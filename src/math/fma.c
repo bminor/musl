@@ -232,16 +232,16 @@ static inline struct dd dd_add(double a, double b)
 static inline double add_adjusted(double a, double b)
 {
 	struct dd sum;
-	uint64_t hibits, lobits;
+	union {double f; uint64_t i;} uhi, ulo;
 
 	sum = dd_add(a, b);
 	if (sum.lo != 0) {
-		EXTRACT_WORD64(hibits, sum.hi);
-		if ((hibits & 1) == 0) {
+		uhi.f = sum.hi;
+		if ((uhi.i & 1) == 0) {
 			/* hibits += (int)copysign(1.0, sum.hi * sum.lo) */
-			EXTRACT_WORD64(lobits, sum.lo);
-			hibits += 1 - ((hibits ^ lobits) >> 62);
-			INSERT_WORD64(sum.hi, hibits);
+			ulo.f = sum.lo;
+			uhi.i += 1 - ((uhi.i ^ ulo.i) >> 62);
+			sum.hi = uhi.f;
 		}
 	}
 	return (sum.hi);
@@ -255,7 +255,7 @@ static inline double add_adjusted(double a, double b)
 static inline double add_and_denormalize(double a, double b, int scale)
 {
 	struct dd sum;
-	uint64_t hibits, lobits;
+	union {double f; uint64_t i;} uhi, ulo;
 	int bits_lost;
 
 	sum = dd_add(a, b);
@@ -271,13 +271,13 @@ static inline double add_and_denormalize(double a, double b, int scale)
 	 * break the ties manually.
 	 */
 	if (sum.lo != 0) {
-		EXTRACT_WORD64(hibits, sum.hi);
-		bits_lost = -((int)(hibits >> 52) & 0x7ff) - scale + 1;
-		if (bits_lost != 1 ^ (int)(hibits & 1)) {
+		uhi.f = sum.hi;
+		bits_lost = -((int)(uhi.i >> 52) & 0x7ff) - scale + 1;
+		if (bits_lost != 1 ^ (int)(uhi.i & 1)) {
 			/* hibits += (int)copysign(1.0, sum.hi * sum.lo) */
-			EXTRACT_WORD64(lobits, sum.lo);
-			hibits += 1 - (((hibits ^ lobits) >> 62) & 2);
-			INSERT_WORD64(sum.hi, hibits);
+			ulo.f = sum.lo;
+			uhi.i += 1 - (((uhi.i ^ ulo.i) >> 62) & 2);
+			sum.hi = uhi.f;
 		}
 	}
 	return scalbn(sum.hi, scale);

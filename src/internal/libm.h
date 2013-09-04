@@ -80,14 +80,6 @@ do {                                                            \
   (lo) = (uint32_t)__u.bits;                                    \
 } while (0)
 
-/* Get a 64 bit int from a double.  */
-#define EXTRACT_WORD64(i,d)                                     \
-do {                                                            \
-  union dshape __u;                                             \
-  __u.value = (d);                                              \
-  (i) = __u.bits;                                               \
-} while (0)
-
 /* Get the more significant 32 bit int from a double.  */
 #define GET_HIGH_WORD(i,d)                                      \
 do {                                                            \
@@ -109,14 +101,6 @@ do {                                                            \
 do {                                                            \
   union dshape __u;                                             \
   __u.bits = ((uint64_t)(hi) << 32) | (uint32_t)(lo);           \
-  (d) = __u.value;                                              \
-} while (0)
-
-/* Set a double from a 64 bit int.  */
-#define INSERT_WORD64(d,i)                                      \
-do {                                                            \
-  union dshape __u;                                             \
-  __u.bits = (i);                                               \
   (d) = __u.value;                                              \
 } while (0)
 
