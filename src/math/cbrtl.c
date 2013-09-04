@@ -23,58 +23,50 @@ long double cbrtl(long double x)
 	return cbrt(x);
 }
 #elif (LDBL_MANT_DIG == 64 || LDBL_MANT_DIG == 113) && LDBL_MAX_EXP == 16384
-
-#define BIAS (LDBL_MAX_EXP - 1)
 static const unsigned B1 = 709958130; /* B1 = (127-127.0/3-0.03306235651)*2**23 */
 
 long double cbrtl(long double x)
 {
-	union IEEEl2bits u, v;
+	union ldshape u = {x}, v;
+	union {float f; uint32_t i;} uft;
 	long double r, s, t, w;
-	double dr, dt, dx;
-	float ft, fx;
-	uint32_t hx;
-	uint16_t expsign;
-	int k;
-
-	u.e = x;
-	expsign = u.xbits.expsign;
-	k = expsign & 0x7fff;
+	double_t dr, dt, dx;
+	float_t ft;
+	int e = u.i.se & 0x7fff;
+	int sign = u.i.se & 0x8000;
 
 	/*
 	 * If x = +-Inf, then cbrt(x) = +-Inf.
 	 * If x = NaN, then cbrt(x) = NaN.
 	 */
-	if (k == BIAS + LDBL_MAX_EXP)
+	if (e == 0x7fff)
 		return x + x;
-
-	if (k == 0) {
-		/* If x = +-0, then cbrt(x) = +-0. */
-		if ((u.bits.manh | u.bits.manl) == 0)
-			return x;
+	if (e == 0) {
 		/* Adjust subnormal numbers. */
-		u.e *= 0x1.0p514;
-		k = u.bits.exp;
-		k -= BIAS + 514;
-	} else
-		k -= BIAS;
-	u.xbits.expsign = BIAS;
-	v.e = 1;
-
-	x = u.e;
-	switch (k % 3) {
+		u.f *= 0x1p120;
+		e = u.i.se & 0x7fff;
+		/* If x = +-0, then cbrt(x) = +-0. */
+		if (e == 0)
+			return x;
+		e -= 120;
+	}
+	e -= 0x3fff;
+	u.i.se = 0x3fff;
+	x = u.f;
+	switch (e % 3) {
 	case 1:
 	case -2:
-		x = 2*x;
-		k--;
+		x *= 2;
+		e--;
 		break;
 	case 2:
 	case -1:
-		x = 4*x;
-		k -= 2;
+		x *= 4;
+		e -= 2;
 		break;
 	}
-	v.xbits.expsign = (expsign & 0x8000) | (BIAS + k / 3);
+	v.f = 1.0;
+	v.i.se = sign | (0x3fff + e/3);
 
 	/*
 	 * The following is the guts of s_cbrtf, with the handling of
@@ -83,9 +75,9 @@ long double cbrtl(long double x)
 	 */
 
 	/* ~5-bit estimate: */
-	fx = x;
-	GET_FLOAT_WORD(hx, fx);
-	SET_FLOAT_WORD(ft, ((hx & 0x7fffffff) / 3 + B1));
+	uft.f = x;
+	uft.i = (uft.i & 0x7fffffff)/3 + B1;
+	ft = uft.f;
 
 	/* ~16-bit estimate: */
 	dx = x;
@@ -126,7 +118,7 @@ long double cbrtl(long double x)
 	r = (r-t)/(w+r); /* r-t is exact; w+r ~= 3*t */
 	t = t+t*r;       /* error <= 0.5 + 0.5/3 + epsilon */
 
-	t *= v.e;
+	t *= v.f;
 	return t;
 }
 #endif

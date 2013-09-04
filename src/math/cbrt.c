@@ -15,7 +15,8 @@
  * Return cube root of x
  */
 
-#include "libm.h"
+#include <math.h>
+#include <stdint.h>
 
 static const uint32_t
 B1 = 715094163, /* B1 = (1023-1023/3-0.03306235651)*2**20 */
@@ -31,15 +32,10 @@ P4 =  0.145996192886612446982; /* 0x3fc2b000, 0xd4e4edd7 */
 
 double cbrt(double x)
 {
-	int32_t hx;
-	union dshape u;
-	double r,s,t=0.0,w;
-	uint32_t sign;
-	uint32_t high,low;
+	union {double f; uint64_t i;} u = {x};
+	double_t r,s,t,w;
+	uint32_t hx = u.i>>32 & 0x7fffffff;
 
-	EXTRACT_WORDS(hx, low, x);
-	sign = hx & 0x80000000;
-	hx ^= sign;
 	if (hx >= 0x7ff00000)  /* cbrt(NaN,INF) is itself */
 		return x+x;
 
@@ -59,14 +55,16 @@ double cbrt(double x)
 	 * division rounds towards minus infinity; this is also efficient.
 	 */
 	if (hx < 0x00100000) { /* zero or subnormal? */
-		if ((hx|low) == 0)
+		u.f = x*0x1p54;
+		hx = u.i>>32 & 0x7fffffff;
+		if (hx == 0)
 			return x;  /* cbrt(0) is itself */
-		SET_HIGH_WORD(t, 0x43500000); /* set t = 2**54 */
-		t *= x;
-		GET_HIGH_WORD(high, t);
-		INSERT_WORDS(t, sign|((high&0x7fffffff)/3+B2), 0);
+		hx = hx/3 + B2;
 	} else
-		INSERT_WORDS(t, sign|(hx/3+B1), 0);
+		hx = hx/3 + B1;
+	u.i &= 1ULL<<63;
+	u.i |= (uint64_t)hx << 32;
+	t = u.f;
 
 	/*
 	 * New cbrt to 23 bits:
@@ -76,7 +74,7 @@ double cbrt(double x)
 	 * has produced t such than |t/cbrt(x) - 1| ~< 1/32, and cubing this
 	 * gives us bounds for r = t**3/x.
 	 *
-	 * Try to optimize for parallel evaluation as in k_tanf.c.
+	 * Try to optimize for parallel evaluation as in __tanf.c.
 	 */
 	r = (t*t)*(t/x);
 	t = t*((P0+r*(P1+r*P2))+((r*r)*r)*(P3+r*P4));
@@ -91,9 +89,9 @@ double cbrt(double x)
 	 * 0.667; the error in the rounded t can be up to about 3 23-bit ulps
 	 * before the final error is larger than 0.667 ulps.
 	 */
-	u.value = t;
-	u.bits = (u.bits + 0x80000000) & 0xffffffffc0000000ULL;
-	t = u.value;
+	u.f = t;
+	u.i = (u.i + 0x80000000) & 0xffffffffc0000000ULL;
+	t = u.f;
 
 	/* one step Newton iteration to 53 bits with error < 0.667 ulps */
 	s = t*t;         /* t*t is exact */
