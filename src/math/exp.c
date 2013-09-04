@@ -80,7 +80,7 @@ P5   =  4.13813679705723846039e-08; /* 0x3E663769, 0x72BEA4D0 */
 
 double exp(double x)
 {
-	double hi, lo, c, xx;
+	double_t hi, lo, c, xx, y;
 	int k, sign;
 	uint32_t hx;
 
@@ -89,20 +89,19 @@ double exp(double x)
 	hx &= 0x7fffffff;  /* high word of |x| */
 
 	/* special cases */
-	if (hx >= 0x40862e42) {  /* if |x| >= 709.78... */
+	if (hx >= 0x4086232b) {  /* if |x| >= 708.39... */
 		if (isnan(x))
 			return x;
-		if (hx == 0x7ff00000 && sign) /* -inf */
-			return 0;
 		if (x > 709.782712893383973096) {
 			/* overflow if x!=inf */
 			STRICT_ASSIGN(double, x, 0x1p1023 * x);
 			return x;
 		}
-		if (x < -745.13321910194110842) {
-			/* underflow */
-			STRICT_ASSIGN(double, x, 0x1p-1000 * 0x1p-1000);
-			return x;
+		if (x < -708.39641853226410622) {
+			/* underflow if x!=-inf */
+			FORCE_EVAL((float)(-0x1p-149/x));
+			if (x < -745.13321910194110842)
+				return 0;
 		}
 	}
 
@@ -128,8 +127,8 @@ double exp(double x)
 	/* x is now in primary range */
 	xx = x*x;
 	c = x - xx*(P1+xx*(P2+xx*(P3+xx*(P4+xx*P5))));
-	x = 1 + (x*c/(2-c) - lo + hi);
+	y = 1 + (x*c/(2-c) - lo + hi);
 	if (k == 0)
-		return x;
-	return scalbn(x, k);
+		return y;
+	return scalbn(y, k);
 }

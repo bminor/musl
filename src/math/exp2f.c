@@ -63,7 +63,7 @@ static const double exp2ft[TBLSIZE] = {
  * Method: (equally-spaced tables)
  *
  *   Reduce x:
- *     x = 2**k + y, for integer k and |y| <= 1/2.
+ *     x = k + y, for integer k and |y| <= 1/2.
  *     Thus we have exp2f(x) = 2**k * exp2(y).
  *
  *   Reduce y:
@@ -83,46 +83,42 @@ static const double exp2ft[TBLSIZE] = {
  */
 float exp2f(float x)
 {
-	double tv, twopk, u, z;
-	float t;
-	uint32_t hx, ix, i0, k;
+	double_t t, r, z;
+	union {float f; uint32_t i;} u = {x};
+	union {double f; uint64_t i;} uk;
+	uint32_t ix, i0, k;
 
 	/* Filter out exceptional cases. */
-	GET_FLOAT_WORD(hx, x);
-	ix = hx & 0x7fffffff;
-	if (ix >= 0x43000000) {  /* |x| >= 128 */
-		if (ix >= 0x7f800000) {
-			if (hx == 0xff800000) /* -inf */
-				return 0;
-			return x;
-		}
-		if (x >= 128) {
+	ix = u.i & 0x7fffffff;
+	if (ix > 0x42fc0000) {  /* |x| > 126 */
+		if (u.i >= 0x43000000 && u.i < 0x80000000) {  /* x >= 128 */
 			STRICT_ASSIGN(float, x, x * 0x1p127f);
 			return x;
 		}
-		if (x <= -150) {
-			STRICT_ASSIGN(float, x, 0x1p-100f*0x1p-100f);
-			return x;
+		if (u.i >= 0x80000000) {  /* x < -126 */
+			if (u.i >= 0xc3160000 || (u.i & 0x0000ffff))
+				FORCE_EVAL(-0x1p-149f/x);
+			if (u.i >= 0xc3160000)  /* x <= -150 */
+				return 0;
 		}
 	} else if (ix <= 0x33000000) {  /* |x| <= 0x1p-25 */
 		return 1.0f + x;
 	}
 
 	/* Reduce x, computing z, i0, and k. */
-	STRICT_ASSIGN(float, t, x + redux);
-	GET_FLOAT_WORD(i0, t);
+	u.f = x + redux;
+	i0 = u.i;
 	i0 += TBLSIZE / 2;
-	k = (i0 / TBLSIZE) << 20;
+	k = i0 / TBLSIZE;
+	uk.i = (uint64_t)(0x3ff + k)<<52;
 	i0 &= TBLSIZE - 1;
-	t -= redux;
-	z = x - t;
-	INSERT_WORDS(twopk, 0x3ff00000 + k, 0);
-
+	u.f -= redux;
+	z = x - u.f;
 	/* Compute r = exp2(y) = exp2ft[i0] * p(z). */
-	tv = exp2ft[i0];
-	u = tv * z;
-	tv = tv + u * (P1 + z * P2) + u * (z * z) * (P3 + z * P4);
+	r = exp2ft[i0];
+	t = r * z;
+	r = r + t * (P1 + z * P2) + t * (z * z) * (P3 + z * P4);
 
-	/* Scale by 2**(k>>20). */
-	return tv * twopk;
+	/* Scale by 2**k */
+	return r * uk.f;
 }

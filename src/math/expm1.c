@@ -31,7 +31,7 @@
  *          R1(r**2) = 6/r *((exp(r)+1)/(exp(r)-1) - 2/r)
  *                   = 6/r * ( 1 + 2.0*(1/(exp(r)-1) - 1/r))
  *                   = 1 - r^2/60 + r^4/2520 - r^6/100800 + ...
- *      We use a special Reme algorithm on [0,0.347] to generate
+ *      We use a special Remez algorithm on [0,0.347] to generate
  *      a polynomial of degree 5 in r*r to approximate R1. The
  *      maximum error of this polynomial approximation is bounded
  *      by 2**-61. In other words,
@@ -107,8 +107,6 @@
 #include "libm.h"
 
 static const double
-huge        = 1.0e+300,
-tiny        = 1.0e-300,
 o_threshold = 7.09782712893383973096e+02, /* 0x40862E42, 0xFEFA39EF */
 ln2_hi      = 6.93147180369123816490e-01, /* 0x3fe62e42, 0xfee00000 */
 ln2_lo      = 1.90821492927058770002e-10, /* 0x3dea39ef, 0x35793c76 */
@@ -122,39 +120,27 @@ Q5 = -2.01099218183624371326e-07; /* BE8AFDB7 6E09C32D */
 
 double expm1(double x)
 {
-	double y,hi,lo,c,t,e,hxs,hfx,r1,twopk;
-	int32_t k,xsb;
-	uint32_t hx;
-
-	GET_HIGH_WORD(hx, x);
-	xsb = hx&0x80000000;  /* sign bit of x */
-	hx &= 0x7fffffff;     /* high word of |x| */
+	double_t y,hi,lo,c,t,e,hxs,hfx,r1,twopk;
+	union {double f; uint64_t i;} u = {x};
+	uint32_t hx = u.i>>32 & 0x7fffffff;
+	int k, sign = u.i>>63;
 
 	/* filter out huge and non-finite argument */
 	if (hx >= 0x4043687A) {  /* if |x|>=56*ln2 */
-		if (hx >= 0x40862E42) {  /* if |x|>=709.78... */
-			if (hx >= 0x7ff00000) {
-				uint32_t low;
-
-				GET_LOW_WORD(low, x);
-				if (((hx&0xfffff)|low) != 0) /* NaN */
-					return x+x;
-				return xsb==0 ? x : -1.0; /* exp(+-inf)={inf,-1} */
-			}
-			if(x > o_threshold)
-				return huge*huge; /* overflow */
-		}
-		if (xsb != 0) { /* x < -56*ln2, return -1.0 with inexact */
-			/* raise inexact */
-			if(x+tiny<0.0)
-				return tiny-1.0;  /* return -1 */
+		if (isnan(x))
+			return x;
+		if (sign)
+			return -1;
+		if (x > o_threshold) {
+			x *= 0x1p1023;
+			return x;
 		}
 	}
 
 	/* argument reduction */
 	if (hx > 0x3fd62e42) {  /* if  |x| > 0.5 ln2 */
 		if (hx < 0x3FF0A2B2) {  /* and |x| < 1.5 ln2 */
-			if (xsb == 0) {
+			if (!sign) {
 				hi = x - ln2_hi;
 				lo = ln2_lo;
 				k =  1;
@@ -164,7 +150,7 @@ double expm1(double x)
 				k = -1;
 			}
 		} else {
-			k  = invln2*x + (xsb==0 ? 0.5 : -0.5);
+			k  = invln2*x + (sign ? -0.5 : 0.5);
 			t  = k;
 			hi = x - t*ln2_hi;  /* t*ln2_hi is exact here */
 			lo = t*ln2_lo;
@@ -172,9 +158,9 @@ double expm1(double x)
 		STRICT_ASSIGN(double, x, hi - lo);
 		c = (hi-x)-lo;
 	} else if (hx < 0x3c900000) {  /* |x| < 2**-54, return x */
-		/* raise inexact flags when x != 0 */
-		t = huge+x;
-		return x - (t-(huge+x));
+		if (hx < 0x00100000)
+			FORCE_EVAL((float)x);
+		return x;
 	} else
 		k = 0;
 
@@ -186,9 +172,9 @@ double expm1(double x)
 	e  = hxs*((r1-t)/(6.0 - x*t));
 	if (k == 0)   /* c is 0 */
 		return x - (x*e-hxs);
-	INSERT_WORDS(twopk, 0x3ff00000+(k<<20), 0);  /* 2^k */
 	e  = x*(e-c) - c;
 	e -= hxs;
+	/* exp(x) ~ 2^k (x_reduced - e + 1) */
 	if (k == -1)
 		return 0.5*(x-e) - 0.5;
 	if (k == 1) {
@@ -196,24 +182,20 @@ double expm1(double x)
 			return -2.0*(e-(x+0.5));
 		return 1.0+2.0*(x-e);
 	}
-	if (k <= -2 || k > 56) {  /* suffice to return exp(x)-1 */
-		y = 1.0 - (e-x);
+	u.i = (uint64_t)(0x3ff + k)<<52;  /* 2^k */
+	twopk = u.f;
+	if (k < 0 || k > 56) {  /* suffice to return exp(x)-1 */
+		y = x - e + 1.0;
 		if (k == 1024)
 			y = y*2.0*0x1p1023;
 		else
 			y = y*twopk;
 		return y - 1.0;
 	}
-	t = 1.0;
-	if (k < 20) {
-		SET_HIGH_WORD(t, 0x3ff00000 - (0x200000>>k));  /* t=1-2^-k */
-		y = t-(e-x);
-		y = y*twopk;
-	} else {
-		SET_HIGH_WORD(t, ((0x3ff-k)<<20));  /* 2^-k */
-		y = x-(e+t);
-		y += 1.0;
-		y = y*twopk;
-	}
+	u.i = (uint64_t)(0x3ff - k)<<52;  /* 2^-k */
+	if (k < 20)
+		y = (x-e+(1-u.f))*twopk;
+	else
+		y = (x-(e+u.f)+1)*twopk;
 	return y;
 }

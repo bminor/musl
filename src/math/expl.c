@@ -100,7 +100,7 @@ long double expl(long double x)
 	if (x > 11356.5234062941439488L) /* x > ln(2^16384 - 0.5) */
 		return x * 0x1p16383L;
 	if (x < -11399.4985314888605581L) /* x < ln(2^-16446) */
-		return 0x1p-10000L * 0x1p-10000L;
+		return -0x1p-16445L/x;
 
 	/* Express e**x = e**f 2**k
 	 *   = e**(f + k ln(2))

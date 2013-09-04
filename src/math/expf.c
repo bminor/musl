@@ -29,7 +29,7 @@ P2 = -2.7667332906e-3f; /* -0xb55215.0p-32 */
 
 float expf(float x)
 {
-	float hi, lo, c, xx;
+	float_t hi, lo, c, xx, y;
 	int k, sign;
 	uint32_t hx;
 
@@ -38,20 +38,17 @@ float expf(float x)
 	hx &= 0x7fffffff;  /* high word of |x| */
 
 	/* special cases */
-	if (hx >= 0x42b17218) {  /* if |x| >= 88.722839f or NaN */
-		if (hx > 0x7f800000)  /* NaN */
-			return x;
-		if (!sign) {
-			/* overflow if x!=inf */
+	if (hx >= 0x42aeac50) {  /* if |x| >= -87.33655f or NaN */
+		if (hx >= 0x42b17218 && !sign) {  /* x >= 88.722839f */
+			/* overflow */
 			STRICT_ASSIGN(float, x, x * 0x1p127f);
 			return x;
 		}
-		if (hx == 0x7f800000)  /* -inf */
-			return 0;
-		if (hx >= 0x42cff1b5) { /* x <= -103.972084f */
+		if (sign) {
 			/* underflow */
-			STRICT_ASSIGN(float, x, 0x1p-100f*0x1p-100f);
-			return x;
+			FORCE_EVAL(-0x1p-149f/x);
+			if (hx >= 0x42cff1b5)  /* x <= -103.972084f */
+				return 0;
 		}
 	}
 
@@ -77,8 +74,8 @@ float expf(float x)
 	/* x is now in primary range */
 	xx = x*x;
 	c = x - xx*(P1+xx*P2);
-	x = 1 + (x*c/(2-c) - lo + hi);
+	y = 1 + (x*c/(2-c) - lo + hi);
 	if (k == 0)
-		return x;
-	return scalbnf(x, k);
+		return y;
+	return scalbnf(y, k);
 }

@@ -33,12 +33,8 @@ long double exp2l(long double x)
 	return exp2(x);
 }
 #elif LDBL_MANT_DIG == 64 && LDBL_MAX_EXP == 16384
-
 #define TBLBITS 7
 #define TBLSIZE (1 << TBLBITS)
-
-#define BIAS    (LDBL_MAX_EXP - 1)
-#define EXPMASK (BIAS + LDBL_MAX_EXP)
 
 static const double
 redux = 0x1.8p63 / TBLSIZE,
@@ -203,29 +199,29 @@ static const double tbl[TBLSIZE * 2] = {
  */
 long double exp2l(long double x)
 {
-	union IEEEl2bits u, v;
+	union ldshape u = {x};
+	int e = u.i.se & 0x7fff;
 	long double r, z;
-	uint32_t hx, ix, i0;
+	uint32_t i0;
 	union {uint32_t u; int32_t i;} k;
 
 	/* Filter out exceptional cases. */
-	u.e = x;
-	hx = u.xbits.expsign;
-	ix = hx & EXPMASK;
-	if (ix >= BIAS + 14) {  /* |x| >= 16384 or x is NaN */
-		if (ix == EXPMASK) {
-			if (u.xbits.man == 1ULL << 63 && hx == 0xffff) /* -inf */
+	if (e >= 0x3fff + 13) {  /* |x| >= 8192 or x is NaN */
+		if (u.i.se >= 0x3fff + 14 && u.i.se >> 15 == 0)
+			/* overflow */
+			return x * 0x1p16383L;
+		if (e == 0x7fff)  /* -inf or -nan */
+			return -1/x;
+		if (x < -16382) {
+			if (x <= -16446 || x - 0x1p63 + 0x1p63 != x)
+				/* underflow */
+				FORCE_EVAL((float)(-0x1p-149/x));
+			if (x <= -16446)
 				return 0;
-			return x;
 		}
-		if (x >= 16384) {
-			x *= 0x1p16383L;
-			return x;
-		}
-		if (x <= -16446)
-			return 0x1p-10000L*0x1p-10000L;
-	} else if (ix < BIAS - 64)  /* |x| < 0x1p-64 */
+	} else if (e < 0x3fff - 64) {
 		return 1 + x;
+	}
 
 	/*
 	 * Reduce x, computing z, i0, and k. The low bits of x + redux
@@ -238,13 +234,13 @@ long double exp2l(long double x)
 	 * We split this into k = 0xabc and i0 = 0x12 (adjusted to
 	 * index into the table), then we compute z = 0x0.003456p0.
 	 */
-	u.e = x + redux;
-	i0 = u.bits.manl + TBLSIZE / 2;
+	u.f = x + redux;
+	i0 = u.i.m + TBLSIZE / 2;
 	k.u = i0 / TBLSIZE * TBLSIZE;
 	k.i /= TBLSIZE;
 	i0 %= TBLSIZE;
-	u.e -= redux;
-	z = x - u.e;
+	u.f -= redux;
+	z = x - u.f;
 
 	/* Compute r = exp2l(y) = exp2lt[i0] * p(z). */
 	long double t_hi = tbl[2*i0];
