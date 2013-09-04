@@ -1,11 +1,10 @@
-#include "libm.h"
+#include <math.h>
+#include <stdint.h>
 
-float copysignf(float x, float y) {
-	union fshape ux, uy;
-
-	ux.value = x;
-	uy.value = y;
-	ux.bits &= (uint32_t)-1>>1;
-	ux.bits |= uy.bits & (uint32_t)1<<31;
-	return ux.value;
+float copysignf(float x, float y)
+{
+	union {float f; uint32_t i;} ux={x}, uy={y};
+	ux.i &= 0x7fffffff;
+	ux.i |= uy.i & 0x80000000;
+	return ux.f;
 }

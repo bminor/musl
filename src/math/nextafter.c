@@ -1,35 +1,31 @@
 #include "libm.h"
 
-#define SIGN ((uint64_t)1<<63)
-
 double nextafter(double x, double y)
 {
-	union dshape ux, uy;
+	union {double f; uint64_t i;} ux={x}, uy={y};
 	uint64_t ax, ay;
 	int e;
 
 	if (isnan(x) || isnan(y))
 		return x + y;
-	ux.value = x;
-	uy.value = y;
-	if (ux.bits == uy.bits)
+	if (ux.i == uy.i)
 		return y;
-	ax = ux.bits & ~SIGN;
-	ay = uy.bits & ~SIGN;
+	ax = ux.i & -1ULL/2;
+	ay = uy.i & -1ULL/2;
 	if (ax == 0) {
 		if (ay == 0)
 			return y;
-		ux.bits = (uy.bits & SIGN) | 1;
-	} else if (ax > ay || ((ux.bits ^ uy.bits) & SIGN))
-		ux.bits--;
+		ux.i = (uy.i & 1ULL<<63) | 1;
+	} else if (ax > ay || ((ux.i ^ uy.i) & 1ULL<<63))
+		ux.i--;
 	else
-		ux.bits++;
-	e = ux.bits >> 52 & 0x7ff;
-	/* raise overflow if ux.value is infinite and x is finite */
+		ux.i++;
+	e = ux.i >> 52 & 0x7ff;
+	/* raise overflow if ux.f is infinite and x is finite */
 	if (e == 0x7ff)
 		FORCE_EVAL(x+x);
-	/* raise underflow if ux.value is subnormal or zero */
+	/* raise underflow if ux.f is subnormal or zero */
 	if (e == 0)
-		FORCE_EVAL(x*x + ux.value*ux.value);
-	return ux.value;
+		FORCE_EVAL(x*x + ux.f*ux.f);
+	return ux.f;
 }

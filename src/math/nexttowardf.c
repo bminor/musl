@@ -2,35 +2,34 @@
 
 float nexttowardf(float x, long double y)
 {
-	union fshape ux;
+	union {float f; uint32_t i;} ux = {x};
 	uint32_t e;
 
 	if (isnan(x) || isnan(y))
 		return x + y;
 	if (x == y)
 		return y;
-	ux.value = x;
 	if (x == 0) {
-		ux.bits = 1;
+		ux.i = 1;
 		if (signbit(y))
-			ux.bits |= 0x80000000;
+			ux.i |= 0x80000000;
 	} else if (x < y) {
 		if (signbit(x))
-			ux.bits--;
+			ux.i--;
 		else
-			ux.bits++;
+			ux.i++;
 	} else {
 		if (signbit(x))
-			ux.bits++;
+			ux.i++;
 		else
-			ux.bits--;
+			ux.i--;
 	}
-	e = ux.bits & 0x7f800000;
-	/* raise overflow if ux.value is infinite and x is finite */
+	e = ux.i & 0x7f800000;
+	/* raise overflow if ux.f is infinite and x is finite */
 	if (e == 0x7f800000)
 		FORCE_EVAL(x+x);
-	/* raise underflow if ux.value is subnormal or zero */
+	/* raise underflow if ux.f is subnormal or zero */
 	if (e == 0)
-		FORCE_EVAL(x*x + ux.value*ux.value);
-	return ux.value;
+		FORCE_EVAL(x*x + ux.f*ux.f);
+	return ux.f;
 }

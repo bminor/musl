@@ -1,10 +1,9 @@
-#include "libm.h"
+#include <math.h>
+#include <stdint.h>
 
 float fabsf(float x)
 {
-	union fshape u;
-
-	u.value = x;
-	u.bits &= (uint32_t)-1 / 2;
-	return u.value;
+	union {float f; uint32_t i;} u = {x};
+	u.i &= 0x7fffffff;
+	return u.f;
 }
