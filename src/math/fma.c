@@ -2,16 +2,6 @@
 #include "libm.h"
 
 #if LDBL_MANT_DIG==64 && LDBL_MAX_EXP==16384
-union ld80 {
-	long double x;
-	struct {
-		uint64_t m;
-		uint16_t e : 15;
-		uint16_t s : 1;
-		uint16_t pad;
-	} bits;
-};
-
 /* exact add, assumes exponent_x >= exponent_y */
 static void add(long double *hi, long double *lo, long double x, long double y)
 {
@@ -45,25 +35,25 @@ return an adjusted hi so that rounding it to double (or less) precision is corre
 */
 static long double adjust(long double hi, long double lo)
 {
-	union ld80 uhi, ulo;
+	union ldshape uhi, ulo;
 
 	if (lo == 0)
 		return hi;
-	uhi.x = hi;
-	if (uhi.bits.m & 0x3ff)
+	uhi.f = hi;
+	if (uhi.i.m & 0x3ff)
 		return hi;
-	ulo.x = lo;
-	if (uhi.bits.s == ulo.bits.s)
-		uhi.bits.m++;
+	ulo.f = lo;
+	if ((uhi.i.se & 0x8000) == (ulo.i.se & 0x8000))
+		uhi.i.m++;
 	else {
-		uhi.bits.m--;
 		/* handle underflow and take care of ld80 implicit msb */
-		if (uhi.bits.m == (uint64_t)-1/2) {
-			uhi.bits.m *= 2;
-			uhi.bits.e--;
+		if (uhi.i.m << 1 == 0) {
+			uhi.i.m = 0;
+			uhi.i.se--;
 		}
+		uhi.i.m--;
 	}
-	return uhi.x;
+	return uhi.f;
 }
 
 /* adjusted add so the result is correct when rounded to double (or less) precision */
@@ -82,9 +72,9 @@ static long double dmul(long double x, long double y)
 
 static int getexp(long double x)
 {
-	union ld80 u;
-	u.x = x;
-	return u.bits.e;
+	union ldshape u;
+	u.f = x;
+	return u.i.se & 0x7fff;
 }
 
 double fma(double x, double y, double z)

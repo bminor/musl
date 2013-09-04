@@ -202,13 +202,11 @@ w7 =  4.885026142432270781165E-3L;
 
 static long double sin_pi(long double x)
 {
+	union ldshape u = {x};
+	uint32_t ix = (u.i.se & 0x7fffU)<<16 | u.i.m>>48;
 	long double y, z;
-	int n, ix;
-	uint32_t se, i0, i1;
+	int n;
 
-	GET_LDOUBLE_WORDS(se, i0, i1, x);
-	ix = se & 0x7fff;
-	ix = (ix << 16) | (i0 >> 16);
 	if (ix < 0x3ffd8000)  /* 0.25 */
 		return sinl(pi * x);
 	y = -x;  /* x is assume negative */
@@ -229,8 +227,8 @@ static long double sin_pi(long double x)
 		} else {
 			if (ix < 0x403e8000)  /* 2^63 */
 				z = y + two63;  /* exact */
-			GET_LDOUBLE_WORDS(se, i0, i1, z);
-			n = i1 & 1;
+			u.f = z;
+			n = u.i.m & 1;
 			y = n;
 			n <<= 2;
 		}
@@ -261,33 +259,28 @@ static long double sin_pi(long double x)
 
 long double __lgammal_r(long double x, int *sg) {
 	long double t, y, z, nadj, p, p1, p2, q, r, w;
-	int i, ix;
-	uint32_t se, i0, i1;
+	union ldshape u = {x};
+	uint32_t ix = (u.i.se & 0x7fffU)<<16 | u.i.m>>48;
+	int sign = u.i.se >> 15;
+	int i;
 
 	*sg = 1;
-	GET_LDOUBLE_WORDS(se, i0, i1, x);
-	ix = se & 0x7fff;
-
-	if ((ix | i0 | i1) == 0) {
-		if (se & 0x8000)
-			*sg = -1;
-		return 1.0 / fabsl(x);
-	}
-
-	ix = (ix << 16) | (i0 >> 16);
 
 	/* purge off +-inf, NaN, +-0, and negative arguments */
 	if (ix >= 0x7fff0000)
 		return x * x;
-
+	if (x == 0) {
+		*sg -= 2*sign;
+		return 1.0 / fabsl(x);
+	}
 	if (ix < 0x3fc08000) {  /* |x|<2**-63, return -log(|x|) */
-		if (se & 0x8000) {
+		if (sign) {
 			*sg = -1;
 			return -logl(-x);
 		}
 		return -logl(x);
 	}
-	if (se & 0x8000) {
+	if (sign) {
 		t = sin_pi (x);
 		if (t == 0.0)
 			return 1.0 / fabsl(t); /* -integer */
@@ -297,11 +290,7 @@ long double __lgammal_r(long double x, int *sg) {
 		x = -x;
 	}
 
-	/* purge off 1 and 2 */
-	if ((((ix - 0x3fff8000) | i0 | i1) == 0) ||
-	    (((ix - 0x40008000) | i0 | i1) == 0))
-		r = 0;
-	else if (ix < 0x40008000) {  /* x < 2.0 */
+	if (ix < 0x40008000) {  /* x < 2.0 */
 		if (ix <= 0x3ffee666) {  /* 8.99993896484375e-1 */
 			/* lgamma(x) = lgamma(x+1) - log(x) */
 			r = -logl(x);
@@ -380,7 +369,7 @@ long double __lgammal_r(long double x, int *sg) {
 		r = (x - 0.5) * (t - 1.0) + w;
 	} else /* 2**66 <= x <= inf */
 		r = x * (logl(x) - 1.0);
-	if (se & 0x8000)
+	if (sign)
 		r = nadj - r;
 	return r;
 }

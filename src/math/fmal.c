@@ -34,6 +34,13 @@ long double fmal(long double x, long double y, long double z)
 }
 #elif (LDBL_MANT_DIG == 64 || LDBL_MANT_DIG == 113) && LDBL_MAX_EXP == 16384
 #include <fenv.h>
+#if LDBL_MANT_DIG == 64
+#define LASTBIT(u) (u.i.m & 1)
+#define SPLIT (0x1p32L + 1)
+#elif LDBL_MANT_DIG == 113
+#define LASTBIT(u) (u.i.lo & 1)
+#define SPLIT (0x1p57L + 1)
+#endif
 
 /*
  * A struct dd represents a floating-point number with twice the precision
@@ -75,12 +82,12 @@ static inline struct dd dd_add(long double a, long double b)
 static inline long double add_adjusted(long double a, long double b)
 {
 	struct dd sum;
-	union IEEEl2bits u;
+	union ldshape u;
 
 	sum = dd_add(a, b);
 	if (sum.lo != 0) {
-		u.e = sum.hi;
-		if ((u.bits.manl & 1) == 0)
+		u.f = sum.hi;
+		if (!LASTBIT(u))
 			sum.hi = nextafterl(sum.hi, INFINITY * sum.lo);
 	}
 	return (sum.hi);
@@ -95,7 +102,7 @@ static inline long double add_and_denormalize(long double a, long double b, int 
 {
 	struct dd sum;
 	int bits_lost;
-	union IEEEl2bits u;
+	union ldshape u;
 
 	sum = dd_add(a, b);
 
@@ -110,9 +117,9 @@ static inline long double add_and_denormalize(long double a, long double b, int 
 	 * break the ties manually.
 	 */
 	if (sum.lo != 0) {
-		u.e = sum.hi;
-		bits_lost = -u.bits.exp - scale + 1;
-		if (bits_lost != 1 ^ (int)(u.bits.manl & 1))
+		u.f = sum.hi;
+		bits_lost = -u.i.se - scale + 1;
+		if ((bits_lost != 1) ^ LASTBIT(u))
 			sum.hi = nextafterl(sum.hi, INFINITY * sum.lo);
 	}
 	return scalbnl(sum.hi, scale);
@@ -125,20 +132,15 @@ static inline long double add_and_denormalize(long double a, long double b, int 
  */
 static inline struct dd dd_mul(long double a, long double b)
 {
-#if LDBL_MANT_DIG == 64
-	static const long double split = 0x1p32L + 1.0;
-#elif LDBL_MANT_DIG == 113
-	static const long double split = 0x1p57L + 1.0;
-#endif
 	struct dd ret;
 	long double ha, hb, la, lb, p, q;
 
-	p = a * split;
+	p = a * SPLIT;
 	ha = a - p;
 	ha += p;
 	la = a - ha;
 
-	p = b * split;
+	p = b * SPLIT;
 	hb = b - p;
 	hb += p;
 	lb = b - hb;

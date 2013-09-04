@@ -253,8 +253,8 @@ static long double erfc1(long double x)
 
 static long double erfc2(uint32_t ix, long double x)
 {
+	union ldshape u;
 	long double s,z,R,S;
-	uint32_t i0,i1;
 
 	if (ix < 0x3fffa000)  /* 0.84375 <= |x| < 1.25 */
 		return erfc1(x);
@@ -288,28 +288,22 @@ static long double erfc2(uint32_t ix, long double x)
 		S = sc[0] + s * (sc[1] + s * (sc[2] + s * (sc[3] +
 		     s * (sc[4] + s))));
 	}
-	z = x;
-	GET_LDOUBLE_WORDS(ix, i0, i1, z);
-	i1 = 0;
-	i0 &= 0xffffff00;
-	SET_LDOUBLE_WORDS(z, ix, i0, i1);
+	u.f = x;
+	u.i.m &= -1ULL << 40;
+	z = u.f;
 	return expl(-z*z - 0.5625) * expl((z - x) * (z + x) + R / S) / x;
 }
 
 long double erfl(long double x)
 {
 	long double r, s, z, y;
-	uint32_t i0, i1, ix;
-	int sign;
+	union ldshape u = {x};
+	uint32_t ix = (u.i.se & 0x7fffU)<<16 | u.i.m>>48;
+	int sign = u.i.se >> 15;
 
-	GET_LDOUBLE_WORDS(ix, i0, i1, x);
-	sign = ix >> 15;
-	ix &= 0x7fff;
-	if (ix == 0x7fff) {
+	if (ix >= 0x7fff0000)
 		/* erf(nan)=nan, erf(+-inf)=+-1 */
 		return 1 - 2*sign + 1/x;
-	}
-	ix = (ix << 16) | (i0 >> 16);
 	if (ix < 0x3ffed800) {  /* |x| < 0.84375 */
 		if (ix < 0x3fde8000) {  /* |x| < 2**-33 */
 			return 0.125 * (8 * x + efx8 * x);  /* avoid underflow */
@@ -332,17 +326,13 @@ long double erfl(long double x)
 long double erfcl(long double x)
 {
 	long double r, s, z, y;
-	uint32_t i0, i1, ix;
-	int sign;
+	union ldshape u = {x};
+	uint32_t ix = (u.i.se & 0x7fffU)<<16 | u.i.m>>48;
+	int sign = u.i.se >> 15;
 
-	GET_LDOUBLE_WORDS(ix, i0, i1, x);
-	sign = ix>>15;
-	ix &= 0x7fff;
-	if (ix == 0x7fff)
+	if (ix >= 0x7fff0000)
 		/* erfc(nan) = nan, erfc(+-inf) = 0,2 */
 		return 2*sign + 1/x;
-
-	ix = (ix << 16) | (i0 >> 16);
 	if (ix < 0x3ffed800) {  /* |x| < 0.84375 */
 		if (ix < 0x3fbe0000)  /* |x| < 2**-65 */
 			return 1.0 - x;
@@ -358,6 +348,7 @@ long double erfcl(long double x)
 	}
 	if (ix < 0x4005d600)  /* |x| < 107 */
 		return sign ? 2 - erfc2(ix,x) : erfc2(ix,x);
-	return sign ? 2 - 0x1p-16382L : 0x1p-16382L*0x1p-16382L;
+	y = 0x1p-16382L;
+	return sign ? 2 - y : y*y;
 }
 #endif
