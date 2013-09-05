@@ -4,8 +4,18 @@ expm1l:
 	fldt 8(%rsp)
 	fldl2e
 	fmulp
+	movl $0xc2820000,-4(%rsp)
+	flds -4(%rsp)
+	fucomp %st(1)
+	fnstsw %ax
+	sahf
 	fld1
-	fld %st(1)
+	jb 1f
+		# x*log2e <= -65, return -1 without underflow
+	fstp %st(1)
+	fchs
+	ret
+1:	fld %st(1)
 	fabs
 	fucom %st(1)
 	fnstsw %ax
