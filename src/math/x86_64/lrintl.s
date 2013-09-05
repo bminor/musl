@@ -3,5 +3,5 @@
 lrintl:
 	fldt 8(%rsp)
 	fistpl 8(%rsp)
-	mov 8(%rsp),%eax
+	movslq 8(%rsp),%rax
 	ret
