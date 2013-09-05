@@ -3,13 +3,15 @@
 #if LDBL_MANT_DIG == 53 && LDBL_MAX_EXP == 1024
 
 #elif LDBL_MANT_DIG == 64 && LDBL_MAX_EXP == 16384
-/* invalid representations (top bit of u.i.m is wrong) are not handled */
 int __fpclassifyl(long double x)
 {
 	union ldshape u = {x};
 	int e = u.i.se & 0x7fff;
-	if (!e)
+	int msb = u.i.m>>63;
+	if (!e && !msb)
 		return u.i.m ? FP_SUBNORMAL : FP_ZERO;
+	if (!msb)
+		return FP_NAN;
 	if (e == 0x7fff)
 		return u.i.m << 1 ? FP_NAN : FP_INFINITE;
 	return FP_NORMAL;
