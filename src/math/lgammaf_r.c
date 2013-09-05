@@ -14,6 +14,7 @@
  */
 
 #include "libm.h"
+#include "libc.h"
 
 static const float
 two23= 8.3886080000e+06, /* 0x4b000000 */
