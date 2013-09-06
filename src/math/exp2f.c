@@ -92,7 +92,7 @@ float exp2f(float x)
 	ix = u.i & 0x7fffffff;
 	if (ix > 0x42fc0000) {  /* |x| > 126 */
 		if (u.i >= 0x43000000 && u.i < 0x80000000) {  /* x >= 128 */
-			STRICT_ASSIGN(float, x, x * 0x1p127f);
+			x *= 0x1p127f;
 			return x;
 		}
 		if (u.i >= 0x80000000) {  /* x < -126 */
