@@ -340,7 +340,7 @@ double exp2(double x)
 	if (ix >= 0x408ff000) {  /* |x| >= 1022 or nan */
 		if (ix >= 0x40900000 && u.i>>63 == 0) {  /* x >= 1024 or nan */
 			/* overflow */
-			STRICT_ASSIGN(double, x, x * 0x1p1023);
+			x *= 0x1p1023;
 			return x;
 		}
 		if (ix >= 0x7ff00000)  /* -inf or -nan */

@@ -61,7 +61,7 @@ float log1pf(float x)
 		return x+x;
 	if (k != 0) {
 		if (hx < 0x5a000000) {
-			STRICT_ASSIGN(float, u, 1.0f + x);
+			u = 1 + x;
 			GET_FLOAT_WORD(hu, u);
 			k = (hu>>23) - 127;
 			/* correction term */

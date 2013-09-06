@@ -41,7 +41,7 @@ float expf(float x)
 	if (hx >= 0x42aeac50) {  /* if |x| >= -87.33655f or NaN */
 		if (hx >= 0x42b17218 && !sign) {  /* x >= 88.722839f */
 			/* overflow */
-			STRICT_ASSIGN(float, x, x * 0x1p127f);
+			x *= 0x1p127f;
 			return x;
 		}
 		if (sign) {
@@ -60,7 +60,7 @@ float expf(float x)
 			k = 1 - sign - sign;
 		hi = x - k*ln2hi;  /* k*ln2hi is exact here */
 		lo = k*ln2lo;
-		STRICT_ASSIGN(float, x, hi - lo);
+		x = hi - lo;
 	} else if (hx > 0x39000000) {  /* |x| > 2**-14 */
 		k = 0;
 		hi = x;

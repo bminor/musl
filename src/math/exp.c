@@ -94,7 +94,7 @@ double exp(double x)
 			return x;
 		if (x > 709.782712893383973096) {
 			/* overflow if x!=inf */
-			STRICT_ASSIGN(double, x, 0x1p1023 * x);
+			x *= 0x1p1023;
 			return x;
 		}
 		if (x < -708.39641853226410622) {
@@ -113,7 +113,7 @@ double exp(double x)
 			k = 1 - sign - sign;
 		hi = x - k*ln2hi;  /* k*ln2hi is exact here */
 		lo = k*ln2lo;
-		STRICT_ASSIGN(double, x, hi - lo);
+		x = hi - lo;
 	} else if (hx > 0x3e300000)  {  /* if |x| > 2**-28 */
 		k = 0;
 		hi = x;

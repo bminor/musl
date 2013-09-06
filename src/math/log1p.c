@@ -122,7 +122,7 @@ double log1p(double x)
 		return x+x;
 	if (k != 0) {
 		if (hx < 0x43400000) {
-			STRICT_ASSIGN(double, u, 1.0 + x);
+			u = 1 + x;
 			GET_HIGH_WORD(hu, u);
 			k = (hu>>20) - 1023;
 			c = k > 0 ? 1.0-(u-x) : x-(u-1.0); /* correction term */

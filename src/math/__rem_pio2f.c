@@ -44,7 +44,7 @@ int __rem_pio2f(float x, double *y)
 	/* 25+53 bit pi is good enough for medium size */
 	if (ix < 0x4dc90fdb) {  /* |x| ~< 2^28*(pi/2), medium size */
 		/* Use a specialized rint() to get fn.  Assume round-to-nearest. */
-		STRICT_ASSIGN(double, fn, x*invpio2 + 0x1.8p52);
+		fn = x*invpio2 + 0x1.8p52;
 		fn = fn - 0x1.8p52;
 // FIXME
 #ifdef HAVE_EFFICIENT_IRINT

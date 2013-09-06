@@ -415,7 +415,8 @@ recompute:
 		fw = 0.0;
 		for (i=jz; i>=0; i--)
 			fw += fq[i];
-		STRICT_ASSIGN(double,fw,fw);
+		// TODO: drop excess precision here once double_t is used
+		fw = (double)fw;
 		y[0] = ih==0 ? fw : -fw;
 		fw = fq[0]-fw;
 		for (i=1; i<=jz; i++)

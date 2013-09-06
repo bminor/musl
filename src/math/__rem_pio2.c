@@ -112,7 +112,7 @@ int __rem_pio2(double x, double *y)
 		uint32_t high;
 medium:
 		/* Use a specialized rint() to get fn.  Assume round-to-nearest. */
-		STRICT_ASSIGN(double, fn, x*invpio2 + 0x1.8p52);
+		fn = x*invpio2 + 0x1.8p52;
 		fn = fn - 0x1.8p52;
 // FIXME
 #ifdef HAVE_EFFICIENT_IRINT
