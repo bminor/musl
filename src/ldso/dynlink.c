@@ -614,6 +614,8 @@ static struct dso *load_library(const char *name, struct dso *needed_by)
 						sys_path = "";
 					}
 					fclose(f);
+				} else if (errno != ENOENT) {
+					sys_path = "";
 				}
 			}
 			if (!sys_path) sys_path = "/lib:/usr/local/lib:/usr/lib";
