@@ -40,7 +40,7 @@ long sysconf(int name)
 		[_SC_AIO_PRIO_DELTA_MAX] = 0, /* ?? */
 		[_SC_DELAYTIMER_MAX] = _POSIX_DELAYTIMER_MAX,
 		[_SC_MQ_OPEN_MAX] = -1,
-		[_SC_MQ_PRIO_MAX] = MQ_PRIO_MAX,
+		[_SC_MQ_PRIO_MAX] = OFLOW,
 		[_SC_VERSION] = VER,
 		[_SC_PAGE_SIZE] = PAGE_SIZE,
 		[_SC_RTSIG_MAX] = 63, /* ?? */
@@ -221,6 +221,7 @@ long sysconf(int name)
 	} else if (values[name] == OFLOW) {
 		if (name == _SC_ARG_MAX) return ARG_MAX;
 		if (name == _SC_SEM_VALUE_MAX) return SEM_VALUE_MAX;
+		if (name == _SC_MQ_PRIO_MAX) return MQ_PRIO_MAX;
 	} else if (values[name] == CPUCNT) {
 		unsigned char set[128] = {1};
 		int i, cnt;
