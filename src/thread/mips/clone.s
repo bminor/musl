@@ -3,6 +3,7 @@
 .type   __clone,@function
 __clone:
 	# Save function pointer and argument pointer on new thread stack
+	and $5, $5, -8
 	subu $5, $5, 16
 	sw $4, 0($5)
 	sw $7, 4($5)
