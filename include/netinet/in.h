@@ -91,10 +91,12 @@ uint16_t ntohs(uint16_t);
 #define IPPROTO_NONE     59
 #define IPPROTO_DSTOPTS  60
 #define IPPROTO_MTP      92
+#define IPPROTO_BEETPH   94
 #define IPPROTO_ENCAP    98
 #define IPPROTO_PIM      103
 #define IPPROTO_COMP     108
 #define IPPROTO_SCTP     132
+#define IPPROTO_MH       135
 #define IPPROTO_UDPLITE  136
 #define IPPROTO_RAW      255
 #define IPPROTO_MAX      256
