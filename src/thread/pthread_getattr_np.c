@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 #include "pthread_impl.h"
+#include "libc.h"
 #include <sys/mman.h>
 
 int pthread_getattr_np(pthread_t t, pthread_attr_t *a)

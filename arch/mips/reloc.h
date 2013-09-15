@@ -51,7 +51,7 @@ void __reloc_self(int c, size_t *a, size_t *dynv, size_t *got)
 	for (a+=c+1; *a; a++);
 	for (a++; *a; a+=2) if (*a<20) t[*a] = a[1];
 	base = (char *)t[AT_BASE];
-	if (!base) base = (char *)(t[AT_PHDR] & -4096);
+	if (!base) base = (char *)(t[AT_PHDR] & -t[AT_PAGESZ]);
 	for (a=dynv; *a; a+=2) if (*a-0x70000000UL<20) t[*a&31] = a[1];
 	n = t[DT_MIPS_LOCAL_GOTNO - 0x70000000];
 	for (a=got; n; a++, n--) *a += (size_t)base;

@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <limits.h>
 
 struct __libc {
 	void *main_thread;
@@ -14,9 +15,14 @@ struct __libc {
 	FILE *ofl_head;
 	int ofl_lock[2];
 	size_t tls_size;
+	size_t page_size;
 };
 
 extern size_t __hwcap;
+
+#ifndef PAGE_SIZE
+#define PAGE_SIZE libc.page_size
+#endif
 
 #if !defined(__PIC__) || (100*__GNUC__+__GNUC_MINOR__ >= 303 && !defined(__PCC__))
 

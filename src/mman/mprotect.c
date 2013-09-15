@@ -1,5 +1,5 @@
 #include <sys/mman.h>
-#include <limits.h>
+#include "libc.h"
 #include "syscall.h"
 
 int mprotect(void *addr, size_t len, int prot)

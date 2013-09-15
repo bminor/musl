@@ -1,5 +1,5 @@
 #include <unistd.h>
-#include <limits.h>
+#include "libc.h"
 
 int getpagesize(void)
 {

@@ -1,6 +1,6 @@
 #define _BSD_SOURCE
 #include <stdlib.h>
-#include <limits.h>
+#include "libc.h"
 
 void *valloc(size_t size)
 {
