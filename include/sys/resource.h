@@ -59,6 +59,9 @@ int prlimit(pid_t, int, const struct rlimit *, struct rlimit *);
 #define prlimit64 prlimit
 #endif
 
+#define PRIO_MIN (-20)
+#define PRIO_MAX 20
+
 #define PRIO_PROCESS 0
 #define PRIO_PGRP    1
 #define PRIO_USER    2
