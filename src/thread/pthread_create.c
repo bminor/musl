@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include "pthread_impl.h"
 #include "stdio_impl.h"
 #include "libc.h"
@@ -128,7 +129,9 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attrp
 	size_t size, guard;
 	struct pthread *self = pthread_self(), *new;
 	unsigned char *map = 0, *stack = 0, *tsd = 0, *stack_limit;
-	unsigned flags = 0x7d8f00;
+	unsigned flags = CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND
+		| CLONE_PARENT | CLONE_THREAD | CLONE_SYSVSEM | CLONE_SETTLS
+		| CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID | CLONE_DETACHED;
 	int do_sched = 0;
 	pthread_attr_t attr = {0};
 
@@ -198,7 +201,7 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attrp
 	new->tsd = (void *)tsd;
 	if (attr._a_detach) {
 		new->detached = 1;
-		flags -= 0x200000;
+		flags -= CLONE_CHILD_CLEARTID;
 	}
 	if (attr._a_sched) {
 		do_sched = new->startlock[0] = 1;
