@@ -130,7 +130,7 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attrp
 	struct pthread *self = pthread_self(), *new;
 	unsigned char *map = 0, *stack = 0, *tsd = 0, *stack_limit;
 	unsigned flags = CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND
-		| CLONE_PARENT | CLONE_THREAD | CLONE_SYSVSEM | CLONE_SETTLS
+		| CLONE_THREAD | CLONE_SYSVSEM | CLONE_SETTLS
 		| CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID | CLONE_DETACHED;
 	int do_sched = 0;
 	pthread_attr_t attr = {0};
