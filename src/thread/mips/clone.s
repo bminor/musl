@@ -12,15 +12,18 @@ __clone:
 	lw $6, 16($sp)
 	lw $7, 20($sp)
 	lw $9, 24($sp)
+	subu $sp, $sp, 16
 	sw $9, 16($sp)
 	li $2, 4120
 	syscall
 	beq $7, $0, 1f
 	nop
+	addu $sp, $sp, 16
 	jr $ra
 	subu $2, $0, $2
 1:	beq $2, $0, 1f
 	nop
+	addu $sp, $sp, 16
 	jr $ra
 	nop
 1:	lw $25, 0($sp)
