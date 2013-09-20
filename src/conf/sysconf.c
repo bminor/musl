@@ -2,6 +2,7 @@
 #include <limits.h>
 #include <errno.h>
 #include <sys/resource.h>
+#include <signal.h>
 #include "syscall.h"
 #include "libc.h"
 
@@ -44,7 +45,7 @@ long sysconf(int name)
 		[_SC_MQ_PRIO_MAX] = OFLOW,
 		[_SC_VERSION] = VER,
 		[_SC_PAGE_SIZE] = OFLOW,
-		[_SC_RTSIG_MAX] = 63, /* ?? */
+		[_SC_RTSIG_MAX] = _NSIG - 1 - 31 - 3,
 		[_SC_SEM_NSEMS_MAX] = SEM_NSEMS_MAX,
 		[_SC_SEM_VALUE_MAX] = OFLOW,
 		[_SC_SIGQUEUE_MAX] = -1,
