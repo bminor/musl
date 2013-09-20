@@ -64,28 +64,27 @@ static struct {
 
 static inline void lock(volatile int *lk)
 {
-	if (!libc.threads_minus_1) return;
-	while(a_swap(lk, 1)) __wait(lk, lk+1, 1, 1);
+	if (libc.threads_minus_1)
+		while(a_swap(lk, 1)) __wait(lk, lk+1, 1, 1);
 }
 
 static inline void unlock(volatile int *lk)
 {
-	if (!libc.threads_minus_1) return;
-	a_store(lk, 0);
-	if (lk[1]) __wake(lk, 1, 1);
+	if (lk[0]) {
+		a_store(lk, 0);
+		if (lk[1]) __wake(lk, 1, 1);
+	}
 }
 
 static inline void lock_bin(int i)
 {
-	if (libc.threads_minus_1)
-		lock(mal.bins[i].lock);
+	lock(mal.bins[i].lock);
 	if (!mal.bins[i].head)
 		mal.bins[i].head = mal.bins[i].tail = BIN_TO_CHUNK(i);
 }
 
 static inline void unlock_bin(int i)
 {
-	if (!libc.threads_minus_1) return;
 	unlock(mal.bins[i].lock);
 }
 

@@ -53,8 +53,8 @@ void __lock(volatile int *) ATTR_LIBC_VISIBILITY;
 void __unlock(volatile int *) ATTR_LIBC_VISIBILITY;
 int __lockfile(FILE *) ATTR_LIBC_VISIBILITY;
 void __unlockfile(FILE *) ATTR_LIBC_VISIBILITY;
-#define LOCK(x) (libc.threads_minus_1 ? (__lock(x),1) : ((void)(x),1))
-#define UNLOCK(x) (libc.threads_minus_1 ? (__unlock(x),1) : ((void)(x),1))
+#define LOCK(x) __lock(x)
+#define UNLOCK(x) __unlock(x)
 
 void __synccall(void (*)(void *), void *);
 int __setxid(int, int, int, int);
