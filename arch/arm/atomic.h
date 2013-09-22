@@ -22,11 +22,13 @@ static inline int a_ctz_64(uint64_t x)
 	return a_ctz_l(y);
 }
 
+#define __k_cas ((int (*)(int, int, volatile int *))0xffff0fc0)
+
 static inline int a_cas(volatile int *p, int t, int s)
 {
 	int old;
 	for (;;) {
-		if (!((int (*)(int, int, volatile int *))0xffff0fc0)(t, s, p))
+		if (!__k_cas(t, s, p))
 			return t;
 		if ((old=*p) != t)
 			return old;
@@ -47,7 +49,7 @@ static inline int a_swap(volatile int *x, int v)
 {
 	int old;
 	do old = *x;
-	while (a_cas(x, old, v) != old);
+	while (__k_cas(old, v, x));
 	return old;
 }
 
@@ -55,7 +57,7 @@ static inline int a_fetch_add(volatile int *x, int v)
 {
 	int old;
 	do old = *x;
-	while (a_cas(x, old, old+v) != old);
+	while (__k_cas(old, old+v, x));
 	return old;
 }
 
@@ -71,7 +73,7 @@ static inline void a_dec(volatile int *x)
 
 static inline void a_store(volatile int *p, int x)
 {
-	*p=x;
+	while (__k_cas(*p, x, p));
 }
 
 static inline void a_spin()
@@ -87,14 +89,14 @@ static inline void a_and(volatile int *p, int v)
 {
 	int old;
 	do old = *p;
-	while (a_cas(p, old, old&v) != old);
+	while (__k_cas(old, old&v, p));
 }
 
 static inline void a_or(volatile int *p, int v)
 {
 	int old;
 	do old = *p;
-	while (a_cas(p, old, old|v) != old);
+	while (__k_cas(old, old|v, p));
 }
 
 static inline void a_or_l(volatile void *p, long v)
