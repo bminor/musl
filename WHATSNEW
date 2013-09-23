@@ -1052,3 +1052,33 @@ arch-specific bugs:
 - arm/armhf (hardfloat) misidentified by configure
 - ambiguity of wait (exit status) macros on mips with signal number 127
 - wrong value of _NSIG and SIGRTMAX on mips
+
+
+
+0.9.14 release notes
+
+bugs fixed:
+- failure to properly install dynamic linker with DESTDIR set (symlink wrong)
+- rare deadlock in libc-internal locking routines
+- dynamic linker used fallback paths wrongly on (possibly transient) errors
+- popen broken when stdin or stdout was already closed in parent
+- deadlock/memory-corruption in multithreaded set*id and setrlimit functions
+- realpath failed when file was not readable
+- readpath mistakenly had cancellation points in it
+- crashes in scanf with invalid %m conversion specifiers
+- misclassificiation of some invalid ld80 float representation in fpclassify
+- various overflow and underflow flag issues in math functions
+- domain handling errors for acoshf and acoshl
+- wrong values for some sysconf properties
+- lack of proper memory barriers on arm
+
+mips-specific bugs:
+- broken sysv ipc structures
+- multiple stack-related bugs in clone, leading to crashes in parent or child
+- overflow writing sigset_t in multithreaded set*id and setrlimit functions
+
+other improvements:
+- size and performance improvements to various math functions
+- wait.h as a compatibility alias for sys/wait.h
+- various header improvements
+- support for runtime-variable page size on archs that need it (mainly mips)
