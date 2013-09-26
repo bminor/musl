@@ -333,6 +333,11 @@
 #define __NR_inotify_init1	332
 #define __NR_preadv		333
 #define __NR_pwritev		334
+#define __NR_rt_tgsigqueueinfo	335
+#define __NR_perf_event_open	336
+#define __NR_recvmmsg		337
+#define __NR_fanotify_init	338
+#define __NR_fanotify_mark	339
 #define __NR_prlimit64		340
 #define __NR_name_to_handle_at	341
 #define __NR_open_by_handle_at	342
@@ -683,6 +688,11 @@
 #define SYS_inotify_init1	332
 #define SYS_preadv		333
 #define SYS_pwritev		334
+#define SYS_rt_tgsigqueueinfo	335
+#define SYS_perf_event_open	336
+#define SYS_recvmmsg		337
+#define SYS_fanotify_init	338
+#define SYS_fanotify_mark	339
 #define SYS_prlimit64		340
 #define SYS_name_to_handle_at	341
 #define SYS_open_by_handle_at	342
