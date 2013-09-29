@@ -26,14 +26,14 @@ static int getgr_r(const char *name, gid_t gid, struct group *gr, char *buf, siz
 	while (__getgrent_a(f, gr, &line, &len, &mem, &nmem)) {
 		if (name && !strcmp(name, gr->gr_name)
 		|| !name && gr->gr_gid == gid) {
-			if (size < len + nmem*sizeof(char *) + 32) {
+			if (size < len + (nmem+1)*sizeof(char *) + 32) {
 				rv = ERANGE;
 				break;
 			}
 			*res = gr;
 			buf += (16-(uintptr_t)buf)%16;
 			gr->gr_mem = (void *)buf;
-			buf += nmem*sizeof(char *);
+			buf += (nmem+1)*sizeof(char *);
 			memcpy(buf, line, len);
 			FIX(name);
 			FIX(passwd);
