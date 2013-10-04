@@ -1354,7 +1354,7 @@ int __dladdr(void *addr, Dl_info *info)
 		uint32_t *hashval;
 		buckets = p->ghashtab + 4 + (p->ghashtab[2]*sizeof(size_t)/4);
 		sym += p->ghashtab[1];
-		for (i = 0; i < p->ghashtab[0]; i++) {
+		for (i = nsym = 0; i < p->ghashtab[0]; i++) {
 			if (buckets[i] > nsym)
 				nsym = buckets[i];
 		}
