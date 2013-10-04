@@ -167,7 +167,7 @@ static const char sizeprefix['y'-'a'] = {
 
 static int wprintf_core(FILE *f, const wchar_t *fmt, va_list *ap, union arg *nl_arg, int *nl_type)
 {
-	wchar_t *a, *z, *s=(wchar_t *)fmt, *s0;
+	wchar_t *a, *z, *s=(wchar_t *)fmt;
 	unsigned l10n=0, litpct, fl;
 	int w, p;
 	union arg arg;
@@ -242,7 +242,6 @@ static int wprintf_core(FILE *f, const wchar_t *fmt, va_list *ap, union arg *nl_
 		} else p = -1;
 
 		/* Format specifier state machine */
-		s0=s;
 		st=0;
 		do {
 			if (OOB(*s)) return -1;
