@@ -341,12 +341,12 @@ long double __lgammal_r(long double x, int *sg) {
 	} else if (ix < 0x40028000) {  /* 8.0 */
 		/* x < 8.0 */
 		i = (int)x;
-		t = 0.0;
 		y = x - (double)i;
 		p = y * (s0 + y * (s1 + y * (s2 + y * (s3 + y * (s4 + y * (s5 + y * s6))))));
 		q = r0 + y * (r1 + y * (r2 + y * (r3 + y * (r4 + y * (r5 + y * (r6 + y))))));
 		r = 0.5 * y + p / q;
-		z = 1.0;/* lgamma(1+s) = log(s) + lgamma(s) */
+		z = 1.0;
+		/* lgamma(1+s) = log(s) + lgamma(s) */
 		switch (i) {
 		case 7:
 			z *= (y + 6.0); /* FALLTHRU */
