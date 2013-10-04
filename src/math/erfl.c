@@ -266,23 +266,12 @@ static long double erfc2(uint32_t ix, long double x)
 		     s * (ra[5] + s * (ra[6] + s * (ra[7] + s * ra[8])))))));
 		S = sa[0] + s * (sa[1] + s * (sa[2] + s * (sa[3] + s * (sa[4] +
 		     s * (sa[5] + s * (sa[6] + s * (sa[7] + s * (sa[8] + s))))))));
-	} else {  /* 2.857 <= |x| */
+	} else if (ix < 0x4001d555) {  /* 2.857 <= |x| < 6.6666259765625 */
 		R = rb[0] + s * (rb[1] + s * (rb[2] + s * (rb[3] + s * (rb[4] +
 		     s * (rb[5] + s * (rb[6] + s * rb[7]))))));
 		S = sb[0] + s * (sb[1] + s * (sb[2] + s * (sb[3] + s * (sb[4] +
 		     s * (sb[5] + s * (sb[6] + s))))));
-	}
-	if (ix < 0x4000b6db) {  /* 1.25 <= |x| < 2.85711669921875 ~ 1/.35 */
-		R = ra[0] + s * (ra[1] + s * (ra[2] + s * (ra[3] + s * (ra[4] +
-		     s * (ra[5] + s * (ra[6] + s * (ra[7] + s * ra[8])))))));
-		S = sa[0] + s * (sa[1] + s * (sa[2] + s * (sa[3] + s * (sa[4] +
-		     s * (sa[5] + s * (sa[6] + s * (sa[7] + s * (sa[8] + s))))))));
-	} else if (ix < 0x4001d555) {  /* 6.6666259765625 > |x| >= 1/.35 ~ 2.857143 */
-		R = rb[0] + s * (rb[1] + s * (rb[2] + s * (rb[3] + s * (rb[4] +
-		     s * (rb[5] + s * (rb[6] + s * rb[7]))))));
-		S = sb[0] + s * (sb[1] + s * (sb[2] + s * (sb[3] + s * (sb[4] +
-		     s * (sb[5] + s * (sb[6] + s))))));
-	} else { /* 107 > |x| >= 6.666 */
+	} else { /* 6.666 <= |x| < 107 (erfc only) */
 		R = rc[0] + s * (rc[1] + s * (rc[2] + s * (rc[3] +
 		     s * (rc[4] + s * rc[5]))));
 		S = sc[0] + s * (sc[1] + s * (sc[2] + s * (sc[3] +
