@@ -17,7 +17,7 @@ int pthread_key_create(pthread_key_t *k, void (*dtor)(void *))
 	__pthread_self_init();
 	if (!dtor) dtor = nodtor;
 	do {
-		if (!a_cas_p(keys+j, 0, dtor)) {
+		if (!a_cas_p(keys+j, 0, (void *)dtor)) {
 			*k = j;
 			return 0;
 		}
