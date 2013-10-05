@@ -177,6 +177,7 @@ static struct chunk *expand_heap(size_t n)
 	return w;
 fail:
 	unlock(mal.brk_lock);
+	errno = ENOMEM;
 	return 0;
 }
 
