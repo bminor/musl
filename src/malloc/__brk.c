@@ -3,5 +3,5 @@
 
 uintptr_t __brk(uintptr_t newbrk)
 {
-	return syscall(SYS_brk, newbrk);
+	return __syscall(SYS_brk, newbrk);
 }
