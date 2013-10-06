@@ -14,7 +14,6 @@ long double modfl(long double x, long double *iptr)
 long double modfl(long double x, long double *iptr)
 {
 	union ldshape u = {x};
-	uint64_t mask;
 	int e = (u.i.se & 0x7fff) - 0x3fff;
 	int s = u.i.se >> 15;
 	long double absx;
