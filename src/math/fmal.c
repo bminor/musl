@@ -264,12 +264,24 @@ long double fmal(long double x, long double y, long double z)
 		/*
 		 * There is no need to worry about double rounding in directed
 		 * rounding modes.
-		 * TODO: underflow is not raised correctly, example in downward rounding:
+		 * But underflow may not be raised correctly, example in downward rounding:
 		 * fmal(0x1.0000000001p-16000L, 0x1.0000000001p-400L, -0x1p-16440L)
 		 */
+		long double ret;
+#if defined(FE_INEXACT) && defined(FE_UNDERFLOW)
+		int e = fetestexcept(FE_INEXACT);
+		feclearexcept(FE_INEXACT);
+#endif
 		fesetround(oround);
 		adj = r.lo + xy.lo;
-		return scalbnl(r.hi + adj, spread);
+		ret = scalbnl(r.hi + adj, spread);
+#if defined(FE_INEXACT) && defined(FE_UNDERFLOW)
+		if (ilogbl(ret) < -16382 && fetestexcept(FE_INEXACT))
+			feraiseexcept(FE_UNDERFLOW);
+		else if (e)
+			feraiseexcept(FE_INEXACT);
+#endif
+		return ret;
 	}
 
 	adj = add_adjusted(r.lo, xy.lo);

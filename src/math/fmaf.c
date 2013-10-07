@@ -26,7 +26,8 @@
  */
 
 #include <fenv.h>
-#include "libm.h"
+#include <math.h>
+#include <stdint.h>
 
 /*
  * Fused multiply-add: Compute x * y + z with a single rounding error.
@@ -39,21 +40,35 @@ float fmaf(float x, float y, float z)
 {
 	#pragma STDC FENV_ACCESS ON
 	double xy, result;
-	uint32_t hr, lr;
+	union {double f; uint64_t i;} u;
+	int e;
 
 	xy = (double)x * y;
 	result = xy + z;
-	EXTRACT_WORDS(hr, lr, result);
+	u.f = result;
+	e = u.i>>52 & 0x7ff;
 	/* Common case: The double precision result is fine. */
-	if ((lr & 0x1fffffff) != 0x10000000 ||  /* not a halfway case */
-		(hr & 0x7ff00000) == 0x7ff00000 ||  /* NaN */
+	if ((u.i & 0x1fffffff) != 0x10000000 || /* not a halfway case */
+		e == 0x7ff ||                   /* NaN */
 		result - xy == z ||                 /* exact */
 		fegetround() != FE_TONEAREST)       /* not round-to-nearest */
 	{
 		/*
-		TODO: underflow is not raised correctly, example in
-		downward rouding: fmaf(0x1p-120f, 0x1p-120f, 0x1p-149f)
+		underflow may not be raised correctly, example:
+		fmaf(0x1p-120f, 0x1p-120f, 0x1p-149f)
 		*/
+#if defined(FE_INEXACT) && defined(FE_UNDERFLOW)
+		if (e < 0x3ff-126 && e >= 0x3ff-149 && fetestexcept(FE_INEXACT)) {
+			feclearexcept(FE_INEXACT);
+			/* TODO: gcc and clang bug workaround */
+			volatile float vz = z;
+			result = xy + vz;
+			if (fetestexcept(FE_INEXACT))
+				feraiseexcept(FE_UNDERFLOW);
+			else
+				feraiseexcept(FE_INEXACT);
+		}
+#endif
 		z = result;
 		return z;
 	}
@@ -68,8 +83,11 @@ float fmaf(float x, float y, float z)
 	volatile double vxy = xy;  /* XXX work around gcc CSE bug */
 	double adjusted_result = vxy + z;
 	fesetround(FE_TONEAREST);
-	if (result == adjusted_result)
-		SET_LOW_WORD(adjusted_result, lr + 1);
+	if (result == adjusted_result) {
+		u.f = adjusted_result;
+		u.i++;
+		adjusted_result = u.f;
+	}
 	z = adjusted_result;
 	return z;
 }

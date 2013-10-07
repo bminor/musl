@@ -431,12 +431,24 @@ double fma(double x, double y, double z)
 		/*
 		 * There is no need to worry about double rounding in directed
 		 * rounding modes.
-		 * TODO: underflow is not raised properly, example in downward rounding:
+		 * But underflow may not be raised properly, example in downward rounding:
 		 * fma(0x1.000000001p-1000, 0x1.000000001p-30, -0x1p-1066)
 		 */
+		double ret;
+#if defined(FE_INEXACT) && defined(FE_UNDERFLOW)
+		int e = fetestexcept(FE_INEXACT);
+		feclearexcept(FE_INEXACT);
+#endif
 		fesetround(oround);
 		adj = r.lo + xy.lo;
-		return scalbn(r.hi + adj, spread);
+		ret = scalbn(r.hi + adj, spread);
+#if defined(FE_INEXACT) && defined(FE_UNDERFLOW)
+		if (ilogb(ret) < -1022 && fetestexcept(FE_INEXACT))
+			feraiseexcept(FE_UNDERFLOW);
+		else if (e)
+			feraiseexcept(FE_INEXACT);
+#endif
+		return ret;
 	}
 
 	adj = add_adjusted(r.lo, xy.lo);
