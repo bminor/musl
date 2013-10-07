@@ -16,6 +16,7 @@ int execlp(const char *file, const char *argv0, ...)
 		for (i=1; i<argc; i++)
 			argv[i] = va_arg(ap, char *);
 		argv[i] = NULL;
+		va_end(ap);
 		return execvp(file, argv);
 	}
 }
