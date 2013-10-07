@@ -530,7 +530,6 @@ static int printf_core(FILE *f, const char *fmt, va_list *ap, union arg *nl_arg,
 		/* Check validity of argument type (nl/normal) */
 		if (st==NOARG) {
 			if (argpos>=0) return -1;
-			else if (!f) continue;
 		} else {
 			if (argpos>=0) nl_type[argpos]=st, arg=nl_arg[argpos];
 			else if (f) pop_arg(&arg, st, ap);
@@ -660,8 +659,12 @@ int vfprintf(FILE *restrict f, const char *restrict fmt, va_list ap)
 	unsigned char internal_buf[80], *saved_buf = 0;
 	int ret;
 
+	/* the copy allows passing va_list* even if va_list is an array */
 	va_copy(ap2, ap);
-	if (printf_core(0, fmt, &ap2, nl_arg, nl_type) < 0) return -1;
+	if (printf_core(0, fmt, &ap2, nl_arg, nl_type) < 0) {
+		va_end(ap2);
+		return -1;
+	}
 
 	FLOCK(f);
 	if (!f->buf_size) {

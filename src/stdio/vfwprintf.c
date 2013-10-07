@@ -253,7 +253,6 @@ static int wprintf_core(FILE *f, const wchar_t *fmt, va_list *ap, union arg *nl_
 		/* Check validity of argument type (nl/normal) */
 		if (st==NOARG) {
 			if (argpos>=0) return -1;
-			else if (!f) continue;
 		} else {
 			if (argpos>=0) nl_type[argpos]=st, arg=nl_arg[argpos];
 			else if (f) pop_arg(&arg, st, ap);
@@ -287,8 +286,7 @@ static int wprintf_core(FILE *f, const wchar_t *fmt, va_list *ap, union arg *nl_
 		case 'S':
 			a = arg.p;
 			z = wmemchr(a, 0, p);
-			if (!z) z=a+p;
-			else p=z-a;
+			if (z) p=z-a;
 			if (w<p) w=p;
 			if (!(fl&LEFT_ADJ)) fprintf(f, "%.*s", w-p, "");
 			out(f, a, p);
@@ -349,8 +347,12 @@ int vfwprintf(FILE *restrict f, const wchar_t *restrict fmt, va_list ap)
 	union arg nl_arg[NL_ARGMAX];
 	int ret;
 
+	/* the copy allows passing va_list* even if va_list is an array */
 	va_copy(ap2, ap);
-	if (wprintf_core(0, fmt, &ap2, nl_arg, nl_type) < 0) return -1;
+	if (wprintf_core(0, fmt, &ap2, nl_arg, nl_type) < 0) {
+		va_end(ap2);
+		return -1;
+	}
 
 	FLOCK(f);
 	ret = wprintf_core(f, fmt, &ap2, nl_arg, nl_type);
