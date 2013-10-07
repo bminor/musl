@@ -26,6 +26,5 @@ int setenv(const char *var, const char *value, int overwrite)
 		if (!__putenv(s, 1)) return 0;
 	}
 	free(s);
-	errno = ENOMEM;
 	return -1;
 }
