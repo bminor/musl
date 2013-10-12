@@ -14,8 +14,8 @@ static int checker(void *p)
 {
 	struct ctx *c = p;
 	int ret;
-	if (__syscall(SYS_setgid, __syscall(SYS_getegid))
-	    || __syscall(SYS_setuid, __syscall(SYS_geteuid)))
+	if (__syscall(SYS_setregid, __syscall(SYS_getegid), -1)
+	    || __syscall(SYS_setreuid, __syscall(SYS_geteuid), -1))
 		__syscall(SYS_exit, 1);
 	ret = __syscall(SYS_faccessat, c->fd, c->filename, c->amode, 0);
 	__syscall(SYS_write, c->p, &ret, sizeof ret);
