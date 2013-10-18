@@ -34,7 +34,7 @@ int faccessat(int fd, const char *filename, int amode, int flag)
 	sigset_t set;
 	int ret, p[2];
 
-	if (pipe(p)) return __syscall_ret(-EBUSY);
+	if (pipe2(p, O_CLOEXEC)) return __syscall_ret(-EBUSY);
 	struct ctx c = { .fd = fd, .filename = filename, .amode = amode, .p = p[1] };
 
 	__block_all_sigs(&set);
