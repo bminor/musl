@@ -225,7 +225,7 @@ struct linger
 #define MSG_EOR       0x0080
 #define MSG_WAITALL   0x0100
 #define MSG_FIN       0x0200
-#define MSD_SYN       0x0400
+#define MSG_SYN       0x0400
 #define MSG_CONFIRM   0x0800
 #define MSG_RST       0x1000
 #define MSG_ERRQUEUE  0x2000
