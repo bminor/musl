@@ -46,24 +46,24 @@ int inet_pton(int af, const char *restrict s, void *restrict a0)
 			if (!s[1]) break;
 			continue;
 		}
-		if (hexval(s[0])<0) return -1;
+		if (hexval(s[0])<0) return 0;
 		while (s[0]=='0' && s[1]=='0') s++;
 		for (v=j=0; j<5 && (d=hexval(s[j]))>=0; j++)
 			v=16*v+d;
-		if (v > 65535) return -1;
+		if (v > 65535) return 0;
 		ip[i] = v;
 		if (!s[j]) {
-			if (brk<0 && i!=7) return -1;
+			if (brk<0 && i!=7) return 0;
 			break;
 		}
 		if (i<7) {
 			if (s[j]==':') continue;
-			if (s[j]!='.') return -1;
+			if (s[j]!='.') return 0;
 			need_v4=1;
 			i++;
 			break;
 		}
-		return -1;
+		return 0;
 	}
 	if (brk>=0) {
 		memmove(ip+brk+7-i, ip+brk, 2*(i+1-brk));
@@ -73,6 +73,6 @@ int inet_pton(int af, const char *restrict s, void *restrict a0)
 		*a++ = ip[j]>>8;
 		*a++ = ip[j];
 	}
-	if (need_v4 &&inet_pton(AF_INET, (void *)s, a-4) <= 0) return -1;
+	if (need_v4 && inet_pton(AF_INET, (void *)s, a-4) <= 0) return 0;
 	return 1;
 }
