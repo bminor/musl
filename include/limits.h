@@ -84,9 +84,15 @@
 #define NL_ARGMAX 9
 #define NL_LANGMAX 32
 #define NL_MSGMAX 32767
-#define NL_NMAX (MB_LEN_MAX*4)
 #define NL_SETMAX 255
 #define NL_TEXTMAX 2048
+
+#endif
+
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE) \
+ || (defined(_XOPEN_SOURCE) && _XOPEN_SOURCE+0 < 700)
+
+#define NL_NMAX 16
 
 #endif
 

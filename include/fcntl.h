@@ -59,8 +59,6 @@ int posix_fallocate(int, off_t, off_t);
 #define AT_REMOVEDIR 0x200
 #define AT_SYMLINK_FOLLOW 0x400
 #define AT_EACCESS 0x200
-#define AT_NO_AUTOMOUNT 0x800
-#define AT_EMPTY_PATH 0x1000
 
 #define POSIX_FADV_NORMAL     0
 #define POSIX_FADV_RANDOM     1
@@ -95,6 +93,9 @@ int posix_fallocate(int, off_t, off_t);
 #endif
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+#define AT_NO_AUTOMOUNT 0x800
+#define AT_EMPTY_PATH 0x1000
+
 #define FAPPEND O_APPEND
 #define FFSYNC O_FSYNC
 #define FASYNC O_ASYNC

@@ -218,11 +218,8 @@ void (*sigset(int, void (*)(int)))(int);
 #define SIGSTKSZ 8192
 #endif
 
-#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
-#define NSIG _NSIG
-#endif
-
 #if defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
+#define NSIG _NSIG
 typedef void (*sig_t)(int);
 #endif
 
