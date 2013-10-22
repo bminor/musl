@@ -10,7 +10,10 @@ in_addr_t inet_network(const char *p)
 
 int inet_aton(const char *cp, struct in_addr *inp)
 {
-	return inet_pton(AF_INET, cp, (void *)inp) > 0;
+	struct sockaddr_in sin;
+	int r = __ipparse(&sin, AF_INET, cp);
+	*inp = sin.sin_addr;
+	return r;
 }
 
 struct in_addr inet_makeaddr(int net, int host)
