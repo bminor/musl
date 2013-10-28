@@ -13,12 +13,12 @@
  * ====================================================
  */
 
-#include "libm.h"
+#include <math.h>
+#include <stdint.h>
 
 static const float
 ln2_hi = 6.9313812256e-01, /* 0x3f317180 */
 ln2_lo = 9.0580006145e-06, /* 0x3717f7d1 */
-two25  = 3.355443200e+07,  /* 0x4c000000 */
 /* |(log(1+s)-log(1-s))/s - Lg(s)| < 2**-34.24 (~[-4.95e-11, 4.97e-11]). */
 Lg1 = 0xaaaaaa.0p-24, /* 0.66666662693 */
 Lg2 = 0xccce13.0p-25, /* 0.40000972152 */
@@ -27,61 +27,43 @@ Lg4 = 0xf89e26.0p-26; /* 0.24279078841 */
 
 float logf(float x)
 {
-	float hfsq,f,s,z,R,w,t1,t2,dk;
-	int32_t k,ix,i,j;
+	union {float f; uint32_t i;} u = {x};
+	float_t hfsq,f,s,z,R,w,t1,t2,dk;
+	uint32_t ix;
+	int k;
 
-	GET_FLOAT_WORD(ix, x);
-
+	ix = u.i;
 	k = 0;
-	if (ix < 0x00800000) {  /* x < 2**-126  */
-		if ((ix & 0x7fffffff) == 0)
-			return -two25/0.0f;  /* log(+-0)=-inf */
-		if (ix < 0)
-			return (x-x)/0.0f;   /* log(-#) = NaN */
+	if (ix < 0x00800000 || ix>>31) {  /* x < 2**-126  */
+		if (ix<<1 == 0)
+			return -1/(x*x);  /* log(+-0)=-inf */
+		if (ix>>31)
+			return (x-x)/0.0f; /* log(-#) = NaN */
 		/* subnormal number, scale up x */
 		k -= 25;
-		x *= two25;
-		GET_FLOAT_WORD(ix, x);
-	}
-	if (ix >= 0x7f800000)
-		return x+x;
-	k += (ix>>23) - 127;
-	ix &= 0x007fffff;
-	i = (ix + (0x95f64<<3)) & 0x800000;
-	SET_FLOAT_WORD(x, ix|(i^0x3f800000));  /* normalize x or x/2 */
-	k += i>>23;
+		x *= 0x1p25f;
+		u.f = x;
+		ix = u.i;
+	} else if (ix >= 0x7f800000) {
+		return x;
+	} else if (ix == 0x3f800000)
+		return 0;
+
+	/* reduce x into [sqrt(2)/2, sqrt(2)] */
+	ix += 0x3f800000 - 0x3f3504f3;
+	k += (int)(ix>>23) - 0x7f;
+	ix = (ix&0x007fffff) + 0x3f3504f3;
+	u.i = ix;
+	x = u.f;
+
 	f = x - 1.0f;
-	if ((0x007fffff & (0x8000 + ix)) < 0xc000) {  /* -2**-9 <= f < 2**-9 */
-		if (f == 0.0f) {
-			if (k == 0)
-				return 0.0f;
-			dk = (float)k;
-			return dk*ln2_hi + dk*ln2_lo;
-		}
-		R = f*f*(0.5f - 0.33333333333333333f*f);
-		if (k == 0)
-			return f-R;
-		dk = (float)k;
-		return dk*ln2_hi - ((R-dk*ln2_lo)-f);
-	}
 	s = f/(2.0f + f);
-	dk = (float)k;
 	z = s*s;
-	i = ix-(0x6147a<<3);
 	w = z*z;
-	j = (0x6b851<<3)-ix;
 	t1= w*(Lg2+w*Lg4);
 	t2= z*(Lg1+w*Lg3);
-	i |= j;
 	R = t2 + t1;
-	if (i > 0) {
-		hfsq = 0.5f * f * f;
-		if (k == 0)
-			return f - (hfsq-s*(hfsq+R));
-		return dk*ln2_hi - ((hfsq-(s*(hfsq+R)+dk*ln2_lo))-f);
-	} else {
-		if (k == 0)
-			return f - s*(f-R);
-		return dk*ln2_hi - ((s*(f-R)-dk*ln2_lo)-f);
-	}
+	hfsq = 0.5f*f*f;
+	dk = k;
+	return s*(hfsq+R) + dk*ln2_lo - hfsq + f + dk*ln2_hi;
 }

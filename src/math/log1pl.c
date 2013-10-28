@@ -118,7 +118,7 @@ long double log1pl(long double xm1)
 	/* Test for domain errors.  */
 	if (x <= 0.0) {
 		if (x == 0.0)
-			return -1/x; /* -inf with divbyzero */
+			return -1/(x*x); /* -inf with divbyzero */
 		return 0/0.0f; /* nan with invalid */
 	}
 

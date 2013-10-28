@@ -35,9 +35,9 @@
  *
  *     log(1+x) = x - 0.5 x**2 + x**3 P(x)/Q(x).
  *
- * Otherwise, setting  z = 2(x-1)/x+1),
+ * Otherwise, setting  z = 2(x-1)/(x+1),
  *
- *     log(x) = z + z**3 P(z)/Q(z).
+ *     log(x) = log(1+z/2) - log(1-z/2) = z + z**3 P(z)/Q(z).
  *
  *
  * ACCURACY:
@@ -116,7 +116,7 @@ long double logl(long double x)
 		return x;
 	if (x <= 0.0) {
 		if (x == 0.0)
-			return -1/(x+0); /* -inf with divbyzero */
+			return -1/(x*x); /* -inf with divbyzero */
 		return 0/0.0f; /* nan with invalid */
 	}
 
@@ -127,7 +127,7 @@ long double logl(long double x)
 	x = frexpl(x, &e);
 
 	/* logarithm using log(x) = z + z**3 P(z)/Q(z),
-	 * where z = 2(x-1)/x+1)
+	 * where z = 2(x-1)/(x+1)
 	 */
 	if (e > 2 || e < -2) {
 		if (x < SQRTH) {  /* 2(2x-1)/(2x+1) */

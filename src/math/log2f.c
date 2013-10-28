@@ -13,67 +13,62 @@
  * See comments in log2.c.
  */
 
-#include "libm.h"
-#include "__log1pf.h"
+#include <math.h>
+#include <stdint.h>
 
 static const float
-two25   =  3.3554432000e+07, /* 0x4c000000 */
 ivln2hi =  1.4428710938e+00, /* 0x3fb8b000 */
-ivln2lo = -1.7605285393e-04; /* 0xb9389ad4 */
+ivln2lo = -1.7605285393e-04, /* 0xb9389ad4 */
+/* |(log(1+s)-log(1-s))/s - Lg(s)| < 2**-34.24 (~[-4.95e-11, 4.97e-11]). */
+Lg1 = 0xaaaaaa.0p-24, /* 0.66666662693 */
+Lg2 = 0xccce13.0p-25, /* 0.40000972152 */
+Lg3 = 0x91e9ee.0p-25, /* 0.28498786688 */
+Lg4 = 0xf89e26.0p-26; /* 0.24279078841 */
 
 float log2f(float x)
 {
-	float f,hfsq,hi,lo,r,y;
-	int32_t i,k,hx;
+	union {float f; uint32_t i;} u = {x};
+	float_t hfsq,f,s,z,R,w,t1,t2,hi,lo;
+	uint32_t ix;
+	int k;
 
-	GET_FLOAT_WORD(hx, x);
-
+	ix = u.i;
 	k = 0;
-	if (hx < 0x00800000) {  /* x < 2**-126  */
-		if ((hx&0x7fffffff) == 0)
-			return -two25/0.0f;  /* log(+-0)=-inf */
-		if (hx < 0)
-			return (x-x)/0.0f;   /* log(-#) = NaN */
+	if (ix < 0x00800000 || ix>>31) {  /* x < 2**-126  */
+		if (ix<<1 == 0)
+			return -1/(x*x);  /* log(+-0)=-inf */
+		if (ix>>31)
+			return (x-x)/0.0f; /* log(-#) = NaN */
 		/* subnormal number, scale up x */
 		k -= 25;
-		x *= two25;
-		GET_FLOAT_WORD(hx, x);
-	}
-	if (hx >= 0x7f800000)
-		return x+x;
-	if (hx == 0x3f800000)
-		return 0.0f;  /* log(1) = +0 */
-	k += (hx>>23) - 127;
-	hx &= 0x007fffff;
-	i = (hx+(0x4afb0d))&0x800000;
-	SET_FLOAT_WORD(x, hx|(i^0x3f800000));  /* normalize x or x/2 */
-	k += i>>23;
-	y = (float)k;
-	f = x - 1.0f;
-	hfsq = 0.5f * f * f;
-	r = __log1pf(f);
+		x *= 0x1p25f;
+		u.f = x;
+		ix = u.i;
+	} else if (ix >= 0x7f800000) {
+		return x;
+	} else if (ix == 0x3f800000)
+		return 0;
 
-	/*
-	 * We no longer need to avoid falling into the multi-precision
-	 * calculations due to compiler bugs breaking Dekker's theorem.
-	 * Keep avoiding this as an optimization.  See log2.c for more
-	 * details (some details are here only because the optimization
-	 * is not yet available in double precision).
-	 *
-	 * Another compiler bug turned up.  With gcc on i386,
-	 * (ivln2lo + ivln2hi) would be evaluated in float precision
-	 * despite runtime evaluations using double precision.  So we
-	 * must cast one of its terms to float_t.  This makes the whole
-	 * expression have type float_t, so return is forced to waste
-	 * time clobbering its extra precision.
-	 */
-// FIXME
-//      if (sizeof(float_t) > sizeof(float))
-//              return (r - hfsq + f) * ((float_t)ivln2lo + ivln2hi) + y;
+	/* reduce x into [sqrt(2)/2, sqrt(2)] */
+	ix += 0x3f800000 - 0x3f3504f3;
+	k += (int)(ix>>23) - 0x7f;
+	ix = (ix&0x007fffff) + 0x3f3504f3;
+	u.i = ix;
+	x = u.f;
+
+	f = x - 1.0f;
+	s = f/(2.0f + f);
+	z = s*s;
+	w = z*z;
+	t1= w*(Lg2+w*Lg4);
+	t2= z*(Lg1+w*Lg3);
+	R = t2 + t1;
+	hfsq = 0.5f*f*f;
 
 	hi = f - hfsq;
-	GET_FLOAT_WORD(hx,hi);
-	SET_FLOAT_WORD(hi,hx&0xfffff000);
-	lo = (f - hi) - hfsq + r;
-	return (lo+hi)*ivln2lo + lo*ivln2hi + hi*ivln2hi + y;
+	u.f = hi;
+	u.i &= 0xfffff000;
+	hi = u.f;
+	lo = f - hi - hfsq + s*(hfsq+R);
+	return (lo+hi)*ivln2lo + lo*ivln2hi + hi*ivln2hi + k;
 }

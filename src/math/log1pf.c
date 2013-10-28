@@ -1,8 +1,5 @@
 /* origin: FreeBSD /usr/src/lib/msun/src/s_log1pf.c */
 /*
- * Conversion to float by Ian Lance Taylor, Cygnus Support, ian@cygnus.com.
- */
-/*
  * ====================================================
  * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
  *
@@ -18,95 +15,63 @@
 static const float
 ln2_hi = 6.9313812256e-01, /* 0x3f317180 */
 ln2_lo = 9.0580006145e-06, /* 0x3717f7d1 */
-two25  = 3.355443200e+07,  /* 0x4c000000 */
-Lp1 = 6.6666668653e-01, /* 3F2AAAAB */
-Lp2 = 4.0000000596e-01, /* 3ECCCCCD */
-Lp3 = 2.8571429849e-01, /* 3E924925 */
-Lp4 = 2.2222198546e-01, /* 3E638E29 */
-Lp5 = 1.8183572590e-01, /* 3E3A3325 */
-Lp6 = 1.5313838422e-01, /* 3E1CD04F */
-Lp7 = 1.4798198640e-01; /* 3E178897 */
+/* |(log(1+s)-log(1-s))/s - Lg(s)| < 2**-34.24 (~[-4.95e-11, 4.97e-11]). */
+Lg1 = 0xaaaaaa.0p-24, /* 0.66666662693 */
+Lg2 = 0xccce13.0p-25, /* 0.40000972152 */
+Lg3 = 0x91e9ee.0p-25, /* 0.28498786688 */
+Lg4 = 0xf89e26.0p-26; /* 0.24279078841 */
 
 float log1pf(float x)
 {
-	float hfsq,f,c,s,z,R,u;
-	int32_t k,hx,hu,ax;
+	union {float f; uint32_t i;} u = {x};
+	float_t hfsq,f,c,s,z,R,w,t1,t2,dk;
+	uint32_t ix,iu;
+	int k;
 
-	GET_FLOAT_WORD(hx, x);
-	ax = hx & 0x7fffffff;
-
+	ix = u.i;
 	k = 1;
-	if (hx < 0x3ed413d0) {  /* 1+x < sqrt(2)+  */
-		if (ax >= 0x3f800000) {  /* x <= -1.0 */
-			if (x == -1.0f)
-				return -two25/0.0f; /* log1p(-1)=+inf */
-			return (x-x)/(x-x);         /* log1p(x<-1)=NaN */
+	if (ix < 0x3ed413d0 || ix>>31) {  /* 1+x < sqrt(2)+  */
+		if (ix >= 0xbf800000) {  /* x <= -1.0 */
+			if (x == -1)
+				return x/0.0f; /* log1p(-1)=+inf */
+			return (x-x)/0.0f;     /* log1p(x<-1)=NaN */
 		}
-		if (ax < 0x38000000) {   /* |x| < 2**-15 */
-			/* if 0x1p-126 <= |x| < 0x1p-24, avoid raising underflow */
-			if (ax < 0x33800000 && ax >= 0x00800000)
-				return x;
-#if FLT_EVAL_METHOD != 0
-			FORCE_EVAL(x*x);
-#endif
-			return x - x*x*0.5f;
+		if (ix<<1 < 0x33800000<<1) {   /* |x| < 2**-24 */
+			/* underflow if subnormal */
+			if ((ix&0x7f800000) == 0)
+				FORCE_EVAL(x*x);
+			return x;
 		}
-		if (hx > 0 || hx <= (int32_t)0xbe95f619) { /* sqrt(2)/2- <= 1+x < sqrt(2)+ */
+		if (ix <= 0xbe95f619) { /* sqrt(2)/2- <= 1+x < sqrt(2)+ */
 			k = 0;
-			f = x;
-			hu = 1;
-		}
-	}
-	if (hx >= 0x7f800000)
-		return x+x;
-	if (k != 0) {
-		if (hx < 0x5a000000) {
-			u = 1 + x;
-			GET_FLOAT_WORD(hu, u);
-			k = (hu>>23) - 127;
-			/* correction term */
-			c = k > 0 ? 1.0f-(u-x) : x-(u-1.0f);
-			c /= u;
-		} else {
-			u = x;
-			GET_FLOAT_WORD(hu,u);
-			k = (hu>>23) - 127;
 			c = 0;
+			f = x;
 		}
-		hu &= 0x007fffff;
-		/*
-		 * The approximation to sqrt(2) used in thresholds is not
-		 * critical.  However, the ones used above must give less
-		 * strict bounds than the one here so that the k==0 case is
-		 * never reached from here, since here we have committed to
-		 * using the correction term but don't use it if k==0.
-		 */
-		if (hu < 0x3504f4) {  /* u < sqrt(2) */
-			SET_FLOAT_WORD(u, hu|0x3f800000);  /* normalize u */
-		} else {
-			k += 1;
-			SET_FLOAT_WORD(u, hu|0x3f000000);  /* normalize u/2 */
-			hu = (0x00800000-hu)>>2;
-		}
-		f = u - 1.0f;
-	}
-	hfsq = 0.5f * f * f;
-	if (hu == 0) {  /* |f| < 2**-20 */
-		if (f == 0.0f) {
-			if (k == 0)
-				return 0.0f;
-			c += k*ln2_lo;
-			return k*ln2_hi+c;
-		}
-		R = hfsq*(1.0f - 0.66666666666666666f * f);
-		if (k == 0)
-			return f - R;
-		return k*ln2_hi - ((R-(k*ln2_lo+c))-f);
+	} else if (ix >= 0x7f800000)
+		return x;
+	if (k) {
+		u.f = 1 + x;
+		iu = u.i;
+		iu += 0x3f800000 - 0x3f3504f3;
+		k = (int)(iu>>23) - 0x7f;
+		/* correction term ~ log(1+x)-log(u), avoid underflow in c/u */
+		if (k < 25) {
+			c = k >= 2 ? 1-(u.f-x) : x-(u.f-1);
+			c /= u.f;
+		} else
+			c = 0;
+		/* reduce u into [sqrt(2)/2, sqrt(2)] */
+		iu = (iu&0x007fffff) + 0x3f3504f3;
+		u.i = iu;
+		f = u.f - 1;
 	}
 	s = f/(2.0f + f);
 	z = s*s;
-	R = z*(Lp1+z*(Lp2+z*(Lp3+z*(Lp4+z*(Lp5+z*(Lp6+z*Lp7))))));
-	if (k == 0)
-		return f - (hfsq-s*(hfsq+R));
-	return k*ln2_hi - ((hfsq-(s*(hfsq+R)+(k*ln2_lo+c)))-f);
+	w = z*z;
+	t1= w*(Lg2+w*Lg4);
+	t2= z*(Lg1+w*Lg3);
+	R = t2 + t1;
+	hfsq = 0.5f*f*f;
+	dk = k;
+	return s*(hfsq+R) + (dk*ln2_lo+c) - hfsq + f + dk*ln2_hi;
 }

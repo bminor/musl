@@ -117,16 +117,15 @@ static const long double S[4] = {
 
 long double log10l(long double x)
 {
-	long double y;
-	volatile long double z;
+	long double y, z;
 	int e;
 
 	if (isnan(x))
 		return x;
 	if(x <= 0.0) {
 		if(x == 0.0)
-			return -1.0 / (x - x);
-		return (x - x) / (x - x);
+			return -1.0 / (x*x);
+		return (x - x) / 0.0;
 	}
 	if (x == INFINITY)
 		return INFINITY;

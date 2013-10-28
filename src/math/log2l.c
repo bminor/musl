@@ -117,7 +117,7 @@ long double log2l(long double x)
 		return x;
 	if (x <= 0.0) {
 		if (x == 0.0)
-			return -1/(x+0); /* -inf with divbyzero */
+			return -1/(x*x); /* -inf with divbyzero */
 		return 0/0.0f; /* nan with invalid */
 	}
 

@@ -13,57 +13,65 @@
  * See comments in log10.c.
  */
 
-#include "libm.h"
-#include "__log1pf.h"
+#include <math.h>
+#include <stdint.h>
 
 static const float
-two25     =  3.3554432000e+07, /* 0x4c000000 */
 ivln10hi  =  4.3432617188e-01, /* 0x3ede6000 */
 ivln10lo  = -3.1689971365e-05, /* 0xb804ead9 */
 log10_2hi =  3.0102920532e-01, /* 0x3e9a2080 */
-log10_2lo =  7.9034151668e-07; /* 0x355427db */
+log10_2lo =  7.9034151668e-07, /* 0x355427db */
+/* |(log(1+s)-log(1-s))/s - Lg(s)| < 2**-34.24 (~[-4.95e-11, 4.97e-11]). */
+Lg1 = 0xaaaaaa.0p-24, /* 0.66666662693 */
+Lg2 = 0xccce13.0p-25, /* 0.40000972152 */
+Lg3 = 0x91e9ee.0p-25, /* 0.28498786688 */
+Lg4 = 0xf89e26.0p-26; /* 0.24279078841 */
 
 float log10f(float x)
 {
-	float f,hfsq,hi,lo,r,y;
-	int32_t i,k,hx;
+	union {float f; uint32_t i;} u = {x};
+	float_t hfsq,f,s,z,R,w,t1,t2,dk,hi,lo;
+	uint32_t ix;
+	int k;
 
-	GET_FLOAT_WORD(hx, x);
-
+	ix = u.i;
 	k = 0;
-	if (hx < 0x00800000) {  /* x < 2**-126  */
-		if ((hx&0x7fffffff) == 0)
-			return -two25/0.0f;  /* log(+-0)=-inf */
-		if (hx < 0)
-			return (x-x)/0.0f;   /* log(-#) = NaN */
+	if (ix < 0x00800000 || ix>>31) {  /* x < 2**-126  */
+		if (ix<<1 == 0)
+			return -1/(x*x);  /* log(+-0)=-inf */
+		if (ix>>31)
+			return (x-x)/0.0f; /* log(-#) = NaN */
 		/* subnormal number, scale up x */
 		k -= 25;
-		x *= two25;
-		GET_FLOAT_WORD(hx, x);
-	}
-	if (hx >= 0x7f800000)
-		return x+x;
-	if (hx == 0x3f800000)
-		return 0.0f;  /* log(1) = +0 */
-	k += (hx>>23) - 127;
-	hx &= 0x007fffff;
-	i = (hx+(0x4afb0d))&0x800000;
-	SET_FLOAT_WORD(x, hx|(i^0x3f800000));  /* normalize x or x/2 */
-	k += i>>23;
-	y = (float)k;
-	f = x - 1.0f;
-	hfsq = 0.5f * f * f;
-	r = __log1pf(f);
+		x *= 0x1p25f;
+		u.f = x;
+		ix = u.i;
+	} else if (ix >= 0x7f800000) {
+		return x;
+	} else if (ix == 0x3f800000)
+		return 0;
 
-// FIXME
-//      /* See log2f.c and log2.c for details. */
-//      if (sizeof(float_t) > sizeof(float))
-//              return (r - hfsq + f) * ((float_t)ivln10lo + ivln10hi) +
-//                  y * ((float_t)log10_2lo + log10_2hi);
+	/* reduce x into [sqrt(2)/2, sqrt(2)] */
+	ix += 0x3f800000 - 0x3f3504f3;
+	k += (int)(ix>>23) - 0x7f;
+	ix = (ix&0x007fffff) + 0x3f3504f3;
+	u.i = ix;
+	x = u.f;
+
+	f = x - 1.0f;
+	s = f/(2.0f + f);
+	z = s*s;
+	w = z*z;
+	t1= w*(Lg2+w*Lg4);
+	t2= z*(Lg1+w*Lg3);
+	R = t2 + t1;
+	hfsq = 0.5f*f*f;
+
 	hi = f - hfsq;
-	GET_FLOAT_WORD(hx, hi);
-	SET_FLOAT_WORD(hi, hx&0xfffff000);
-	lo = (f - hi) - hfsq + r;
-	return y*log10_2lo + (lo+hi)*ivln10lo + lo*ivln10hi +
-	        hi*ivln10hi + y*log10_2hi;
+	u.f = hi;
+	u.i &= 0xfffff000;
+	hi = u.f;
+	lo = f - hi - hfsq + s*(hfsq+R);
+	dk = k;
+	return dk*log10_2lo + (lo+hi)*ivln10lo + lo*ivln10hi + hi*ivln10hi + dk*log10_2hi;
 }
