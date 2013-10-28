@@ -75,7 +75,7 @@ __fesetround:
 1:	addl $__hwcap-1b,(%esp)
 	pop %edx
 	testl $0x02000000,(%edx)
-	jmp 1f
+	jz 1f
 	stmxcsr (%esp)
 	shl $3,%ch
 	andb $0x9f,1(%esp)
