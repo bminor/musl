@@ -14,14 +14,14 @@ with the posix api items cannot be iterated and length cannot be queried
 #define MINSIZE 8
 #define MAXSIZE ((size_t)-1/2 + 1)
 
-struct entry {
+struct elem {
 	ENTRY item;
 	size_t hash;
 };
 
 static size_t mask;
 static size_t used;
-static struct entry *tab;
+static struct elem *tab;
 
 static size_t keyhash(char *k)
 {
@@ -37,9 +37,9 @@ static int resize(size_t nel)
 {
 	size_t newsize;
 	size_t i, j;
-	struct entry *e, *newe;
-	struct entry *oldtab = tab;
-	struct entry *oldend = tab + mask + 1;
+	struct elem *e, *newe;
+	struct elem *oldtab = tab;
+	struct elem *oldend = tab + mask + 1;
 
 	if (nel > MAXSIZE)
 		nel = MAXSIZE;
@@ -81,10 +81,10 @@ void hdestroy(void)
 	used = 0;
 }
 
-static struct entry *lookup(char *key, size_t hash)
+static struct elem *lookup(char *key, size_t hash)
 {
 	size_t i, j;
-	struct entry *e;
+	struct elem *e;
 
 	for (i=hash,j=1; ; i+=j++) {
 		e = tab + (i & mask);
@@ -98,7 +98,7 @@ static struct entry *lookup(char *key, size_t hash)
 ENTRY *hsearch(ENTRY item, ACTION action)
 {
 	size_t hash = keyhash(item.key);
-	struct entry *e = lookup(item.key, hash);
+	struct elem *e = lookup(item.key, hash);
 
 	if (e->item.key)
 		return &e->item;
