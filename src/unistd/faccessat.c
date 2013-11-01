@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/wait.h>
 #include "syscall.h"
 #include "pthread_impl.h"
 
@@ -32,6 +33,8 @@ int faccessat(int fd, const char *filename, int amode, int flag)
 
 	char stack[1024];
 	sigset_t set;
+	pid_t pid;
+	int status;
 	int ret, p[2];
 
 	if (pipe2(p, O_CLOEXEC)) return __syscall_ret(-EBUSY);
@@ -39,12 +42,13 @@ int faccessat(int fd, const char *filename, int amode, int flag)
 
 	__block_all_sigs(&set);
 	
-	ret = __clone(checker, stack+sizeof stack, 0, &c);
+	pid = __clone(checker, stack+sizeof stack, 0, &c);
 	__syscall(SYS_close, p[1]);
 
-	if (ret<0 || __syscall(SYS_read, p[0], &ret, sizeof ret) != sizeof(ret))
+	if (pid<0 || __syscall(SYS_read, p[0], &ret, sizeof ret) != sizeof(ret))
 		ret = -EBUSY;
 	__syscall(SYS_close, p[0]);
+	__syscall(SYS_wait4, pid, &status, __WCLONE, 0);
 
 	__restore_sigs(&set);
 
