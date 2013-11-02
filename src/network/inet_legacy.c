@@ -11,9 +11,9 @@ in_addr_t inet_network(const char *p)
 int inet_aton(const char *cp, struct in_addr *inp)
 {
 	struct sockaddr_in sin;
-	int r = __ipparse(&sin, AF_INET, cp);
+	if (__ipparse(&sin, AF_INET, cp) < 0) return 0;
 	*inp = sin.sin_addr;
-	return r;
+	return 1;
 }
 
 struct in_addr inet_makeaddr(int net, int host)

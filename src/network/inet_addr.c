@@ -6,6 +6,6 @@
 in_addr_t inet_addr(const char *p)
 {
 	struct sockaddr_in sin;
-	if (__ipparse(&sin, AF_INET, p)) return -1;
+	if (__ipparse(&sin, AF_INET, p) < 0) return -1;
 	return sin.sin_addr.s_addr;
 }
