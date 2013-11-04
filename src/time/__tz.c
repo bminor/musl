@@ -177,7 +177,7 @@ static void do_tzset()
 		int scale = 2;
 		if (sizeof(time_t) > 4 && map[4]=='2') {
 			size_t skip = zi_dotprod(zi+20, VEC(1,1,8,5,6,1), 6);
-			trans = zi+skip+44+20;
+			trans = zi+skip+44+44;
 			scale++;
 		} else {
 			trans = zi+44;
