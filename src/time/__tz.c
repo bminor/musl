@@ -162,7 +162,7 @@ static void do_tzset()
 					break;
 				memcpy(pathname, s, l+1);
 				pathname[l] = 0;
-				for (try=search; !map && *try; try+=l) {
+				for (try=search; !map && *try; try+=l+1) {
 					l = strlen(try);
 					memcpy(pathname-l, try, l);
 					map = __map_file(pathname-l, &map_size);
