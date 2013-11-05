@@ -10,7 +10,7 @@ int __dn_expand(const unsigned char *base, const unsigned char *end, const unsig
 	for (;;) {
 		if (*p & 0xc0) {
 			if (p+1==end) return -1;
-			j = (p[0]&1) | p[1];
+			j = ((p[0] & 0x3f) << 8) | p[1];
 			if (len < 0) len = p+2-src;
 			if (j >= end-base) return -1;
 			p = base+j;
