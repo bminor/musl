@@ -138,7 +138,7 @@ static void do_tzset()
 	 * free so as not to pull it into static programs. Growth
 	 * strategy makes it so free would have minimal benefit anyway. */
 	i = strlen(s);
-	if (i > PATH_MAX+1) s = "", i = 0;
+	if (i > PATH_MAX+1) s = __gmt, i = 3;
 	if (i >= old_tz_size) {
 		old_tz_size *= 2;
 		if (i >= old_tz_size) old_tz_size = i+1;
