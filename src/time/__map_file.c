@@ -9,7 +9,7 @@ const char unsigned *__map_file(const char *pathname, size_t *size)
 {
 	struct stat st;
 	const unsigned char *map = MAP_FAILED;
-	int flags = O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_NOFOLLOW|O_NONBLOCK;
+	int flags = O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_NONBLOCK;
 	int fd = __syscall(SYS_open, pathname, flags);
 	if (fd < 0) return 0;
 	if (!__syscall(SYS_fstat, fd, &st))
