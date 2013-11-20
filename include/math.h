@@ -349,7 +349,7 @@ long double truncl(long double);
 
 #if defined(_XOPEN_SOURCE) || defined(_BSD_SOURCE)
 #undef  MAXFLOAT
-#define MAXFLOAT        3.40282347e+38F
+#define MAXFLOAT        3.40282346638528859812e+38F
 #endif
 
 #if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
@@ -379,7 +379,7 @@ double      yn(int, double);
 #endif
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
-#define HUGE            3.40282347e+38F
+#define HUGE            3.40282346638528859812e+38F
 
 double      scalb(double, double);
 float       scalbf(float, float);
