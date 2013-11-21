@@ -381,6 +381,12 @@ double      yn(int, double);
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 #define HUGE            3.40282346638528859812e+38F
 
+double      drem(double, double);
+float       dremf(float, float);
+
+int         finite(double);
+int         finitef(float);
+
 double      scalb(double, double);
 float       scalbf(float, float);
 
