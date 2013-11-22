@@ -8,6 +8,7 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <errno.h>
+#include <fcntl.h>
 #include "pthread_impl.h"
 
 static char *getword(FILE *f)
@@ -88,7 +89,7 @@ static int do_wordexp(const char *s, wordexp_t *we, int flags)
 		we->we_offs = 0;
 	}
 
-	if (pipe(p) < 0) goto nospace;
+	if (pipe2(p, O_CLOEXEC) < 0) goto nospace;
 	__block_all_sigs(&set);
 	pid = fork();
 	__restore_sigs(&set);
@@ -98,9 +99,8 @@ static int do_wordexp(const char *s, wordexp_t *we, int flags)
 		goto nospace;
 	}
 	if (!pid) {
-		dup2(p[1], 1);
-		close(p[0]);
-		close(p[1]);
+		if (p[1] == 1) fcntl(1, F_SETFD, 0);
+		else dup2(p[1], 1);
 		execl("/bin/sh", "sh", "-c",
 			"eval \"printf %s\\\\\\\\0 x $1 $2\"",
 			"sh", s, redir, (char *)0);
