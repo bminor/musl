@@ -82,20 +82,20 @@ static int do_wordexp(const char *s, wordexp_t *we, int flags)
 	i = wc;
 	if (flags & WRDE_DOOFFS) {
 		if (we->we_offs > SIZE_MAX/sizeof(void *)/4)
-			return WRDE_NOSPACE;
+			goto nospace;
 		i += we->we_offs;
 	} else {
 		we->we_offs = 0;
 	}
 
-	if (pipe(p) < 0) return WRDE_NOSPACE;
+	if (pipe(p) < 0) goto nospace;
 	__block_all_sigs(&set);
 	pid = fork();
 	__restore_sigs(&set);
 	if (pid < 0) {
 		close(p[0]);
 		close(p[1]);
-		return WRDE_NOSPACE;
+		goto nospace;
 	}
 	if (!pid) {
 		dup2(p[1], 1);
@@ -113,7 +113,7 @@ static int do_wordexp(const char *s, wordexp_t *we, int flags)
 		close(p[0]);
 		kill(pid, SIGKILL);
 		waitpid(pid, &status, 0);
-		return WRDE_NOSPACE;
+		goto nospace;
 	}
 
 	l = wv ? i+1 : 0;
@@ -142,14 +142,24 @@ static int do_wordexp(const char *s, wordexp_t *we, int flags)
 	while ((waitpid(pid, &status, 0) < 0 && errno == EINTR)
 		|| !WIFEXITED(status));
 
+	if (!wv) wv = calloc(i+1, sizeof *wv);
+
 	we->we_wordv = wv;
 	we->we_wordc = i;
 
-	for (i=we->we_offs; i; i--)
-		we->we_wordv[i-1] = 0;
-
-	if (flags & WRDE_DOOFFS) we->we_wordc -= we->we_offs;
+	if (flags & WRDE_DOOFFS) {
+		if (wv) for (i=we->we_offs; i; i--)
+			we->we_wordv[i-1] = 0;
+		we->we_wordc -= we->we_offs;
+	}
 	return err;
+
+nospace:
+	if (!(flags & WRDE_APPEND)) {
+		we->we_wordc = 0;
+		we->we_wordv = 0;
+	}
+	return WRDE_NOSPACE;
 }
 
 int wordexp(const char *restrict s, wordexp_t *restrict we, int flags)
