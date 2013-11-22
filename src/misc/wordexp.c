@@ -7,7 +7,8 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <signal.h>
-#include <pthread.h>
+#include <errno.h>
+#include "pthread_impl.h"
 
 static char *getword(FILE *f)
 {
@@ -28,6 +29,7 @@ static int do_wordexp(const char *s, wordexp_t *we, int flags)
 	char **wv = 0;
 	int p[2];
 	pid_t pid;
+	sigset_t set;
 
 	if (flags & WRDE_REUSE) wordfree(we);
 
@@ -87,7 +89,9 @@ static int do_wordexp(const char *s, wordexp_t *we, int flags)
 	}
 
 	if (pipe(p) < 0) return WRDE_NOSPACE;
+	__block_all_sigs(&set);
 	pid = fork();
+	__restore_sigs(&set);
 	if (pid < 0) {
 		close(p[0]);
 		close(p[1]);
@@ -98,7 +102,7 @@ static int do_wordexp(const char *s, wordexp_t *we, int flags)
 		close(p[0]);
 		close(p[1]);
 		execl("/bin/sh", "sh", "-c",
-			"eval \"printf %s\\\\\\\\0 $1 $2\"",
+			"eval \"printf %s\\\\\\\\0 x $1 $2\"",
 			"sh", s, redir, (char *)0);
 		_exit(1);
 	}
@@ -114,6 +118,14 @@ static int do_wordexp(const char *s, wordexp_t *we, int flags)
 
 	l = wv ? i+1 : 0;
 
+	free(getword(f));
+	if (feof(f)) {
+		fclose(f);
+		while ((waitpid(pid, &status, 0) < 0 && errno == EINTR)
+			|| !WIFEXITED(status));
+		return WRDE_SYNTAX;
+	}
+
 	while ((w = getword(f))) {
 		if (i+1 >= l) {
 			l += l/2+10;
@@ -127,15 +139,8 @@ static int do_wordexp(const char *s, wordexp_t *we, int flags)
 	if (!feof(f)) err = WRDE_NOSPACE;
 
 	fclose(f);
-	waitpid(pid, &status, 0);
-	if (WEXITSTATUS(status)) {
-		if (!(flags & WRDE_APPEND)) {
-			free(wv);
-			return WRDE_SYNTAX;
-		} else if (wv==we->we_wordv) {
-			return WRDE_SYNTAX;
-		}
-	}
+	while ((waitpid(pid, &status, 0) < 0 && errno == EINTR)
+		|| !WIFEXITED(status));
 
 	we->we_wordv = wv;
 	we->we_wordc = i;
