@@ -11,6 +11,18 @@
 #include <fcntl.h>
 #include "pthread_impl.h"
 
+static void reap(pid_t pid)
+{
+	int status;
+	for (;;) {
+		if (waitpid(pid, &status, 0) < 0) {
+			if (errno != EINTR) return;
+		} else {
+			if (WIFEXITED(status)) return;
+		}
+	}
+}
+
 static char *getword(FILE *f)
 {
 	char *s = 0;
@@ -24,7 +36,7 @@ static int do_wordexp(const char *s, wordexp_t *we, int flags)
 	size_t np=0;
 	char *w, **tmp;
 	char *redir = (flags & WRDE_SHOWERR) ? "" : "2>/dev/null";
-	int err = 0, status;
+	int err = 0;
 	FILE *f;
 	size_t wc = 0;
 	char **wv = 0;
@@ -112,7 +124,7 @@ static int do_wordexp(const char *s, wordexp_t *we, int flags)
 	if (!f) {
 		close(p[0]);
 		kill(pid, SIGKILL);
-		waitpid(pid, &status, 0);
+		reap(pid);
 		goto nospace;
 	}
 
@@ -121,8 +133,7 @@ static int do_wordexp(const char *s, wordexp_t *we, int flags)
 	free(getword(f));
 	if (feof(f)) {
 		fclose(f);
-		while ((waitpid(pid, &status, 0) < 0 && errno == EINTR)
-			|| !WIFEXITED(status));
+		reap(pid);
 		return WRDE_SYNTAX;
 	}
 
@@ -139,8 +150,7 @@ static int do_wordexp(const char *s, wordexp_t *we, int flags)
 	if (!feof(f)) err = WRDE_NOSPACE;
 
 	fclose(f);
-	while ((waitpid(pid, &status, 0) < 0 && errno == EINTR)
-		|| !WIFEXITED(status));
+	reap(pid);
 
 	if (!wv) wv = calloc(i+1, sizeof *wv);
 
