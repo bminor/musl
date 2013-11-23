@@ -26,6 +26,7 @@
 #define TCP_REPAIR_OPTIONS 22
 #define TCP_FASTOPEN     23
 #define TCP_TIMESTAMP    24
+#define TCP_NOTSENT_LOWAT 25
 
 #define TCP_ESTABLISHED  1
 #define TCP_SYN_SENT     2
