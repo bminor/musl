@@ -82,7 +82,7 @@ typedef struct {
 	{ "emerg", LOG_EMERG }, { "err", LOG_ERR }, { "error", LOG_ERR }, \
 	{ "info", LOG_INFO }, { "none", INTERNAL_NOPRI }, \
 	{ "notice", LOG_NOTICE }, { "panic", LOG_EMERG }, \
-	{ "warn", LOG_WARNING }, { "warning", LOG_WARNING }, { NULL, -1 } })
+	{ "warn", LOG_WARNING }, { "warning", LOG_WARNING }, { 0, -1 } })
 #define facilitynames ((CODE *)(const struct __CODE []){ \
 	{ "auth", LOG_AUTH }, { "authpriv", LOG_AUTHPRIV }, \
 	{ "cron", LOG_CRON }, { "daemon", LOG_DAEMON }, { "ftp", LOG_FTP }, \
@@ -93,7 +93,7 @@ typedef struct {
 	{ "local0", LOG_LOCAL0 }, { "local1", LOG_LOCAL1 }, \
 	{ "local2", LOG_LOCAL2 }, { "local3", LOG_LOCAL3 }, \
 	{ "local4", LOG_LOCAL4 }, { "local5", LOG_LOCAL5 }, \
-	{ "local6", LOG_LOCAL6 }, { "local7", LOG_LOCAL7 }, { NULL, -1 } })
+	{ "local6", LOG_LOCAL6 }, { "local7", LOG_LOCAL7 }, { 0, -1 } })
 #endif
 #endif
 
