@@ -34,42 +34,32 @@ pio2_1t = 1.58932547735281966916e-08; /* 0x3E5110b4, 0x611A6263 */
 
 int __rem_pio2f(float x, double *y)
 {
-	double w,r,fn;
-	double tx[1],ty[1];
-	float z;
-	int32_t e0,n,ix,hx;
+	union {float f; uint32_t i;} u = {x};
+	double tx[1],ty[1],fn;
+	uint32_t ix;
+	int n, sign, e0;
 
-	GET_FLOAT_WORD(hx, x);
-	ix = hx & 0x7fffffff;
+	ix = u.i & 0x7fffffff;
 	/* 25+53 bit pi is good enough for medium size */
 	if (ix < 0x4dc90fdb) {  /* |x| ~< 2^28*(pi/2), medium size */
 		/* Use a specialized rint() to get fn.  Assume round-to-nearest. */
 		fn = x*invpio2 + 0x1.8p52;
 		fn = fn - 0x1.8p52;
-// FIXME
-#ifdef HAVE_EFFICIENT_IRINT
-		n  = irint(fn);
-#else
 		n  = (int32_t)fn;
-#endif
-		r  = x - fn*pio2_1;
-		w  = fn*pio2_1t;
-		*y = r - w;
+		*y = x - fn*pio2_1 - fn*pio2_1t;
 		return n;
 	}
-	/*
-	 * all other (large) arguments
-	 */
 	if(ix>=0x7f800000) {  /* x is inf or NaN */
 		*y = x-x;
 		return 0;
 	}
-	/* set z = scalbn(|x|,ilogb(|x|)-23) */
-	e0 = (ix>>23) - 150;  /* e0 = ilogb(|x|)-23; */
-	SET_FLOAT_WORD(z, ix - ((int32_t)(e0<<23)));
-	tx[0] = z;
+	/* scale x into [2^23, 2^24-1] */
+	sign = u.i>>31;
+	e0 = (ix>>23) - (0x7f+23);  /* e0 = ilogb(|x|)-23, positive */
+	u.i = ix - (e0<<23);
+	tx[0] = u.f;
 	n  =  __rem_pio2_large(tx,ty,e0,1,0);
-	if (hx < 0) {
+	if (sign) {
 		*y = -ty[0];
 		return -n;
 	}
