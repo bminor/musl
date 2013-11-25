@@ -7,7 +7,12 @@ extern "C" {
 
 #include <features.h>
 
+#ifdef __cplusplus
 #define NULL 0L
+#else
+#define NULL ((void*)0)
+#endif
+
 
 #define __NEED_size_t
 #define __NEED_time_t
