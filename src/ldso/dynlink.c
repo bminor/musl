@@ -7,12 +7,9 @@
 #include <elf.h>
 #include <sys/mman.h>
 #include <limits.h>
-#include <stdint.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <errno.h>
-#include <limits.h>
-#include <elf.h>
 #include <link.h>
 #include <setjmp.h>
 #include <pthread.h>

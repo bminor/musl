@@ -31,9 +31,6 @@ static int have_af(int family)
 }
 #endif
 
-#include <stdlib.h>
-#include <netdb.h>
-
 union sa {
 	struct sockaddr_in sin;
 	struct sockaddr_in6 sin6;
