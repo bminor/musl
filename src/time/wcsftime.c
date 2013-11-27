@@ -16,7 +16,7 @@ size_t __wcsftime_l(wchar_t *restrict s, size_t n, const wchar_t *restrict f, co
 	const wchar_t *t;
 	int plus;
 	unsigned long width;
-	for (l=0; l+1<n; f++) {
+	for (l=0; l<n; f++) {
 		if (!*f) {
 			s[l] = 0;
 			return l;
@@ -30,14 +30,13 @@ size_t __wcsftime_l(wchar_t *restrict s, size_t n, const wchar_t *restrict f, co
 		width = wcstoul(f, &p, 10);
 		if (*p == 'C' || *p == 'F' || *p == 'G' || *p == 'Y') {
 			if (!width && p!=f) width = 1;
-			if (width >= n-l) return 0;
 		} else {
 			width = 0;
 		}
 		f = p;
 		if (*f == 'E' || *f == 'O') f++;
 		t_mb = __strftime_fmt_1(&buf, &k, *f, tm, loc);
-		if (!t_mb) return 0;
+		if (!t_mb) break;
 		k = mbstowcs(wbuf, t_mb, sizeof wbuf / sizeof *wbuf);
 		if (k == (size_t)-1) return 0;
 		t = wbuf;
@@ -50,13 +49,16 @@ size_t __wcsftime_l(wchar_t *restrict s, size_t n, const wchar_t *restrict f, co
 				s[l++] = '-';
 			else
 				width++;
-			if (width >= n-l) return 0;
-			for (; width > k; width--)
+			for (; width > k && l < n; width--)
 				s[l++] = '0';
 		}
-		if (k >= n-l) return 0;
+		if (k >= n-l) k = n-l;
 		wmemcpy(s+l, t, k);
 		l += k;
+	}
+	if (n) {
+		if (l==n) l=n-1;
+		s[l] = 0;
 	}
 	return 0;
 }

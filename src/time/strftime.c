@@ -216,7 +216,7 @@ size_t __strftime_l(char *restrict s, size_t n, const char *restrict f, const st
 	const char *t;
 	int plus;
 	unsigned long width;
-	for (l=0; l+1<n; f++) {
+	for (l=0; l<n; f++) {
 		if (!*f) {
 			s[l] = 0;
 			return l;
@@ -230,14 +230,13 @@ size_t __strftime_l(char *restrict s, size_t n, const char *restrict f, const st
 		width = strtoul(f, &p, 10);
 		if (*p == 'C' || *p == 'F' || *p == 'G' || *p == 'Y') {
 			if (!width && p!=f) width = 1;
-			if (width >= n-l) return 0;
 		} else {
 			width = 0;
 		}
 		f = p;
 		if (*f == 'E' || *f == 'O') f++;
 		t = __strftime_fmt_1(&buf, &k, *f, tm, loc);
-		if (!t) return 0;
+		if (!t) break;
 		if (width) {
 			for (; *t=='+' || *t=='-' || (*t=='0'&&t[1]); t++, k--);
 			width--;
@@ -247,13 +246,16 @@ size_t __strftime_l(char *restrict s, size_t n, const char *restrict f, const st
 				s[l++] = '-';
 			else
 				width++;
-			if (width >= n-l) return 0;
-			for (; width > k; width--)
+			for (; width > k && l < n; width--)
 				s[l++] = '0';
 		}
-		if (k >= n-l) return 0;
+		if (k > n-l) k = n-l;
 		memcpy(s+l, t, k);
 		l += k;
+	}
+	if (n) {
+		if (l==n) l=n-1;
+		s[l] = 0;
 	}
 	return 0;
 }
