@@ -16,7 +16,7 @@ extern "C" {
 #define INFINITY  __builtin_inff()
 #else
 #define NAN       (0.0f/0.0f)
-#define INFINITY  1e40f
+#define INFINITY  1e5000f
 #endif
 
 #define HUGE_VALF INFINITY
