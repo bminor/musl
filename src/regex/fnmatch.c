@@ -288,10 +288,10 @@ int fnmatch(const char *pat, const char *str, int flags)
 	if (flags & FNM_PATHNAME) for (;;) {
 		for (s=str; *s && *s!='/'; s++);
 		for (p=pat; (c=pat_next(p, -1, &inc, flags))!=END && c!='/'; p+=inc);
-		if (*s && *p!=*s) return FNM_NOMATCH;
+		if (*p!=*s) return FNM_NOMATCH;
 		if (fnmatch_internal(pat, p-pat, str, s-str, flags))
 			return FNM_NOMATCH;
-		if (!*s && c==END) return 0;
+		if (!*s) return 0;
 		str = s+1;
 		pat = p+1;
 	}
