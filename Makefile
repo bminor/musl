@@ -20,6 +20,7 @@ SRCS = $(sort $(wildcard src/*/*.c arch/$(ARCH)/src/*.c))
 OBJS = $(SRCS:.c=.o)
 LOBJS = $(OBJS:.o=.lo)
 GENH = include/bits/alltypes.h
+GENH_INT = src/internal/version.h
 IMPH = src/internal/stdio_impl.h src/internal/pthread_impl.h src/internal/libc.h
 
 LDFLAGS = 
@@ -64,7 +65,7 @@ clean:
 	rm -f $(LOBJS)
 	rm -f $(ALL_LIBS) lib/*.[ao] lib/*.so
 	rm -f $(ALL_TOOLS)
-	rm -f $(GENH) 
+	rm -f $(GENH) $(GENH_INT)
 	rm -f include/bits
 
 distclean: clean
@@ -78,6 +79,11 @@ include/bits/alltypes.h.in: include/bits
 
 include/bits/alltypes.h: include/bits/alltypes.h.in include/alltypes.h.in tools/mkalltypes.sed
 	sed -f tools/mkalltypes.sed include/bits/alltypes.h.in include/alltypes.h.in > $@
+
+src/internal/version.h: $(wildcard VERSION .git .git/*)
+	printf '#define VERSION "%s"\n' "$$(sh tools/version.sh)" > $@
+
+src/internal/version.lo: src/internal/version.h
 
 src/ldso/dynlink.lo: arch/$(ARCH)/reloc.h
 

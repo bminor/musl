@@ -93,6 +93,8 @@ void __init_ssp(size_t *);
 void *__install_initial_tls(void *);
 void __init_libc(char **, char *);
 
+const char *__libc_get_version(void);
+
 static struct dso *head, *tail, *ldso, *fini_head;
 static char *env_path, *sys_path;
 static unsigned long long gencnt;
@@ -1040,8 +1042,11 @@ void *__dynlink(int argc, char **argv)
 		*argv++ = (void *)-1;
 		if (argv[0] && !strcmp(argv[0], "--")) *argv++ = (void *)-1;
 		if (!argv[0]) {
-			dprintf(2, "musl libc/dynamic program loader\n");
-			dprintf(2, "usage: %s pathname%s\n", ldname,
+			dprintf(2, "musl libc\n"
+				"Version %s\n"
+				"Dynamic Program Loader\n"
+				"Usage: %s [--] pathname%s\n",
+				__libc_get_version(), ldname,
 				ldd_mode ? "" : " [args]");
 			_exit(1);
 		}
