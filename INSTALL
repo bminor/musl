@@ -20,7 +20,7 @@ weak aliases, and stand-alone assembly source files.
 The system used to build musl does not need to be Linux-based, nor do
 the Linux kernel headers need to be available.
 
-If support for dynamic linking is desired, some further requriements
+If support for dynamic linking is desired, some further requirements
 are placed on the compiler and linker. In particular, the linker must
 support the -Bsymbolic-functions option.
 
@@ -129,7 +129,7 @@ source/build tree.
 ==== Option 2: Installing musl as the primary C library ====
 
 In this setup, you will need an existing compiler/toolchain. It
-shouldnt matter whether it was configured for glibc, uClibc, musl, or
+shouldn't matter whether it was configured for glibc, uClibc, musl, or
 something else entirely, but sometimes gcc can be uncooperative,
 especially if the system distributor has built gcc with strange
 options. It probably makes the most sense to perform the following
