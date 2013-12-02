@@ -288,12 +288,19 @@ int fnmatch(const char *pat, const char *str, int flags)
 	if (flags & FNM_PATHNAME) for (;;) {
 		for (s=str; *s && *s!='/'; s++);
 		for (p=pat; (c=pat_next(p, -1, &inc, flags))!=END && c!='/'; p+=inc);
-		if (c!=*s) return FNM_NOMATCH;
+		if (c!=*s && (!*s || !(flags & FNM_LEADING_DIR)))
+			return FNM_NOMATCH;
 		if (fnmatch_internal(pat, p-pat, str, s-str, flags))
 			return FNM_NOMATCH;
-		if (!*s) return 0;
+		if (!c) return 0;
 		str = s+1;
 		pat = p+inc;
+	} else if (flags & FNM_LEADING_DIR) {
+		for (s=str; *s; s++) {
+			if (*s != '/') continue;
+			if (!fnmatch_internal(pat, -1, str, s-str, flags))
+				return 0;
+		}
 	}
 	return fnmatch_internal(pat, -1, str, -1, flags);
 }
