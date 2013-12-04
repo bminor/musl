@@ -33,7 +33,7 @@ struct linger
 };
 
 #define SHUT_RD 0
-#define SHUT_WD 1
+#define SHUT_WR 1
 #define SHUT_RDWR 2
 
 #ifndef SOCK_STREAM
@@ -289,10 +289,6 @@ int getsockopt (int, int, int, void *__restrict, socklen_t *__restrict);
 int setsockopt (int, int, int, const void *, socklen_t);
 
 int sockatmark (int);
-
-#define SHUT_RD 0
-#define SHUT_WR 1
-#define SHUT_RDWR 2
 
 #ifdef __cplusplus
 }
