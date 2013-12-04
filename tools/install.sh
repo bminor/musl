@@ -53,7 +53,7 @@ else
 cat < "$1" > "$tmp"
 fi
 
-mv "$tmp" "$2"
+mv -f "$tmp" "$2"
 test -d "$2" && {
 rm -f "$2/$tmp"
 printf "%s: %s is a directory\n" "$0" "$dst" 1>&2
