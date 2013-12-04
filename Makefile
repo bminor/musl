@@ -80,7 +80,7 @@ include/bits/alltypes.h.in: include/bits
 include/bits/alltypes.h: include/bits/alltypes.h.in include/alltypes.h.in tools/mkalltypes.sed
 	sed -f tools/mkalltypes.sed include/bits/alltypes.h.in include/alltypes.h.in > $@
 
-src/internal/version.h: $(wildcard VERSION .git .git/*)
+src/internal/version.h: $(wildcard VERSION .git)
 	printf '#define VERSION "%s"\n' "$$(sh tools/version.sh)" > $@
 
 src/internal/version.lo: src/internal/version.h
