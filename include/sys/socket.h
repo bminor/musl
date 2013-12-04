@@ -19,12 +19,14 @@ extern "C" {
 
 #include <bits/socket.h>
 
+#ifdef _GNU_SOURCE
 struct ucred
 {
 	pid_t pid;
 	uid_t uid;
 	gid_t gid;
 };
+#endif
 
 struct linger
 {
