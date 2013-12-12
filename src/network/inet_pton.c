@@ -1,5 +1,4 @@
 #include <sys/socket.h>
-#include <netdb.h>
 #include <arpa/inet.h>
 #include <ctype.h>
 #include <errno.h>
@@ -46,7 +45,7 @@ int inet_pton(int af, const char *restrict s, void *restrict a0)
 		}
 		for (v=j=0; j<4 && (d=hexval(s[j]))>=0; j++)
 			v=16*v+d;
-		if (j==0 || v > 65535) return 0;
+		if (j==0) return 0;
 		ip[i] = v;
 		if (!s[j] && (brk>=0 || i==7)) break;
 		if (i==7) return 0;
