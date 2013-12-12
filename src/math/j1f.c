@@ -13,6 +13,7 @@
  * ====================================================
  */
 
+#define _GNU_SOURCE
 #include "libm.h"
 
 static float ponef(float), qonef(float);
