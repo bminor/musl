@@ -11,6 +11,7 @@
 #include <arpa/inet.h> /* inet_pton */
 #include <unistd.h>
 #include <sys/ioctl.h>
+#include <sys/socket.h>
 
 typedef union {
 	struct sockaddr_in6 v6;

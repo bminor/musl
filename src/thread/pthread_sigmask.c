@@ -1,6 +1,5 @@
 #include <signal.h>
 #include <errno.h>
-#include <pthread.h>
 #include "syscall.h"
 
 int pthread_sigmask(int how, const sigset_t *restrict set, sigset_t *restrict old)

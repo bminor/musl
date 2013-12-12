@@ -1,3 +1,4 @@
+#include <wchar.h>
 #include "stdio_impl.h"
 
 #define SH (8*sizeof(int)-1)

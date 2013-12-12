@@ -1,5 +1,4 @@
 #include <signal.h>
-#include <stdlib.h>
 
 int sigpause(int sig)
 {

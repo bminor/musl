@@ -1,6 +1,4 @@
 #include <netdb.h>
-#include <stdio.h>
-#include <string.h>
 
 void endservent(void)
 {

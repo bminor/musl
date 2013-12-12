@@ -1,7 +1,5 @@
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
-#include <stdio.h>
 
 extern char **__environ;
 char **__env_map;

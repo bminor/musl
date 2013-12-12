@@ -1,5 +1,4 @@
 #include <string.h>
-#include <stdlib.h>
 #include <stdint.h>
 
 static char *twobyte_strstr(const unsigned char *h, const unsigned char *n)

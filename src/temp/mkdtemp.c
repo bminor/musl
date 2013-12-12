@@ -1,12 +1,7 @@
 #include <string.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <limits.h>
 #include <errno.h>
 #include <sys/stat.h>
-#include "libc.h"
 
 char *__randname(char *);
 

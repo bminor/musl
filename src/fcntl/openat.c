@@ -1,5 +1,4 @@
 #include <fcntl.h>
-#include <unistd.h>
 #include <stdarg.h>
 #include "syscall.h"
 #include "libc.h"

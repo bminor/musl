@@ -1,8 +1,6 @@
 #define _GNU_SOURCE
 
 #include <netdb.h>
-#include <string.h>
-#include <netinet/in.h>
 #include <errno.h>
 #include <stdlib.h>
 

@@ -1,5 +1,4 @@
 #include <signal.h>
-#include <errno.h>
 
 int sigismember(const sigset_t *set, int sig)
 {

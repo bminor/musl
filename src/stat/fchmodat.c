@@ -1,7 +1,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <stdio.h>
 #include "syscall.h"
 
 void __procfdname(char *, unsigned);

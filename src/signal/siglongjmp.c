@@ -1,6 +1,5 @@
 #include <setjmp.h>
 #include <signal.h>
-#include <stdlib.h>
 #include "syscall.h"
 #include "pthread_impl.h"
 

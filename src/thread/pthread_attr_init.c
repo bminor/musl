@@ -1,5 +1,4 @@
 #include "pthread_impl.h"
-#include <string.h>
 
 int pthread_attr_init(pthread_attr_t *a)
 {

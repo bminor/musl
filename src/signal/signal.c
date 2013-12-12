@@ -1,5 +1,4 @@
 #include <signal.h>
-#include <stddef.h>
 #include "syscall.h"
 #include "libc.h"
 

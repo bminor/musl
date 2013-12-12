@@ -1,7 +1,6 @@
 #include <stdarg.h>
 #include <sys/socket.h>
 #include <stdio.h>
-#include <fcntl.h>
 #include <unistd.h>
 #include <syslog.h>
 #include <time.h>

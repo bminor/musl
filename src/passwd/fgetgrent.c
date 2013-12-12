@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include "pwf.h"
 
 struct group *fgetgrent(FILE *f)

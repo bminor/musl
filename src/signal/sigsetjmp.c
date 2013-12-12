@@ -1,6 +1,5 @@
 #include <setjmp.h>
 #include <signal.h>
-#include <stdlib.h>
 
 /* !!! This function will not work unless the compiler performs
  * tail call optimization. Machine-specific asm versions should

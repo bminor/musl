@@ -1,4 +1,3 @@
-#include <stddef.h>
 #include <elf.h>
 #include <poll.h>
 #include <fcntl.h>

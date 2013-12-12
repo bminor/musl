@@ -6,8 +6,6 @@
 #include <errno.h>
 #include "syscall.h"
 
-#include <stdio.h>
-
 static void *do_nameindex(int s, size_t n)
 {
 	size_t i, len, k;

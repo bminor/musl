@@ -1,11 +1,5 @@
 #include <dirent.h>
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <limits.h>
 #include "__dirent.h"
-#include "syscall.h"
 #include "libc.h"
 
 int __getdents(int, struct dirent *, size_t);

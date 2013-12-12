@@ -1,6 +1,5 @@
 #include <string.h>
-#include <inttypes.h>
-#include <elf.h>
+#include <stdint.h>
 #include "pthread_impl.h"
 #include "atomic.h"
 

@@ -1,6 +1,5 @@
 #include <wchar.h>
 #include <time.h>
-#include <string.h>
 #include <locale.h>
 #include "libc.h"
 

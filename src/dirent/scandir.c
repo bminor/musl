@@ -1,10 +1,10 @@
 #include <dirent.h>
 #include <string.h>
 #include <stdlib.h>
-#include <inttypes.h>
+#include <stdint.h>
 #include <errno.h>
 #include <stddef.h>
-#include <libc.h>
+#include "libc.h"
 
 int scandir(const char *path, struct dirent ***res,
 	int (*sel)(const struct dirent *),

@@ -1,5 +1,4 @@
 #include <errno.h>
-#include <unistd.h>
 
 long __syscall_ret(unsigned long r)
 {

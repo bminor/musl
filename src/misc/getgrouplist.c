@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <grp.h>
 #include <string.h>
 #include <limits.h>

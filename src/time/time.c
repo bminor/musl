@@ -1,5 +1,4 @@
 #include <time.h>
-#include <sys/time.h>
 #include "syscall.h"
 
 int __clock_gettime(clockid_t, struct timespec *);

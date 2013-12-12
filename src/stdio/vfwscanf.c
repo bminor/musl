@@ -6,9 +6,6 @@
 #include <wctype.h>
 #include <limits.h>
 #include <string.h>
-#include <errno.h>
-#include <math.h>
-#include <float.h>
 
 #include "stdio_impl.h"
 #include "shgetc.h"

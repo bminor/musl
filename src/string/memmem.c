@@ -1,6 +1,5 @@
 #define _GNU_SOURCE
 #include <string.h>
-#include <stdlib.h>
 #include <stdint.h>
 
 static char *twobyte_memmem(const unsigned char *h, size_t k, const unsigned char *n)

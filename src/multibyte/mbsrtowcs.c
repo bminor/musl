@@ -4,11 +4,9 @@
  * unnecessary.
  */
 
-#include <stdlib.h>
-#include <inttypes.h>
+#include <stdint.h>
 #include <wchar.h>
 #include <errno.h>
-
 #include "internal.h"
 
 size_t mbsrtowcs(wchar_t *restrict ws, const char **restrict src, size_t wn, mbstate_t *restrict st)

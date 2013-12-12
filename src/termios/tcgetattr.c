@@ -1,6 +1,5 @@
 #include <termios.h>
 #include <sys/ioctl.h>
-#include <string.h>
 
 int tcgetattr(int fd, struct termios *tio)
 {

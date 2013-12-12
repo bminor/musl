@@ -1,7 +1,5 @@
 #include "time_impl.h"
 #include <errno.h>
-#include <stdlib.h>
-#include <string.h>
 
 time_t mktime(struct tm *tm)
 {

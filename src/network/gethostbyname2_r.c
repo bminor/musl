@@ -5,7 +5,7 @@
 #include <string.h>
 #include <netinet/in.h>
 #include <errno.h>
-#include <inttypes.h>
+#include <stdint.h>
 
 int gethostbyname2_r(const char *name, int af,
 	struct hostent *h, char *buf, size_t buflen,

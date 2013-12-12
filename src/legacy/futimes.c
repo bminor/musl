@@ -1,6 +1,6 @@
+#define _GNU_SOURCE
 #include <sys/stat.h>
 #include <sys/time.h>
-#include <fcntl.h>
 
 int futimes(int fd, const struct timeval tv[2])
 {

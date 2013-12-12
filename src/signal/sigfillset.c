@@ -1,5 +1,4 @@
 #include <signal.h>
-#include <string.h>
 #include <limits.h>
 
 int sigfillset(sigset_t *set)

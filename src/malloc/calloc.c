@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <errno.h>
-#include <string.h>
 
 void *calloc(size_t m, size_t n)
 {

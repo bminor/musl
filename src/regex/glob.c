@@ -7,8 +7,6 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <stddef.h>
-#include <unistd.h>
-#include <stdio.h>
 #include "libc.h"
 
 struct match

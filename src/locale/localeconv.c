@@ -1,6 +1,4 @@
 #include <locale.h>
-#include <string.h>
-#include <stdlib.h>
 
 static const struct lconv posix_lconv = {
 	.decimal_point = ".",

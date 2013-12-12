@@ -30,7 +30,6 @@
 */
 
 #include <string.h>
-#include <errno.h>
 #include <stdlib.h>
 #include <regex.h>
 #include <limits.h>

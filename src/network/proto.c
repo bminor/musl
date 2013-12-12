@@ -1,5 +1,4 @@
 #include <netdb.h>
-#include <stdio.h>
 #include <string.h>
 
 /* do we really need all these?? */

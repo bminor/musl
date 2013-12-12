@@ -1,6 +1,5 @@
 #include <unistd.h>
 #include <sys/utsname.h>
-#include <string.h>
 
 int gethostname(char *name, size_t len)
 {

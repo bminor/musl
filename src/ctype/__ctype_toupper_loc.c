@@ -1,5 +1,4 @@
-#include <ctype.h>
-#include <inttypes.h>
+#include <stdint.h>
 
 static const int32_t table[] = {
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,

@@ -1,4 +1,4 @@
-#include <unistd.h>
+#include <sys/fsuid.h>
 #include "syscall.h"
 #include "libc.h"
 

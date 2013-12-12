@@ -1,6 +1,5 @@
+#include <sys/sysinfo.h>
 #include "syscall.h"
-
-struct sysinfo;
 
 int sysinfo(struct sysinfo *info)
 {

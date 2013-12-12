@@ -1,5 +1,5 @@
 #include <signal.h>
-#include <stdlib.h>
+#include <stddef.h>
 
 void (*sigset(int sig, void (*handler)(int)))(int)
 {

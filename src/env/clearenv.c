@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <stdlib.h>
 
 extern char **__environ;

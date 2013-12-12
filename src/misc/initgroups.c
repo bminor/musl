@@ -1,10 +1,6 @@
-#include <sys/types.h>
-#include <unistd.h>
+#define _GNU_SOURCE
 #include <grp.h>
 #include <limits.h>
-
-int getgrouplist(const char *, gid_t, gid_t *, int *);
-int setgroups(size_t, const gid_t *);
 
 int initgroups(const char *user, gid_t gid)
 {

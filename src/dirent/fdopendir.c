@@ -3,8 +3,6 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <limits.h>
 #include "__dirent.h"
 
 DIR *fdopendir(int fd)

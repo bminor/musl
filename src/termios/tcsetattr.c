@@ -1,6 +1,5 @@
 #include <termios.h>
 #include <sys/ioctl.h>
-#include <string.h>
 #include <errno.h>
 
 int tcsetattr(int fd, int act, const struct termios *tio)
