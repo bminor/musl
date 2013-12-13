@@ -1,5 +1,4 @@
 #include <signal.h>
-#include <stddef.h>
 
 int sighold(int sig)
 {
@@ -7,5 +6,5 @@ int sighold(int sig)
 
 	sigemptyset(&mask);
 	if (sigaddset(&mask, sig) < 0) return -1;
-	return sigprocmask(SIG_BLOCK, &mask, NULL);
+	return sigprocmask(SIG_BLOCK, &mask, 0);
 }

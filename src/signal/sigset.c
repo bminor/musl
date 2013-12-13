@@ -1,5 +1,4 @@
 #include <signal.h>
-#include <stddef.h>
 
 void (*sigset(int sig, void (*handler)(int)))(int)
 {
@@ -11,7 +10,7 @@ void (*sigset(int sig, void (*handler)(int)))(int)
 		return SIG_ERR;
 	
 	if (handler == SIG_HOLD) {
-		if (sigaction(sig, NULL, &sa_old) < 0)
+		if (sigaction(sig, 0, &sa_old) < 0)
 			return SIG_ERR;
 		if (sigprocmask(SIG_BLOCK, &mask, &mask) < 0)
 			return SIG_ERR;

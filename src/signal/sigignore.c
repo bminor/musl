@@ -1,5 +1,4 @@
 #include <signal.h>
-#include <stddef.h>
 
 int sigignore(int sig)
 {
@@ -8,5 +7,5 @@ int sigignore(int sig)
 	sigemptyset(&sa.sa_mask);
 	sa.sa_handler = SIG_IGN;
 	sa.sa_flags = 0;
-	return sigaction(sig, &sa, NULL);
+	return sigaction(sig, &sa, 0);
 }
