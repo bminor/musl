@@ -9,11 +9,12 @@ _start:
 	addi    r7, r7, _GLOBAL_OFFSET_TABLE_+8
 	addi    r7, r7, _DYNAMIC@GOTOFF
 	brlid   r15, __reloc_self@PLT
-	nop
+	addik   r1, r1, -16
 
-	lwi     r5, r1, 0
+	lwi     r5, r1, 16
 	brlid   r15, __dynlink@PLT
-	addi    r6, r1, 4
+	addi    r6, r1, 20
+	addik   r1, r1, 16
 
 	lwi     r4, r1, 0
 1:	lwi     r5, r1, 4
