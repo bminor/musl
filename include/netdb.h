@@ -134,6 +134,7 @@ int *__h_errno_location(void);
 #endif
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+void herror(const char *);
 const char *hstrerror(int);
 int gethostbyname_r(const char *, struct hostent *, char *, size_t, struct hostent **, int *);
 int gethostbyname2_r(const char *, int, struct hostent *, char *, size_t, struct hostent **, int *);
