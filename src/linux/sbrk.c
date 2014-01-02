@@ -1,9 +1,9 @@
 #include <stdint.h>
+#include <errno.h>
 #include "syscall.h"
 
 void *sbrk(intptr_t inc)
 {
-	unsigned long cur = syscall(SYS_brk, 0);
-	if (inc && syscall(SYS_brk, cur+inc) != cur+inc) return (void *)-1;
-	return (void *)cur;
+	if (inc) return (void *)__syscall_ret(-ENOMEM);
+	return (void *)__syscall(SYS_brk, 0);
 }
