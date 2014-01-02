@@ -1,6 +1,7 @@
+#include <errno.h>
 #include "syscall.h"
 
 int brk(void *end)
 {
-	return -(syscall(SYS_brk, end) != (unsigned long)end);
+	return __syscall_ret(-ENOMEM);
 }
