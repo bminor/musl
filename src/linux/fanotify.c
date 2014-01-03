@@ -1,5 +1,5 @@
 #include "syscall.h"
-#include <sys/inotify.h>
+#include <sys/fanotify.h>
 
 int fanotify_init(unsigned flags, unsigned event_f_flags)
 {
