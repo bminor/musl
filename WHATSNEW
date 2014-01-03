@@ -1082,3 +1082,63 @@ other improvements:
 - wait.h as a compatibility alias for sys/wait.h
 - various header improvements
 - support for runtime-variable page size on archs that need it (mainly mips)
+
+
+
+0.9.15 release notes
+
+new features:
+- support for mixing IPv4 and v6 nameserver addresses in resolv.conf
+- RFC 3678 multicast structures/macros in netinet/in.h
+- putspent and fgetspent functions (shadow password API)
+- timef function (obsolete, removed in POSIX 2008)
+- fanotify syscalls (Linux-specific feature)
+- semtimedop syscall (Linux-specific sysvipc extension)
+- quotactl syscall and header (filesystem quotas support)
+- drem and finite functions (obsolete BSD functions)
+- getloadavg function (non-standard)
+- herror function (non-standard and obsolete)
+- libc.so now stores and prints its version information
+- expose constants for new Linux features including O_TMPFILE
+- implement FNM_LEADING_DIR option to fnmatch (GNU extension)
+- posix_close function (accepted for inclusion in next POSIX issue)
+
+bugs fixed:
+- buffer overflow in mbsrtowcs
+- clobbering of gr_name in getgrnam_r and getgrgid_r
+- execle ignoring the environment argument
+- setenv crash on malloc failure
+- out-of-bounds access in fnmatch with FNM_PATHNAME and certain patterns
+- failure of malloc to set errno when failing to extend heap
+- incorrect errno value from getcwd with zero size
+- spurious failure in faccessat with AT_EACCESS flag with suid/sgid programs
+- several fd leaks due to missing close-on-exec flag
+- misspellings/typos in macro names in several headers
+- incorrect failure return value in inet_pton
+- various numeric ip address parsing and validation fixes
+- namespace conformance issues in several headers
+- minor header issues
+- zombie processes left by faccessat with AT_EACCESS
+- timezone file parser failing/crashing on 64-bit archs
+- hang in localtime with near-overflowing time_t values on 64-bit archs
+- timezone path search was only trying first path
+- incorrect handling of excessive-length TZ environment strings
+- timezone file loading was wrongly enforcing O_NOFOLLOW/rejecting symlinks
+- iswspace was wrongly returning true for the null character
+- various bugs in wordexp
+- putgrent could write corrupt lines after write failures
+- dn_expand misinterpreted in-packet offsets greater than 255
+- spurious strftime/wcsftime failure on len+1==bufsize case
+- incorrect underflow flag in fma corner cases
+- log*(0) wrongly returned +inf in downward-rounding mode
+- failure of fchmod, fstat, fchdir, and fchown to produce EBADF
+
+arch-specific bugs fixed:
+- i386: failure of fesetround to set sse rounding mode
+- i386: floating point limit constants misinterpreted due to excess precision
+- powerpc: broken thread pointer access when compiled with clang
+- microblaze: dynamic linker entry point code possibly clobbering argv
+
+strict conformance issues:
+- NULL definition re-aligned with POSIX (requires (void *) cast)
+- alignment of math.h is* comparison functions with C11 annex F requirements
