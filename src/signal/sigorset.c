@@ -3,7 +3,7 @@
 
 #define SST_SIZE (_NSIG/8/sizeof(long))
 
-int sigorset(sigset_t *dest, sigset_t *left, sigset_t *right)
+int sigorset(sigset_t *dest, const sigset_t *left, const sigset_t *right)
 {
 	unsigned long i = 0, *d = (void*) dest, *l = (void*) left, *r = (void*) right;
 	for(; i < SST_SIZE; i++) d[i] = l[i] | r[i];
