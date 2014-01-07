@@ -1,6 +1,8 @@
 #include "pthread_impl.h"
+#include "syscall.h"
 
-static long sccp(long nr, long u, long v, long w, long x, long y, long z)
+static long sccp(syscall_arg_t nr, syscall_arg_t u, syscall_arg_t v,
+	         syscall_arg_t w, syscall_arg_t x, syscall_arg_t y, syscall_arg_t z)
 {
 	return (__syscall)(nr, u, v, w, x, y, z);
 }
