@@ -8,5 +8,5 @@ int timer_gettime(timer_t t, struct itimerspec *val)
 		pthread_t td = (void *)((uintptr_t)t << 1);
 		t = (void *)(uintptr_t)(td->timer_id & INT_MAX);
 	}
-	return syscall(SYS_timer_gettime, (long)t, val);
+	return syscall(SYS_timer_gettime, t, val);
 }

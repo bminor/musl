@@ -8,5 +8,5 @@ int timer_getoverrun(timer_t t)
 		pthread_t td = (void *)((uintptr_t)t << 1);
 		t = (void *)(uintptr_t)(td->timer_id & INT_MAX);
 	}
-	return syscall(SYS_timer_getoverrun, (long)t);
+	return syscall(SYS_timer_getoverrun, t);
 }

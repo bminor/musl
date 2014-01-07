@@ -10,5 +10,5 @@ int timer_delete(timer_t t)
 		__wake(&td->timer_id, 1, 1);
 		return 0;
 	}
-	return __syscall(SYS_timer_delete, (long)t);
+	return __syscall(SYS_timer_delete, t);
 }

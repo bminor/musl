@@ -8,5 +8,5 @@ int timer_settime(timer_t t, int flags, const struct itimerspec *restrict val, s
 		pthread_t td = (void *)((uintptr_t)t << 1);
 		t = (void *)(uintptr_t)(td->timer_id & INT_MAX);
 	}
-	return syscall(SYS_timer_settime, (long)t, flags, val, old);
+	return syscall(SYS_timer_settime, t, flags, val, old);
 }
