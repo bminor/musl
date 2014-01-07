@@ -125,7 +125,7 @@ struct tm *getdate (const char *);
 
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
-int stime(time_t *);
+int stime(const time_t *);
 time_t timegm(struct tm *);
 #endif
 
