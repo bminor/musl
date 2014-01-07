@@ -1331,7 +1331,7 @@ failed:
 	return 0;
 }
 
-int __dladdr(void *addr, Dl_info *info)
+int __dladdr(const void *addr, Dl_info *info)
 {
 	struct dso *p;
 	Sym *sym;
@@ -1441,7 +1441,7 @@ void *__dlsym(void *restrict p, const char *restrict s, void *restrict ra)
 {
 	return 0;
 }
-int __dladdr (void *addr, Dl_info *info)
+int __dladdr (const void *addr, Dl_info *info)
 {
 	return 0;
 }

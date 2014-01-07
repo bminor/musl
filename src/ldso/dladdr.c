@@ -1,9 +1,9 @@
 #define _GNU_SOURCE
 #include <dlfcn.h>
 
-int __dladdr(void *, Dl_info *);
+int __dladdr(const void *, Dl_info *);
 
-int dladdr(void *addr, Dl_info *info)
+int dladdr(const void *addr, Dl_info *info)
 {
 	return __dladdr(addr, info);
 }
