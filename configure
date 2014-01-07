@@ -224,6 +224,7 @@ printf "%s\n" "$target"
 case "$target" in
 arm*) ARCH=arm ;;
 i?86*) ARCH=i386 ;;
+x86_64-x32*|x32*) ARCH=x32 ;;
 x86_64*) ARCH=x86_64 ;;
 mips-*|mipsel-*) ARCH=mips ;;
 microblaze-*) ARCH=microblaze ;;
