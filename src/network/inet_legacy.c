@@ -16,9 +16,8 @@ int inet_aton(const char *cp, struct in_addr *inp)
 	return 1;
 }
 
-struct in_addr inet_makeaddr(int net, int host)
+struct in_addr inet_makeaddr(in_addr_t n, in_addr_t h)
 {
-	uint32_t n = net, h = host;
 	if (n < 256) h |= n<<24;
 	else if (n < 65536) h |= n<<16;
 	else h |= n<<8;
