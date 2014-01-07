@@ -8,14 +8,14 @@ feclearexcept:
 	test %eax,%ecx
 	jz 1f
 	fnclex
-1:	stmxcsr -8(%rsp)
+1:	stmxcsr -8(%esp)
 	and $0x3f,%eax
-	or %eax,-8(%rsp)
-	test %ecx,-8(%rsp)
+	or %eax,-8(%esp)
+	test %ecx,-8(%esp)
 	jz 1f
 	not %ecx
-	and %ecx,-8(%rsp)
-	ldmxcsr -8(%rsp)
+	and %ecx,-8(%esp)
+	ldmxcsr -8(%esp)
 1:	xor %eax,%eax
 	ret
 
@@ -23,9 +23,9 @@ feclearexcept:
 .type feraiseexcept,@function
 feraiseexcept:
 	and $0x3f,%edi
-	stmxcsr -8(%rsp)
-	or %edi,-8(%rsp)
-	ldmxcsr -8(%rsp)
+	stmxcsr -8(%esp)
+	or %edi,-8(%esp)
+	ldmxcsr -8(%esp)
 	xor %eax,%eax
 	ret
 
@@ -35,15 +35,15 @@ __fesetround:
 	push %rax
 	xor %eax,%eax
 	mov %edi,%ecx
-	fnstcw (%rsp)
-	andb $0xf3,1(%rsp)
-	or %ch,1(%rsp)
-	fldcw (%rsp)
-	stmxcsr (%rsp)
+	fnstcw (%esp)
+	andb $0xf3,1(%esp)
+	or %ch,1(%esp)
+	fldcw (%esp)
+	stmxcsr (%esp)
 	shl $3,%ch
-	andb $0x9f,1(%rsp)
-	or %ch,1(%rsp)
-	ldmxcsr (%rsp)
+	andb $0x9f,1(%esp)
+	or %ch,1(%esp)
+	ldmxcsr (%esp)
 	pop %rcx
 	ret
 
@@ -51,7 +51,7 @@ __fesetround:
 .type fegetround,@function
 fegetround:
 	push %rax
-	stmxcsr (%rsp)
+	stmxcsr (%esp)
 	pop %rax
 	shr $3,%eax
 	and $0xc00,%eax
@@ -61,27 +61,27 @@ fegetround:
 .type fegetenv,@function
 fegetenv:
 	xor %eax,%eax
-	fnstenv (%rdi)
-	stmxcsr 28(%rdi)
+	fnstenv (%edi)
+	stmxcsr 28(%edi)
 	ret
 
 .global fesetenv
 .type fesetenv,@function
 fesetenv:
 	xor %eax,%eax
-	inc %rdi
+	inc %edi
 	jz 1f
-	fldenv -1(%rdi)
-	ldmxcsr 27(%rdi)
+	fldenv -1(%edi)
+	ldmxcsr 27(%edi)
 	ret
 1:	push %rax
 	push %rax
 	pushq $0xffff
 	pushq $0x37f
-	fldenv (%rsp)
+	fldenv (%esp)
 	pushq $0x1f80
-	ldmxcsr (%rsp)
-	add $40,%rsp
+	ldmxcsr (%esp)
+	add $40,%esp
 	ret
 
 .global fetestexcept
@@ -89,7 +89,7 @@ fesetenv:
 fetestexcept:
 	and $0x3f,%edi
 	push %rax
-	stmxcsr (%rsp)
+	stmxcsr (%esp)
 	pop %rsi
 	fnstsw %ax
 	or %esi,%eax

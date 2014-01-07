@@ -5,7 +5,7 @@
 __vfork:
 vfork:
 	pop %rdx
-	mov $58,%eax
+	mov $0x4000003a,%eax /* SYS_vfork */
 	syscall
 	push %rdx
 	mov %rax,%rdi

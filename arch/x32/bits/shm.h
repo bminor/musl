@@ -10,16 +10,24 @@ struct shmid_ds
 	pid_t shm_cpid;
 	pid_t shm_lpid;
 	unsigned long shm_nattch;
-	unsigned long __pad1;
-	unsigned long __pad2;
+	unsigned long __pad0;
+	unsigned long long __pad1;
+	unsigned long long __pad2;
 };
 
 struct shminfo {
-	unsigned long shmmax, shmmin, shmmni, shmseg, shmall, __unused[4];
+	unsigned long shmmax, __pad0, shmmin, __pad1, shmmni, __pad2,
+	              shmseg, __pad3, shmall, __pad4;
+	unsigned long long __unused[4];
 };
 
 struct shm_info {
 	int __used_ids;
-	unsigned long shm_tot, shm_rss, shm_swp;
-	unsigned long __swap_attempts, __swap_successes;
-};
+	int __pad_ids;
+	unsigned long shm_tot, __pad0, shm_rss, __pad1, shm_swp, __pad2;
+	unsigned long __swap_attempts, __pad3, __swap_successes, __pad4;
+}
+#ifdef __GNUC__
+__attribute__((__aligned__(8)))
+#endif
+;

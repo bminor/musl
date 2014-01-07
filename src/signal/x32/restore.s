@@ -4,5 +4,5 @@
 .type __restore,@function
 __restore_rt:
 __restore:
-	movl $15, %eax
+	movl $0x40000201, %eax /* SYS_rt_sigreturn */
 	syscall

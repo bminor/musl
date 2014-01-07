@@ -1,7 +1,7 @@
 .global asinl
 .type asinl,@function
 asinl:
-	fldt 8(%rsp)
+	fldt 8(%esp)
 1:	fld %st(0)
 	fld1
 	fsub %st(0),%st(1)

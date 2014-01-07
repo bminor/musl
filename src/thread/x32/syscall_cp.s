@@ -1,7 +1,7 @@
 .text
-.global __syscall_cp_asm
-.type   __syscall_cp_asm,@function
-__syscall_cp_asm:
+.global __syscall_cp_internal
+.type   __syscall_cp_internal,@function
+__syscall_cp_internal:
 
 .global __cp_begin
 __cp_begin:

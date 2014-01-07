@@ -3,7 +3,7 @@
 .global acosl
 .type acosl,@function
 acosl:
-	fldt 8(%rsp)
+	fldt 8(%esp)
 1:	fld %st(0)
 	fld1
 	fsub %st(0),%st(1)

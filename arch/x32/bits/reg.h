@@ -1,5 +1,5 @@
 #undef __WORDSIZE
-#define __WORDSIZE 64
+#define __WORDSIZE 32
 #define R15    0
 #define R14    1
 #define R13    2

@@ -42,12 +42,12 @@ typedef struct _fpstate {
 	unsigned padding[24];
 } *fpregset_t;
 struct sigcontext {
-	unsigned long r8, r9, r10, r11, r12, r13, r14, r15;
-	unsigned long rdi, rsi, rbp, rbx, rdx, rax, rcx, rsp, rip, eflags;
+	unsigned long long r8, r9, r10, r11, r12, r13, r14, r15;
+	unsigned long long rdi, rsi, rbp, rbx, rdx, rax, rcx, rsp, rip, eflags;
 	unsigned short cs, gs, fs, __pad0;
-	unsigned long err, trapno, oldmask, cr2;
+	unsigned long long err, trapno, oldmask, cr2;
 	struct _fpstate *fpstate;
-	unsigned long __reserved1[8];
+	unsigned long long __reserved1[8];
 };
 typedef struct {
 	gregset_t gregs;
@@ -56,7 +56,7 @@ typedef struct {
 } mcontext_t;
 #else
 typedef struct {
-	unsigned long __space[32];
+	unsigned long long __space[32];
 } mcontext_t;
 #endif
 
@@ -66,7 +66,7 @@ typedef struct __ucontext {
 	stack_t uc_stack;
 	mcontext_t uc_mcontext;
 	sigset_t uc_sigmask;
-	unsigned long __fpregs_mem[64];
+	unsigned long long __fpregs_mem[64];
 } ucontext_t;
 
 #define SA_NOCLDSTOP  1

@@ -2,8 +2,7 @@
 .global __clone
 .type   __clone,@function
 __clone:
-	xor %eax,%eax
-	mov $56,%al
+	movl $0x40000038,%eax /* SYS_clone */
 	mov %rdi,%r11
 	mov %rdx,%rdi
 	mov %r8,%rdx
@@ -20,8 +19,7 @@ __clone:
 	pop %rdi
 	call *%r9
 	mov %eax,%edi
-	xor %eax,%eax
-	mov $60,%al
+	movl $0x4000003c,%eax /* SYS_exit */
 	syscall
 	hlt
 1:	ret
