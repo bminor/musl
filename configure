@@ -382,6 +382,7 @@ tryflag CFLAGS_AUTO -Wno-missing-braces
 tryflag CFLAGS_AUTO -Wno-unused-value
 tryflag CFLAGS_AUTO -Wno-unused-but-set-variable
 tryflag CFLAGS_AUTO -Wno-unknown-pragmas
+tryflag CFLAGS_AUTO -Wno-pointer-to-int-cast
 fi
 
 # Some patched GCC builds have these defaults messed up...
