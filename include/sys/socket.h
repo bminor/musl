@@ -207,6 +207,10 @@ struct linger
 #define SOL_SOCKET      1
 #endif
 
+#define SOL_IP          0
+#define SOL_IPV6        41
+#define SOL_ICMPV6      58
+
 #define SOL_RAW         255
 #define SOL_DECNET      261
 #define SOL_X25         262
