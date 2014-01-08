@@ -3,7 +3,7 @@
 #include "syscall.h"
 #include "ipc.h"
 
-struct semun {
+union semun {
 	int val;
 	struct semid_ds *buf;
 	unsigned short *array;
@@ -11,10 +11,10 @@ struct semun {
 
 int semctl(int id, int num, int cmd, ...)
 {
-	struct semun arg;
+	union semun arg;
 	va_list ap;
 	va_start(ap, cmd);
-	arg = va_arg(ap, struct semun);
+	arg = va_arg(ap, union semun);
 	va_end(ap);
 #ifdef SYS_semctl
 	return syscall(SYS_semctl, id, num, cmd | IPC_64, arg.buf);
