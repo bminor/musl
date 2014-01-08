@@ -1,6 +1,9 @@
 .global remainderf
 .type remainderf,@function
 remainderf:
+.weak dremf
+.type dremf,@function
+dremf:
 	flds 8(%esp)
 	flds 4(%esp)
 1:	fprem1
