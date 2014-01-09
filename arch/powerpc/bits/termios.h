@@ -66,7 +66,6 @@ struct termios
 #define TAB1	00002000
 #define TAB2	00004000
 #define TAB3	00006000
-#define XTABS	00006000
 #define CRDLY	00030000
 #define CR0	00000000
 #define CR1	00010000
@@ -101,7 +100,6 @@ struct termios
 #define B38400	0000017
 #define EXTA	B19200
 #define EXTB	B38400
-#define CBAUDEX	0000000
 #define B57600	00020
 #define B115200	00021
 #define B230400	00022
@@ -120,9 +118,6 @@ struct termios
 #define B4000000	00036
 #define BOTHER	00037
 
-#define CIBAUD	077600000
-#define IBSHIFT 16
-
 #define CSIZE	00001400
 #define CS5	00000000
 #define CS6	00000400
@@ -136,8 +131,6 @@ struct termios
 #define HUPCL	00040000
 
 #define CLOCAL	00100000
-#define CMSPAR	010000000000
-#define CRTSCTS	020000000000
 
 #define ISIG	0x00000080
 #define ICANON	0x00000100
@@ -154,7 +147,6 @@ struct termios
 #define FLUSHO	0x00800000
 #define PENDIN	0x20000000
 #define IEXTEN	0x00000400
-#define EXTPROC 0x10000000
 
 #define TCOOFF	0
 #define TCOON	1
@@ -168,3 +160,13 @@ struct termios
 #define TCSANOW		0
 #define TCSADRAIN	1
 #define TCSAFLUSH	2
+
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+#define CBAUDEX	0000000
+#define CIBAUD	077600000
+#define IBSHIFT 16
+#define CMSPAR	010000000000
+#define CRTSCTS	020000000000
+#define EXTPROC 0x10000000
+#define XTABS	00006000
+#endif
