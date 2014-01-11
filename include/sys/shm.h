@@ -14,6 +14,13 @@ extern "C" {
 #include <bits/alltypes.h>
 
 #include <sys/ipc.h>
+
+#ifdef _GNU_SOURCE
+#define __used_ids used_ids
+#define __swap_attempts swap_attempts
+#define __swap_successes swap_successes
+#endif
+
 #include <bits/shm.h>
 
 #define SHM_R 0400
@@ -32,22 +39,6 @@ extern "C" {
 #define SHM_LOCKED 02000
 #define SHM_HUGETLB 04000
 #define SHM_NORESERVE 010000
-
-struct shminfo {
-	unsigned long shmmax, shmmin, shmmni, shmseg, shmall, __unused[4];
-};
-
-#ifdef _GNU_SOURCE
-#define __used_ids used_ids
-#define __swap_attempts swap_attempts
-#define __swap_successes swap_successes
-#endif
-
-struct shm_info {
-	int __used_ids;
-	unsigned long shm_tot, shm_rss, shm_swp;
-	unsigned long __swap_attempts, __swap_successes;
-};
 
 typedef unsigned long shmatt_t;
 
