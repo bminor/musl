@@ -2,7 +2,7 @@
  * by the corresponding correctly-sized userspace types. */
 
 struct stat {
-	unsigned long st_dev;
+	dev_t st_dev;
 	ino_t st_ino;
 	nlink_t st_nlink;
 
