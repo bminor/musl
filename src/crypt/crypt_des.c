@@ -692,7 +692,7 @@ static uint32_t setup_salt(uint32_t salt)
 	return saltbits;
 }
 
-static void des_setkey(const unsigned char *key, struct expanded_key *ekey)
+void __des_setkey(const unsigned char *key, struct expanded_key *ekey)
 {
 	uint32_t k0, k1, rawkey0, rawkey1;
 	unsigned int shifts, round, i, ibit;
@@ -753,7 +753,7 @@ static void des_setkey(const unsigned char *key, struct expanded_key *ekey)
 /*
  * l_in, r_in, l_out, and r_out are in pseudo-"big-endian" format.
  */
-static void do_des(uint32_t l_in, uint32_t r_in,
+void __do_des(uint32_t l_in, uint32_t r_in,
     uint32_t *l_out, uint32_t *r_out,
     uint32_t count, uint32_t saltbits, const struct expanded_key *ekey)
 {
@@ -862,7 +862,7 @@ static void des_cipher(const unsigned char *in, unsigned char *out,
 	    ((uint32_t)in[5] << 16) |
 	    ((uint32_t)in[4] << 24);
 
-	do_des(rawl, rawr, &l_out, &r_out, count, saltbits, ekey);
+	__do_des(rawl, rawr, &l_out, &r_out, count, saltbits, ekey);
 
 	out[0] = l_out >> 24;
 	out[1] = l_out >> 16;
@@ -894,7 +894,7 @@ static char *_crypt_extended_r_uut(const char *_key, const char *_setting, char 
 		if (*key)
 			key++;
 	}
-	des_setkey(keybuf, &ekey);
+	__des_setkey(keybuf, &ekey);
 
 	if (*setting == _PASSWORD_EFMT1) {
 		/*
@@ -929,7 +929,7 @@ static char *_crypt_extended_r_uut(const char *_key, const char *_setting, char 
 			q = keybuf;
 			while (q <= &keybuf[sizeof(keybuf) - 1] && *key)
 				*q++ ^= *key++ << 1;
-			des_setkey(keybuf, &ekey);
+			__des_setkey(keybuf, &ekey);
 		}
 
 		memcpy(output, setting, 9);
@@ -957,7 +957,7 @@ static char *_crypt_extended_r_uut(const char *_key, const char *_setting, char 
 	/*
 	 * Do it.
 	 */
-	do_des(0, 0, &r0, &r1, count, setup_salt(salt), &ekey);
+	__do_des(0, 0, &r0, &r1, count, setup_salt(salt), &ekey);
 
 	/*
 	 * Now encode the result...
