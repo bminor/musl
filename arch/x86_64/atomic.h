@@ -29,12 +29,12 @@ static inline void a_or_64(volatile uint64_t *p, uint64_t v)
 
 static inline void a_store_l(volatile void *p, long x)
 {
-	__asm__( "movq %1, %0" : "=m"(*(long *)p) : "r"(x) : "memory" );
+	__asm__( "mov %1, %0" : "=m"(*(long *)p) : "r"(x) : "memory" );
 }
 
 static inline void a_or_l(volatile void *p, long v)
 {
-	__asm__( "lock ; orq %1, %0"
+	__asm__( "lock ; or %1, %0"
 		: "=m"(*(long *)p) : "r"(v) : "memory" );
 }
 
@@ -108,7 +108,7 @@ static inline void a_dec(volatile int *x)
 
 static inline void a_store(volatile int *p, int x)
 {
-	__asm__( "movl %1, %0" : "=m"(*p) : "r"(x) : "memory" );
+	__asm__( "mov %1, %0" : "=m"(*p) : "r"(x) : "memory" );
 }
 
 static inline void a_spin()
