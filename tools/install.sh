@@ -51,6 +51,7 @@ if test "$symlink" ; then
 ln -s "$1" "$tmp"
 else
 cat < "$1" > "$tmp"
+chmod "$mode" "$tmp"
 fi
 
 mv -f "$tmp" "$2"
@@ -59,7 +60,5 @@ rm -f "$2/$tmp"
 printf "%s: %s is a directory\n" "$0" "$dst" 1>&2
 exit 1
 }
-
-test "$symlink" || chmod "$mode" "$2"
 
 exit 0
