@@ -46,8 +46,7 @@ static int do_nftw(char *path, int (*fn)(const char *, const struct stat *, int,
 		type = FTW_F;
 	}
 
-	if ((flags & FTW_MOUNT) && h
-	 && (st.st_dev != h->dev || st.st_ino != h->ino))
+	if ((flags & FTW_MOUNT) && h && st.st_dev != h->dev)
 		return 0;
 	
 	new.chain = h;
