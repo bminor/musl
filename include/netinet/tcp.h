@@ -44,12 +44,24 @@
 #define SOL_TCP 6
 #include <sys/types.h>
 #include <sys/socket.h>
-#endif
-
-#ifdef _GNU_SOURCE
 #include <endian.h>
-struct tcphdr
-{
+
+typedef u_int32_t tcp_seq;
+
+#define TH_FIN 0x01
+#define TH_SYN 0x02
+#define TH_RST 0x04
+#define TH_PUSH 0x08
+#define TH_ACK 0x10
+#define TH_URG 0x20
+
+struct tcphdr {
+#ifdef _GNU_SOURCE
+#ifdef __GNUC__
+	__extension__
+#endif
+	union { struct {
+
 	u_int16_t source;
 	u_int16_t dest;
 	u_int32_t seq;
@@ -78,8 +90,33 @@ struct tcphdr
 	u_int16_t window;
 	u_int16_t check;
 	u_int16_t urg_ptr;
-};
 
+	}; struct {
+#endif
+
+	u_int16_t th_sport;
+	u_int16_t th_dport;
+	u_int32_t th_seq;
+	u_int32_t th_ack;
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+	u_int8_t th_x2:4;
+	u_int8_t th_off:4;
+#else
+	u_int8_t th_off:4;
+	u_int8_t th_x2:4;
+#endif
+	u_int8_t th_flags;
+	u_int16_t th_win;
+	u_int16_t th_sum;
+	u_int16_t th_urp;
+
+#ifdef _GNU_SOURCE
+	}; };
+#endif
+};
+#endif
+
+#ifdef _GNU_SOURCE
 #define TCPI_OPT_TIMESTAMPS	1
 #define TCPI_OPT_SACK		2
 #define TCPI_OPT_WSCALE		4
