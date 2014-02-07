@@ -1,10 +1,7 @@
 #include <errno.h>
-#include "libc.h"
+#include "pthread_impl.h"
 
 int __clone(int (*func)(void *), void *stack, int flags, void *arg, ...)
 {
-	errno = ENOSYS;
-	return -1;
+	return -ENOSYS;
 }
-
-weak_alias(__clone, clone);

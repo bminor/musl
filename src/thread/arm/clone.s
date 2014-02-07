@@ -1,10 +1,7 @@
 .text
 .global __clone
-.weak clone
 .type   __clone,%function
-.type   clone,%function
 __clone:
-clone:
 	stmfd sp!,{r4,r5,r6,r7}
 	mov r7,#120
 	mov r6,r3

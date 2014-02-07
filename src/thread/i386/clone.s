@@ -1,10 +1,7 @@
 .text
 .global __clone
-.weak clone
 .type   __clone,@function
-.type   clone,@function
 __clone:
-clone:
 	push %ebp
 	mov %esp,%ebp
 	push %ebx

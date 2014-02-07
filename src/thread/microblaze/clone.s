@@ -1,14 +1,11 @@
 .global __clone
-.weak clone
 .type   __clone,@function
-.type   clone,@function
 
 # r5, r6, r7, r8, r9, r10, stack
 # fn, st, fl, ar, pt, tl, ct
 # fl, st, __, pt, ct, tl
 
 __clone:
-clone:
 	andi    r6, r6, -16
 	addi    r6, r6, -16
 	swi     r5, r6, 0
@@ -23,7 +20,7 @@ clone:
 	beqi	r3, 1f
 	rtsd    r15, 8
 	nop
-	
+
 1:	lwi     r3, r1, 0
 	lwi     r5, r1, 4
 	brald   r15, r3
