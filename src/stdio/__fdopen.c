@@ -33,6 +33,7 @@ FILE *__fdopen(int fd, const char *mode)
 	if (*mode == 'a') {
 		int flags = __syscall(SYS_fcntl, fd, F_GETFL);
 		__syscall(SYS_fcntl, fd, F_SETFL, flags | O_APPEND);
+		f->flags |= F_APP;
 	}
 
 	f->fd = fd;
