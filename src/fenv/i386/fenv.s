@@ -126,7 +126,7 @@ fesetenv:
 	push %eax
 	push %eax
 	push %eax
-	push %eax
+	pushl $0xffff
 	push %eax
 	pushl $0x37f
 	fldenv (%esp)
