@@ -76,7 +76,7 @@ fesetenv:
 	ret
 1:	push %rax
 	push %rax
-	push %rax
+	pushq $0xffff
 	pushq $0x37f
 	fldenv (%rsp)
 	pushq $0x1f80
