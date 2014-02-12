@@ -166,7 +166,7 @@ int __posix_spawnx(pid_t *restrict res, const char *restrict path,
 
 	close(args.p[0]);
 
-	if (!ec) *res = pid;
+	if (!ec && res) *res = pid;
 
 	pthread_sigmask(SIG_SETMASK, &args.oldmask, 0);
 	pthread_setcancelstate(cs, 0);
