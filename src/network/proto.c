@@ -13,7 +13,7 @@ static const unsigned char protos[][6] = {
 	"\014pup",
 	"\021udp",
 	"\026idp",
-	"\377raw"
+	"\377raw",
 	"\0\0"
 };
 
