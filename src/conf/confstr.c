@@ -13,5 +13,5 @@ size_t confstr(int name, char *buf, size_t len)
 	}
 	// snprintf is overkill but avoid wasting code size to implement
 	// this completely useless function and its truncation semantics
-	return snprintf(buf, len, "%s", s);
+	return snprintf(buf, len, "%s", s) + 1;
 }
