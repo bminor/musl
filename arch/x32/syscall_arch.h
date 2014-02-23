@@ -6,6 +6,27 @@ typedef long long syscall_arg_t;
 struct __timespec { long long tv_sec; long tv_nsec; };
 struct __timespec_kernel { long long tv_sec; long long tv_nsec; };
 #define __tsc(X) ((struct __timespec*)(unsigned long)(X))
+#define __fixup(X) do { if(X) X = (unsigned long) (&(struct __timespec_kernel) \
+                   { .tv_sec = __tsc(X)->tv_sec, .tv_nsec = __tsc(X)->tv_nsec}); } while(0)
+#define __fixup_case_2 \
+	case SYS_nanosleep: \
+		__fixup(a1); break; \
+	case SYS_clock_settime: \
+		__fixup(a2); break;
+#define __fixup_case_3 \
+	case SYS_clock_nanosleep: case SYS_rt_sigtimedwait: case SYS_ppoll: \
+		__fixup(a3); break; \
+	case SYS_utimensat: \
+		if(a3) a3 = (unsigned long) ((struct __timespec_kernel[2]) { \
+		[0] = {.tv_sec = __tsc(a3)[0].tv_sec, .tv_nsec = __tsc(a3)[0].tv_nsec}, \
+		[1] = {.tv_sec = __tsc(a3)[1].tv_sec, .tv_nsec = __tsc(a3)[1].tv_nsec}, \
+		}); break;
+#define __fixup_case_4 \
+	case SYS_futex: \
+		if((a2 & (~128 /* FUTEX_PRIVATE_FLAG */)) == 0 /* FUTEX_WAIT */) __fixup(a4); break;
+#define __fixup_case_5 \
+	case SYS_mq_timedsend: case SYS_mq_timedreceive: case SYS_pselect6: \
+		__fixup(a5); break;
 
 static __inline long __syscall0(long long n)
 {
@@ -26,13 +47,7 @@ static __inline long __syscall2(long long n, long long a1, long long a2)
 	unsigned long ret;
 	struct __timespec *ts2 = 0;
 	switch (n) {
-	case SYS_nanosleep:
-		if(a1) a1 = (unsigned long) (&(struct __timespec_kernel) {
-		.tv_sec = __tsc(a1)->tv_sec, .tv_nsec = __tsc(a1)->tv_nsec});
-		break;
-	case SYS_clock_settime:
-		if(a2) a2 = (unsigned long) (&(struct __timespec_kernel) {
-		.tv_sec = __tsc(a2)->tv_sec, .tv_nsec = __tsc(a2)->tv_nsec});
+		__fixup_case_2;
 	}
 	__asm__ __volatile__ ("syscall" : "=a"(ret) : "a"(n), "D"(a1), "S"(a2)
 					: "rcx", "r11", "memory");
@@ -42,80 +57,61 @@ static __inline long __syscall2(long long n, long long a1, long long a2)
 static __inline long __syscall3(long long n, long long a1, long long a2, long long a3)
 {
 	unsigned long ret;
+	switch (n) {
+		__fixup_case_2;
+		__fixup_case_3;
+	}
 	__asm__ __volatile__ ("syscall" : "=a"(ret) : "a"(n), "D"(a1), "S"(a2),
 						  "d"(a3) : "rcx", "r11", "memory");
 	return ret;
 }
 
 static __inline long __syscall4(long long n, long long a1, long long a2, long long a3,
-                                     long long a4)
+                                     long long a4_)
 {
 	unsigned long ret;
-	register long long r10 __asm__("r10") = a4;
+	register long long a4 __asm__("r10") = a4_;
 	switch (n) {
-	case SYS_futex:
-		if((a2 & (~128 /* FUTEX_PRIVATE_FLAG */)) == 0 /* FUTEX_WAIT */) {
-			if(r10) r10 = (unsigned long) (&(struct __timespec_kernel) {
-			.tv_sec = __tsc(r10)->tv_sec, .tv_nsec = __tsc(r10)->tv_nsec});
-		}
-		break;
-	case SYS_utimensat:
-		if(a3) a3 = (unsigned long) ((struct __timespec_kernel[2]) {
-		[0] = {.tv_sec = __tsc(a3)[0].tv_sec, .tv_nsec = __tsc(a3)[0].tv_nsec},
-		[1] = {.tv_sec = __tsc(a3)[1].tv_sec, .tv_nsec = __tsc(a3)[1].tv_nsec},
-		});
-		break;
-	case SYS_clock_nanosleep:
-	case SYS_rt_sigtimedwait: case SYS_ppoll:
-		if(a3) a3 = (unsigned long) (&(struct __timespec_kernel) {
-		.tv_sec = __tsc(a3)->tv_sec, .tv_nsec = __tsc(a3)->tv_nsec});
+		__fixup_case_2;
+		__fixup_case_3;
+		__fixup_case_4;
 	}
 	__asm__ __volatile__ ("syscall" : "=a"(ret) : "a"(n), "D"(a1), "S"(a2),
-					  "d"(a3), "r"(r10): "rcx", "r11", "memory");
+					  "d"(a3), "r"(a4): "rcx", "r11", "memory");
 	return ret;
 }
 
 static __inline long __syscall5(long long n, long long a1, long long a2, long long a3,
-                                     long long a4, long long a5)
+                                     long long a4_, long long a5_)
 {
 	unsigned long ret;
-	register long long r10 __asm__("r10") = a4;
-	register long long r8 __asm__("r8") = a5;
+	register long long a4 __asm__("r10") = a4_;
+	register long long a5 __asm__("r8") = a5_;
 	switch (n) {
-	case SYS_futex:
-		if((a2 & (~128 /* FUTEX_PRIVATE_FLAG */)) == 0 /* FUTEX_WAIT */) {
-			if(r10) r10 = (unsigned long) (&(struct __timespec_kernel) {
-			.tv_sec = __tsc(r10)->tv_sec, .tv_nsec = __tsc(r10)->tv_nsec});
-		}
-		break;
-	case SYS_mq_timedsend: case SYS_mq_timedreceive:
-		if(r8) r8 = (unsigned long) (&(struct __timespec_kernel) {
-		.tv_sec = __tsc(r8)->tv_sec, .tv_nsec = __tsc(r8)->tv_nsec});
+		__fixup_case_2;
+		__fixup_case_3;
+		__fixup_case_4;
+		__fixup_case_5;
 	}
 	__asm__ __volatile__ ("syscall" : "=a"(ret) : "a"(n), "D"(a1), "S"(a2),
-					  "d"(a3), "r"(r10), "r"(r8) : "rcx", "r11", "memory");
+					  "d"(a3), "r"(a4), "r"(a5) : "rcx", "r11", "memory");
 	return ret;
 }
 
 static __inline long __syscall6(long long n, long long a1, long long a2, long long a3,
-                                     long long a4, long long a5, long long a6)
+                                     long long a4_, long long a5_, long long a6_)
 {
 	unsigned long ret;
-	register long long r10 __asm__("r10") = a4;
-	register long long r8 __asm__("r8") = a5;
-	register long long r9 __asm__("r9") = a6;
+	register long long a4 __asm__("r10") = a4_;
+	register long long a5 __asm__("r8") = a5_;
+	register long long a6 __asm__("r9") = a6_;
 	switch (n) {
-	case SYS_futex:
-		if((a2 & (~128 /* FUTEX_PRIVATE_FLAG */)) == 0 /* FUTEX_WAIT */) {
-			if(r10) r10 = (unsigned long) (&(struct __timespec_kernel) {
-			.tv_sec = __tsc(r10)->tv_sec, .tv_nsec = __tsc(r10)->tv_nsec});
-		}
-		break;
-	case SYS_pselect6:
-		if(r8) r8 = (unsigned long) (&(struct __timespec_kernel) {
-		.tv_sec = __tsc(r8)->tv_sec, .tv_nsec = __tsc(r8)->tv_nsec});
+		__fixup_case_2;
+		__fixup_case_3;
+		__fixup_case_4;
+		__fixup_case_5;
 	}
 	__asm__ __volatile__ ("syscall" : "=a"(ret) : "a"(n), "D"(a1), "S"(a2),
-					  "d"(a3), "r"(r10), "r"(r8), "r"(r9) : "rcx", "r11", "memory");
+					  "d"(a3), "r"(a4), "r"(a5), "r"(a6) : "rcx", "r11", "memory");
 	return ret;
 }
