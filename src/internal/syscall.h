@@ -5,11 +5,8 @@
 #include "syscall_arch.h"
 
 #ifndef __scc
-#define __scc(X) (long) (X)
-#endif
-
-#ifndef syscall_arg_t
-#define syscall_arg_t long
+#define __scc(X) ((long) (X))
+typedef long syscall_arg_t;
 #endif
 
 #if defined(__PIC__) && (100*__GNUC__+__GNUC_MINOR__ >= 303)

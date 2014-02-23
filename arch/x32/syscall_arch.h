@@ -2,7 +2,7 @@
 #define __SYSCALL_LL_O(x) (x)
 
 #define __scc(X) sizeof(1?(X):0ULL) < 8 ? (unsigned long) (X) : (long long) (X)
-#define syscall_arg_t long long
+typedef long long syscall_arg_t;
 struct __timespec { long long tv_sec; long tv_nsec; };
 struct __timespec_kernel { long long tv_sec; long long tv_nsec; };
 #define __tsc(X) ((struct __timespec*)(unsigned long)(X))
