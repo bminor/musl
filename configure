@@ -413,8 +413,10 @@ trycppif __ARMEB__ "$t" && SUBARCH=${SUBARCH}eb
 trycppif __ARM_PCS_VFP "$t" && SUBARCH=${SUBARCH}hf
 fi
 
-test "$ARCH" = "mips" && trycppif "_MIPSEL || __MIPSEL || __MIPSEL__" "$t" \
-&& SUBARCH=${SUBARCH}el
+if test "$ARCH" = "mips" ; then
+trycppif "_MIPSEL || __MIPSEL || __MIPSEL__" "$t" && SUBARCH=${SUBARCH}el
+trycppif __mips_soft_float "$t" && SUBARCH=${SUBARCH}-sf
+fi
 
 test "$ARCH" = "microblaze" && trycppif __MICROBLAZEEL__ "$t" \
 && SUBARCH=${SUBARCH}el

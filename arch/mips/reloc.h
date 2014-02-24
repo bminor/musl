@@ -8,7 +8,13 @@
 #define ENDIAN_SUFFIX ""
 #endif
 
-#define LDSO_ARCH "mips" ENDIAN_SUFFIX
+#ifdef __mips_soft_float
+#define FP_SUFFIX "-sf"
+#else
+#define FP_SUFFIX ""
+#endif
+
+#define LDSO_ARCH "mips" ENDIAN_SUFFIX FP_SUFFIX
 
 #define IS_COPY(x) ((x)==R_MIPS_COPY)
 #define IS_PLT(x) 1
