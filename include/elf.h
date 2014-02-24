@@ -1153,6 +1153,7 @@ typedef struct {
 #define EF_MIPS_64BIT_WHIRL 16
 #define EF_MIPS_ABI2	    32
 #define EF_MIPS_ABI_ON32    64
+#define EF_MIPS_NAN2008     1024
 #define EF_MIPS_ARCH	    0xf0000000
 
 
