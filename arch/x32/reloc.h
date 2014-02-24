@@ -2,7 +2,7 @@
 #include <string.h>
 #include <elf.h>
 
-#define LDSO_ARCH "x86_64"
+#define LDSO_ARCH "x32"
 
 #define IS_COPY(x) ((x)==R_X86_64_COPY)
 #define IS_PLT(x) ((x)==R_X86_64_JUMP_SLOT)
