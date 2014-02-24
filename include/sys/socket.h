@@ -202,6 +202,7 @@ struct linger
 #define SO_LOCK_FILTER          44
 #define SO_SELECT_ERR_QUEUE     45
 #define SO_BUSY_POLL            46
+#define SO_MAX_PACING_RATE      47
 
 #ifndef SOL_SOCKET
 #define SOL_SOCKET      1
