@@ -217,6 +217,7 @@ uint16_t ntohs(uint16_t);
 #define IP_PMTUDISC_WANT   1
 #define IP_PMTUDISC_DO     2
 #define IP_PMTUDISC_PROBE  3
+#define IP_PMTUDISC_INTERFACE 4
 
 #define IP_DEFAULT_MULTICAST_TTL        1
 #define IP_DEFAULT_MULTICAST_LOOP       1
