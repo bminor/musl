@@ -421,8 +421,24 @@ fi
 test "$ARCH" = "microblaze" && trycppif __MICROBLAZEEL__ "$t" \
 && SUBARCH=${SUBARCH}el
 
-test "$ARCH" = "sh" && trycppif __BIG_ENDIAN__ "$t" \
-&& SUBARCH=${SUBARCH}eb
+if test "$ARCH" = "sh" ; then
+trycppif __BIG_ENDIAN__ "$t" && SUBARCH=${SUBARCH}eb
+if trycppif __SH_FPU_ANY__ ; then
+# Some sh configurations are broken and replace double with float
+# rather than using softfloat when the fpu is present but only
+# supports single precision. Reject them.
+printf "checking whether compiler's double type is IEEE double... "
+echo 'typedef char dblcheck[(int)sizeof(double)-5];' >> "$tmpc"
+if $CC $CFLAGS_C99FSE $CPPFLAGS $CFLAGS -c -o /dev/null "$tmpc" >/dev/null 2>&1 ; then
+printf "yes\n"
+else
+printf "no\n"
+fail "$0: error: compiler's floating point configuration is unsupported"
+fi
+else
+SUBARCH=${SUBARCH}-nofpu
+fi
+fi
 
 test "$SUBARCH" \
 && printf "configured for %s variant: %s\n" "$ARCH" "$ARCH$SUBARCH"
