@@ -421,8 +421,8 @@ fi
 test "$ARCH" = "microblaze" && trycppif __MICROBLAZEEL__ "$t" \
 && SUBARCH=${SUBARCH}el
 
-test "$ARCH" = "sh" && trycppif __LITTLE_ENDIAN__ "$t" \
-&& SUBARCH=${SUBARCH}el
+test "$ARCH" = "sh" && trycppif __BIG_ENDIAN__ "$t" \
+&& SUBARCH=${SUBARCH}eb
 
 test "$SUBARCH" \
 && printf "configured for %s variant: %s\n" "$ARCH" "$ARCH$SUBARCH"

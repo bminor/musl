@@ -1,5 +1,5 @@
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-#define ENDIAN_SUFFIX "l"
+#if __BYTE_ORDER == __BIG_ENDIAN
+#define ENDIAN_SUFFIX "eb"
 #else
 #define ENDIAN_SUFFIX ""
 #endif
