@@ -428,7 +428,7 @@ if trycppif __SH_FPU_ANY__ ; then
 # rather than using softfloat when the fpu is present but only
 # supports single precision. Reject them.
 printf "checking whether compiler's double type is IEEE double... "
-echo 'typedef char dblcheck[(int)sizeof(double)-5];' >> "$tmpc"
+echo 'typedef char dblcheck[(int)sizeof(double)-5];' > "$tmpc"
 if $CC $CFLAGS_C99FSE $CPPFLAGS $CFLAGS -c -o /dev/null "$tmpc" >/dev/null 2>&1 ; then
 printf "yes\n"
 else
