@@ -222,14 +222,16 @@ printf "%s\n" "$target"
 # Convert to just ARCH
 #
 case "$target" in
+# Catch these early to simplify matching for 32-bit archs
+mips64*|powerpc64*) fail "$0: unsupported target \"$target\"" ;;
 arm*) ARCH=arm ;;
 i?86*) ARCH=i386 ;;
 x86_64-x32*|x32*) ARCH=x32 ;;
 x86_64*) ARCH=x86_64 ;;
-mips-*|mipsel-*) ARCH=mips ;;
-microblaze-*) ARCH=microblaze ;;
-powerpc-*) ARCH=powerpc ;;
-sh-*) ARCH=sh ;;
+mips*) ARCH=mips ;;
+microblaze*) ARCH=microblaze ;;
+powerpc*) ARCH=powerpc ;;
+sh[1-9bel-]*|sh|superh*) ARCH=sh ;;
 unknown) fail "$0: unable to detect target arch; try $0 --target=..." ;;
 *) fail "$0: unknown or unsupported target \"$target\"" ;;
 esac
