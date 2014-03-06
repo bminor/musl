@@ -1,6 +1,6 @@
 musl as a whole is licensed under the following standard MIT license:
 
-Copyright © 2005-2013 Rich Felker
+Copyright © 2005-2014 Rich Felker
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -79,7 +79,7 @@ Project and is licensed under a two-clause BSD license. It was taken
 from Bionic libc, used on Android.
 
 All other files which have no copyright comments are original works
-Copyright © 2005-2013 Rich Felker, the main author of this library.
+Copyright © 2005-2014 Rich Felker, the main author of this library.
 The decision to exclude such comments is intentional, as it should be
 possible to carry around the complete source code on tiny storage
 media. All public header files (include/* and arch/*/bits/*) should be
