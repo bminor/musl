@@ -314,7 +314,7 @@ static int fmt_fp(FILE *f, long double y, int w, int p, int fl, int t)
 	}
 	while (e2<0) {
 		uint32_t carry=0, *b;
-		int sh=MIN(9,-e2);
+		int sh=MIN(9,-e2), need=1+(p+LDBL_MANT_DIG/3+8)/9;
 		for (d=a; d<z; d++) {
 			uint32_t rm = *d & (1<<sh)-1;
 			*d = (*d>>sh) + carry;
@@ -324,7 +324,7 @@ static int fmt_fp(FILE *f, long double y, int w, int p, int fl, int t)
 		if (carry) *z++ = carry;
 		/* Avoid (slow!) computation past requested precision */
 		b = (t|32)=='f' ? r : a;
-		if (z-b > 2+p/9) z = b+2+p/9;
+		if (z-b > need) z = b+need;
 		e2+=sh;
 	}
 
