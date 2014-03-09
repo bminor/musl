@@ -207,7 +207,8 @@ typedef char compiler_defines_long_double_incorrectly[9-(int)sizeof(long double)
 
 static int fmt_fp(FILE *f, long double y, int w, int p, int fl, int t)
 {
-	uint32_t big[(LDBL_MAX_EXP+LDBL_MANT_DIG)/9+1];
+	uint32_t big[(LDBL_MANT_DIG+28)/29 + 1          // mantissa expansion
+		+ (LDBL_MAX_EXP+LDBL_MANT_DIG+28+8)/9]; // exponent expansion
 	uint32_t *a, *d, *r, *z;
 	int e2=0, e, i, j, l;
 	char buf[9+LDBL_MANT_DIG/4], *s;
