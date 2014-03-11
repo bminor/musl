@@ -7,8 +7,9 @@ struct ipc_perm
 	gid_t cgid;
 	mode_t mode;
 	int __ipc_perm_seq;
-	long __pad1;
-	long __pad2;
+	int __pad1;
+	long long __pad2;
+	long long __pad3;
 };
 
 #define IPC_64 0x100
