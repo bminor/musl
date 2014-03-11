@@ -1,12 +1,12 @@
 struct msghdr
 {
 	void *msg_name;
-	int msg_namelen;
+	socklen_t msg_namelen;
 	struct iovec *msg_iov;
-	unsigned long msg_iovlen;
+	int msg_iovlen;
 	void *msg_control;
-	unsigned long  msg_controllen;
-	unsigned msg_flags;
+	socklen_t msg_controllen;
+	int msg_flags;
 };
 
 struct cmsghdr
