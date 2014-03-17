@@ -26,7 +26,7 @@ int __ptsname_r(int fd, char *buf, size_t len)
 {
 	int pty, err;
 	if (!buf) len = 0;
-	if ((err = __syscall(SYS_ioctl, fd, TIOCGPTN, &pty))) return err;
+	if ((err = __syscall(SYS_ioctl, fd, TIOCGPTN, &pty))) return -err;
 	if (snprintf(buf, len, "/dev/pts/%d", pty) >= len) return ERANGE;
 	return 0;
 }
