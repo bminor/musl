@@ -226,7 +226,7 @@ case "$target" in
 mips64*|powerpc64*) fail "$0: unsupported target \"$target\"" ;;
 arm*) ARCH=arm ;;
 i?86*) ARCH=i386 ;;
-x86_64-x32*|x32*) ARCH=x32 ;;
+x86_64-x32*|x32*|x86_64*x32) ARCH=x32 ;;
 x86_64*) ARCH=x86_64 ;;
 mips*) ARCH=mips ;;
 microblaze*) ARCH=microblaze ;;
