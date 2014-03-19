@@ -44,7 +44,6 @@ typedef struct __ucontext {
 	stack_t uc_stack;
 	mcontext_t uc_mcontext;
 	sigset_t uc_sigmask;
-	unsigned long uc_regspace[128];
 } ucontext_t;
 
 #define SA_NOCLDSTOP  1
