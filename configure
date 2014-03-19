@@ -410,6 +410,10 @@ printf "using compiler runtime libraries: %s\n" "$LIBCC"
 SUBARCH=
 t="$CFLAGS_C99FSE $CPPFLAGS $CFLAGS_AUTO $CFLAGS"
 
+if test "$ARCH" = "x86_64" ; then
+trycppif __ILP32__ "$t" && ARCH=x32
+fi
+
 if test "$ARCH" = "arm" ; then
 trycppif __ARMEB__ "$t" && SUBARCH=${SUBARCH}eb
 trycppif __ARM_PCS_VFP "$t" && SUBARCH=${SUBARCH}hf
