@@ -48,8 +48,8 @@ typedef struct __ucontext {
 
 typedef struct sigaltstack {
 	void *ss_sp;
-	int ss_flags;
 	size_t ss_size;
+	int ss_flags;
 } stack_t;
 
 #define SA_NOCLDSTOP  1
