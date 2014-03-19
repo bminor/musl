@@ -77,12 +77,6 @@ extern "C" {
 #define CLD_STOPPED 5
 #define CLD_CONTINUED 6
 
-typedef struct sigaltstack {
-	void *ss_sp;
-	int ss_flags;
-	size_t ss_size;
-} stack_t;
-
 union sigval {
 	int sival_int;
 	void *sival_ptr;

@@ -60,6 +60,12 @@ typedef struct __ucontext {
 	mcontext_t uc_mcontext;
 } ucontext_t;
 
+typedef struct sigaltstack {
+	void *ss_sp;
+	int ss_flags;
+	size_t ss_size;
+} stack_t;
+
 #define SA_NOCLDSTOP  1U
 #define SA_NOCLDWAIT  2U
 #define SA_SIGINFO    4U

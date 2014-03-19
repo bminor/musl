@@ -69,6 +69,12 @@ typedef struct __ucontext {
 	unsigned long long __fpregs_mem[64];
 } ucontext_t;
 
+typedef struct sigaltstack {
+	void *ss_sp;
+	int ss_flags;
+	size_t ss_size;
+} stack_t;
+
 #define SA_NOCLDSTOP  1
 #define SA_NOCLDWAIT  2
 #define SA_SIGINFO    4

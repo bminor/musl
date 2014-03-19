@@ -46,6 +46,12 @@ typedef struct __ucontext {
 	sigset_t uc_sigmask;
 } ucontext_t;
 
+typedef struct sigaltstack {
+	void *ss_sp;
+	int ss_flags;
+	size_t ss_size;
+} stack_t;
+
 #define SA_NOCLDSTOP  1
 #define SA_NOCLDWAIT  0x10000
 #define SA_SIGINFO    8
