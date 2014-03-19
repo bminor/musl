@@ -11,7 +11,7 @@ sigsetjmp:
 	sw $4, 20($sp)
 	sw $ra, 24($sp)
 	sw $gp, 28($sp)
-	addu $6, $4, 124
+	addu $6, $4, 108
 	li $5, 0
 	li $4, 1
 	sw $4, -4($6)
