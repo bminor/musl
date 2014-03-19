@@ -18,6 +18,12 @@ typedef struct {
 } mcontext_t;
 #endif
 
+struct sigaltstack {
+	void *ss_sp;
+	int ss_flags;
+	size_t ss_size;
+};
+
 typedef struct __ucontext {
 	unsigned long uc_flags;
 	struct __ucontext *uc_link;
@@ -26,12 +32,6 @@ typedef struct __ucontext {
 	sigset_t uc_sigmask;
 	unsigned long long uc_regspace[64];
 } ucontext_t;
-
-typedef struct sigaltstack {
-	void *ss_sp;
-	int ss_flags;
-	size_t ss_size;
-} stack_t;
 
 #define SA_NOCLDSTOP  1
 #define SA_NOCLDWAIT  2
