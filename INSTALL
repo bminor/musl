@@ -1,16 +1,20 @@
 
-==== Installing musl ====
+Quick Installation Guide for musl libc
+======================================
 
-musl may be installed either as an alternate C library alongside the
-existing libraries on a system, or as the primary C library for a new
-or existing musl-based system.
+There are many different ways to install musl depending on your usage
+case. This document covers only the build and installation of musl by
+itself, which is useful for upgrading an existing musl-based system or
+compiler toolchain, or for using the provided musl-gcc wrapper with an
+existing non-musl-based compiler.
 
-This document covers the prerequisites and procedures for compiling
-and installation.
+Building complete native or cross-compiler toolchains is outside the
+scope of this INSTALL file. More information can be found on the musl
+website and community wiki.
 
 
-
-==== Build Prerequisites ====
+Build Prerequisites
+-------------------
 
 The only build-time prerequisites for musl are GNU Make and a
 freestanding C99 compiler toolchain targeting the desired instruction
@@ -29,74 +33,127 @@ musl. Any earlier version of GCC with full C99 support should also
 work, but may be subject to minor floating point conformance issues on
 i386 targets. Sufficiently recent versions of PCC and LLVM/clang are
 also believed to work, but have not been tested as heavily; prior to
-Fall 2012, both had known bugs that affected musl.
+Fall 2012, both had known bugs that affected musl. Firm/cparser is
+also believed to work but lacks support for producing shared
+libraries.
 
 
 
-=== Supported Targets ====
+Supported Targets
+-----------------
 
 musl can be built for the following CPU instruction set architecture
 and ABI combinations:
 
-- i386 (requires 387 math and 486 cmpxchg instructions)
-- x86_64
-- arm (EABI)
-- mips (o32 ABI, requires fpu or float emulation in kernel)
-- microblaze (requires a cpu with lwx/swx instructions)
-- powerpc (32-bit, must use "secure plt" mode for dynamic linking)
+* i386
+    * Minimum CPU model is actually 80486 unless kernel emulation of
+      the `cmpxchg` instruction is added
 
-For architectures with both little- and big-endian options, both are
-supported unless otherwise noted.
+* x86_64
 
-In general, musl assumes the availability of all Linux syscall
-interfaces available in Linux 2.6.0. Some programs that do not use
-threads or other modern functionality may be able to run on 2.4.x
-kernels. Other kernels (such as BSD) that provide a Linux-compatible
-syscall ABI should also work but have not been extensively tested.
+* ARM
+    * EABI, standard or hard-float VFP variant
+    * Little-endian default; big-endian variants also supported
+    * Compiler toolchains only support armv4t and later
+
+* MIPS
+    * ABI is o32
+    * Big-endian default; little-endian variants also supported
+    * Default ABI variant uses FPU registers; alternate soft-float ABI
+      that does not use FPU registers or instructions is available
+    * MIPS2 or later, or kernel emulation of ll/sc (standard in Linux)
+      is required
+
+* PowerPC
+    * Only 32-bit is supported
+    * Compiler toolchain must provide 64-bit long double, not IBM
+      double-double or IEEE quad
+    * For dynamic linking, compiler toolchain must be configured for
+      "secure PLT" variant
+
+* Microblaze
+    * Big-endian default; little-endian variants also supported
+    * Soft-float
+    * Requires support for lwx/swx instructions
+
+The following additional targets are available for build, but may not
+work correctly and may not yet have ABI stability:
+
+* SuperH (SH)
+    * Little-endian by default; big-engian variant also supported
+    * Full FPU ABI or soft-float ABI is supported, but the
+      single-precision-only FPU ABI is not supported (musl always
+      requires IEEE single and double to be supported)
+
+* x32 (x86_64 ILP32 ABI)
 
 
 
-==== Option 1: Installing musl as an alternate C library ====
+Build and Installation Procedure
+--------------------------------
 
-In this setup, musl and any third-party libraries linked to musl will
-reside under an alternate prefix such as /usr/local/musl or /opt/musl.
-A wrapper script for gcc, called musl-gcc, can be used in place of gcc
-to compile and link programs and libraries against musl.
+To build and install musl:
 
-(Note: There are not yet corresponding wrapper scripts for other
-compilers, so if you wish to compile and link against musl using
-another compiler, you are responsible for providing the correct
-options to override the default include and library search paths.)
+1. Run the provided configure script from the top-level source
+   directory, passing on its command line any desired options.
 
-To install musl as an alternate libc, follow these steps:
+2. Run "make" to compile.
 
-1. Configure musl's build with a command similar to:
-   ./configure --prefix=/usr/local/musl --exec-prefix=/usr/local
-   Refer to ./configure --help for details on other options. You may
-   change the install prefix if you like, but DO NOT set it to a
-   location that contains your existing libraries based on another
-   libc such as glibc or uClibc. If you do not intend to use dynamic
-   linking, you may disable it at this point via --disable-shared and
-   cut the build time in half. If you wish to use dynamic linking but
-   do not have permissions to write to /lib, you will need to set an
-   alternate dynamic linker location via --syslibdir.
+3. Run "make install" with appropriate privileges to write to the
+   target locations.
 
-2. Run "make". Parallel build is fully supported, so you can instead
-   use "make -j3" or so on SMP systems if you like.
+The configure script attempts to determine automatically the correct
+target architecture based on the compiler being used. For some
+compilers, this may not be possible. If detection fails or selects the
+wrong architecture, you can provide an explicit selection on the
+configure command line.
 
-3. Run "make install" as a user sufficient privileges to write to the
-   destination.
+By default, configure installs to a prefix of "/usr/local/musl". This
+differs from the behavior of most configure scripts, and is chosen
+specifically to avoid clashing with libraries already present on the
+system. DO NOT set the prefix to "/usr", "/usr/local", or "/" unless
+you're upgrading libc on an existing musl-based system. Doing so will
+break your existing system when you run "make install" and it may be
+difficult to recover.
 
-4. Create a file named /etc/ld-musl-$ARCH.path (where $ARCH is
-   replaced by i386, x86_64, etc. as appropriate) containing the
-   correct colon-delimited search path for where you intend to install
-   musl-linked shared library files. If this file is missing, musl
-   will search the standard path, and you will encounter problems when
-   it attempts to load libraries linked against your host libc. Note
-   that this step can be skipped if you disabled dynamic linking.
 
-After installing, you can use musl via the musl-gcc wrapper. For
-example:
+
+Notes on Dynamic Linking
+------------------------
+
+If dynamic linking is enabled, one file needs to be installed outside
+of the installation prefix: /lib/ld-musl-$ARCH.so.1. This is the
+dynamic linker. Its pathname is hard-coded into all dynamic-linked
+programs, so for the sake of being able to share binaries between
+systems, a consistent location should be used everywhere. Note that
+the same applies to glibc and its dynamic linker, which is named
+/lib/ld-linux.so.2 on i386 systems.
+
+If for some reason it is impossible to install the dynamic linker in
+its standard location (for example, if you are installing without root
+privileges), the --syslibdir option to configure can be used to
+provide a different location
+
+At runtime, the dynamic linker needs to know the paths to search for
+shared libraries. You should create a text file named
+/etc/ld-musl-$ARCH.path (where $ARCH matches the architecture name
+used in the dynamic linker) containing a list of directories where you
+want the dynamic linker to search for shared libraries, separated by
+colons or newlines. If the dynamic linker has been installed in a
+non-default location, the path file also needs to reside at that
+location (../etc relative to the chosen syslibdir).
+
+If you do not intend to use dynamic linking, you may disable it by
+passing --disable-shared to configure; this also cuts the build time
+in half.
+
+
+
+Checking for Successful Installation
+------------------------------------
+
+After installing, you should be able to use musl via the musl-gcc
+wrapper. For example:
 
 cat > hello.c <<EOF
 #include <stdio.h>
@@ -106,7 +163,7 @@ int main()
 	return 0;
 }
 EOF
-musl-gcc hello.c
+/usr/local/musl/bin/musl-gcc hello.c
 ./a.out
 
 To configure autoconf-based program to compile and link against musl,
@@ -117,55 +174,3 @@ CC=musl-gcc ./configure ...
 You will probably also want to use --prefix when building libraries to
 ensure that they are installed under the musl prefix and not in the
 main host system library directories.
-
-Finally, it's worth noting that musl's include and lib directories in
-the build tree are setup to be usable without installation, if
-necessary. Just modify the paths in the spec file used by musl-gcc
-(it's located at $prefix/lib/musl-gcc.specs) to point to the
-source/build tree.
-
-
-
-==== Option 2: Installing musl as the primary C library ====
-
-In this setup, you will need an existing compiler/toolchain. It
-shouldn't matter whether it was configured for glibc, uClibc, musl, or
-something else entirely, but sometimes gcc can be uncooperative,
-especially if the system distributor has built gcc with strange
-options. It probably makes the most sense to perform the following
-steps inside a chroot setup or on a virtualized machine with the
-filesystem containing just a minimal toolchain.
-
-WARNING: DO NOT DO THIS ON AN EXISTING SYSTEM UNLESS YOU REALLY WANT
-TO CONVERT IT TO BE A MUSL-BASED SYSTEM!!
-
-1. If you are just upgrading an existing version of musl, you can skip
-   step 1 entirely. Otherwise, move the existing include and lib
-   directories on your system out of the way. Unless all the binaries
-   you will need are static-linked, you should edit /etc/ld.so.conf
-   (or equivalent) and put the new locations of your old libraries in
-   the search path before you move them, or your system will break
-   badly and you will not be able to continue.
-
-2. Configure musl's build with a command similar to:
-   ./configure --prefix=/usr --disable-gcc-wrapper
-   Refer to ./configure --help for details on other options.
-
-3. Run "make" to compile musl.
-
-4. Run "make install" with appropriate privileges.
-
-5. If you are using gcc and wish to use dynamic linking, find the gcc
-   directory containing libgcc.a (it should be something like
-   /usr/lib/gcc/i486-linux-gnu/4.3.5, with the arch and version
-   possibly different) and look for a specs file there. If none
-   exists, use "gcc -dumpspecs > specs" to generate a specs file. Find
-   the dynamic linker (/lib/ld-linux.so.2 or similar) and change it to
-   "/lib/ld-musl-$ARCH.so.1" (with $ARCH replaced by your CPU arch).
-
-At this point, musl should be the default libc. Compile a small test
-program with gcc and verify (using readelf -a or objdump -x) that the
-dynamic linker (program interpreter) is /lib/ld-musl-$ARCH.so.1. If
-you're using static linking only, you might instead check the symbols
-and look for anything suspicious that would indicate your old glibc or
-uClibc was used.
