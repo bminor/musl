@@ -1142,3 +1142,45 @@ arch-specific bugs fixed:
 strict conformance issues:
 - NULL definition re-aligned with POSIX (requires (void *) cast)
 - alignment of math.h is* comparison functions with C11 annex F requirements
+
+
+
+1.0.0 release notes
+
+new features:
+- support for mips softfloat ABI variant
+- legacy setkey and encrypt API for DES
+- support for BSD version of struct tcphdr in addition to GNU version
+- added ipv6 and icmpv6 protocol lookups to getprotoent-family functions
+
+new experimental ports:
+- sh (SuperH)
+- x32 (ILP32 ABI for x86_64)
+
+compatibility:
+- improved c89 compiler support in math.h
+- eliminate some compiler warnings in public headers
+- added some missing things for LFS64 APIs
+- added fallback emulation of accept4 for older kernels
+
+bugs fixed:
+- buffer overflow in printf when printing smallest denormal exactly
+- rounding errors in printf in some just-over-halfway cases
+- posix_spawn did not accept null pid pointer (crashed)
+- ftello gave incorrect result for unflushed append-mode streams
+- mishandling of n=0 case in wcsxfrm (wild buffer overrun)
+- possible system breakage during libc upgrade due to install.sh bugs
+- nftw FTW_MOUNT flag prevented walking any directories at all
+- ptsname/ptsname_r returned negated error codes
+- getprotoent function returned junk after listing valid protocols
+- wrong error code from readdir when the directory has been deleted
+- various prototype/argument-type fixes, mostly to legacy functions
+- various header namespace violations
+
+arch-specific bugs fixed:
+- fesetenv(FE_DFL_ENV) was broken on i386 and x86_64
+- strerror(EDQUOT) did not work on mips
+- recvmsg/sendmsg were broken on powerpc
+- sysv ipc was broken on powerpc and mips
+- statfs/statvfs were broken on mips
+- sigaltstack was broken on mips
