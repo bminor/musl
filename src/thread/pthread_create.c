@@ -112,7 +112,7 @@ static int start(void *p)
 /* pthread_key_create.c overrides this */
 static const size_t dummy = 0;
 weak_alias(dummy, __pthread_tsd_size);
-static const void *dummy_tsd[1] = { 0 };
+static void *const dummy_tsd[1] = { 0 };
 weak_alias(dummy_tsd, __pthread_tsd_main);
 
 static FILE *const dummy_file = 0;
@@ -148,7 +148,7 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attrp
 		init_file_lock(__stdout_used);
 		init_file_lock(__stderr_used);
 		__syscall(SYS_rt_sigprocmask, SIG_UNBLOCK, SIGPT_SET, 0, _NSIG/8);
-		self->tsd = __pthread_tsd_main;
+		self->tsd = (void **)__pthread_tsd_main;
 		libc.threaded = 1;
 	}
 	if (attrp) attr = *attrp;
