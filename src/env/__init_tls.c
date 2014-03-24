@@ -5,6 +5,7 @@
 #include "pthread_impl.h"
 #include "libc.h"
 #include "atomic.h"
+#include "syscall.h"
 
 #ifndef SHARED
 
@@ -87,8 +88,15 @@ void __init_tls(size_t *aux)
 
 	libc.tls_size = 2*sizeof(void *)+T.size+T.align+sizeof(struct pthread);
 
-	mem = __mmap(0, libc.tls_size, PROT_READ|PROT_WRITE,
+	mem = (void *)__syscall(
+#ifdef SYS_mmap2
+		SYS_mmap2,
+#else
+		SYS_mmap,
+#endif
+		0, libc.tls_size, PROT_READ|PROT_WRITE,
 		MAP_ANONYMOUS|MAP_PRIVATE, -1, 0);
+
 	if (!__install_initial_tls(__copy_tls(mem))) a_crash();
 }
 #else
