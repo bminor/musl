@@ -77,6 +77,7 @@ _Noreturn void pthread_exit(void *result)
 
 void __do_cleanup_push(struct __ptcb *cb)
 {
+	if (!libc.has_thread_pointer) return;
 	struct pthread *self = pthread_self();
 	cb->__next = self->cancelbuf;
 	self->cancelbuf = cb;
@@ -84,6 +85,7 @@ void __do_cleanup_push(struct __ptcb *cb)
 
 void __do_cleanup_pop(struct __ptcb *cb)
 {
+	if (!libc.has_thread_pointer) return;
 	__pthread_self()->cancelbuf = cb->__next;
 }
 
@@ -110,6 +112,8 @@ static int start(void *p)
 /* pthread_key_create.c overrides this */
 static const size_t dummy = 0;
 weak_alias(dummy, __pthread_tsd_size);
+static const void *dummy_tsd[1] = { 0 };
+weak_alias(dummy_tsd, __pthread_tsd_main);
 
 static FILE *const dummy_file = 0;
 weak_alias(dummy_file, __stdin_used);
@@ -127,7 +131,7 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attrp
 {
 	int ret;
 	size_t size, guard;
-	struct pthread *self = pthread_self(), *new;
+	struct pthread *self, *new;
 	unsigned char *map = 0, *stack = 0, *tsd = 0, *stack_limit;
 	unsigned flags = CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND
 		| CLONE_THREAD | CLONE_SYSVSEM | CLONE_SETTLS
@@ -135,13 +139,16 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attrp
 	int do_sched = 0;
 	pthread_attr_t attr = {0};
 
-	if (!self) return ENOSYS;
+	if (!libc.can_do_threads) return ENOSYS;
+	self = __pthread_self();
 	if (!libc.threaded) {
 		for (FILE *f=libc.ofl_head; f; f=f->next)
 			init_file_lock(f);
 		init_file_lock(__stdin_used);
 		init_file_lock(__stdout_used);
 		init_file_lock(__stderr_used);
+		__syscall(SYS_rt_sigprocmask, SIG_UNBLOCK, SIGPT_SET, 0, _NSIG/8);
+		self->tsd = __pthread_tsd_main;
 		libc.threaded = 1;
 	}
 	if (attrp) attr = *attrp;

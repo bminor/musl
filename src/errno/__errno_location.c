@@ -3,6 +3,6 @@
 int *__errno_location(void)
 {
 	static int e;
-	if (libc.main_thread) return __pthread_self()->errno_ptr;
+	if (libc.has_thread_pointer) return __pthread_self()->errno_ptr;
 	return &e;
 }

@@ -14,7 +14,13 @@ int pthread_key_create(pthread_key_t *k, void (*dtor)(void *))
 	unsigned i = (uintptr_t)&k / 16 % PTHREAD_KEYS_MAX;
 	unsigned j = i;
 
-	__pthread_self_init();
+	if (libc.has_thread_pointer) {
+		pthread_t self = __pthread_self();
+		/* This can only happen in the main thread before
+		 * pthread_create has been called. */
+		if (!self->tsd) self->tsd = __pthread_tsd_main;
+	}
+
 	if (!dtor) dtor = nodtor;
 	do {
 		if (!a_cas_p(keys+j, 0, (void *)dtor)) {

@@ -7,7 +7,13 @@ uintptr_t __stack_chk_guard;
 
 void __init_ssp(void *entropy)
 {
-	pthread_t self = __pthread_self_init();
+	/* Here the thread pointer is used without checking whether
+	 * it is available; this will crash if it's not. However,
+	 * this function is only meant to be called if the program
+	 * being run uses stack protector, and in that case, it would
+	 * crash without a thread pointer anyway, so it's better to
+	 * crash early before there is state to be lost on crash. */
+	pthread_t self = __pthread_self();
 	uintptr_t canary;
 	if (entropy) memcpy(&canary, entropy, sizeof canary);
 	else canary = (uintptr_t)&canary * 1103515245;

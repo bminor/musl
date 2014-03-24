@@ -6,12 +6,12 @@
 #include <limits.h>
 
 struct __libc {
-	void *main_thread;
+	int has_thread_pointer;
+	int can_do_threads;
 	int threaded;
 	int secure;
 	size_t *auxv;
 	volatile int threads_minus_1;
-	int canceldisable;
 	FILE *ofl_head;
 	int ofl_lock[2];
 	size_t tls_size;

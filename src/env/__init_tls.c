@@ -7,7 +7,27 @@
 #include "atomic.h"
 #include "syscall.h"
 
+int __init_tp(void *p)
+{
+	pthread_t td = p;
+	td->self = td;
+	if (__set_thread_area(TP_ADJ(p)) < 0)
+		return -1;
+	td->tid = td->pid = __syscall(SYS_set_tid_address, &td->tid);
+	td->errno_ptr = &td->errno_val;
+	/* Currently, both of these predicates depend in the same thing:
+	 * successful initialization of the thread pointer. However, in
+	 * the future, we may support setups where setting the thread
+	 * pointer is possible but threads other than the main thread
+	 * cannot work, so it's best to keep the predicates separate. */
+	libc.has_thread_pointer = 1;
+	libc.can_do_threads = 1;
+	return 0;
+}
+
 #ifndef SHARED
+
+static long long builtin_tls[(sizeof(struct pthread) + 64)/sizeof(long long)];
 
 struct tls_image {
 	void *image;
@@ -62,10 +82,11 @@ typedef Elf64_Phdr Phdr;
 
 void __init_tls(size_t *aux)
 {
-	unsigned char *p, *mem;
+	unsigned char *p;
 	size_t n;
 	Phdr *phdr, *tls_phdr=0;
 	size_t base = 0;
+	void *mem;
 
 	libc.tls_size = sizeof(struct pthread);
 
@@ -76,28 +97,38 @@ void __init_tls(size_t *aux)
 		if (phdr->p_type == PT_TLS)
 			tls_phdr = phdr;
 	}
-	if (!tls_phdr) return;
 
-	T.image = (void *)(base + tls_phdr->p_vaddr);
-	T.len = tls_phdr->p_filesz;
-	T.size = tls_phdr->p_memsz;
-	T.align = tls_phdr->p_align;
+	if (tls_phdr) {
+		T.image = (void *)(base + tls_phdr->p_vaddr);
+		T.len = tls_phdr->p_filesz;
+		T.size = tls_phdr->p_memsz;
+		T.align = tls_phdr->p_align;
+	}
 
 	T.size += (-T.size - (uintptr_t)T.image) & (T.align-1);
 	if (T.align < 4*sizeof(size_t)) T.align = 4*sizeof(size_t);
 
 	libc.tls_size = 2*sizeof(void *)+T.size+T.align+sizeof(struct pthread);
 
-	mem = (void *)__syscall(
+	if (libc.tls_size > sizeof builtin_tls) {
+		mem = (void *)__syscall(
 #ifdef SYS_mmap2
-		SYS_mmap2,
+			SYS_mmap2,
 #else
-		SYS_mmap,
+			SYS_mmap,
 #endif
-		0, libc.tls_size, PROT_READ|PROT_WRITE,
-		MAP_ANONYMOUS|MAP_PRIVATE, -1, 0);
+			0, libc.tls_size, PROT_READ|PROT_WRITE,
+			MAP_ANONYMOUS|MAP_PRIVATE, -1, 0);
+		/* -4095...-1 cast to void * will crash on dereference anyway,
+		 * so don't bloat the init code checking for error codes and
+		 * explicitly calling a_crash(). */
+	} else {
+		mem = builtin_tls;
+	}
 
-	if (!__install_initial_tls(__copy_tls(mem))) a_crash();
+	/* Failure to initialize thread pointer is fatal if TLS is used. */
+	if (__init_tp(__copy_tls(mem)) < 0 && tls_phdr)
+		a_crash();
 }
 #else
 void __init_tls(size_t *auxv) { }

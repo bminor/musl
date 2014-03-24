@@ -90,7 +90,7 @@ struct symdef {
 #include "reloc.h"
 
 void __init_ssp(size_t *);
-void *__install_initial_tls(void *);
+int __init_tp(void *);
 void __init_libc(char **, char *);
 
 const char *__libc_get_version(void);
@@ -108,6 +108,7 @@ static pthread_rwlock_t lock;
 static struct debug debug;
 static size_t tls_cnt, tls_offset, tls_align = 4*sizeof(size_t);
 static pthread_mutex_t init_fini_lock = { ._m_type = PTHREAD_MUTEX_RECURSIVE };
+static long long builtin_tls[(sizeof(struct pthread) + 64)/sizeof(long long)];
 
 struct debug *_dl_debug_addr = &debug;
 
@@ -673,9 +674,10 @@ static struct dso *load_library(const char *name, struct dso *needed_by)
 	/* Add a shortname only if name arg was not an explicit pathname. */
 	if (pathname != name) p->shortname = strrchr(p->name, '/')+1;
 	if (p->tls_image) {
-		if (runtime && !__pthread_self_init()) {
+		if (runtime && !libc.has_thread_pointer) {
 			munmap(map, p->map_len);
 			free(p);
+			errno = ENOSYS;
 			return 0;
 		}
 		p->tls_id = ++tls_cnt;
@@ -866,10 +868,13 @@ void *__copy_tls(unsigned char *mem)
 	pthread_t td;
 	struct dso *p;
 
-	if (!tls_cnt) return mem;
-
 	void **dtv = (void *)mem;
 	dtv[0] = (void *)tls_cnt;
+	if (!tls_cnt) {
+		td = (void *)(dtv+1);
+		td->dtv = dtv;
+		return td;
+	}
 
 #ifdef TLS_ABOVE_TP
 	mem += sizeof(void *) * (tls_cnt+1);
@@ -962,6 +967,7 @@ void *__dynlink(int argc, char **argv)
 	size_t vdso_base;
 	size_t *auxv;
 	char **envp = argv+argc+1;
+	void *initial_tls;
 
 	/* Find aux vector just past environ[] */
 	for (i=argc+1; argv[i]; i++)
@@ -1144,15 +1150,19 @@ void *__dynlink(int argc, char **argv)
 	reloc_all(app);
 
 	update_tls_size();
-	if (tls_cnt) {
-		void *mem = mmap(0, libc.tls_size, PROT_READ|PROT_WRITE,
-			MAP_ANONYMOUS|MAP_PRIVATE, -1, 0);
-		if (mem==MAP_FAILED ||
-		    !__install_initial_tls(__copy_tls(mem))) {
+	if (libc.tls_size > sizeof builtin_tls) {
+		initial_tls = calloc(libc.tls_size, 1);
+		if (!initial_tls) {
 			dprintf(2, "%s: Error getting %zu bytes thread-local storage: %m\n",
 				argv[0], libc.tls_size);
 			_exit(127);
 		}
+	} else {
+		initial_tls = builtin_tls;
+	}
+	if (__init_tp(__copy_tls(initial_tls)) < 0 && tls_cnt) {
+		dprintf(2, "%s: Thread-local storage not supported by kernel.\n", argv[0]);
+		_exit(127);
 	}
 
 	if (ldso_fail) _exit(127);
