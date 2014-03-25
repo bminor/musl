@@ -91,7 +91,6 @@ struct symdef {
 
 #include "reloc.h"
 
-void __init_ssp(size_t *);
 int __init_tp(void *);
 void __init_libc(char **, char *);
 
@@ -100,7 +99,6 @@ const char *__libc_get_version(void);
 static struct dso *head, *tail, *ldso, *fini_head;
 static char *env_path, *sys_path;
 static unsigned long long gencnt;
-static int ssp_used;
 static int runtime;
 static int ldd_mode;
 static int ldso_fail;
@@ -201,13 +199,6 @@ static struct symdef find_sym(struct dso *dso, const char *s, int need_def)
 {
 	uint32_t h = 0, gh = 0;
 	struct symdef def = {0};
-	if (dso->ghashtab) {
-		gh = gnu_hash(s);
-		if (gh == 0x1f4039c9 && !strcmp(s, "__stack_chk_fail")) ssp_used = 1;
-	} else {
-		h = sysv_hash(s);
-		if (h == 0x595a4cc && !strcmp(s, "__stack_chk_fail")) ssp_used = 1;
-	}
 	for (; dso; dso=dso->next) {
 		Sym *sym;
 		if (!dso->global) continue;
@@ -1203,7 +1194,6 @@ void *__dynlink(int argc, char **argv)
 	debug.state = 0;
 	_dl_debug_state();
 
-	if (ssp_used) __init_ssp((void *)aux[AT_RANDOM]);
 	__init_libc(envp, argv[0]);
 	atexit(do_fini);
 	errno = 0;
@@ -1285,9 +1275,6 @@ void *dlopen(const char *file, int mode)
 	}
 
 	update_tls_size();
-
-	if (ssp_used) __init_ssp(libc.auxv);
-
 	_dl_debug_state();
 	orig_tail = tail;
 end:

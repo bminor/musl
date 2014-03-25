@@ -15,9 +15,7 @@ void __init_security(size_t *aux)
 	struct pollfd pfd[3] = { {.fd=0}, {.fd=1}, {.fd=2} };
 	int i;
 
-#ifndef SHARED
 	__init_ssp((void *)aux[AT_RANDOM]);
-#endif
 
 	if (aux[AT_UID]==aux[AT_EUID] && aux[AT_GID]==aux[AT_EGID]
 		&& !aux[AT_SECURE]) return;
