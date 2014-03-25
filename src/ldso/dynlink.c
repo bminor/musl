@@ -781,7 +781,7 @@ static void reloc_all(struct dso *p)
 		if (p->relro_start != p->relro_end &&
 		    mprotect(p->base+p->relro_start, p->relro_end-p->relro_start, PROT_READ) < 0) {
 			snprintf(errbuf, sizeof errbuf,
-				"Error relocating %s: RELRO protection failed",
+				"Error relocating %s: RELRO protection failed: %m",
 				p->name);
 			if (runtime) longjmp(*rtld_fail, 1);
 			dprintf(2, "%s\n", errbuf);
