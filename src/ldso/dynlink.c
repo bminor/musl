@@ -56,6 +56,7 @@ struct dso {
 
 	Phdr *phdr;
 	int phnum;
+	size_t phentsize;
 	int refcnt;
 	Sym *syms;
 	uint32_t *hashtab;
@@ -298,9 +299,12 @@ static void reclaim(struct dso *dso, size_t start, size_t end)
 	free(a);
 }
 
-static void reclaim_gaps(struct dso *dso, Phdr *ph, size_t phent, size_t phcnt)
+static void reclaim_gaps(struct dso *dso)
 {
-	for (; phcnt--; ph=(void *)((char *)ph+phent)) {
+	Phdr *ph;
+	size_t phcnt;
+
+	for (phcnt = dso->phnum, ph = dso->phdr; phcnt--; ph=(void *)((char *)ph+dso->phentsize)) {
 		if (ph->p_type!=PT_LOAD) continue;
 		if ((ph->p_flags&(PF_R|PF_W))!=(PF_R|PF_W)) continue;
 		reclaim(dso, ph->p_vaddr & -PAGE_SIZE, ph->p_vaddr);
@@ -400,6 +404,7 @@ static void *map_library(int fd, struct dso *dso)
 			dso->phdr = (void *)(base + ph->p_vaddr
 				+ (eh->e_phoff-ph->p_offset));
 			dso->phnum = eh->e_phnum;
+			dso->phentsize = eh->e_phentsize;
 		}
 		/* Reuse the existing mapping for the lowest-address LOAD */
 		if ((ph->p_vaddr & -PAGE_SIZE) == addr_min) continue;
@@ -430,7 +435,7 @@ static void *map_library(int fd, struct dso *dso)
 	dso->base = base;
 	dso->dynv = (void *)(base+dyn);
 	if (dso->tls_size) dso->tls_image = (void *)(base+tls_image);
-	if (!runtime) reclaim_gaps(dso, ph0, eh->e_phentsize, eh->e_phnum);
+	if (!runtime) reclaim_gaps(dso);
 	free(allocated_buf);
 	return map;
 noexec:
@@ -787,19 +792,14 @@ static void reloc_all(struct dso *p)
 	}
 }
 
-static size_t find_dyn(Phdr *ph, size_t cnt, size_t stride)
+static void kernel_mapped_dso(struct dso *p)
 {
-	for (; cnt--; ph = (void *)((char *)ph + stride))
-		if (ph->p_type == PT_DYNAMIC)
-			return ph->p_vaddr;
-	return 0;
-}
-
-static void find_map_range(Phdr *ph, size_t cnt, size_t stride, struct dso *p)
-{
-	size_t min_addr = -1, max_addr = 0;
-	for (; cnt--; ph = (void *)((char *)ph + stride)) {
-		if (ph->p_type == PT_GNU_RELRO) {
+	size_t min_addr = -1, max_addr = 0, cnt;
+	Phdr *ph = p->phdr;
+	for (cnt = p->phnum; cnt--; ph = (void *)((char *)ph + p->phentsize)) {
+		if (ph->p_type == PT_DYNAMIC) {
+			p->dynv = (void *)(p->base + ph->p_vaddr);
+		} else if (ph->p_type == PT_GNU_RELRO) {
 			p->relro_start = ph->p_vaddr & -PAGE_SIZE;
 			p->relro_end = (ph->p_vaddr + ph->p_memsz) & -PAGE_SIZE;
 		}
@@ -813,6 +813,7 @@ static void find_map_range(Phdr *ph, size_t cnt, size_t stride, struct dso *p)
 	max_addr = (max_addr + PAGE_SIZE-1) & -PAGE_SIZE;
 	p->map = p->base + min_addr;
 	p->map_len = max_addr - min_addr;
+	p->kernel_mapped = 1;
 }
 
 static void do_fini()
@@ -1023,13 +1024,11 @@ void *__dynlink(int argc, char **argv)
 	lib->base = (void *)aux[AT_BASE];
 	lib->name = lib->shortname = "libc.so";
 	lib->global = 1;
-	lib->kernel_mapped = 1;
 	ehdr = (void *)lib->base;
 	lib->phnum = ehdr->e_phnum;
 	lib->phdr = (void *)(aux[AT_BASE]+ehdr->e_phoff);
-	find_map_range(lib->phdr, ehdr->e_phnum, ehdr->e_phentsize, lib);
-	lib->dynv = (void *)(lib->base + find_dyn(lib->phdr,
-		ehdr->e_phnum, ehdr->e_phentsize));
+	lib->phentsize = ehdr->e_phentsize;
+	kernel_mapped_dso(lib);
 	decode_dyn(lib);
 
 	if (aux[AT_PHDR]) {
@@ -1038,6 +1037,7 @@ void *__dynlink(int argc, char **argv)
 		/* Find load address of the main program, via AT_PHDR vs PT_PHDR. */
 		app->phdr = phdr = (void *)aux[AT_PHDR];
 		app->phnum = aux[AT_PHNUM];
+		app->phentsize = aux[AT_PHENT];
 		for (i=aux[AT_PHNUM]; i; i--, phdr=(void *)((char *)phdr + aux[AT_PHENT])) {
 			if (phdr->p_type == PT_PHDR)
 				app->base = (void *)(aux[AT_PHDR] - phdr->p_vaddr);
@@ -1057,11 +1057,7 @@ void *__dynlink(int argc, char **argv)
 			app->name = (char *)aux[AT_EXECFN];
 		else
 			app->name = argv[0];
-		app->kernel_mapped = 1;
-		app->dynv = (void *)(app->base + find_dyn(
-			(void *)aux[AT_PHDR], aux[AT_PHNUM], aux[AT_PHENT]));
-		find_map_range((void *)aux[AT_PHDR],
-			aux[AT_PHNUM], aux[AT_PHENT], app);
+		kernel_mapped_dso(app);
 	} else {
 		int fd;
 		char *ldname = argv[0];
@@ -1127,6 +1123,7 @@ void *__dynlink(int argc, char **argv)
 		ehdr = (void *)vdso_base;
 		vdso->phdr = phdr = (void *)(vdso_base + ehdr->e_phoff);
 		vdso->phnum = ehdr->e_phnum;
+		vdso->phentsize = ehdr->e_phentsize;
 		for (i=ehdr->e_phnum; i; i--, phdr=(void *)((char *)phdr + ehdr->e_phentsize)) {
 			if (phdr->p_type == PT_DYNAMIC)
 				vdso->dynv = (void *)(vdso_base + phdr->p_offset);
@@ -1154,10 +1151,8 @@ void *__dynlink(int argc, char **argv)
 	/* PAST THIS POINT, ALL LIBC INTERFACES ARE FULLY USABLE. */
 
 	/* Donate unused parts of app and library mapping to malloc */
-	reclaim_gaps(app, (void *)aux[AT_PHDR], aux[AT_PHENT], aux[AT_PHNUM]);
-	ehdr = (void *)lib->base;
-	reclaim_gaps(lib, (void *)(lib->base+ehdr->e_phoff),
-		ehdr->e_phentsize, ehdr->e_phnum);
+	reclaim_gaps(app);
+	reclaim_gaps(lib);
 
 	/* Load preload/needed libraries, add their symbols to the global
 	 * namespace, and perform all remaining relocations. The main
