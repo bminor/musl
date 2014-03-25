@@ -301,10 +301,10 @@ static void reclaim(struct dso *dso, size_t start, size_t end)
 
 static void reclaim_gaps(struct dso *dso)
 {
-	Phdr *ph;
-	size_t phcnt;
+	Phdr *ph = dso->phdr;
+	size_t phcnt = dso->phnum;
 
-	for (phcnt = dso->phnum, ph = dso->phdr; phcnt--; ph=(void *)((char *)ph+dso->phentsize)) {
+	for (; phcnt--; ph=(void *)((char *)ph+dso->phentsize)) {
 		if (ph->p_type!=PT_LOAD) continue;
 		if ((ph->p_flags&(PF_R|PF_W))!=(PF_R|PF_W)) continue;
 		reclaim(dso, ph->p_vaddr & -PAGE_SIZE, ph->p_vaddr);
@@ -351,9 +351,9 @@ static void *map_library(int fd, struct dso *dso)
 		ph = ph0 = (void *)((char *)buf + eh->e_phoff);
 	}
 	for (i=eh->e_phnum; i; i--, ph=(void *)((char *)ph+eh->e_phentsize)) {
-		if (ph->p_type == PT_DYNAMIC)
+		if (ph->p_type == PT_DYNAMIC) {
 			dyn = ph->p_vaddr;
-		else if (ph->p_type == PT_TLS) {
+		} else if (ph->p_type == PT_TLS) {
 			tls_image = ph->p_vaddr;
 			dso->tls_align = ph->p_align;
 			dso->tls_len = ph->p_filesz;
