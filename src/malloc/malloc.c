@@ -37,6 +37,7 @@ static struct {
 	struct bin bins[64];
 	int brk_lock[2];
 	int free_lock[2];
+	unsigned mmap_step;
 } mal;
 
 
@@ -162,7 +163,28 @@ static struct chunk *expand_heap(size_t n)
 	new = mal.brk + n + SIZE_ALIGN + PAGE_SIZE - 1 & -PAGE_SIZE;
 	n = new - mal.brk;
 
-	if (__brk(new) != new) goto fail;
+	if (__brk(new) != new) {
+		size_t min = (size_t)PAGE_SIZE << mal.mmap_step/2;
+		n += -n & PAGE_SIZE-1;
+		if (n < min) n = min;
+		void *area = __mmap(0, n, PROT_READ|PROT_WRITE,
+			MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+		if (area == MAP_FAILED) goto fail;
+
+		mal.mmap_step++;
+		area = (char *)area + SIZE_ALIGN - OVERHEAD;
+		w = area;
+		n -= SIZE_ALIGN;
+		w->psize = 0 | C_INUSE;
+		w->csize = n | C_INUSE;
+		w = NEXT_CHUNK(w);
+		w->psize = n | C_INUSE;
+		w->csize = 0 | C_INUSE;
+
+		unlock(mal.brk_lock);
+
+		return area;
+	}
 
 	w = MEM_TO_CHUNK(new);
 	w->psize = n | C_INUSE;
