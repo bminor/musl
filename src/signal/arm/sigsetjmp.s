@@ -1,6 +1,9 @@
 .global sigsetjmp
+.global __sigsetjmp
 .type sigsetjmp,%function
+.type __sigsetjmp,%function
 sigsetjmp:
+__sigsetjmp:
 	str a2,[a1,#256]
 	tst a2,a2
 	beq setjmp

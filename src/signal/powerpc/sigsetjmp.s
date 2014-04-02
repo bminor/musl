@@ -1,6 +1,9 @@
 	.global sigsetjmp
+	.global __sigsetjmp
 	.type sigsetjmp,%function
+	.type __sigsetjmp,%function
 sigsetjmp:
+__sigsetjmp:
 	#int sigsetjmp(sigjmp_buf buf, int save)
 	#		r3		r4
 	#0) store save into buf->__fl

@@ -1,6 +1,9 @@
 .global sigsetjmp
+.global __sigsetjmp
 .type sigsetjmp,@function
+.type __sigsetjmp,@function
 sigsetjmp:
+__sigsetjmp:
 	mov 4(%esp),%eax
 	mov 8(%esp),%ecx
 	mov %ecx,24(%eax)

@@ -1,5 +1,6 @@
 #include <setjmp.h>
 #include <signal.h>
+#include "libc.h"
 
 /* !!! This function will not work unless the compiler performs
  * tail call optimization. Machine-specific asm versions should
@@ -12,3 +13,5 @@ int sigsetjmp(sigjmp_buf buf, int save)
 		pthread_sigmask(SIG_SETMASK, 0, (sigset_t *)buf->__ss);
 	return setjmp(buf);
 }
+
+weak_alias(sigsetjmp, __sigsetjmp);

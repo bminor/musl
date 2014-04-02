@@ -1,6 +1,9 @@
 .global sigsetjmp
+.global __sigsetjmp
 .type sigsetjmp,@function
+.type __sigsetjmp,@function
 sigsetjmp:
+__sigsetjmp:
 	swi     r6, r5, 72
 	beqi    r6, setjmp@PLT
 

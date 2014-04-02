@@ -1,6 +1,9 @@
 .global sigsetjmp
-.type   sigsetjmp, @function
+.global __sigsetjmp
+.type sigsetjmp,@function
+.type __sigsetjmp,@function
 sigsetjmp:
+__sigsetjmp:
 	mov.l r5, @(36,r4)
 	tst r5, r5
 	bf  2f

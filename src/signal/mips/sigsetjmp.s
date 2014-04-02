@@ -1,8 +1,11 @@
 .set noreorder
 
 .global sigsetjmp
+.global __sigsetjmp
 .type sigsetjmp,@function
+.type __sigsetjmp,@function
 sigsetjmp:
+__sigsetjmp:
 	lui $gp, %hi(_gp_disp)
 	addiu $gp, %lo(_gp_disp)
 	beq $5, $0, 1f
