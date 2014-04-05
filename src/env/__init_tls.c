@@ -64,14 +64,6 @@ void *__tls_get_addr(size_t *v)
 	return (char *)__pthread_self()->dtv[1]+v[1];
 }
 
-static void *simple(void *p)
-{
-	*(void **)p = p;
-	return __set_thread_area(TP_ADJ(p)) ? 0 : p;
-}
-
-weak_alias(simple, __install_initial_tls);
-
 void *__mmap(void *, size_t, int, int, int, off_t);
 
 #if ULONG_MAX == 0xffffffff
