@@ -363,8 +363,8 @@ static int fmt_fp(FILE *f, long double y, int w, int p, int fl, int t)
 			}
 		}
 		if (z>d+1) z=d+1;
-		for (; !z[-1] && z>a; z--);
 	}
+	for (; z>a && !z[-1]; z--);
 	
 	if ((t|32)=='g') {
 		if (!p) p++;
