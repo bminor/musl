@@ -37,7 +37,7 @@ static inline int __k_cas(int t, int s, volatile int *p)
 		"	beq 1b\n"
 		"	mcr p15,0,r0,c7,c10,5\n"
 		: "=&r"(ret)
-		: "r"(t), "r"(s), "m"(*p)
+		: "r"(t), "r"(s), "Q"(*p)
 		: "memory", "cc" );
 	return ret;
 }
