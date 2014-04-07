@@ -3,7 +3,6 @@
 
 void __init_tls(size_t *);
 void __init_security(size_t *);
-void __init_ldso_ctors(void);
 
 #ifndef SHARED
 static void dummy() {}
