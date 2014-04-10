@@ -139,6 +139,7 @@ void *memmem(const void *h0, size_t k, const void *n0, size_t l)
 	/* Use faster algorithms for short needles */
 	h = memchr(h0, *n, k);
 	if (!h || l==1) return (void *)h;
+	k -= h - (const unsigned char *)h0;
 	if (l==2) return twobyte_memmem(h, k, n);
 	if (l==3) return threebyte_memmem(h, k, n);
 	if (l==4) return fourbyte_memmem(h, k, n);
