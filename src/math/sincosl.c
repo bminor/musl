@@ -4,7 +4,10 @@
 #if LDBL_MANT_DIG == 53 && LDBL_MAX_EXP == 1024
 void sincosl(long double x, long double *sin, long double *cos)
 {
-	sincos(x, (double *)sin, (double *)cos);
+	double sind, cosd;
+	sincos(x, &sind, &cosd);
+	*sin = sind;
+	*cos = cosd;
 }
 #elif (LDBL_MANT_DIG == 64 || LDBL_MANT_DIG == 113) && LDBL_MAX_EXP == 16384
 void sincosl(long double x, long double *sin, long double *cos)
