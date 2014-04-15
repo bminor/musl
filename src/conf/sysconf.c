@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <sys/resource.h>
 #include <signal.h>
+#include <sys/sysinfo.h>
 #include "syscall.h"
 #include "libc.h"
 
@@ -14,6 +15,8 @@
 #define JT_SEM_VALUE_MAX JT(5)
 #define JT_NPROCESSORS_CONF JT(6)
 #define JT_NPROCESSORS_ONLN JT(7)
+#define JT_PHYS_PAGES JT(8)
+#define JT_AVPHYS_PAGES JT(9)
 
 #define RLIM(x) (-32768|(RLIMIT_ ## x))
 
@@ -105,8 +108,8 @@ long sysconf(int name)
 		[_SC_THREAD_PROCESS_SHARED] = VER,
 		[_SC_NPROCESSORS_CONF] = JT_NPROCESSORS_CONF,
 		[_SC_NPROCESSORS_ONLN] = JT_NPROCESSORS_ONLN,
-		[_SC_PHYS_PAGES] = -1,
-		[_SC_AVPHYS_PAGES] = -1,
+		[_SC_PHYS_PAGES] = JT_PHYS_PAGES,
+		[_SC_AVPHYS_PAGES] = JT_AVPHYS_PAGES,
 		[_SC_ATEXIT_MAX] = -1,
 		[_SC_PASS_MAX] = -1,
 		[_SC_XOPEN_VERSION] = _XOPEN_VERSION,
@@ -252,6 +255,18 @@ long sysconf(int name)
 		for (i=cnt=0; i<sizeof set; i++)
 			for (; set[i]; set[i]&=set[i]-1, cnt++);
 		return cnt;
+	case JT_PHYS_PAGES & 255:
+	case JT_AVPHYS_PAGES & 255: ;
+		unsigned long long mem;
+		int __lsysinfo(struct sysinfo *);
+		struct sysinfo si;
+		__lsysinfo(&si);
+		if (!si.mem_unit) si.mem_unit = 1;
+		if (name==_SC_PHYS_PAGES) mem = si.totalram;
+		else mem = si.freeram + si.bufferram;
+		mem *= si.mem_unit;
+		mem /= PAGE_SIZE;
+		return (mem > LONG_MAX) ? LONG_MAX : mem;
 	}
 	return values[name];
 }
