@@ -25,17 +25,24 @@ static inline int a_ctz_64(uint64_t x)
 #if __ARM_ARCH_6__ || __ARM_ARCH_6K__ || __ARM_ARCH_6ZK__ \
  || __ARM_ARCH_7A__ || __ARM_ARCH_7R__ \
  || __ARM_ARCH >= 7
+
+#if __ARM_ARCH_7A__ || __ARM_ARCH_7R__ ||  __ARM_ARCH >= 7
+#define MEM_BARRIER "dmb ish"
+#else
+#define MEM_BARRIER "mcr p15,0,r0,c7,c10,5"
+#endif
+
 static inline int __k_cas(int t, int s, volatile int *p)
 {
 	int ret;
 	__asm__(
-		"	mcr p15,0,r0,c7,c10,5\n"
+		"	" MEM_BARRIER "\n"
 		"1:	ldrex %0,%3\n"
 		"	subs %0,%0,%1\n"
 		"	strexeq %0,%2,%3\n"
 		"	teqeq %0,#1\n"
 		"	beq 1b\n"
-		"	mcr p15,0,r0,c7,c10,5\n"
+		"	" MEM_BARRIER "\n"
 		: "=&r"(ret)
 		: "r"(t), "r"(s), "Q"(*p)
 		: "memory", "cc" );
