@@ -10,7 +10,7 @@ static int sc_clock_gettime(clockid_t clk, struct timespec *ts)
 	if (!r) return r;
 	if (r == -ENOSYS) {
 		if (clk == CLOCK_REALTIME) {
-			__syscall(SYS_gettimeofday, clk, ts, 0);
+			__syscall(SYS_gettimeofday, ts, 0);
 			ts->tv_nsec = (int)ts->tv_nsec * 1000;
 			return 0;
 		}
