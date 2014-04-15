@@ -228,9 +228,9 @@ long sysconf(int name)
 	} else if (values[name] >= -1) {
 		return values[name];
 	} else if (values[name] < -256) {
-		long lim[2];
-		__syscall(SYS_getrlimit, values[name]&16383, lim);
-		return lim[0] < 0 ? LONG_MAX : lim[0];
+		struct rlimit lim;
+		getrlimit(values[name]&16383, &lim);
+		return lim.rlim_cur > LONG_MAX ? LONG_MAX : lim.rlim_cur;
 	}
 
 	switch ((unsigned char)values[name]) {
