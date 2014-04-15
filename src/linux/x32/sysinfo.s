@@ -1,5 +1,1 @@
-.text
-.global sysinfo
-.type   sysinfo,@function
-sysinfo:
-	jmp __x32_sysinfo
+# see arch/x32/src/sysinfo.c

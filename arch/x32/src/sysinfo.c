@@ -1,5 +1,6 @@
 #include <sys/sysinfo.h>
 #include "syscall.h"
+#include "libc.h"
 
 #define klong long long
 #define kulong unsigned long long
@@ -20,7 +21,7 @@ struct kernel_sysinfo {
 	unsigned mem_unit;
 };
 
-int __x32_sysinfo(struct sysinfo *info)
+int __lsysinfo(struct sysinfo *info)
 {
 	struct kernel_sysinfo tmp;
 	int ret = syscall(SYS_sysinfo, &tmp);
@@ -45,3 +46,5 @@ int __x32_sysinfo(struct sysinfo *info)
 	info->mem_unit = (tmp.mem_unit ? tmp.mem_unit : 1) << shifts;
 	return ret;
 }
+
+weak_alias(__lsysinfo, sysinfo);
