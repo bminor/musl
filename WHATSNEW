@@ -1184,3 +1184,31 @@ arch-specific bugs fixed:
 - sysv ipc was broken on powerpc and mips
 - statfs/statvfs were broken on mips
 - sigaltstack was broken on mips
+
+
+
+1.1.0 release notes
+
+new features:
+- relro memory protection in dynamic linker
+- malloc can now extend heap with mmap if brk fails
+- vdso clock_gettime/gettimeofday/time acceleration on x86_64
+- thread/library-safe versions of search.h functions (nonstandard)
+- getauxval function (nonstandard)
+- sysconf extensions to query physical memory size
+
+bugs fixed:
+- floating point printf output corruption from carry into uninitialized slot
+- possible runaway carry overflow in printf floating point
+- printf %g failure to strip trailing zeros in some cases
+- search past end of haystack in memmem
+- off-by-one error in confstr return value
+- crashes in some near-empty static programs that use stack protector
+- deadlock race in pthread_once
+- non-working clock_gettime fallback for old kernels
+
+arch-specific bugs fixed:
+- crash from missing syscall asm register clobbers on real microblaze kernel
+- crash in all nontrivial dynamic linker use on microblaze
+- incorrect rlimit constants on mips
+- broken, possibly dangerous, use of getrlimit syscall on x32 in sysconf
