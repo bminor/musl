@@ -1055,12 +1055,31 @@ void *__dynlink(int argc, char **argv)
 		size_t l = strlen(ldname);
 		if (l >= 3 && !strcmp(ldname+l-3, "ldd")) ldd_mode = 1;
 		*argv++ = (void *)-1;
-		if (argv[0] && !strcmp(argv[0], "--")) *argv++ = (void *)-1;
+		while (argv[0] && argv[0][0]=='-' && argv[0][1]=='-') {
+			char *opt = argv[0]+2;
+			*argv++ = (void *)-1;
+			if (!*opt) {
+				break;
+			} else if (!memcmp(opt, "list", 5)) {
+				ldd_mode = 1;
+			} else if (!memcmp(opt, "library-path", 12)) {
+				if (opt[12]=='=') env_path = opt+13;
+				else if (opt[12]) *argv = 0;
+				else if (*argv) env_path = *argv++;
+			} else if (!memcmp(opt, "preload", 7)) {
+				if (opt[7]=='=') env_preload = opt+8;
+				else if (opt[7]) *argv = 0;
+				else if (*argv) env_preload = *argv++;
+			} else {
+				argv[0] = 0;
+			}
+			argv[-1] = (void *)-1;
+		}
 		if (!argv[0]) {
 			dprintf(2, "musl libc\n"
 				"Version %s\n"
 				"Dynamic Program Loader\n"
-				"Usage: %s [--] pathname%s\n",
+				"Usage: %s [options] [--] pathname%s\n",
 				__libc_get_version(), ldname,
 				ldd_mode ? "" : " [args]");
 			_exit(1);
