@@ -18,7 +18,7 @@ int pthread_once(pthread_once_t *control, void (*init)(void))
 	 *  1 - another thread is running init; wait
 	 *  2 - another thread finished running init; just return */
 
-	for (;;) switch (a_swap(control, 1)) {
+	for (;;) switch (a_cas(control, 0, 1)) {
 	case 0:
 		pthread_cleanup_push(undo, control);
 		init();
@@ -31,7 +31,6 @@ int pthread_once(pthread_once_t *control, void (*init)(void))
 		__wait(control, &waiters, 1, 0);
 		continue;
 	case 2:
-		a_store(control, 2);
 		return 0;
 	}
 }
