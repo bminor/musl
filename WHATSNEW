@@ -1184,3 +1184,21 @@ arch-specific bugs fixed:
 - sysv ipc was broken on powerpc and mips
 - statfs/statvfs were broken on mips
 - sigaltstack was broken on mips
+
+
+
+1.0.1 release notes
+
+bugs fixed:
+- floating point printf output corruption from carry into uninitialized slot
+- possible runaway carry overflow in printf floating point
+- printf %g failure to strip trailing zeros in some cases
+- search past end of haystack in memmem
+- off-by-one error in confstr return value
+- deadlock race in pthread_once
+- non-working clock_gettime fallback for old kernels
+
+arch-specific bugs fixed:
+- crash from missing syscall asm register clobbers on real microblaze kernel
+- crash in all nontrivial dynamic linker use on microblaze
+- incorrect rlimit constants on mips
