@@ -120,7 +120,7 @@ static char *twoway_memmem(const unsigned char *h, const unsigned char *z, const
 		}
 		/* Compare left half */
 		for (k=ms+1; k>mem && n[k-1] == h[k-1]; k--);
-		if (k == mem) return (char *)h;
+		if (k <= mem) return (char *)h;
 		h += p;
 		mem = mem0;
 	}

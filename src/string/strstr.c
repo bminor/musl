@@ -130,7 +130,7 @@ static char *twoway_strstr(const unsigned char *h, const unsigned char *n)
 		}
 		/* Compare left half */
 		for (k=ms+1; k>mem && n[k-1] == h[k-1]; k--);
-		if (k == mem) return (char *)h;
+		if (k <= mem) return (char *)h;
 		h += p;
 		mem = mem0;
 	}
