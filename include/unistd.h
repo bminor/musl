@@ -177,6 +177,7 @@ void endusershell(void);
 char *getusershell(void);
 int acct(const char *);
 long syscall(long, ...);
+int execvpe(const char *, char *const [], char *const []);
 #endif
 
 #ifdef _GNU_SOURCE

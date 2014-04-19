@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <limits.h>
+#include "libc.h"
 
 extern char **__environ;
 
@@ -47,3 +48,5 @@ int execvp(const char *file, char *const argv[])
 {
 	return __execvpe(file, argv, __environ);
 }
+
+weak_alias(__execvpe, execvpe);
