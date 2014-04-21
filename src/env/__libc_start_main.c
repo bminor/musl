@@ -1,8 +1,11 @@
 #include <elf.h>
+#include <poll.h>
+#include <fcntl.h>
+#include "syscall.h"
+#include "atomic.h"
 #include "libc.h"
 
 void __init_tls(size_t *);
-void __init_security(size_t *);
 
 #ifndef SHARED
 static void dummy() {}
@@ -37,7 +40,16 @@ void __init_libc(char **envp, char *pn)
 
 	__init_tls(aux);
 	__init_ssp((void *)aux[AT_RANDOM]);
-	__init_security(aux);
+
+	if (aux[AT_UID]==aux[AT_EUID] && aux[AT_GID]==aux[AT_EGID]
+		&& !aux[AT_SECURE]) return;
+
+	struct pollfd pfd[3] = { {.fd=0}, {.fd=1}, {.fd=2} };
+	__syscall(SYS_poll, pfd, 3, 0);
+	for (i=0; i<3; i++) if (pfd[i].revents&POLLNVAL)
+		if (__syscall(SYS_open, "/dev/null", O_RDWR|O_LARGEFILE)<0)
+			a_crash();
+	libc.secure = 1;
 }
 
 int __libc_start_main(int (*main)(int,char **,char **), int argc, char **argv)
