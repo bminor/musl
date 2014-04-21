@@ -5,17 +5,10 @@
 #include "libc.h"
 #include "atomic.h"
 
-static void dummy(void *ent)
-{
-}
-weak_alias(dummy, __init_ssp);
-
 void __init_security(size_t *aux)
 {
 	struct pollfd pfd[3] = { {.fd=0}, {.fd=1}, {.fd=2} };
 	int i;
-
-	__init_ssp((void *)aux[AT_RANDOM]);
 
 	if (aux[AT_UID]==aux[AT_EUID] && aux[AT_GID]==aux[AT_EGID]
 		&& !aux[AT_SECURE]) return;

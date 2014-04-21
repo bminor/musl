@@ -11,6 +11,9 @@ extern void (*const __init_array_start)() __attribute__((weak));
 extern void (*const __init_array_end)() __attribute__((weak));
 #endif
 
+static void dummy1(void *p) {}
+weak_alias(dummy1, __init_ssp);
+
 #define AUX_CNT 38
 
 extern size_t __hwcap, __sysinfo;
@@ -33,6 +36,7 @@ void __init_libc(char **envp, char *pn)
 	}
 
 	__init_tls(aux);
+	__init_ssp((void *)aux[AT_RANDOM]);
 	__init_security(aux);
 }
 
