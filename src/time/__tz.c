@@ -166,6 +166,7 @@ static void do_tzset()
 				}
 			}
 		}
+		if (!map) s = __gmt;
 	}
 
 	zi = map;
