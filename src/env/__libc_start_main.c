@@ -22,6 +22,9 @@ weak_alias(dummy1, __init_ssp);
 extern size_t __hwcap, __sysinfo;
 extern char *__progname, *__progname_full;
 
+#ifndef SHARED
+static
+#endif
 void __init_libc(char **envp, char *pn)
 {
 	size_t i, *auxv, aux[AUX_CNT] = { 0 };
