@@ -171,6 +171,11 @@ static void do_tzset()
 			}
 		}
 	}
+	if (map && (map_size < 44 || memcmp(map, "TZif", 4))) {
+		__munmap((void *)map, map_size);
+		map = 0;
+		s = __gmt;
+	}
 
 	zi = map;
 	if (map) {
