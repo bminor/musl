@@ -429,7 +429,7 @@ test "$ARCH" = "microblaze" && trycppif __MICROBLAZEEL__ "$t" \
 
 if test "$ARCH" = "sh" ; then
 trycppif __BIG_ENDIAN__ "$t" && SUBARCH=${SUBARCH}eb
-if trycppif __SH_FPU_ANY__ "$t" ; then
+if trycppif "__SH_FPU_ANY__ || __SH4__" "$t" ; then
 # Some sh configurations are broken and replace double with float
 # rather than using softfloat when the fpu is present but only
 # supports single precision. Reject them.
