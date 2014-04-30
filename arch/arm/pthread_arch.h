@@ -1,6 +1,5 @@
-#if __ARM_ARCH_6K__ || __ARM_ARCH_6ZK__ \
- || __ARM_ARCH_7A__ || __ARM_ARCH_7R__ \
- || __ARM_ARCH >= 7
+#if ((__ARM_ARCH_6K__ || __ARM_ARCH_6ZK__) && !__thumb__) \
+ || __ARM_ARCH_7A__ || __ARM_ARCH_7R__ || __ARM_ARCH >= 7
 
 static inline __attribute__((const)) pthread_t __pthread_self()
 {

@@ -22,9 +22,8 @@ static inline int a_ctz_64(uint64_t x)
 	return a_ctz_l(y);
 }
 
-#if __ARM_ARCH_6__ || __ARM_ARCH_6K__ || __ARM_ARCH_6ZK__ \
- || __ARM_ARCH_7A__ || __ARM_ARCH_7R__ \
- || __ARM_ARCH >= 7
+#if ((__ARM_ARCH_6__ || __ARM_ARCH_6K__ || __ARM_ARCH_6ZK__) && !__thumb__) \
+ || __ARM_ARCH_7A__ || __ARM_ARCH_7R__ || __ARM_ARCH >= 7
 
 #if __ARM_ARCH_7A__ || __ARM_ARCH_7R__ ||  __ARM_ARCH >= 7
 #define MEM_BARRIER "dmb ish"
@@ -39,6 +38,9 @@ static inline int __k_cas(int t, int s, volatile int *p)
 		"	" MEM_BARRIER "\n"
 		"1:	ldrex %0,%3\n"
 		"	subs %0,%0,%1\n"
+#ifdef __thumb__
+		"	itt eq\n"
+#endif
 		"	strexeq %0,%2,%3\n"
 		"	teqeq %0,#1\n"
 		"	beq 1b\n"
