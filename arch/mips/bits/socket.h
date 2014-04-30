@@ -31,7 +31,6 @@ struct cmsghdr
 #define SO_RCVBUF       0x1002
 #define SO_KEEPALIVE    8
 #define SO_OOBINLINE    256
-
 #define SO_NO_CHECK     11
 #define SO_PRIORITY     12
 #define SO_LINGER       128
@@ -43,6 +42,8 @@ struct cmsghdr
 #define SO_SNDLOWAT     0x1003
 #define SO_RCVTIMEO     0x1006
 #define SO_SNDTIMEO     0x1005
+#define SO_SNDBUFFORCE  31
+#define SO_RCVBUFFORCE  33
 
 #define SOCK_NONBLOCK     0200
 #define SOCK_CLOEXEC  02000000
