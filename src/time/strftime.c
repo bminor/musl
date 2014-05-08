@@ -126,6 +126,7 @@ const char *__strftime_fmt_1(char (*s)[100], size_t *l, int f, const struct tm *
 		goto recu_strftime;
 	case 's':
 		val = __tm_to_secs(tm) + tm->__tm_gmtoff;
+		width = 1;
 		goto number;
 	case 'S':
 		val = tm->tm_sec;
