@@ -189,6 +189,15 @@ trycc ${CROSS_COMPILE}cc
 printf "%s\n" "$CC"
 test -n "$CC" || { echo "$0: cannot find a C compiler" ; exit 1 ; }
 
+printf "checking whether C compiler works... "
+echo "typedef int x;" > "$tmpc"
+if output=$($CC $CPPFLAGS $CFLAGS -c -o /dev/null "$tmpc" 2>&1) ; then
+printf "yes\n"
+else
+printf "no; compiler output follows:\n%s\n" "$output"
+exit 1
+fi
+
 #
 # Only build musl-gcc wrapper if toolchain does not already target musl
 #
