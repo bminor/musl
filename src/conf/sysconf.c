@@ -17,6 +17,7 @@
 #define JT_NPROCESSORS_ONLN JT(7)
 #define JT_PHYS_PAGES JT(8)
 #define JT_AVPHYS_PAGES JT(9)
+#define JT_ZERO JT(10)
 
 #define RLIM(x) (-32768|(RLIMIT_ ## x))
 
@@ -48,7 +49,7 @@ long sysconf(int name)
 		[_SC_SHARED_MEMORY_OBJECTS] = VER,
 		[_SC_AIO_LISTIO_MAX] = -1,
 		[_SC_AIO_MAX] = -1,
-		[_SC_AIO_PRIO_DELTA_MAX] = 0, /* ?? */
+		[_SC_AIO_PRIO_DELTA_MAX] = JT_ZERO, /* ?? */
 		[_SC_DELAYTIMER_MAX] = _POSIX_DELAYTIMER_MAX,
 		[_SC_MQ_OPEN_MAX] = -1,
 		[_SC_MQ_PRIO_MAX] = JT_MQ_PRIO_MAX,
@@ -149,8 +150,8 @@ long sysconf(int name)
 		[_SC_NL_SETMAX] = -1,
 		[_SC_NL_TEXTMAX] = -1,
 		[_SC_XBS5_ILP32_OFF32] = -1,
-		[_SC_XBS5_ILP32_OFFBIG] = 2*(sizeof(long)==4)-1,
-		[_SC_XBS5_LP64_OFF64] = 2*(sizeof(long)==8)-1,
+		[_SC_XBS5_ILP32_OFFBIG] = sizeof(long)==4 ? 1 : JT_ZERO,
+		[_SC_XBS5_LP64_OFF64] = sizeof(long)==8 ? 1 : JT_ZERO,
 		[_SC_XBS5_LPBIG_OFFBIG] = -1,
 		[_SC_XOPEN_LEGACY] = -1,
 		[_SC_XOPEN_REALTIME] = -1,
@@ -197,11 +198,11 @@ long sysconf(int name)
 		[_SC_2_PBS_MESSAGE] = -1,
 		[_SC_2_PBS_TRACK] = -1,
 		[_SC_SYMLOOP_MAX] = SYMLOOP_MAX,
-		[_SC_STREAMS] = 0,
+		[_SC_STREAMS] = JT_ZERO,
 		[_SC_2_PBS_CHECKPOINT] = -1,
 		[_SC_V6_ILP32_OFF32] = -1,
-		[_SC_V6_ILP32_OFFBIG] = 2*(sizeof(long)==4)-1,
-		[_SC_V6_LP64_OFF64] = 2*(sizeof(long)==8)-1,
+		[_SC_V6_ILP32_OFFBIG] = sizeof(long)==4 ? 1 : JT_ZERO,
+		[_SC_V6_LP64_OFF64] = sizeof(long)==8 ? 1 : JT_ZERO,
 		[_SC_V6_LPBIG_OFFBIG] = -1,
 		[_SC_HOST_NAME_MAX] = HOST_NAME_MAX,
 		[_SC_TRACE] = -1,
@@ -212,20 +213,20 @@ long sysconf(int name)
 		[_SC_IPV6] = VER,
 		[_SC_RAW_SOCKETS] = VER,
 		[_SC_V7_ILP32_OFF32] = -1,
-		[_SC_V7_ILP32_OFFBIG] = 2*(sizeof(long)==4)-1,
-		[_SC_V7_LP64_OFF64] = 2*(sizeof(long)==8)-1,
+		[_SC_V7_ILP32_OFFBIG] = sizeof(long)==4 ? 1 : JT_ZERO,
+		[_SC_V7_LP64_OFF64] = sizeof(long)==8 ? 1 : JT_ZERO,
 		[_SC_V7_LPBIG_OFFBIG] = -1,
 		[_SC_SS_REPL_MAX] = -1,
 		[_SC_TRACE_EVENT_NAME_MAX] = -1,
 		[_SC_TRACE_NAME_MAX] = -1,
 		[_SC_TRACE_SYS_MAX] = -1,
 		[_SC_TRACE_USER_EVENT_MAX] = -1,
-		[_SC_XOPEN_STREAMS] = 0,
+		[_SC_XOPEN_STREAMS] = JT_ZERO,
 		[_SC_THREAD_ROBUST_PRIO_INHERIT] = -1,
 		[_SC_THREAD_ROBUST_PRIO_PROTECT] = -1,
 	};
 
-	if (name > sizeof(values)/sizeof(values[0])) {
+	if (name >= sizeof(values)/sizeof(values[0]) || !values[name]) {
 		errno = EINVAL;
 		return -1;
 	} else if (values[name] >= -1) {
@@ -267,6 +268,8 @@ long sysconf(int name)
 		mem *= si.mem_unit;
 		mem /= PAGE_SIZE;
 		return (mem > LONG_MAX) ? LONG_MAX : mem;
+	case JT_ZERO & 255:
+		return 0;
 	}
 	return values[name];
 }
