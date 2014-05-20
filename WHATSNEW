@@ -1212,3 +1212,29 @@ arch-specific bugs fixed:
 - crash in all nontrivial dynamic linker use on microblaze
 - incorrect rlimit constants on mips
 - broken, possibly dangerous, use of getrlimit syscall on x32 in sysconf
+
+
+
+1.1.1 release notes
+
+new features:
+- new options --preload and --library-path to dynamic linker
+- public execvpe function (nonstandard extension)
+- iconv support for cp437 and cp850
+
+bugs fixed:
+- false negatives with some periodic needles in strstr, wcsstr, and memmem
+- crash on invalid zoneinfo files
+- incorrect zero-padding of some outputs for strftime %s specifier
+- misreporting of errors in configure script when $CC does not work at all
+- treating not-yet-implemented strptime specifiers as errors
+
+compatibility:
+- configure now detects serious constant-folding bug in gcc 4.9.0
+- removed __yield symbol (unused) that clashed with some compilers
+- improvements to sysconf's handling of unsupported/invalid arguments
+
+arch-specific bugs fixed:
+- misdetection of superh ABI variant by configure on gcc 3.x
+- missing SO_RCVBUFFORCE and SO_SNDBUFFORCE in mips socket.h
+- build regression on armv6 and later with -mthumb
