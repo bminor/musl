@@ -8,7 +8,7 @@
 
 char *strptime(const char *restrict s, const char *restrict f, struct tm *restrict tm)
 {
-	int i, w, neg, adj, min, range, *dest;
+	int i, w, neg, adj, min, range, *dest, dummy;
 	const char *ex;
 	size_t len;
 	while (*f) {
@@ -40,6 +40,10 @@ char *strptime(const char *restrict s, const char *restrict f, struct tm *restri
 			if (!s) return 0;
 			break;
 		case 'C':
+			/* FIXME */
+			dest = &dummy;
+			if (w<0) w=2;
+			goto numeric_digits;
 		case 'd': case 'e':
 			dest = &tm->tm_mday;
 			min = 1;
@@ -112,8 +116,11 @@ char *strptime(const char *restrict s, const char *restrict f, struct tm *restri
 			break;
 		case 'U':
 		case 'W':
-			//FIXME
-			return 0;
+			/* Throw away result, for now. (FIXME?) */
+			dest = &dummy;
+			min = 0;
+			range = 54;
+			goto numeric_range;
 		case 'w':
 			dest = &tm->tm_wday;
 			min = 0;
@@ -128,8 +135,10 @@ char *strptime(const char *restrict s, const char *restrict f, struct tm *restri
 			if (!s) return 0;
 			break;
 		case 'y':
-			//FIXME
-			return 0;
+			/* FIXME */
+			dest = &dummy;
+			w = 2;
+			goto numeric_digits;
 		case 'Y':
 			dest = &tm->tm_year;
 			if (w<0) w=4;
@@ -138,6 +147,8 @@ char *strptime(const char *restrict s, const char *restrict f, struct tm *restri
 		case '%':
 			if (*s++ != '%') return 0;
 			break;
+		default:
+			return 0;
 		numeric_range:
 			if (!isdigit(*s)) return 0;
 			*dest = 0;
