@@ -89,19 +89,24 @@ typedef struct {
 	union {
 		char __pad[128 - 2*sizeof(int) - sizeof(long)];
 		struct {
-			pid_t si_pid;
-			uid_t si_uid;
-			union sigval si_sigval;
-		} __rt;
-		struct {
-			unsigned int si_timer1, si_timer2;
-		} __timer;
-		struct {
-			pid_t si_pid;
-			uid_t si_uid;
-			int si_status;
-			clock_t si_utime, si_stime;
-		} __sigchld;
+			union {
+				struct {
+					pid_t si_pid;
+					uid_t si_uid;
+				} __piduid;
+				struct {
+					int si_timerid;
+					int si_overrun;
+				} __timer;
+			} __first;
+			union {
+				union sigval si_value;
+				struct {
+					int si_status;
+					clock_t si_utime, si_stime;
+				} __sigchld;
+			} __second;
+		} __si_common;
 		struct {
 			void *si_addr;
 			short si_addr_lsb;
@@ -117,20 +122,20 @@ typedef struct {
 		} __sigsys;
 	} __si_fields;
 } siginfo_t;
-#define si_pid     __si_fields.__sigchld.si_pid
-#define si_uid     __si_fields.__sigchld.si_uid
-#define si_status  __si_fields.__sigchld.si_status
-#define si_utime   __si_fields.__sigchld.si_utime
-#define si_stime   __si_fields.__sigchld.si_stime
-#define si_value   __si_fields.__rt.si_sigval
+#define si_pid     __si_fields.__si_common.__first.__piduid.si_pid
+#define si_uid     __si_fields.__si_common.__first.__piduid.si_uid
+#define si_status  __si_fields.__si_common.__second.__sigchld.si_status
+#define si_utime   __si_fields.__si_common.__second.__sigchld.si_utime
+#define si_stime   __si_fields.__si_common.__second.__sigchld.si_stime
+#define si_value   __si_fields.__si_common.__second.si_value
 #define si_addr    __si_fields.__sigfault.si_addr
 #define si_addr_lsb __si_fields.__sigfault.si_addr_lsb
 #define si_band    __si_fields.__sigpoll.si_band
 #define si_fd      __si_fields.__sigpoll.si_fd
-#define si_timer1  __si_fields.__timer.si_timer1
-#define si_timer2  __si_fields.__timer.si_timer2
-#define si_ptr     __si_fields.__rt.si_sigval.sival_ptr
-#define si_int     __si_fields.__rt.si_sigval.sival_int
+#define si_timerid __si_fields.__si_common.__first.__timer.si_timerid
+#define si_overrun __si_fields.__si_common.__first.__timer.si_overrun
+#define si_ptr     si_value.sival_ptr
+#define si_int     si_value.sival_int
 #define si_call_addr __si_fields.__sigsys.si_call_addr
 #define si_syscall __si_fields.__sigsys.si_syscall
 #define si_arch    __si_fields.__sigsys.si_arch
