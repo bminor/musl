@@ -96,8 +96,7 @@ static int child(void *args_vp)
 					goto fail;
 				break;
 			case FDOP_OPEN:
-				fd = __syscall(SYS_open, op->path,
-					op->oflag | O_LARGEFILE, op->mode);
+				fd = __sys_open(op->path, op->oflag, op->mode);
 				if ((ret=fd) < 0) goto fail;
 				if (fd != op->fd) {
 					if ((ret=__syscall(SYS_dup2, fd, op->fd))<0)

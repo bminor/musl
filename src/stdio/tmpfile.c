@@ -14,7 +14,7 @@ FILE *tmpfile(void)
 	for (try=0; try<MAXTRIES; try++) {
 		s = tmpnam(buf);
 		if (!s) return 0;
-		fd = syscall(SYS_open, s, O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE, 0600);
+		fd = sys_open(s, O_RDWR|O_CREAT|O_EXCL, 0600);
 		if (fd >= 0) {
 			f = __fdopen(fd, "w+");
 			__syscall(SYS_unlink, s);

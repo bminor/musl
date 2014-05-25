@@ -50,7 +50,7 @@ void __init_libc(char **envp, char *pn)
 	struct pollfd pfd[3] = { {.fd=0}, {.fd=1}, {.fd=2} };
 	__syscall(SYS_poll, pfd, 3, 0);
 	for (i=0; i<3; i++) if (pfd[i].revents&POLLNVAL)
-		if (__syscall(SYS_open, "/dev/null", O_RDWR|O_LARGEFILE)<0)
+		if (__sys_open("/dev/null", O_RDWR)<0)
 			a_crash();
 	libc.secure = 1;
 }

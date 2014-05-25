@@ -10,7 +10,7 @@ int open(const char *filename, int flags, ...)
 	va_start(ap, flags);
 	mode = va_arg(ap, mode_t);
 	va_end(ap);
-	return syscall_cp(SYS_open, filename, flags|O_LARGEFILE, mode);
+	return sys_open_cp(filename, flags, mode);
 }
 
 LFS64(open);
