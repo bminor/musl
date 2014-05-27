@@ -2,6 +2,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <string.h>
 #include "syscall.h"
 
 #define MAXTRIES 100
