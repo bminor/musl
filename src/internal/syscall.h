@@ -163,8 +163,6 @@ long __syscall_ret(unsigned long), __syscall(syscall_arg_t, ...),
 #define SYS_fadvise SYS_fadvise64_64
 #endif
 
-#endif
-
 /* socketcall calls */
 
 #define __SC_socket      1
@@ -205,3 +203,5 @@ long __syscall_ret(unsigned long), __syscall(syscall_arg_t, ...),
 
 #define __sys_open_cp(...) __SYSCALL_DISP(__sys_open_cp,,__VA_ARGS__)
 #define sys_open_cp(...) __syscall_ret(__sys_open_cp(__VA_ARGS__))
+
+#endif
