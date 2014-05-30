@@ -163,6 +163,11 @@ long __syscall_ret(unsigned long), __syscall(syscall_arg_t, ...),
 #define SYS_fadvise SYS_fadvise64_64
 #endif
 
+#ifdef SYS_sendfile64
+#undef SYS_sendfile
+#define SYS_sendfile SYS_sendfile64
+#endif
+
 /* socketcall calls */
 
 #define __SC_socket      1
