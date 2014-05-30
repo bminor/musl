@@ -17,7 +17,11 @@ FILE *tmpfile(void)
 		fd = sys_open(s, O_RDWR|O_CREAT|O_EXCL, 0600);
 		if (fd >= 0) {
 			f = __fdopen(fd, "w+");
+#ifdef SYS_unlink
 			__syscall(SYS_unlink, s);
+#else
+			__syscall(SYS_unlinkat, AT_FDCWD, s, 0);
+#endif
 			return f;
 		}
 	}

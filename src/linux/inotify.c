@@ -3,11 +3,15 @@
 
 int inotify_init()
 {
-	return syscall(SYS_inotify_init);
+	return inotify_init1(0);
 }
 int inotify_init1(int flags)
 {
-	return syscall(SYS_inotify_init1, flags);
+	int r = __syscall(SYS_inotify_init1, flags);
+#ifdef SYS_inotify_init
+	if (r==-ENOSYS && !flags) r = __syscall(SYS_inotify_init);
+#endif
+	return __syscall_ret(r);
 }
 
 int inotify_add_watch(int fd, const char *pathname, uint32_t mask)

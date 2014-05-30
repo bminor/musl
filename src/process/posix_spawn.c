@@ -22,6 +22,20 @@ struct args {
 
 void __get_handler_set(sigset_t *);
 
+static int __sys_dup2(int old, int new)
+{
+#ifdef SYS_dup2
+	return __syscall(SYS_dup2, old, new);
+#else
+	if (old==new) {
+		int r = __syscall(SYS_fcntl, old, F_GETFD);
+		return r<0 ? r : old;
+	} else {
+		return __syscall(SYS_dup3, old, new, 0);
+	}
+#endif
+}
+
 static int child(void *args_vp)
 {
 	int i, ret;
@@ -92,14 +106,14 @@ static int child(void *args_vp)
 					goto fail;
 				break;
 			case FDOP_DUP2:
-				if ((ret=__syscall(SYS_dup2, op->srcfd, op->fd))<0)
+				if ((ret=__sys_dup2(op->srcfd, op->fd))<0)
 					goto fail;
 				break;
 			case FDOP_OPEN:
 				fd = __sys_open(op->path, op->oflag, op->mode);
 				if ((ret=fd) < 0) goto fail;
 				if (fd != op->fd) {
-					if ((ret=__syscall(SYS_dup2, fd, op->fd))<0)
+					if ((ret=__sys_dup2(fd, op->fd))<0)
 						goto fail;
 					__syscall(SYS_close, fd);
 				}
