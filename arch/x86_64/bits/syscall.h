@@ -312,6 +312,8 @@
 #define __NR_process_vm_writev			311
 #define __NR_kcmp				312
 #define __NR_finit_module			313
+#define __NR_sched_setattr			314
+#define __NR_sched_getattr			315
 
 #undef __NR_fstatat
 #undef __NR_pread
@@ -641,6 +643,8 @@
 #define SYS_process_vm_writev			311
 #define SYS_kcmp				312
 #define SYS_finit_module			313
+#define SYS_sched_setattr			314
+#define SYS_sched_getattr			315
 
 #undef SYS_fstatat
 #undef SYS_pread

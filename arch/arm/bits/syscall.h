@@ -333,6 +333,8 @@
 #define __NR_process_vm_writev	377
 #define __NR_kcmp		378
 #define __NR_finit_module	379
+#define __NR_sched_setattr	380
+#define __NR_sched_getattr	381
 
 
 /* Repeated with SYS_ prefix */
@@ -672,3 +674,5 @@
 #define SYS_process_vm_writev	377
 #define SYS_kcmp		378
 #define SYS_finit_module	379
+#define SYS_sched_setattr	380
+#define SYS_sched_getattr	381

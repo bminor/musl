@@ -271,6 +271,9 @@
 #define __NR_getcpu (__X32_SYSCALL_BIT + 309)
 #define __NR_kcmp (__X32_SYSCALL_BIT + 312)
 #define __NR_finit_module (__X32_SYSCALL_BIT + 313)
+#define __NR_sched_setattr (__X32_SYSCALL_BIT + 314)
+#define __NR_sched_getattr (__X32_SYSCALL_BIT + 315)
+
 #define __NR_rt_sigaction (__X32_SYSCALL_BIT + 512)
 #define __NR_rt_sigreturn (__X32_SYSCALL_BIT + 513)
 #define __NR_ioctl (__X32_SYSCALL_BIT + 514)
@@ -591,6 +594,9 @@
 #define SYS_getcpu __NR_getcpu
 #define SYS_kcmp __NR_kcmp
 #define SYS_finit_module __NR_finit_module
+#define SYS_sched_setattr __NR_sched_setattr
+#define SYS_sched_getattr __NR_sched_getattr
+
 #define SYS_rt_sigaction __NR_rt_sigaction
 #define SYS_rt_sigreturn __NR_rt_sigreturn
 #define SYS_ioctl __NR_ioctl
