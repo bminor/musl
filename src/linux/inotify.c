@@ -1,4 +1,5 @@
 #include <sys/inotify.h>
+#include <errno.h>
 #include "syscall.h"
 
 int inotify_init()

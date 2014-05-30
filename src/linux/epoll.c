@@ -1,5 +1,6 @@
 #include <sys/epoll.h>
 #include <signal.h>
+#include <errno.h>
 #include "syscall.h"
 
 int epoll_create(int size)

@@ -1,5 +1,6 @@
 #include <sys/eventfd.h>
 #include <unistd.h>
+#include <errno.h>
 #include "syscall.h"
 
 int eventfd(unsigned int count, int flags)
