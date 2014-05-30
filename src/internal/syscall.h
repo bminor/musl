@@ -122,14 +122,26 @@ long __syscall_ret(unsigned long), __syscall(syscall_arg_t, ...),
 
 #ifdef SYS_stat64
 #undef SYS_stat
-#undef SYS_fstat
-#undef SYS_lstat
-#undef SYS_statfs
-#undef SYS_fstatfs
 #define SYS_stat SYS_stat64
+#endif
+
+#ifdef SYS_fstat64
+#undef SYS_fstat
 #define SYS_fstat SYS_fstat64
+#endif
+
+#ifdef SYS_lstat64
+#undef SYS_lstat
 #define SYS_lstat SYS_lstat64
+#endif
+
+#ifdef SYS_statfs64
+#undef SYS_statfs
 #define SYS_statfs SYS_statfs64
+#endif
+
+#ifdef SYS_fstatfs64
+#undef SYS_fstatfs
 #define SYS_fstatfs SYS_fstatfs64
 #endif
 
