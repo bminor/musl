@@ -5,6 +5,8 @@
 
 long (__syscall)(long, ...);
 
+#define SYSCALL_RLIM_INFINITY (-1UL/2)
+
 #ifndef __clang__
 
 #define __asm_syscall(...) do { \

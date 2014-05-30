@@ -4,6 +4,10 @@
 #include <sys/syscall.h>
 #include "syscall_arch.h"
 
+#ifndef SYSCALL_RLIM_INFINITY
+#define SYSCALL_RLIM_INFINITY (~0ULL)
+#endif
+
 #ifndef __scc
 #define __scc(X) ((long) (X))
 typedef long syscall_arg_t;
