@@ -131,6 +131,7 @@ int __res_msend(int nqueries, const unsigned char *const *queries,
 	pfd.fd = fd;
 	pfd.events = POLLIN;
 	retry_interval = timeout / attempts;
+	next = 0;
 	t0 = t2 = mtime();
 	t1 = t2 - retry_interval;
 
