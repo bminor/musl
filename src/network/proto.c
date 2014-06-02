@@ -14,7 +14,11 @@ static const unsigned char protos[][8] = {
 	"\021udp",
 	"\026idp",
 	"\051ipv6",
+	"\057gre",
+	"\062esp",
+	"\063ah",
 	"\072icmpv6",
+	"\136ipip",
 	"\377raw",
 	"\0\0"
 };
