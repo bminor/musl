@@ -9,7 +9,6 @@
 #include "lookup.h"
 #include "stdio_impl.h"
 #include "syscall.h"
-#include "__dns.h"
 
 static int is_valid_hostname(const char *host)
 {
@@ -86,30 +85,71 @@ static int name_from_hosts(struct address buf[static MAXADDRS], char canon[stati
 	return cnt;
 }
 
+struct dpc_ctx {
+	struct address *addrs;
+	char *canon;
+	int cnt;
+};
+
+int __dns_parse(const unsigned char *, int, int (*)(void *, int, const void *, int, const void *), void *);
+int __dn_expand(const unsigned char *, const unsigned char *, const unsigned char *, char *, int);
+int __res_mkquery(int, const char *, int, int, const unsigned char *, int, const unsigned char*, unsigned char *, int);
+int __res_msend(int, const unsigned char *const *, const int *, unsigned char *const *, int *, int);
+
+#define RR_A 1
+#define RR_CNAME 5
+#define RR_AAAA 28
+
+static int dns_parse_callback(void *c, int rr, const void *data, int len, const void *packet)
+{
+	char tmp[256];
+	struct dpc_ctx *ctx = c;
+	switch (rr) {
+	case RR_A:
+		if (len != 4) return -1;
+		ctx->addrs[ctx->cnt].family = AF_INET;
+		memcpy(ctx->addrs[ctx->cnt++].addr, data, 4);
+		break;
+	case RR_AAAA:
+		if (len != 16) return -1;
+		ctx->addrs[ctx->cnt].family = AF_INET6;
+		memcpy(ctx->addrs[ctx->cnt++].addr, data, 16);
+		break;
+	case RR_CNAME:
+		if (__dn_expand(packet, (const unsigned char *)packet + 512,
+		    data, tmp, sizeof tmp) > 0 && is_valid_hostname(tmp))
+			strcpy(ctx->canon, tmp);
+		break;
+	}
+	return 0;
+}
+
 static int name_from_dns(struct address buf[static MAXADDRS], char canon[static 256], const char *name, int family)
 {
-	unsigned char reply[1024] = { 0 }, *p = reply;
-	char tmp[256];
-	int i, cnt = 0;
+	unsigned char qbuf[2][280], abuf[2][512];
+	const unsigned char *qp[2] = { qbuf[0], qbuf[1] };
+	unsigned char *ap[2] = { abuf[0], abuf[1] };
+	int qlens[2], alens[2];
+	int i, nq = 0;
+	struct dpc_ctx ctx = { .addrs = buf, .canon = canon };
 
-	/* Perform one or more DNS queries for host */
-	int result = __dns_query(reply, name, family, 0);
-	if (result < 0) return result;
-
-	for (i=0; i<result; i++) {
-		if (family != AF_INET6) {
-			int j = __dns_get_rr(&buf[cnt].addr, sizeof *buf, 4, MAXADDRS-cnt, p, RR_A, 0);
-			while (j--) buf[cnt++].family = AF_INET;
-		}
-		if (family != AF_INET) {
-			int j = __dns_get_rr(&buf[cnt].addr, sizeof *buf, 16, MAXADDRS-cnt, p, RR_AAAA, 0);
-			while (j--) buf[cnt++].family = AF_INET6;
-		}
-		p += 512;
+	if (family != AF_INET6) {
+		qlens[nq] = __res_mkquery(0, name, 1, RR_A, 0, 0, 0,
+			qbuf[nq], sizeof *qbuf);
+		nq++;
 	}
-	__dns_get_rr(tmp, 0, 256, 1, reply, RR_CNAME, 1);
-	if (is_valid_hostname(tmp)) strcpy(canon, tmp);
-	return cnt;
+	if (family != AF_INET) {
+		qlens[nq] = __res_mkquery(0, name, 1, RR_AAAA, 0, 0, 0,
+			qbuf[nq], sizeof *qbuf);
+		nq++;
+	}
+
+	if (__res_msend(nq, qp, qlens, ap, alens, sizeof *abuf) < 0) return EAI_SYSTEM;
+
+	for (i=0; i<nq; i++)
+		__dns_parse(abuf[i], alens[i], dns_parse_callback, &ctx);
+
+	return ctx.cnt;
 }
 
 int __lookup_name(struct address buf[static MAXADDRS], char canon[static 256], const char *name, int family, int flags)
