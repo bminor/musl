@@ -36,11 +36,13 @@ static int name_from_null(struct address buf[static 2], const char *name, int fa
 	return cnt;
 }
 
+int __inet_aton(const char *, struct in_addr *);
+
 static int name_from_numeric(struct address buf[static 1], const char *name, int family)
 {
 	struct in_addr a4;
 	struct in6_addr a6;
-	if (family != AF_INET6 && inet_aton(name, &a4)>0) {
+	if (family != AF_INET6 && __inet_aton(name, &a4)>0) {
 		memcpy(&buf[0].addr, &a4, sizeof a4);
 		buf[0].family = AF_INET;
 		return 1;
