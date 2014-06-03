@@ -14,5 +14,5 @@ unsigned if_nametoindex(const char *name)
 	strncpy(ifr.ifr_name, name, sizeof ifr.ifr_name);
 	r = ioctl(fd, SIOCGIFINDEX, &ifr);
 	__syscall(SYS_close, fd);
-	return r < 0 ? r : ifr.ifr_ifindex;
+	return r < 0 ? 0 : ifr.ifr_ifindex;
 }
