@@ -41,7 +41,7 @@ struct addrinfo
 #define NI_NOFQDN       0x04
 #define NI_NAMEREQD     0x08
 #define NI_DGRAM        0x10
-/*#define NI_NUMERICSCOPE */
+#define NI_NUMERICSCOPE 0x100
 
 #define EAI_BADFLAGS   -1
 #define EAI_NONAME     -2

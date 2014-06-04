@@ -1,6 +1,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <net/if.h>
 #include <arpa/inet.h>
 #include <ctype.h>
 #include <stdlib.h>
@@ -47,9 +48,31 @@ static int name_from_numeric(struct address buf[static 1], const char *name, int
 		buf[0].family = AF_INET;
 		return 1;
 	}
-	if (family != AF_INET && inet_pton(AF_INET6, name, &a6)>0) {
+	if (family != AF_INET) {
+		char tmp[64];
+		char *p = strchr(name, '%'), *z;
+		unsigned long long scopeid;
+		if (p && p-name < 64) {
+			memcpy(tmp, name, p-name);
+			tmp[p-name] = 0;
+			name = tmp;
+		}
+		if (inet_pton(AF_INET6, name, &a6)<=0) return 0;
 		memcpy(&buf[0].addr, &a6, sizeof a6);
 		buf[0].family = AF_INET6;
+		if (p) {
+			if (isdigit(*++p)) scopeid = strtoull(p, &z, 10);
+			else z = p-1;
+			if (*z) {
+				if (!IN6_IS_ADDR_LINKLOCAL(&a6) &&
+				    !IN6_IS_ADDR_MC_LINKLOCAL(&a6))
+					return EAI_NONAME;
+				scopeid = if_nametoindex(p);
+				if (!scopeid) return EAI_NONAME;
+			}
+			if (scopeid > UINT_MAX) return EAI_NONAME;
+			buf[0].scopeid = scopeid;
+		}
 		return 1;
 	}
 	return 0;
@@ -179,10 +202,10 @@ int __lookup_name(struct address buf[static MAXADDRS], char canon[static 256], c
 
 	/* Try each backend until there's at least one result. */
 	cnt = name_from_null(buf, name, family, flags);
-	if (cnt<=0) cnt = name_from_numeric(buf, name, family);
-	if (cnt<=0 && !(flags & AI_NUMERICHOST)) {
+	if (!cnt) cnt = name_from_numeric(buf, name, family);
+	if (!cnt && !(flags & AI_NUMERICHOST)) {
 		cnt = name_from_hosts(buf, canon, name, family);
-		if (cnt<=0) cnt = name_from_dns(buf, canon, name, family);
+		if (!cnt) cnt = name_from_dns(buf, canon, name, family);
 	}
 	if (cnt<=0) return cnt ? cnt : EAI_NONAME;
 

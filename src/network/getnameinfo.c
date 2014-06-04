@@ -5,6 +5,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <net/if.h>
 
 int __dns_parse(const unsigned char *, int, int (*)(void *, int, const void *, int, const void *), void *);
 int __dn_expand(const unsigned char *, const unsigned char *, const unsigned char *, char *, int);
@@ -13,6 +14,16 @@ int __res_send(const unsigned char *, int, unsigned char *, int);
 
 #define PTR_MAX (64 + sizeof ".in-addr.arpa")
 #define RR_PTR 12
+
+static char *itoa(char *p, unsigned x) {
+	p += 3*sizeof(int);
+	*--p = 0;
+	do {
+		*--p = '0' + x % 10;
+		x /= 10;
+	} while (x);
+	return p;
+}
 
 static void mkptr4(char *s, const unsigned char *ip)
 {
@@ -48,9 +59,10 @@ int getnameinfo(const struct sockaddr *restrict sa, socklen_t sl,
 	int flags)
 {
 	char ptr[PTR_MAX];
-	char buf[256];
+	char buf[256], num[3*sizeof(int)+1];
 	int af = sa->sa_family;
 	unsigned char *a;
+	unsigned x;
 
 	switch (af) {
 	case AF_INET:
@@ -84,16 +96,28 @@ int getnameinfo(const struct sockaddr *restrict sa, socklen_t sl,
 		if (!*buf) {
 			if (flags & NI_NAMEREQD) return EAI_NONAME;
 			inet_ntop(af, a, buf, sizeof buf);
+			if (af == AF_INET6 &&
+			    (x = ((struct sockaddr_in6 *)sa)->sin6_scope_id)) {
+				char *p = 0, tmp[IF_NAMESIZE+1];
+				if (!(flags & NI_NUMERICSCOPE) &&
+				    (IN6_IS_ADDR_LINKLOCAL(a) ||
+				     IN6_IS_ADDR_MC_LINKLOCAL(a)))
+					p = if_indextoname(x, tmp+1);
+				if (!p)
+					p = itoa(num, x);
+				*--p = '%';
+				strcat(buf, p);
+			}
 		}
 		if (strlen(buf) >= nodelen) return EAI_OVERFLOW;
 		strcpy(node, buf);
 	}
 
 	if (serv && servlen) {
-		if (snprintf(buf, sizeof buf, "%d",
-			ntohs(((struct sockaddr_in *)sa)->sin_port))>=servlen)
+		char *p = itoa(num, ntohs(((struct sockaddr_in *)sa)->sin_port));
+		if (strlen(p) >= servlen)
 			return EAI_OVERFLOW;
-		strcpy(serv, buf);
+		strcpy(serv, p);
 	}
 
 	return 0;

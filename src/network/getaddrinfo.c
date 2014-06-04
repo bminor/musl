@@ -105,6 +105,7 @@ int getaddrinfo(const char *restrict host, const char *restrict serv, const stru
 		case AF_INET6:
 			out[k].sa.sin6.sin6_family = AF_INET6;
 			out[k].sa.sin6.sin6_port = htons(ports[j].port);
+			out[k].sa.sin6.sin6_scope_id = addrs[i].scopeid;
 			memcpy(&out[k].sa.sin6.sin6_addr, &addrs[i].addr, 16);
 			break;			
 		}
