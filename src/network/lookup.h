@@ -22,5 +22,6 @@ struct service {
 
 int __lookup_serv(struct service buf[static MAXSERVS], const char *name, int proto, int flags);
 int __lookup_name(struct address buf[static MAXADDRS], char canon[static 256], const char *name, int family, int flags);
+int __lookup_ipliteral(struct address buf[static 1], const char *name, int family);
 
 #endif

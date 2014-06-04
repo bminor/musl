@@ -37,45 +37,9 @@ static int name_from_null(struct address buf[static 2], const char *name, int fa
 	return cnt;
 }
 
-int __inet_aton(const char *, struct in_addr *);
-
 static int name_from_numeric(struct address buf[static 1], const char *name, int family)
 {
-	struct in_addr a4;
-	struct in6_addr a6;
-	if (family != AF_INET6 && __inet_aton(name, &a4)>0) {
-		memcpy(&buf[0].addr, &a4, sizeof a4);
-		buf[0].family = AF_INET;
-		return 1;
-	}
-	if (family != AF_INET) {
-		char tmp[64];
-		char *p = strchr(name, '%'), *z;
-		unsigned long long scopeid;
-		if (p && p-name < 64) {
-			memcpy(tmp, name, p-name);
-			tmp[p-name] = 0;
-			name = tmp;
-		}
-		if (inet_pton(AF_INET6, name, &a6)<=0) return 0;
-		memcpy(&buf[0].addr, &a6, sizeof a6);
-		buf[0].family = AF_INET6;
-		if (p) {
-			if (isdigit(*++p)) scopeid = strtoull(p, &z, 10);
-			else z = p-1;
-			if (*z) {
-				if (!IN6_IS_ADDR_LINKLOCAL(&a6) &&
-				    !IN6_IS_ADDR_MC_LINKLOCAL(&a6))
-					return EAI_NONAME;
-				scopeid = if_nametoindex(p);
-				if (!scopeid) return EAI_NONAME;
-			}
-			if (scopeid > UINT_MAX) return EAI_NONAME;
-			buf[0].scopeid = scopeid;
-		}
-		return 1;
-	}
-	return 0;
+	return __lookup_ipliteral(buf, name, family);
 }
 
 static int name_from_hosts(struct address buf[static MAXADDRS], char canon[static 256], const char *name, int family)
@@ -133,11 +97,13 @@ static int dns_parse_callback(void *c, int rr, const void *data, int len, const 
 	case RR_A:
 		if (len != 4) return -1;
 		ctx->addrs[ctx->cnt].family = AF_INET;
+		ctx->addrs[ctx->cnt].scopeid = 0;
 		memcpy(ctx->addrs[ctx->cnt++].addr, data, 4);
 		break;
 	case RR_AAAA:
 		if (len != 16) return -1;
 		ctx->addrs[ctx->cnt].family = AF_INET6;
+		ctx->addrs[ctx->cnt].scopeid = 0;
 		memcpy(ctx->addrs[ctx->cnt++].addr, data, 16);
 		break;
 	case RR_CNAME:
@@ -227,7 +193,6 @@ int __lookup_name(struct address buf[static MAXADDRS], char canon[static 256], c
 			if (buf[i].family != AF_INET) continue;
 			memcpy(buf[i].addr+12, buf[i].addr, 4);
 			memcpy(buf[i].addr, "\0\0\0\0\0\0\0\0\0\0\xff\xff", 12);
-			buf[i].scopeid = 0;
 			buf[i].family = AF_INET6;
 		}
 	}

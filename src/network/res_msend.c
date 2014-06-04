@@ -12,6 +12,7 @@
 #include <pthread.h>
 #include "stdio_impl.h"
 #include "syscall.h"
+#include "lookup.h"
 
 static void cleanup(void *p)
 {
@@ -47,6 +48,7 @@ int __res_msend(int nqueries, const unsigned char *const *queries,
 	int cs;
 	struct pollfd pfd;
 	unsigned long t0, t1, t2;
+	struct address iplit;
 
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
 
@@ -76,13 +78,18 @@ int __res_msend(int nqueries, const unsigned char *const *queries,
 		for (z=s; *z && !isspace(*z); z++);
 		*z=0;
 
-		if (inet_pton(AF_INET, s, &ns[nns].sin.sin_addr)>0) {
-			ns[nns].sin.sin_port = htons(53);
-			ns[nns++].sin.sin_family = AF_INET;
-		} else if (inet_pton(AF_INET6, s, &ns[nns].sin6.sin6_addr)>0) {
-			sl = sizeof sa.sin6;
-			ns[nns].sin6.sin6_port = htons(53);
-			ns[nns++].sin6.sin6_family = family = AF_INET6;
+		if (__lookup_ipliteral(&iplit, s, AF_UNSPEC)>0) {
+			if (iplit.family == AF_INET) {
+				memcpy(&ns[nns].sin.sin_addr, iplit.addr, 4);
+				ns[nns].sin.sin_port = htons(53);
+				ns[nns++].sin.sin_family = AF_INET;
+			} else {
+				sl = sizeof sa.sin6;
+				memcpy(&ns[nns].sin6.sin6_addr, iplit.addr, 16);
+				ns[nns].sin6.sin6_port = htons(53);
+				ns[nns].sin6.sin6_scope_id = iplit.scopeid;
+				ns[nns++].sin6.sin6_family = family = AF_INET6;
+			}
 		}
 	}
 	if (f) __fclose_ca(f);

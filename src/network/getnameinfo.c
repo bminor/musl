@@ -6,6 +6,9 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <net/if.h>
+#include <ctype.h>
+#include "lookup.h"
+#include "stdio_impl.h"
 
 int __dns_parse(const unsigned char *, int, int (*)(void *, int, const void *, int, const void *), void *);
 int __dn_expand(const unsigned char *, const unsigned char *, const unsigned char *, char *, int);
@@ -42,6 +45,47 @@ static void mkptr6(char *s, const unsigned char *ip)
 	strcpy(s, "ip6.arpa");
 }
 
+static char *reverse_hosts(char *buf, const unsigned char *a, unsigned scopeid, int family)
+{
+	char line[512], *p, *z;
+	unsigned char _buf[1032], atmp[16];
+	struct address iplit;
+	FILE _f, *f = __fopen_rb_ca("/etc/hosts", &_f, _buf, sizeof _buf);
+	if (!f) return 0;
+	if (family == AF_INET) {
+		memcpy(atmp+12, a, 4);
+		memcpy(atmp, "\0\0\0\0\0\0\0\0\0\0\xff\xff", 12);
+		a = atmp;
+	}
+	while (fgets(line, sizeof line, f)) {
+		if ((p=strchr(line, '#'))) *p++='\n', *p=0;
+
+		for (p=line; *p && !isspace(*p); p++);
+		*p++ = 0;
+		if (__lookup_ipliteral(&iplit, line, AF_UNSPEC)<=0)
+			continue;
+
+		if (iplit.family == AF_INET) {
+			memcpy(iplit.addr+12, iplit.addr, 4);
+			memcpy(iplit.addr, "\0\0\0\0\0\0\0\0\0\0\xff\xff", 12);
+			iplit.scopeid = 0;
+		}
+
+		if (memcmp(a, iplit.addr, 16) || iplit.scopeid != scopeid)
+			continue;
+			
+		for (; *p && isspace(*p); p++);
+		for (z=p; *z && !isspace(*z); z++);
+		*z = 0;
+		if (z-p < 256) {
+			memcpy(buf, p, z-p+1);
+			break;
+		}
+	}
+	__fclose_ca(f);
+	return 0;
+}
+
 static int dns_parse_callback(void *c, int rr, const void *data, int len, const void *packet)
 {
 	char tmp[256];
@@ -62,13 +106,14 @@ int getnameinfo(const struct sockaddr *restrict sa, socklen_t sl,
 	char buf[256], num[3*sizeof(int)+1];
 	int af = sa->sa_family;
 	unsigned char *a;
-	unsigned x;
+	unsigned scopeid;
 
 	switch (af) {
 	case AF_INET:
 		a = (void *)&((struct sockaddr_in *)sa)->sin_addr;
 		if (sl != sizeof(struct sockaddr_in)) return EAI_FAMILY;
 		mkptr4(ptr, a);
+		scopeid = 0;
 		break;
 	case AF_INET6:
 		a = (void *)&((struct sockaddr_in6 *)sa)->sin6_addr;
@@ -77,6 +122,7 @@ int getnameinfo(const struct sockaddr *restrict sa, socklen_t sl,
 			mkptr6(ptr, a);
 		else
 			mkptr4(ptr, a+12);
+		scopeid = ((struct sockaddr_in6 *)sa)->sin6_scope_id;
 		break;
 	default:
 		return EAI_FAMILY;
@@ -85,6 +131,9 @@ int getnameinfo(const struct sockaddr *restrict sa, socklen_t sl,
 	if (node && nodelen) {
 		buf[0] = 0;
 		if (!(flags & NI_NUMERICHOST)) {
+			reverse_hosts(buf, a, scopeid, af);
+		}
+		if (!*buf && !(flags & NI_NUMERICHOST)) {
 			unsigned char query[18+PTR_MAX], reply[512];
 			int qlen = __res_mkquery(0, ptr, 1, RR_PTR,
 				0, 0, 0, query, sizeof query);
@@ -96,15 +145,14 @@ int getnameinfo(const struct sockaddr *restrict sa, socklen_t sl,
 		if (!*buf) {
 			if (flags & NI_NAMEREQD) return EAI_NONAME;
 			inet_ntop(af, a, buf, sizeof buf);
-			if (af == AF_INET6 &&
-			    (x = ((struct sockaddr_in6 *)sa)->sin6_scope_id)) {
+			if (scopeid) {
 				char *p = 0, tmp[IF_NAMESIZE+1];
 				if (!(flags & NI_NUMERICSCOPE) &&
 				    (IN6_IS_ADDR_LINKLOCAL(a) ||
 				     IN6_IS_ADDR_MC_LINKLOCAL(a)))
-					p = if_indextoname(x, tmp+1);
+					p = if_indextoname(scopeid, tmp+1);
 				if (!p)
-					p = itoa(num, x);
+					p = itoa(num, scopeid);
 				*--p = '%';
 				strcat(buf, p);
 			}
