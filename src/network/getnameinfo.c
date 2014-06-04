@@ -45,13 +45,13 @@ static void mkptr6(char *s, const unsigned char *ip)
 	strcpy(s, "ip6.arpa");
 }
 
-static char *reverse_hosts(char *buf, const unsigned char *a, unsigned scopeid, int family)
+static void reverse_hosts(char *buf, const unsigned char *a, unsigned scopeid, int family)
 {
 	char line[512], *p, *z;
 	unsigned char _buf[1032], atmp[16];
 	struct address iplit;
 	FILE _f, *f = __fopen_rb_ca("/etc/hosts", &_f, _buf, sizeof _buf);
-	if (!f) return 0;
+	if (!f) return;
 	if (family == AF_INET) {
 		memcpy(atmp+12, a, 4);
 		memcpy(atmp, "\0\0\0\0\0\0\0\0\0\0\xff\xff", 12);
@@ -83,7 +83,32 @@ static char *reverse_hosts(char *buf, const unsigned char *a, unsigned scopeid, 
 		}
 	}
 	__fclose_ca(f);
-	return 0;
+}
+
+static void reverse_services(char *buf, int port, int dgram)
+{
+	unsigned long svport;
+	char line[128], *p, *z;
+	unsigned char _buf[1032];
+	FILE _f, *f = __fopen_rb_ca("/etc/services", &_f, _buf, sizeof _buf);
+	if (!f) return;
+	while (fgets(line, sizeof line, f)) {
+		if ((p=strchr(line, '#'))) *p++='\n', *p=0;
+
+		for (p=line; *p && !isspace(*p); p++);
+		if (!p) continue;
+		*p++ = 0;
+		svport = strtoul(p, &z, 10);
+
+		if (svport != port || z==p) continue;
+		if (dgram && strncmp(z, "/udp", 4)) continue;
+		if (!dgram && strncmp(z, "/tcp", 4)) continue;
+		if (p-line > 32) continue;
+
+		memcpy(buf, line, p-line);
+		break;
+	}
+	__fclose_ca(f);
 }
 
 static int dns_parse_callback(void *c, int rr, const void *data, int len, const void *packet)
@@ -162,7 +187,13 @@ int getnameinfo(const struct sockaddr *restrict sa, socklen_t sl,
 	}
 
 	if (serv && servlen) {
-		char *p = itoa(num, ntohs(((struct sockaddr_in *)sa)->sin_port));
+		char *p = buf;
+		int port = ntohs(((struct sockaddr_in *)sa)->sin_port);
+		buf[0] = 0;
+		if (!(flags & NI_NUMERICSERV))
+			reverse_services(buf, port, flags & NI_DGRAM);
+		if (!*p)
+			p = itoa(num, port);
 		if (strlen(p) >= servlen)
 			return EAI_OVERFLOW;
 		strcpy(serv, p);
