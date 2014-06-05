@@ -10,9 +10,9 @@ int __res_mkquery(int op, const char *dname, int class, int type,
 	int id, i, j;
 	unsigned char q[280];
 	struct timespec ts;
-	size_t l = strnlen(dname, 256);
+	size_t l = strnlen(dname, 254);
 
-	if (l-1>=254 || buflen<18+l || op>15u || class>255u || type>255u)
+	if (l-1>=253 || buflen<18+l || op>15u || class>255u || type>255u)
 		return -1;
 
 	/* Construct query template - ID will be filled later */

@@ -14,7 +14,7 @@
 static int is_valid_hostname(const char *host)
 {
 	const unsigned char *s;
-	if (strnlen(host, 256)-1 > 254 || mbstowcs(0, host, 0) > 255) return 0;
+	if (strnlen(host, 254)-1 >= 253 || mbstowcs(0, host, 0) == -1) return 0;
 	for (s=(void *)host; *s>=0x80 || *s=='.' || *s=='-' || isalnum(*s); s++);
 	return !*s;
 }
@@ -153,7 +153,7 @@ int __lookup_name(struct address buf[static MAXADDRS], char canon[static 256], c
 	*canon = 0;
 	if (name) {
 		size_t l;
-		if ((l = strnlen(name, 256))-1 > 254)
+		if ((l = strnlen(name, 254))-1 >= 253)
 			return EAI_NONAME;
 		memcpy(canon, name, l+1);
 	}
