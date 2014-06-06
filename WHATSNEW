@@ -1221,3 +1221,19 @@ compatibility:
 arch-specific bugs fixed:
 - misdetection of superh ABI variant by configure on gcc 3.x
 - missing SO_RCVBUFFORCE and SO_SNDBUFFORCE in mips socket.h
+
+
+
+1.0.3 release notes
+
+bugs fixed:
+- buffer overflow in dns response parsing (CVE-2014-3484)
+- possible infinite loop in dns response parsing
+- fix multiple validation issues in dns response label parsing
+- sendfile off_t 32/64-bit size mismatch
+- incorrect end pointer in some cases when wcsrtombs stops early
+- incorrect if_nametoindex return value when interface does not exist
+- dummy "ent" function aliases that possibly shadowed real ones
+
+arch-specific bugs fixed:
+- broken kernel side RLIM_INFINITY on mips
