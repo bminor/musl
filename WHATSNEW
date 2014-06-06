@@ -1238,3 +1238,34 @@ arch-specific bugs fixed:
 - misdetection of superh ABI variant by configure on gcc 3.x
 - missing SO_RCVBUFFORCE and SO_SNDBUFFORCE in mips socket.h
 - build regression on armv6 and later with -mthumb
+
+
+
+1.1.2 release notes
+
+new features:
+- multi-protocol matches (tcp and udp) in getaddrinfo
+- support for AI_V4MAPPED and AI_ALL flags to getaddrinfo
+- reverse name lookups from /etc/hosts
+- reverse service lookups from /etc/services
+- support for service aliases in /etc/services
+- ipsec and tunneling protocols to getprotoent-family functions
+- res_send, res_mkquery, res_querydomain, and dn_comp functions
+- ipv6 scope id handling for link-local scope addresses
+- previously-unimplemented %C and %y in strptime now work
+- vdso clock_gettime acceleration on i386 (new kernel feature)
+- better O_CLOEXEC/SOCK_CLOEXEC fallbacks for old kernels
+
+bugs fixed:
+- buffer overflow in dns response parsing (CVE-2014-3484)
+- possible infinite loop in dns response parsing
+- sendfile off_t 32/64-bit size mismatch
+- incorrect end pointer in some cases when wcsrtombs stops early
+- incorrect if_nametoindex return value when interface does not exist
+- dummy "ent" function aliases that possibly shadowed real ones
+- tmpfile fd leak on memory exhaustion
+- getaddrinfo returning EAI_NONAME for some transient failures
+
+arch-specific bugs fixed:
+- broken kernel side RLIM_INFINITY on mips
+- incorrect syscall argument 6/7 types for pselect on x32
