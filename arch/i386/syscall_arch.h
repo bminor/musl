@@ -51,3 +51,7 @@ static inline long __syscall6(long n, long a1, long a2, long a3, long a4, long a
 	__asm__ __volatile__ ("push %6 ; call __vsyscall6 ; add $4,%%esp" : "=a"(__ret) : "a"(n), "d"(a1), "c"(a2), "D"(a3), "S"(a4), "g"(0+(long[]){a5, a6}) : "memory");
 	return __ret;
 }
+
+#define VDSO_USEFUL
+#define VDSO_CGT_SYM "__vdso_clock_gettime"
+#define VDSO_CGT_VER "LINUX_2.6"
