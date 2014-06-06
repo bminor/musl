@@ -10,13 +10,16 @@ int __res_mkquery(int op, const char *dname, int class, int type,
 	int id, i, j;
 	unsigned char q[280];
 	struct timespec ts;
-	size_t l = strnlen(dname, 254);
+	size_t l = strnlen(dname, 255);
+	int n;
 
-	if (l-1>=253 || buflen<18+l || op>15u || class>255u || type>255u)
+	if (l && dname[l-1]=='.') l--;
+	n = 17+l+!!l;
+	if (l>253 || buflen<n || op>15u || class>255u || type>255u)
 		return -1;
 
 	/* Construct query template - ID will be filled later */
-	memset(q, 0, 18+l);
+	memset(q, 0, n);
 	q[2] = op*8 + 1;
 	q[5] = 1;
 	memcpy((char *)q+13, dname, l);
@@ -34,8 +37,8 @@ int __res_mkquery(int op, const char *dname, int class, int type,
 	q[0] = id/256;
 	q[1] = id;
 
-	memcpy(buf, q, 18+l);
-	return 18+l;
+	memcpy(buf, q, n);
+	return n;
 }
 
 weak_alias(__res_mkquery, res_mkquery);
