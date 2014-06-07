@@ -34,7 +34,7 @@ int __res_msend(int nqueries, const unsigned char *const *queries,
 	FILE *f, _f;
 	unsigned char _buf[256];
 	char line[64], *s, *z;
-	int timeout = 5000, attempts = 2, retry_interval;
+	int timeout = 5000, attempts = 2, retry_interval, servfail_retry;
 	union {
 		struct sockaddr_in sin;
 		struct sockaddr_in6 sin6;
@@ -152,6 +152,7 @@ int __res_msend(int nqueries, const unsigned char *const *queries,
 							qlens[i], MSG_NOSIGNAL,
 							(void *)&ns[j], sl);
 			t1 = t2;
+			servfail_retry = 2 * nqueries;
 		}
 
 		/* Wait for a response, or until time to retry */
@@ -160,12 +161,12 @@ int __res_msend(int nqueries, const unsigned char *const *queries,
 		while ((rlen = recvfrom(fd, answers[next], asize, 0,
 		  (void *)&sa, (socklen_t[1]){sl})) >= 0) {
 
-			/* Ignore non-identifiable packets (no query id) */
-			if (rlen < 2) continue;
+			/* Ignore non-identifiable packets */
+			if (rlen < 4) continue;
 
 			/* Ignore replies from addresses we didn't send to */
-			for (i=0; i<nns && memcmp(ns+i, &sa, sl); i++);
-			if (i==nns) continue;
+			for (j=0; j<nns && memcmp(ns+j, &sa, sl); j++);
+			if (j==nns) continue;
 
 			/* Find which query this answer goes with, if any */
 			for (i=next; i<nqueries && (
@@ -173,6 +174,22 @@ int __res_msend(int nqueries, const unsigned char *const *queries,
 				answers[next][1] != queries[i][1] ); i++);
 			if (i==nqueries) continue;
 			if (alens[i]) continue;
+
+			/* Only accept positive or negative responses;
+			 * retry immediately on server failure, and ignore
+			 * all other codes such as refusal. */
+			switch (answers[next][3] & 15) {
+			case 0:
+			case 3:
+				break;
+			case 2:
+				if (servfail_retry && servfail_retry--)
+					sendto(fd, queries[i],
+						qlens[i], MSG_NOSIGNAL,
+						(void *)&ns[j], sl);
+			default:
+				continue;
+			}
 
 			/* Store answer in the right slot, or update next
 			 * available temp slot if it's already in place. */
