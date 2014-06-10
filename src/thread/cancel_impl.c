@@ -58,7 +58,7 @@ static void cancel_handler(int sig, siginfo_t *si, void *ctx)
 void __testcancel()
 {
 	if (!libc.has_thread_pointer) return;
-	pthread_t self = pthread_self();
+	pthread_t self = __pthread_self();
 	if (self->cancel && !self->canceldisable)
 		__cancel();
 }

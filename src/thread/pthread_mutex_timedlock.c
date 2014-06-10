@@ -10,7 +10,7 @@ int pthread_mutex_timedlock(pthread_mutex_t *restrict m, const struct timespec *
 	while ((r=pthread_mutex_trylock(m)) == EBUSY) {
 		if (!(r=m->_m_lock) || (r&0x40000000)) continue;
 		if ((m->_m_type&3) == PTHREAD_MUTEX_ERRORCHECK
-		 && (r&0x1fffffff) == pthread_self()->tid)
+		 && (r&0x1fffffff) == __pthread_self()->tid)
 			return EDEADLK;
 
 		a_inc(&m->_m_waiters);

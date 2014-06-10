@@ -8,7 +8,7 @@ int pthread_mutex_trylock(pthread_mutex_t *m)
 	if (m->_m_type == PTHREAD_MUTEX_NORMAL)
 		return a_cas(&m->_m_lock, 0, EBUSY) & EBUSY;
 
-	self = pthread_self();
+	self = __pthread_self();
 	tid = self->tid;
 
 	if (m->_m_type >= 4) {

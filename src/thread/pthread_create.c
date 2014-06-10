@@ -13,7 +13,7 @@ weak_alias(dummy_0, __pthread_tsd_run_dtors);
 
 _Noreturn void pthread_exit(void *result)
 {
-	pthread_t self = pthread_self();
+	pthread_t self = __pthread_self();
 	sigset_t set;
 
 	self->result = result;
@@ -78,7 +78,7 @@ _Noreturn void pthread_exit(void *result)
 void __do_cleanup_push(struct __ptcb *cb)
 {
 	if (!libc.has_thread_pointer) return;
-	struct pthread *self = pthread_self();
+	struct pthread *self = __pthread_self();
 	cb->__next = self->cancelbuf;
 	self->cancelbuf = cb;
 }

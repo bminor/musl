@@ -4,7 +4,7 @@
 
 locale_t uselocale(locale_t l)
 {
-	pthread_t self = pthread_self();
+	pthread_t self = __pthread_self();
 	locale_t old = self->locale;
 	if (l) self->locale = l;
 	return old;

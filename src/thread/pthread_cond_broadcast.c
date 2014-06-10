@@ -28,7 +28,7 @@ int pthread_cond_broadcast(pthread_cond_t *c)
 	/* Perform the futex requeue, waking one waiter unless we know
 	 * that the calling thread holds the mutex. */
 	__syscall(SYS_futex, &c->_c_seq, FUTEX_REQUEUE,
-		!m->_m_type || (m->_m_lock&INT_MAX)!=pthread_self()->tid,
+		!m->_m_type || (m->_m_lock&INT_MAX)!=__pthread_self()->tid,
 		INT_MAX, &m->_m_lock);
 
 out:
