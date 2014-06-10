@@ -123,7 +123,7 @@ target=
 optimize=auto
 debug=no
 warnings=no
-shared=yes
+shared=auto
 static=yes
 wrapper=auto
 
@@ -412,11 +412,14 @@ fi
 tryflag CFLAGS_AUTO -fno-stack-protector
 tryldflag LDFLAGS_AUTO -Wl,--hash-style=both
 
+test "$shared" = "no" || {
 # Disable dynamic linking if ld is broken and can't do -Bsymbolic-functions
 LDFLAGS_DUMMY=
 tryldflag LDFLAGS_DUMMY -Wl,-Bsymbolic-functions || {
+test "$shared" = "yes" && fail "$0: error: linker cannot build shared library"
 printf "warning: disabling dynamic linking support\n"
 shared=no
+}
 }
 
 # Find compiler runtime library
