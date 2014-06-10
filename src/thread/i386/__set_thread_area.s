@@ -12,11 +12,25 @@ __set_thread_area:
 	mov $243,%al
 	int $128
 	testl %eax,%eax
-	jnz 1f
-	movl (%esp),%ecx
-	leal 3(,%ecx,8),%ecx
-	movw %cx,%gs
+	jnz 2f
+	movl (%esp),%edx
+	leal 3(,%edx,8),%edx
+3:	movw %dx,%gs
 1:
 	addl $16,%esp
 	popl %ebx
 	ret
+2:
+	mov %ebx,%ecx
+	xor %ebx,%ebx
+	xor %edx,%edx
+	mov %ebx,(%esp)
+	mov $1,%bl
+	mov $16,%dl
+	mov $123,%al
+	int $128
+	testl %eax,%eax
+	jnz 1b
+	mov $7,%dl
+	inc %al
+	jmp 3b
