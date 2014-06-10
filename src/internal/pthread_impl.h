@@ -18,7 +18,7 @@ struct pthread {
 	uintptr_t sysinfo;
 	uintptr_t canary;
 	pid_t tid, pid;
-	int tsd_used, errno_val, *errno_ptr;
+	int tsd_used, errno_val;
 	volatile int cancel, canceldisable, cancelasync;
 	int detached;
 	unsigned char *map_base;

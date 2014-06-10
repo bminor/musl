@@ -16,7 +16,6 @@ int __init_tp(void *p)
 	if (!r) libc.can_do_threads = 1;
 	libc.has_thread_pointer = 1;
 	td->tid = td->pid = __syscall(SYS_set_tid_address, &td->tid);
-	td->errno_ptr = &td->errno_val;
 	return 0;
 }
 
