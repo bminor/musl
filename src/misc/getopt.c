@@ -65,8 +65,11 @@ int getopt(int argc, char * const argv[], const char *optstring)
 			}
 			return '?';
 		}
-		optarg = argv[optind++] + optpos;
-		optpos = 0;
+		if (optstring[i+2] == ':') optarg = 0;
+		if (optstring[i+2] != ':' || optpos) {
+			optarg = argv[optind++] + optpos;
+			optpos = 0;
+		}
 	}
 	return c;
 }
