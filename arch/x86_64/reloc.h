@@ -7,7 +7,7 @@
 #define IS_COPY(x) ((x)==R_X86_64_COPY)
 #define IS_PLT(x) ((x)==R_X86_64_JUMP_SLOT)
 
-static inline void do_single_reloc(
+static inline int do_single_reloc(
 	struct dso *self, unsigned char *base_addr,
 	size_t *reloc_addr, int type, size_t addend,
 	Sym *sym, size_t sym_size,
@@ -43,4 +43,5 @@ static inline void do_single_reloc(
 			: 0 - self->tls_offset) + addend;
 		break;
 	}
+	return 0;
 }

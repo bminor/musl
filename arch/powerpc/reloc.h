@@ -7,7 +7,7 @@
 #define IS_PLT(x) ((x)==R_PPC_JMP_SLOT)
 
 // see linux' arch/powerpc/include/asm/elf.h 
-static inline void do_single_reloc(
+static inline int do_single_reloc(
 	struct dso *self, unsigned char *base_addr,
 	size_t *reloc_addr, int type, size_t addend,
 	Sym *sym, size_t sym_size,
@@ -37,6 +37,7 @@ static inline void do_single_reloc(
 			: self->tls_offset - 0x7000;
 		break;
 	}
+	return 0;
 }
 
 void __reloc_self(int c, size_t *a, size_t *dynv)

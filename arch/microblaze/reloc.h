@@ -13,7 +13,7 @@
 #define IS_COPY(x) ((x)==R_MICROBLAZE_COPY)
 #define IS_PLT(x) ((x)==R_MICROBLAZE_JUMP_SLOT)
 
-static inline void do_single_reloc(
+static inline int do_single_reloc(
 	struct dso *self, unsigned char *base_addr,
 	size_t *reloc_addr, int type, size_t addend,
 	Sym *sym, size_t sym_size,
@@ -38,6 +38,7 @@ static inline void do_single_reloc(
 		*reloc_addr = def.sym->st_value + addend;
 		break;
 	}
+	return 0;
 }
 
 #include "syscall.h"
