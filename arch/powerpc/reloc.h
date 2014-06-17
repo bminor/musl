@@ -32,9 +32,9 @@ static inline void do_single_reloc(
 		*reloc_addr = def.sym->st_value + addend;
 		break;
 	case R_PPC_TPREL32:
-		*reloc_addr += def.sym
-			? def.sym->st_value + def.dso->tls_offset - 0x7000
-			: self->tls_offset - 0x7000;
+		*reloc_addr = (def.sym
+			? def.sym->st_value + def.dso->tls_offset
+			: self->tls_offset) - 0x7000 + addend;
 		break;
 	}
 }
