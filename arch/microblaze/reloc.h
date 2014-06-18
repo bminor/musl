@@ -10,33 +10,25 @@
 
 #define LDSO_ARCH "microblaze" ENDIAN_SUFFIX
 
-#define IS_COPY(x) ((x)==R_MICROBLAZE_COPY)
-#define IS_PLT(x) ((x)==R_MICROBLAZE_JUMP_SLOT)
+#define TPOFF_K 0
 
-static inline int do_single_reloc(
-	struct dso *self, unsigned char *base_addr,
-	size_t *reloc_addr, int type, size_t addend,
-	Sym *sym, size_t sym_size,
-	struct symdef def, size_t sym_val)
+static int remap_rel(int type)
 {
 	switch(type) {
 	case R_MICROBLAZE_32:
+		return REL_SYMBOLIC;
 	case R_MICROBLAZE_GLOB_DAT:
+		return REL_GOT;
 	case R_MICROBLAZE_JUMP_SLOT:
-		*reloc_addr = sym_val + addend;
-		break;
+		return REL_PLT;
 	case R_MICROBLAZE_REL:
-		*reloc_addr = (size_t)base_addr + addend;
-		break;
+		return REL_RELATIVE;
 	case R_MICROBLAZE_COPY:
-		memcpy(reloc_addr, (void *)sym_val, sym_size);
-		break;
+		return REL_COPY;
 	case R_MICROBLAZE_TLSDTPMOD32:
-		*reloc_addr = def.dso ? def.dso->tls_id : self->tls_id;
-		break;
+		return REL_DTPMOD;
 	case R_MICROBLAZE_TLSDTPREL32:
-		*reloc_addr = def.sym->st_value + addend;
-		break;
+		return REL_DTPOFF;
 	}
 	return 0;
 }

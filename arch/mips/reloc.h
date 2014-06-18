@@ -16,37 +16,23 @@
 
 #define LDSO_ARCH "mips" ENDIAN_SUFFIX FP_SUFFIX
 
-#define IS_COPY(x) ((x)==R_MIPS_COPY)
-#define IS_PLT(x) 1
+#define TPOFF_K (-0x7000)
 
-static inline int do_single_reloc(
-	struct dso *self, unsigned char *base_addr,
-	size_t *reloc_addr, int type, size_t addend,
-	Sym *sym, size_t sym_size,
-	struct symdef def, size_t sym_val)
+static int remap_rel(int type)
 {
 	switch(type) {
-	case R_MIPS_JUMP_SLOT:
-		*reloc_addr = sym_val;
-		break;
 	case R_MIPS_REL32:
-		if (sym_val) *reloc_addr += sym_val;
-		else *reloc_addr += (size_t)base_addr;
-		break;
+		return REL_SYM_OR_REL;
+	case R_MIPS_JUMP_SLOT:
+		return REL_PLT;
 	case R_MIPS_COPY:
-		memcpy(reloc_addr, (void *)sym_val, sym_size);
-		break;
+		return REL_COPY;
 	case R_MIPS_TLS_DTPMOD32:
-		*reloc_addr = def.dso ? def.dso->tls_id : self->tls_id;
-		break;
+		return REL_DTPMOD;
 	case R_MIPS_TLS_DTPREL32:
-		*reloc_addr += def.sym->st_value;
-		break;
+		return REL_DTPOFF;
 	case R_MIPS_TLS_TPREL32:
-		*reloc_addr += def.sym
-			? def.sym->st_value + def.dso->tls_offset - 0x7000
-			: self->tls_offset - 0x7000;
-		break;
+		return REL_TPOFF;
 	}
 	return 0;
 }

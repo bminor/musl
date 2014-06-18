@@ -89,6 +89,23 @@ struct symdef {
 	struct dso *dso;
 };
 
+enum {
+	REL_ERR,
+	REL_SYMBOLIC,
+	REL_GOT,
+	REL_PLT,
+	REL_RELATIVE,
+	REL_OFFSET,
+	REL_OFFSET32,
+	REL_COPY,
+	REL_SYM_OR_REL,
+	REL_TLS, /* everything past here is TLS */
+	REL_DTPMOD,
+	REL_DTPOFF,
+	REL_TPOFF,
+	REL_TPOFF_NEG,
+};
+
 #include "reloc.h"
 
 int __init_tp(void *);
@@ -227,6 +244,8 @@ static struct symdef find_sym(struct dso *dso, const char *s, int need_def)
 	return def;
 }
 
+#define NO_INLINE_ADDEND (1<<REL_COPY | 1<<REL_GOT | 1<<REL_PLT)
+
 static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stride)
 {
 	unsigned char *base = dso->base;
@@ -235,18 +254,34 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 	Sym *sym;
 	const char *name;
 	void *ctx;
-	int type;
+	int astype, type;
 	int sym_index;
 	struct symdef def;
+	size_t *reloc_addr;
+	size_t sym_val;
+	size_t tls_val;
+	size_t addend;
 
 	for (; rel_size; rel+=stride, rel_size-=stride*sizeof(size_t)) {
-		type = R_TYPE(rel[1]);
+		astype = R_TYPE(rel[1]);
+		if (!astype) continue;
+		type = remap_rel(astype);
+		if (!type) {
+			snprintf(errbuf, sizeof errbuf,
+				"Error relocating %s: unsupported relocation type %d",
+				dso->name, astype);
+			if (runtime) longjmp(*rtld_fail, 1);
+			dprintf(2, "%s\n", errbuf);
+			ldso_fail = 1;
+			continue;
+		}
 		sym_index = R_SYM(rel[1]);
+		reloc_addr = (void *)(base + rel[0]);
 		if (sym_index) {
 			sym = syms + sym_index;
 			name = strings + sym->st_name;
-			ctx = IS_COPY(type) ? head->next : head;
-			def = find_sym(ctx, name, IS_PLT(type));
+			ctx = type==REL_COPY ? head->next : head;
+			def = find_sym(ctx, name, type==REL_PLT);
 			if (!def.sym && (sym->st_shndx != SHN_UNDEF
 			    || sym->st_info>>4 != STB_WEAK)) {
 				snprintf(errbuf, sizeof errbuf,
@@ -260,11 +295,57 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 		} else {
 			sym = 0;
 			def.sym = 0;
-			def.dso = 0;
+			def.dso = dso;
 		}
-		do_single_reloc(dso, base, (void *)(base + rel[0]), type,
-			stride>2 ? rel[2] : 0, sym, sym?sym->st_size:0, def,
-			def.sym?(size_t)(def.dso->base+def.sym->st_value):0);
+
+		addend = stride>2 ? rel[2]
+			: (1<<type & NO_INLINE_ADDEND) ? 0
+			: *reloc_addr;
+
+		sym_val = def.sym ? (size_t)def.dso->base+def.sym->st_value : 0;
+		tls_val = def.sym ? def.sym->st_value : 0;
+
+		switch(type) {
+		case REL_OFFSET:
+			addend -= (size_t)reloc_addr;
+		case REL_SYMBOLIC:
+		case REL_GOT:
+		case REL_PLT:
+			*reloc_addr = sym_val + addend;
+			break;
+		case REL_RELATIVE:
+			*reloc_addr = (size_t)base + addend;
+			break;
+		case REL_SYM_OR_REL:
+			if (sym) *reloc_addr = sym_val + addend;
+			else *reloc_addr = (size_t)base + addend;
+			break;
+		case REL_COPY:
+			memcpy(reloc_addr, (void *)sym_val, sym->st_size);
+			break;
+		case REL_OFFSET32:
+			*(uint32_t *)reloc_addr = sym_val + addend
+				- (size_t)reloc_addr;
+			break;
+		case REL_DTPMOD:
+			*reloc_addr = def.dso->tls_id;
+			break;
+		case REL_DTPOFF:
+			*reloc_addr = tls_val + addend;
+			break;
+#ifdef TLS_ABOVE_TP
+		case REL_TPOFF:
+			*reloc_addr = tls_val + def.dso->tls_offset + TPOFF_K + addend;
+			break;
+#else
+		case REL_TPOFF:
+			*reloc_addr = tls_val - def.dso->tls_offset + addend;
+			break;
+		case REL_TPOFF_NEG:
+			*reloc_addr = def.dso->tls_offset - tls_val + addend;
+			break;
+#endif
+		}
 	}
 }
 

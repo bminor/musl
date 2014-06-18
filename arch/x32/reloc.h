@@ -4,44 +4,37 @@
 
 #define LDSO_ARCH "x32"
 
-#define IS_COPY(x) ((x)==R_X86_64_COPY)
-#define IS_PLT(x) ((x)==R_X86_64_JUMP_SLOT)
+/* FIXME: x32 is very strange in its use of 64-bit relocation types in
+ * a 32-bit environment. As long as the memory at reloc_addr is
+ * zero-filled prior to relocations, just treating 64-bit relocations
+ * as operating on 32-bit slots should be fine, but this should be
+ * checked. In particular, R_X86_64_64, R_X86_64_DTPOFF64, and
+ * R_X86_64_TPOFF64 may need checking. */
 
-static inline int do_single_reloc(
-	struct dso *self, unsigned char *base_addr,
-	size_t *reloc_addr, int type, size_t addend,
-	Sym *sym, size_t sym_size,
-	struct symdef def, size_t sym_val)
+static int remap_rel(int type)
 {
 	switch(type) {
-	case R_X86_64_GLOB_DAT:
-	case R_X86_64_JUMP_SLOT:
 	case R_X86_64_64:
-		*reloc_addr = sym_val + addend;
-		break;
 	case R_X86_64_32:
-		*(uint32_t *)reloc_addr = sym_val + addend;
-		break;
+		return REL_SYMBOLIC;
 	case R_X86_64_PC32:
-		*reloc_addr = sym_val + addend - (size_t)reloc_addr + (size_t)base_addr;
-		break;
+		return REL_OFFSET;
+	case R_X86_64_GLOB_DAT:
+		return REL_GOT;
+	case R_X86_64_JUMP_SLOT:
+		return REL_PLT;
 	case R_X86_64_RELATIVE:
-		*reloc_addr = (size_t)base_addr + addend;
-		break;
+		return REL_RELATIVE;
 	case R_X86_64_COPY:
-		memcpy(reloc_addr, (void *)sym_val, sym_size);
-		break;
+		return REL_COPY;
 	case R_X86_64_DTPMOD64:
-		*reloc_addr = def.dso ? def.dso->tls_id : self->tls_id;
-		break;
+		return REL_DTPMOD;
 	case R_X86_64_DTPOFF64:
-		*reloc_addr = def.sym->st_value + addend;
-		break;
+	case R_X86_64_DTPOFF32:
+		return REL_DTPOFF;
 	case R_X86_64_TPOFF64:
-		*reloc_addr = (def.sym
-			? def.sym->st_value - def.dso->tls_offset
-			: 0 - self->tls_offset) + addend;
-		break;
+	case R_X86_64_TPOFF32:
+		return REL_TPOFF;
 	}
 	return 0;
 }

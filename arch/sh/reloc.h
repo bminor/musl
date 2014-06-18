@@ -6,41 +6,29 @@
 
 #define LDSO_ARCH "sh" ENDIAN_SUFFIX
 
-#define IS_COPY(x) ((x) == R_SH_COPY)
-#define IS_PLT(x)  ((x) == R_SH_JMP_SLOT)
+#define TPOFF_K 8
 
-static inline int do_single_reloc(
-	struct dso *self, unsigned char *base_addr,
-	size_t *reloc_addr, int type, size_t addend,
-	Sym *sym, size_t sym_size,
-	struct symdef def, size_t sym_val)
+static int remap_rel(int type)
 {
 	switch(type) {
-	case R_SH_GLOB_DAT:
-	case R_SH_JMP_SLOT:
 	case R_SH_DIR32:
-		*reloc_addr = sym_val + addend;
-		break;
-	case R_SH_RELATIVE:
-		*reloc_addr = (size_t)base_addr + addend;
-		break;
+		return REL_SYMBOLIC;
 	case R_SH_REL32:
-		*reloc_addr = sym_val + addend - (size_t)reloc_addr;
-		break;
+		return REL_OFFSET;
+	case R_SH_GLOB_DAT:
+		return REL_GOT;
+	case R_SH_JMP_SLOT:
+		return REL_PLT;
+	case R_SH_RELATIVE:
+		return REL_RELATIVE;
 	case R_SH_COPY:
-		memcpy(reloc_addr, (void *)sym_val, sym_size);
-		break;
+		return REL_COPY;
 	case R_SH_TLS_DTPMOD32:
-		*reloc_addr = def.dso ? def.dso->tls_id : self->tls_id;
-		break;
+		return REL_DTPMOD;
 	case R_SH_TLS_DTPOFF32:
-		*reloc_addr = def.sym->st_value + addend;
-		break;
+		return REL_DTPOFF;
 	case R_SH_TLS_TPOFF32:
-		*reloc_addr = (def.sym
-			? def.sym->st_value + def.dso->tls_offset
-			: self->tls_offset) + 8 + addend;
-		break;
+		return REL_TPOFF;
 	}
 	return 0;
 }
