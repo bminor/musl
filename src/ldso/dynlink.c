@@ -1,6 +1,7 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdint.h>
@@ -149,6 +150,17 @@ static int search_vec(size_t *v, size_t *r, size_t key)
 	return 1;
 }
 
+static void error(const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	vsnprintf(errbuf, sizeof errbuf, fmt, ap);
+	va_end(ap);
+	if (runtime) longjmp(*rtld_fail, 1);
+	dprintf(2, "%s\n", errbuf);
+	ldso_fail = 1;
+}
+
 static uint32_t sysv_hash(const char *s0)
 {
 	const unsigned char *s = (void *)s0;
@@ -267,12 +279,9 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 		if (!astype) continue;
 		type = remap_rel(astype);
 		if (!type) {
-			snprintf(errbuf, sizeof errbuf,
+			error(errbuf, sizeof errbuf,
 				"Error relocating %s: unsupported relocation type %d",
 				dso->name, astype);
-			if (runtime) longjmp(*rtld_fail, 1);
-			dprintf(2, "%s\n", errbuf);
-			ldso_fail = 1;
 			continue;
 		}
 		sym_index = R_SYM(rel[1]);
@@ -284,12 +293,9 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 			def = find_sym(ctx, name, type==REL_PLT);
 			if (!def.sym && (sym->st_shndx != SHN_UNDEF
 			    || sym->st_info>>4 != STB_WEAK)) {
-				snprintf(errbuf, sizeof errbuf,
+				error(errbuf, sizeof errbuf,
 					"Error relocating %s: %s: symbol not found",
 					dso->name, name);
-				if (runtime) longjmp(*rtld_fail, 1);
-				dprintf(2, "%s\n", errbuf);
-				ldso_fail = 1;
 				continue;
 			}
 		} else {
@@ -798,12 +804,9 @@ static void load_deps(struct dso *p)
 			if (p->dynv[i] != DT_NEEDED) continue;
 			dep = load_library(p->strings + p->dynv[i+1], p);
 			if (!dep) {
-				snprintf(errbuf, sizeof errbuf,
+				error(errbuf, sizeof errbuf,
 					"Error loading shared library %s: %m (needed by %s)",
 					p->strings + p->dynv[i+1], p->name);
-				if (runtime) longjmp(*rtld_fail, 1);
-				dprintf(2, "%s\n", errbuf);
-				ldso_fail = 1;
 				continue;
 			}
 			if (runtime) {
@@ -852,12 +855,9 @@ static void reloc_all(struct dso *p)
 
 		if (p->relro_start != p->relro_end &&
 		    mprotect(p->base+p->relro_start, p->relro_end-p->relro_start, PROT_READ) < 0) {
-			snprintf(errbuf, sizeof errbuf,
+			error(errbuf, sizeof errbuf,
 				"Error relocating %s: RELRO protection failed: %m",
 				p->name);
-			if (runtime) longjmp(*rtld_fail, 1);
-			dprintf(2, "%s\n", errbuf);
-			ldso_fail = 1;
 		}
 
 		p->relocated = 1;
