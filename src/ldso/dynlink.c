@@ -1031,17 +1031,15 @@ void *__copy_tls(unsigned char *mem)
 	return td;
 }
 
-void *__tls_get_addr(size_t *v)
+void *__tls_get_new(size_t *v)
 {
 	pthread_t self = __pthread_self();
-	if (v[0]<=(size_t)self->dtv[0])
-		return (char *)self->dtv[v[0]]+v[1];
 
 	/* Block signals to make accessing new TLS async-signal-safe */
 	sigset_t set;
-	pthread_sigmask(SIG_BLOCK, SIGALL_SET, &set);
+	__block_all_sigs(&set);
 	if (v[0]<=(size_t)self->dtv[0]) {
-		pthread_sigmask(SIG_SETMASK, &set, 0);
+		__restore_sigs(&set);
 		return (char *)self->dtv[v[0]]+v[1];
 	}
 
@@ -1074,7 +1072,7 @@ void *__tls_get_addr(size_t *v)
 		memcpy(mem, p->tls_image, p->tls_len);
 		if (p->tls_id == v[0]) break;
 	}
-	pthread_sigmask(SIG_SETMASK, &set, 0);
+	__restore_sigs(&set);
 	return mem + v[1];
 }
 
@@ -1441,6 +1439,8 @@ static int invalid_dso_handle(void *h)
 	errflag = 1;
 	return 1;
 }
+
+void *__tls_get_addr(size_t *);
 
 static void *do_dlsym(struct dso *p, const char *s, void *ra)
 {

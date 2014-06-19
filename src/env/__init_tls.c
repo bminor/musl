@@ -53,11 +53,6 @@ void *__copy_tls(unsigned char *mem)
 	return td;
 }
 
-void *__tls_get_addr(size_t *v)
-{
-	return (char *)__pthread_self()->dtv[1]+v[1];
-}
-
 #if ULONG_MAX == 0xffffffff
 typedef Elf32_Phdr Phdr;
 #else
