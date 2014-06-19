@@ -25,6 +25,8 @@ static int remap_rel(int type)
 		return REL_DTPOFF;
 	case R_X86_64_TPOFF64:
 		return REL_TPOFF;
+	case R_X86_64_TLSDESC:
+		return REL_TLSDESC;
 	}
 	return 0;
 }
