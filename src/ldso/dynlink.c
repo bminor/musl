@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <stddef.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdint.h>
@@ -49,6 +50,11 @@ struct debug {
 	void *base;
 };
 
+struct td_index {
+	size_t args[2];
+	struct td_index *next;
+};
+
 struct dso {
 	unsigned char *base;
 	char *name;
@@ -80,6 +86,7 @@ struct dso {
 	void **new_dtv;
 	unsigned char *new_tls;
 	int new_dtv_idx, new_tls_idx;
+	struct td_index *td_index;
 	struct dso *fini_next;
 	char *shortname;
 	char buf[];
@@ -105,6 +112,7 @@ enum {
 	REL_DTPOFF,
 	REL_TPOFF,
 	REL_TPOFF_NEG,
+	REL_TLSDESC,
 };
 
 #include "reloc.h"
@@ -125,6 +133,7 @@ static jmp_buf *rtld_fail;
 static pthread_rwlock_t lock;
 static struct debug debug;
 static size_t tls_cnt, tls_offset, tls_align = 4*sizeof(size_t);
+static size_t static_tls_cnt;
 static pthread_mutex_t init_fini_lock = { ._m_type = PTHREAD_MUTEX_RECURSIVE };
 static long long builtin_tls[(sizeof(struct pthread) + 64)/sizeof(long long)];
 
@@ -258,6 +267,8 @@ static struct symdef find_sym(struct dso *dso, const char *s, int need_def)
 
 #define NO_INLINE_ADDEND (1<<REL_COPY | 1<<REL_GOT | 1<<REL_PLT)
 
+ptrdiff_t __tlsdesc_static(), __tlsdesc_dynamic();
+
 static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stride)
 {
 	unsigned char *base = dso->base;
@@ -351,6 +362,30 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 			*reloc_addr = def.dso->tls_offset - tls_val + addend;
 			break;
 #endif
+		case REL_TLSDESC:
+			if (stride<3) addend = reloc_addr[1];
+			if (runtime && def.dso->tls_id >= static_tls_cnt) {
+				struct td_index *new = malloc(sizeof *new);
+				if (!new) error(errbuf, sizeof errbuf,
+					"Error relocating %s: cannot allocate TLSDESC for %s",
+					dso->name, sym ? name : "(local)" );
+				new->next = dso->td_index;
+				dso->td_index = new;
+				new->args[0] = def.dso->tls_id;
+				new->args[1] = tls_val + addend;
+				reloc_addr[0] = (size_t)__tlsdesc_dynamic;
+				reloc_addr[1] = (size_t)new;
+			} else {
+				reloc_addr[0] = (size_t)__tlsdesc_static;
+#ifdef TLS_ABOVE_TP
+				reloc_addr[1] = tls_val + def.dso->tls_offset
+					+ TPOFF_K + addend;
+#else
+				reloc_addr[1] = tls_val - def.dso->tls_offset
+					+ addend;
+#endif
+			}
+			break;
 		}
 	}
 }
@@ -1277,6 +1312,7 @@ void *__dynlink(int argc, char **argv)
 		dprintf(2, "%s: Thread-local storage not supported by kernel.\n", argv[0]);
 		_exit(127);
 	}
+	static_tls_cnt = tls_cnt;
 
 	if (ldso_fail) _exit(127);
 	if (ldd_mode) _exit(0);
@@ -1332,6 +1368,11 @@ void *dlopen(const char *file, int mode)
 		for (p=orig_tail->next; p; p=next) {
 			next = p->next;
 			munmap(p->map, p->map_len);
+			while (p->td_index) {
+				void *tmp = p->td_index->next;
+				free(p->td_index);
+				p->td_index = tmp;
+			}
 			free(p->deps);
 			free(p);
 		}
