@@ -1034,13 +1034,13 @@ void *__copy_tls(unsigned char *mem)
 void *__tls_get_addr(size_t *v)
 {
 	pthread_t self = __pthread_self();
-	if (v[0]<=(size_t)self->dtv[0] && self->dtv[v[0]])
+	if (v[0]<=(size_t)self->dtv[0])
 		return (char *)self->dtv[v[0]]+v[1];
 
 	/* Block signals to make accessing new TLS async-signal-safe */
 	sigset_t set;
 	pthread_sigmask(SIG_BLOCK, SIGALL_SET, &set);
-	if (v[0]<=(size_t)self->dtv[0] && self->dtv[v[0]]) {
+	if (v[0]<=(size_t)self->dtv[0]) {
 		pthread_sigmask(SIG_SETMASK, &set, 0);
 		return (char *)self->dtv[v[0]]+v[1];
 	}
@@ -1062,12 +1062,18 @@ void *__tls_get_addr(size_t *v)
 		self->dtv = newdtv;
 	}
 
-	/* Get new TLS memory from new DSO */
-	unsigned char *mem = p->new_tls +
-		(p->tls_size + p->tls_align) * a_fetch_add(&p->new_tls_idx,1);
-	mem += ((uintptr_t)p->tls_image - (uintptr_t)mem) & (p->tls_align-1);
-	self->dtv[v[0]] = mem;
-	memcpy(mem, p->tls_image, p->tls_len);
+	/* Get new TLS memory from all new DSOs up to the requested one */
+	unsigned char *mem;
+	for (p=head; ; p=p->next) {
+		if (!p->tls_id || self->dtv[p->tls_id]) continue;
+		mem = p->new_tls + (p->tls_size + p->tls_align)
+			* a_fetch_add(&p->new_tls_idx,1);
+		mem += ((uintptr_t)p->tls_image - (uintptr_t)mem)
+			& (p->tls_align-1);
+		self->dtv[p->tls_id] = mem;
+		memcpy(mem, p->tls_image, p->tls_len);
+		if (p->tls_id == v[0]) break;
+	}
 	pthread_sigmask(SIG_SETMASK, &set, 0);
 	return mem + v[1];
 }
