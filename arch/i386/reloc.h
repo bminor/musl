@@ -26,6 +26,8 @@ static int remap_rel(int type)
 		return REL_TPOFF;
 	case R_386_TLS_TPOFF32:
 		return REL_TPOFF_NEG;
+	case R_386_TLS_DESC:
+		return REL_TLSDESC;
 	}
 	return 0;
 }
