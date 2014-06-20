@@ -17,6 +17,7 @@ int gethostbyname2_r(const char *name, int af,
 	int i, cnt;
 	size_t align, need;
 
+	*res = 0;
 	cnt = __lookup_name(addrs, canon, name, af, AI_CANONNAME);
 	if (cnt<0) switch (cnt) {
 	case EAI_NONAME:
