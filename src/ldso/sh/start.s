@@ -1,7 +1,7 @@
 .text
-.global _start
-.type   _start, @function
-_start:
+.global _dlstart
+.type   _dlstart, @function
+_dlstart:
 	mov.l  @r15, r4
 	mov    r15, r5
 	mov.l  L1, r0

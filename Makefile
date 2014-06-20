@@ -125,7 +125,7 @@ $(foreach s,$(wildcard src/*/$(ARCH)*/*.s),$(eval $(call mkasmdep,$(s))))
 
 lib/libc.so: $(LOBJS)
 	$(CC) $(CFLAGS_ALL_SHARED) $(LDFLAGS) -nostdlib -shared \
-	-Wl,-e,_start -Wl,-Bsymbolic-functions \
+	-Wl,-e,_dlstart -Wl,-Bsymbolic-functions \
 	-o $@ $(LOBJS) $(LIBCC)
 
 lib/libc.a: $(OBJS)

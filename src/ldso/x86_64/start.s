@@ -1,6 +1,6 @@
 .text
-.global _start
-_start:
+.global _dlstart
+_dlstart:
 	mov (%rsp),%rdi
 	lea 8(%rsp),%rsi
 	call __dynlink

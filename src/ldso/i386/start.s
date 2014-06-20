@@ -1,6 +1,6 @@
 .text
-.global _start
-_start:
+.global _dlstart
+_dlstart:
 	xor %ebp,%ebp
 	pop %edi
 	mov %esp,%esi

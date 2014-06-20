@@ -2,9 +2,9 @@
 .hidden __reloc_self
 .set noreorder
 .set nomacro
-.global _start
-.type _start,@function
-_start:
+.global _dlstart
+.type _dlstart,@function
+_dlstart:
 	move $fp, $0
 
 	bgezal $0, 1f

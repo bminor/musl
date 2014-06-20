@@ -1,6 +1,6 @@
 .text
-.global _start
-_start:
+.global _dlstart
+_dlstart:
 	mov (%rsp),%rdi  /* move argc into 1st argument slot */
 	lea 4(%rsp),%rsi /* move argv into 2nd argument slot */
 	call __dynlink

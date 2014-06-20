@@ -1,6 +1,6 @@
-	.global _start
-	.type   _start,@function
-_start:
+	.global _dlstart
+	.type   _dlstart,@function
+_dlstart:
 	bl      1f
 2:	.long   _DYNAMIC-2b
 1:	mflr    5

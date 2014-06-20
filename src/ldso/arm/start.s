@@ -1,6 +1,6 @@
 .text
-.global _start
-_start:
+.global _dlstart
+_dlstart:
 	ldr r0,[sp]
 	add r1,sp,#4
 	bl __dynlink

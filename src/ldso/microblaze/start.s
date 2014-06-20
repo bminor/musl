@@ -1,6 +1,6 @@
 # FIXME: clearing argv entries
-.global _start
-_start:
+.global _dlstart
+_dlstart:
 	add     r19, r0, r0
 
 	lw      r5, r0, r1
