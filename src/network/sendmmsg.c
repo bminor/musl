@@ -12,6 +12,7 @@ int sendmmsg(int fd, struct mmsghdr *msgvec, unsigned int vlen, unsigned int fla
 	 * and the cmsg blocks cannot be modified in-place. */
 	int i;
 	if (vlen > IOV_MAX) vlen = IOV_MAX; /* This matches the kernel. */
+	if (!vlen) return 0;
 	for (i=0; i<vlen; i++) {
 		/* As an unfortunate inconsistency, the sendmmsg API uses
 		 * unsigned int for the resulting msg_len, despite sendmsg
