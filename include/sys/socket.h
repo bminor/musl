@@ -26,6 +26,17 @@ struct ucred
 	uid_t uid;
 	gid_t gid;
 };
+
+struct mmsghdr
+{
+	struct msghdr msg_hdr;
+	unsigned int  msg_len;
+};
+
+struct timespec;
+
+int sendmmsg (int, struct mmsghdr *, unsigned int, unsigned int);
+int recvmmsg (int, struct mmsghdr *, unsigned int, unsigned int, struct timespec *);
 #endif
 
 struct linger
