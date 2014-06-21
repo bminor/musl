@@ -7,6 +7,7 @@ struct address {
 	int family;
 	unsigned scopeid;
 	uint8_t addr[16];
+	int sortkey;
 };
 
 struct service {
