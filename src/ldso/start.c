@@ -2,7 +2,7 @@
 
 /* stub for archs that lack dynamic linker support */
 
-void _start()
+void _dlstart()
 {
 	_Exit(1);
 }
