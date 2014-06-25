@@ -171,7 +171,11 @@ install-headers: $(ALL_INCLUDES:include/%=$(DESTDIR)$(includedir)/%)
 
 install-tools: $(ALL_TOOLS:tools/%=$(DESTDIR)$(bindir)/%)
 
+musl-git-%.tar.gz: .git
+	 git archive --format=tar.gz --prefix=$(patsubst %.tar.gz,%,$@)/ -o $@ $(patsubst musl-git-%.tar.gz,%,$@)
 
+musl-%.tar.gz: .git
+	 git archive --format=tar.gz --prefix=$(patsubst %.tar.gz,%,$@)/ -o $@ v$(patsubst musl-%.tar.gz,%,$@)
 
 .PRECIOUS: $(CRT_LIBS:lib/%=crt/%)
 
