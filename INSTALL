@@ -35,7 +35,8 @@ i386 targets. Sufficiently recent versions of PCC and LLVM/clang are
 also believed to work, but have not been tested as heavily; prior to
 Fall 2012, both had known bugs that affected musl. Firm/cparser is
 also believed to work but lacks support for producing shared
-libraries.
+libraries. GCC 4.9.0 is known to have a serious bug (#61144) which
+affects musl and is not supported.
 
 
 
