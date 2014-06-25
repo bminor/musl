@@ -1269,3 +1269,29 @@ bugs fixed:
 arch-specific bugs fixed:
 - broken kernel side RLIM_INFINITY on mips
 - incorrect syscall argument 6/7 types for pselect on x32
+
+
+
+1.1.3 release notes
+
+new features:
+- address sorting in getaddrinfo, etc. modeled on rfc 3484/6724
+- default timezone taken from /etc/localtime when $TZ is unset
+- getopt double-colon extension for optional arguments
+- support for TLSDESC-based (gnu2) TLS dialect on i386 and x86_64
+- sendmmsg/recvmmsg (linux-specific)
+- fmtmsg (last mandatory XSI function that was missing)
+
+compatibility:
+- treat dns rcode=2 as temporary failure, not negative result
+- working thread-pointer for pre-2.6 kernels on i386
+- further ABI-compat symbols: __xmknod[at], __sysv_signal
+
+bugs fixed:
+- memmem false positives/false negatives/crashes from invalid logic
+- gethostby*_r not setting result pointer to null on failure
+- aliasing violations in syscall.h SYSLOG_NAMES feature
+- fanotify_mark syscall arguments wrong
+
+arch-specific bugs fixed:
+- various subtle relocation bugs in powerpc and sh dynamic linker
