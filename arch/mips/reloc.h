@@ -86,3 +86,4 @@ static void do_arch_relocs(struct dso *this, struct dso *head)
 
 #define NEED_ARCH_RELOCS 1
 #define DYNAMIC_IS_RO 1
+#define ARCH_SYM_REJECT_UND(s) (!((s)->st_other & STO_MIPS_PLT))
