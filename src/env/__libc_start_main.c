@@ -72,7 +72,7 @@ int __libc_start_main(int (*main)(int,char **,char **), int argc, char **argv)
 		(*(void (**)())a)();
 #endif
 
-	/* Pass control to to application */
+	/* Pass control to the application */
 	exit(main(argc, argv, envp));
 	return 0;
 }
