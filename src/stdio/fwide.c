@@ -7,7 +7,8 @@
 int fwide(FILE *f, int mode)
 {
 	FLOCK(f);
-	if (!f->mode) mode = f->mode = NORMALIZE(mode);
+	if (!f->mode) f->mode = NORMALIZE(mode);
+	mode = f->mode;
 	FUNLOCK(f);
 	return mode;
 }
