@@ -355,6 +355,7 @@ int vfwprintf(FILE *restrict f, const wchar_t *restrict fmt, va_list ap)
 	}
 
 	FLOCK(f);
+	f->mode |= f->mode+1;
 	ret = wprintf_core(f, fmt, &ap2, nl_arg, nl_type);
 	FUNLOCK(f);
 	va_end(ap2);
