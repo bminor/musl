@@ -57,6 +57,12 @@ _Noreturn void pthread_exit(void *result)
 		exit(0);
 	}
 
+	if (self->locale != &libc.global_locale) {
+		a_dec(&libc.uselocale_cnt);
+		if (self->locale->ctype_utf8)
+			a_dec(&libc.bytelocale_cnt_minus_1);
+	}
+
 	if (self->detached && self->map_base) {
 		/* Detached threads must avoid the kernel clear_child_tid
 		 * feature, since the virtual address will have been
@@ -205,6 +211,7 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attrp
 	new->start_arg = arg;
 	new->self = new;
 	new->tsd = (void *)tsd;
+	new->locale = &libc.global_locale;
 	if (attr._a_detach) {
 		new->detached = 1;
 		flags -= CLONE_CHILD_CLEARTID;

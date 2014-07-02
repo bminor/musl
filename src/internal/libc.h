@@ -5,6 +5,11 @@
 #include <stdio.h>
 #include <limits.h>
 
+struct __locale_struct {
+	int ctype_utf8;
+	char *messages_name;
+};
+
 struct __libc {
 	int has_thread_pointer;
 	int can_do_threads;
@@ -16,6 +21,9 @@ struct __libc {
 	int ofl_lock[2];
 	size_t tls_size;
 	size_t page_size;
+	volatile int uselocale_cnt;
+	volatile int bytelocale_cnt_minus_1;
+	struct __locale_struct global_locale;
 };
 
 extern size_t __hwcap;
