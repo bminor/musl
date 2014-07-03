@@ -1,6 +1,5 @@
-#include <wchar.h>
 #include <wctype.h>
-#include <stdio.h>
+#include "libc.h"
 
 #define CASEMAP(u1,u2,l) { (u1), (l)-(u1), (u2)-(u1)+1 }
 #define CASELACE(u1,u2) CASEMAP((u1),(u2),(u1)+1)
@@ -266,3 +265,16 @@ wint_t towlower(wint_t wc)
 {
 	return __towcase(wc, 1);
 }
+
+wint_t __towupper_l(wint_t c, locale_t l)
+{
+	return towupper(c);
+}
+
+wint_t __towlower_l(wint_t c, locale_t l)
+{
+	return towlower(c);
+}
+
+weak_alias(__towupper_l, towupper_l);
+weak_alias(__towlower_l, towlower_l);
