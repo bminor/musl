@@ -1,5 +1,6 @@
 #include <locale.h>
 #include <langinfo.h>
+#include "locale_impl.h"
 #include "libc.h"
 
 static const char c_time[] =
@@ -60,7 +61,7 @@ char *__nl_langinfo_l(nl_item item, locale_t loc)
 
 char *__nl_langinfo(nl_item item)
 {
-	return __nl_langinfo_l(item, 0);
+	return __nl_langinfo_l(item, CURRENT_LOCALE);
 }
 
 weak_alias(__nl_langinfo, nl_langinfo);
