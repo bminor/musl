@@ -3,6 +3,7 @@
 #include <termios.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <string.h>
 
 char *getpass(const char *prompt)
 {
@@ -11,7 +12,7 @@ char *getpass(const char *prompt)
 	ssize_t l;
 	static char password[128];
 
-	if ((fd = open("/dev/tty", O_RDONLY|O_NOCTTY)) < 0) fd = 0;
+	if ((fd = open("/dev/tty", O_RDWR|O_NOCTTY|O_CLOEXEC)) < 0) return 0;
 
 	tcgetattr(fd, &t);
 	s = t;
@@ -22,8 +23,7 @@ char *getpass(const char *prompt)
 	tcsetattr(fd, TCSAFLUSH, &t);
 	tcdrain(fd);
 
-	fputs(prompt, stderr);
-	fflush(stderr);
+	dprintf(fd, "%s", prompt);
 
 	l = read(fd, password, sizeof password);
 	if (l >= 0) {
@@ -33,7 +33,8 @@ char *getpass(const char *prompt)
 
 	tcsetattr(fd, TCSAFLUSH, &s);
 
-	if (fd > 2) close(fd);
+	dprintf(fd, "\n");
+	close(fd);
 
-	return password;
+	return l<0 ? 0 : password;
 }
