@@ -24,7 +24,7 @@ pid_t fork(void)
 #endif
 	if (libc.has_thread_pointer && !ret) {
 		pthread_t self = __pthread_self();
-		self->tid = self->pid = __syscall(SYS_getpid);
+		self->tid = __syscall(SYS_gettid);
 		memset(&self->robust_list, 0, sizeof self->robust_list);
 		libc.threads_minus_1 = 0;
 	}

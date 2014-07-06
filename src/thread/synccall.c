@@ -1,5 +1,6 @@
 #include "pthread_impl.h"
 #include <semaphore.h>
+#include <unistd.h>
 
 static struct chain {
 	struct chain *next;
@@ -13,12 +14,11 @@ static sem_t chainlock, chaindone;
 static void handler(int sig, siginfo_t *si, void *ctx)
 {
 	struct chain ch;
-	pthread_t self = __pthread_self();
 	int old_errno = errno;
 
 	if (chainlen == libc.threads_minus_1) return;
 
-	sigqueue(self->pid, SIGSYNCCALL, (union sigval){0});
+	sigqueue(getpid(), SIGSYNCCALL, (union sigval){0});
 
 	sem_init(&ch.sem, 0, 0);
 	sem_init(&ch.sem2, 0, 0);
@@ -39,7 +39,6 @@ static void handler(int sig, siginfo_t *si, void *ctx)
 
 void __synccall(void (*func)(void *), void *ctx)
 {
-	pthread_t self;
 	struct sigaction sa;
 	struct chain *next;
 	sigset_t oldmask;
@@ -65,8 +64,7 @@ void __synccall(void (*func)(void *), void *ctx)
 	sigfillset(&sa.sa_mask);
 	__libc_sigaction(SIGSYNCCALL, &sa, 0);
 
-	self = __pthread_self();
-	sigqueue(self->pid, SIGSYNCCALL, (union sigval){0});
+	sigqueue(getpid(), SIGSYNCCALL, (union sigval){0});
 	while (sem_wait(&chaindone));
 
 	sa.sa_flags = 0;

@@ -206,7 +206,6 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attrp
 	new->map_size = size;
 	new->stack = stack;
 	new->stack_size = stack - stack_limit;
-	new->pid = self->pid;
 	new->start = entry;
 	new->start_arg = arg;
 	new->self = new;

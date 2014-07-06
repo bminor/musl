@@ -52,7 +52,7 @@ static void cancel_handler(int sig, siginfo_t *si, void *ctx)
 		__cancel();
 	}
 
-	__syscall(SYS_tgkill, self->pid, self->tid, SIGCANCEL);
+	__syscall(SYS_tkill, self->tid, SIGCANCEL);
 }
 
 void __testcancel()
