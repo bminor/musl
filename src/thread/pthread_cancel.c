@@ -13,7 +13,7 @@ long __syscall_cp_asm(volatile void *, syscall_arg_t,
                       syscall_arg_t, syscall_arg_t, syscall_arg_t,
                       syscall_arg_t, syscall_arg_t, syscall_arg_t);
 
-long (__syscall_cp)(syscall_arg_t nr,
+long __syscall_cp_c(syscall_arg_t nr,
                     syscall_arg_t u, syscall_arg_t v, syscall_arg_t w,
                     syscall_arg_t x, syscall_arg_t y, syscall_arg_t z)
 {

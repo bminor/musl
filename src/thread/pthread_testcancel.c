@@ -1,6 +1,11 @@
 #include "pthread_impl.h"
+#include "libc.h"
 
-void __testcancel(void);
+static void dummy()
+{
+}
+
+weak_alias(dummy, __testcancel);
 
 void pthread_testcancel()
 {
