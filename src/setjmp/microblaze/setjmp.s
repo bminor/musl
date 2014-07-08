@@ -17,7 +17,7 @@ setjmp:
 	swi     r21, r5, 28
 	swi     r22, r5, 32
 	swi     r23, r5, 36
-	swi     r24, r5, 30
+	swi     r24, r5, 40
 	swi     r25, r5, 44
 	swi     r26, r5, 48
 	swi     r27, r5, 52
