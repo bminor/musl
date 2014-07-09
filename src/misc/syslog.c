@@ -7,6 +7,7 @@
 #include <signal.h>
 #include <string.h>
 #include <pthread.h>
+#include <errno.h>
 #include "libc.h"
 #include "atomic.h"
 
@@ -76,6 +77,7 @@ static void _vsyslog(int priority, const char *message, va_list ap)
 	time_t now;
 	struct tm tm;
 	char buf[256];
+	int errno_save = errno;
 	int pid;
 	int l, l2;
 
@@ -93,6 +95,7 @@ static void _vsyslog(int priority, const char *message, va_list ap)
 	pid = (log_opt & LOG_PID) ? getpid() : 0;
 	l = snprintf(buf, sizeof buf, "<%d>%s %s%s%.0d%s: ",
 		priority, timebuf, log_ident, "["+!pid, pid, "]"+!pid);
+	errno = errno_save;
 	l2 = vsnprintf(buf+l, sizeof buf - l, message, ap);
 	if (l2 >= 0) {
 		if (l2 >= sizeof buf - l) l = sizeof buf - 1;
