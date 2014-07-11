@@ -862,8 +862,8 @@ static void load_preload(char *s)
 	int tmp;
 	char *z;
 	for (z=s; *z; s=z) {
-		for (   ; *s && isspace(*s); s++);
-		for (z=s; *z && !isspace(*z); z++);
+		for (   ; *s && (isspace(*s) || *s==':'); s++);
+		for (z=s; *z && !isspace(*z) && *z!=':'; z++);
 		tmp = *z;
 		*z = 0;
 		load_library(s, 0);
