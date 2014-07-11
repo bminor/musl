@@ -663,6 +663,11 @@ static struct dso *load_library(const char *name, struct dso *needed_by)
 	int n_th = 0;
 	int is_self = 0;
 
+	if (!*name) {
+		errno = EINVAL;
+		return 0;
+	}
+
 	/* Catch and block attempts to reload the implementation itself */
 	if (name[0]=='l' && name[1]=='i' && name[2]=='b') {
 		static const char *rp, reserved[] =
