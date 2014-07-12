@@ -8,6 +8,7 @@
 #include <string.h>
 #include <pthread.h>
 #include <errno.h>
+#include <fcntl.h>
 #include "libc.h"
 #include "atomic.h"
 
@@ -81,6 +82,7 @@ static void _vsyslog(int priority, const char *message, va_list ap)
 	int pid;
 	int l, l2;
 	int hlen;
+	int fd;
 
 	if (log_fd < 0) __openlog();
 
@@ -99,7 +101,13 @@ static void _vsyslog(int priority, const char *message, va_list ap)
 		if (l2 >= sizeof buf - l) l = sizeof buf - 1;
 		else l += l2;
 		if (buf[l-1] != '\n') buf[l++] = '\n';
-		send(log_fd, buf, l, 0);
+		if (send(log_fd, buf, l, 0) < 0 && (log_opt & LOG_CONS)) {
+			fd = open("/dev/console", O_WRONLY|O_NOCTTY|O_CLOEXEC);
+			if (fd >= 0) {
+				dprintf(fd, "%.*s", l-hlen, buf+hlen);
+				close(fd);
+			}
+		}
 		if (log_opt & LOG_PERROR) dprintf(2, "%.*s", l-hlen, buf+hlen);
 	}
 }
