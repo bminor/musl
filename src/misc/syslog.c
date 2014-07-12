@@ -80,6 +80,7 @@ static void _vsyslog(int priority, const char *message, va_list ap)
 	int errno_save = errno;
 	int pid;
 	int l, l2;
+	int hlen;
 
 	if (log_fd < 0) {
 		__openlog();
@@ -93,8 +94,8 @@ static void _vsyslog(int priority, const char *message, va_list ap)
 	strftime(timebuf, sizeof timebuf, "%b %e %T", &tm);
 
 	pid = (log_opt & LOG_PID) ? getpid() : 0;
-	l = snprintf(buf, sizeof buf, "<%d>%s %s%s%.0d%s: ",
-		priority, timebuf, log_ident, "["+!pid, pid, "]"+!pid);
+	l = snprintf(buf, sizeof buf, "<%d>%s %n%s%s%.0d%s: ",
+		priority, timebuf, &hlen, log_ident, "["+!pid, pid, "]"+!pid);
 	errno = errno_save;
 	l2 = vsnprintf(buf+l, sizeof buf - l, message, ap);
 	if (l2 >= 0) {
@@ -102,6 +103,7 @@ static void _vsyslog(int priority, const char *message, va_list ap)
 		else l += l2;
 		if (buf[l-1] != '\n') buf[l++] = '\n';
 		send(log_fd, buf, l, 0);
+		if (log_opt & LOG_PERROR) dprintf(2, "%.*s", l-hlen, buf+hlen);
 	}
 }
 
