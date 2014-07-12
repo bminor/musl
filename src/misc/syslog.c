@@ -82,10 +82,7 @@ static void _vsyslog(int priority, const char *message, va_list ap)
 	int l, l2;
 	int hlen;
 
-	if (log_fd < 0) {
-		__openlog();
-		if (log_fd < 0) return;
-	}
+	if (log_fd < 0) __openlog();
 
 	if (!(priority & LOG_FACMASK)) priority |= log_facility;
 
