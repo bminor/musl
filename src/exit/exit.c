@@ -8,10 +8,10 @@ static void dummy()
 {
 }
 
-/* __toread.c, __towrite.c, and atexit.c override these */
+/* atexit.c and __stdio_exit.c override these. the latter is linked
+ * as a consequence of linking either __toread.c or __towrite.c. */
 weak_alias(dummy, __funcs_on_exit);
-weak_alias(dummy, __flush_on_exit);
-weak_alias(dummy, __seek_on_exit);
+weak_alias(dummy, __stdio_exit);
 
 #ifndef SHARED
 weak_alias(dummy, _fini);
@@ -35,8 +35,7 @@ _Noreturn void exit(int code)
 	_fini();
 #endif
 
-	__flush_on_exit();
-	__seek_on_exit();
+	__stdio_exit();
 
 	_Exit(code);
 	for(;;);
