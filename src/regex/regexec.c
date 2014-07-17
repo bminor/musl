@@ -983,6 +983,7 @@ regexec(const regex_t *restrict preg, const char *restrict string,
   tre_tnfa_t *tnfa = (void *)preg->TRE_REGEX_T_FIELD;
   reg_errcode_t status;
   int *tags = NULL, eo;
+  if (tnfa->cflags & REG_NOSUB) nmatch = 0;
   if (tnfa->num_tags > 0 && nmatch > 0)
     {
       tags = xmalloc(sizeof(*tags) * tnfa->num_tags);
