@@ -21,3 +21,5 @@ void __stdio_exit(void)
 	close_file(__stdin_used);
 	close_file(__stdout_used);
 }
+
+weak_alias(__stdio_exit, __stdio_exit_needed);
