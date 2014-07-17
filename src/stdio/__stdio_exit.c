@@ -1,6 +1,6 @@
 #include "stdio_impl.h"
 
-static FILE *const dummy_file = 0;
+static FILE *volatile dummy_file = 0;
 weak_alias(dummy_file, __stdin_used);
 weak_alias(dummy_file, __stdout_used);
 weak_alias(dummy_file, __stderr_used);

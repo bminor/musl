@@ -1,6 +1,6 @@
 #include "pthread_impl.h"
 
-const size_t __pthread_tsd_size = sizeof(void *) * PTHREAD_KEYS_MAX;
+volatile size_t __pthread_tsd_size = sizeof(void *) * PTHREAD_KEYS_MAX;
 void *__pthread_tsd_main[PTHREAD_KEYS_MAX] = { 0 };
 
 static void (*keys[PTHREAD_KEYS_MAX])(void *);

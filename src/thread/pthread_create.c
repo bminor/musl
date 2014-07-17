@@ -116,12 +116,12 @@ static int start(void *p)
 #define ROUND(x) (((x)+PAGE_SIZE-1)&-PAGE_SIZE)
 
 /* pthread_key_create.c overrides this */
-static const size_t dummy = 0;
+static volatile size_t dummy = 0;
 weak_alias(dummy, __pthread_tsd_size);
-static void *const dummy_tsd[1] = { 0 };
+static void *dummy_tsd[1] = { 0 };
 weak_alias(dummy_tsd, __pthread_tsd_main);
 
-static FILE *const dummy_file = 0;
+static FILE *volatile dummy_file = 0;
 weak_alias(dummy_file, __stdin_used);
 weak_alias(dummy_file, __stdout_used);
 weak_alias(dummy_file, __stderr_used);
