@@ -495,27 +495,6 @@ printf "no\n"
 fail "$0: error: unsupported long double type"
 fi
 
-#
-# Check for known bug in GCC 4.9.0 that results in a broken libc.
-#
-if test "$cc_is_gcc" = yes ; then
-printf "checking for gcc constant folding bug with weak aliases... "
-echo 'static int x = 0;' > "$tmpc"
-echo 'extern int y __attribute__((__weak__, __alias__("x")));' >> "$tmpc"
-echo 'extern int should_appear;' >> "$tmpc"
-echo 'int foo() { return y ? should_appear : 0; }' >> "$tmpc"
-case "$($CC $CFLAGS_C99FSE -I./arch/$ARCH -I./include \
-  $CPPFLAGS $CFLAGS_AUTO $CFLAGS -S -o - "$tmpc" 2>/dev/null)" in
-*should_appear*)
-printf "no\n"
-;;
-*)
-printf "yes\n"
-fail "$0: error: broken compiler; try CFLAGS=-fno-toplevel-reorder"
-;;
-esac
-fi
-
 printf "creating config.mak... "
 
 cmdline=$(quote "$0")

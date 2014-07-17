@@ -19,7 +19,7 @@ static int __fflush_unlocked(FILE *f)
 }
 
 /* stdout.c will override this if linked */
-static FILE *const dummy = 0;
+static FILE *volatile dummy = 0;
 weak_alias(dummy, __stdout_used);
 
 int fflush(FILE *f)

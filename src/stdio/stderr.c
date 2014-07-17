@@ -13,4 +13,4 @@ static FILE f = {
 	.lock = -1,
 };
 FILE *const stderr = &f;
-FILE *const __stderr_used = &f;
+FILE *volatile __stderr_used = &f;
