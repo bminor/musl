@@ -250,6 +250,7 @@ x86_64-x32*|x32*|x86_64*x32) ARCH=x32 ;;
 x86_64*) ARCH=x86_64 ;;
 mips*) ARCH=mips ;;
 microblaze*) ARCH=microblaze ;;
+or1k*) ARCH=or1k ;;
 powerpc*) ARCH=powerpc ;;
 sh[1-9bel-]*|sh|superh*) ARCH=sh ;;
 unknown) fail "$0: unable to detect target arch; try $0 --target=..." ;;
