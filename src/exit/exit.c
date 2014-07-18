@@ -31,5 +31,4 @@ _Noreturn void exit(int code)
 	__stdio_exit();
 
 	_Exit(code);
-	for(;;);
 }
