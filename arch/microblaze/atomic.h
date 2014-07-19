@@ -22,19 +22,6 @@ static inline int a_ctz_64(uint64_t x)
 	return a_ctz_l(y);
 }
 
-static inline int a_cas_1(volatile int *p, int t, int s)
-{
-	register int tmp;
-	do {
-		__asm__ __volatile__ ("lwx %0, %1, r0"
-			: "=r"(tmp) : "r"(p) : "memory");
-		if (tmp != t) return tmp;
-		__asm__ __volatile__ ("swx %2, %1, r0 ; addic %0, r0, 0"
-			: "=r"(tmp) : "r"(p), "r"(s) : "cc", "memory");
-	} while (tmp);
-	return t;
-}
-
 static inline int a_cas(volatile int *p, int t, int s)
 {
 	register int old, tmp;
