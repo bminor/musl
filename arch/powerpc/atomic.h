@@ -25,13 +25,13 @@ static inline int a_ctz_64(uint64_t x)
 
 static inline int a_cas(volatile int *p, int t, int s)
 {
-	__asm__("1:	lwarx %0, 0, %1\n"
+	__asm__("1:	lwarx %0, 0, %4\n"
 		"	cmpw %0, %2\n"
 		"	bne 1f\n"
-		"	stwcx. %3, 0, %1\n"
+		"	stwcx. %3, 0, %4\n"
 		"	bne- 1b\n"
 		"1:	\n"
-		: "=&r"(t), "+m"(*p) : "r"(t), "r"(s) : "cc", "memory" );
+		: "=&r"(t), "+m"(*p) : "r"(t), "r"(s), "r"(p) : "cc", "memory" );
         return t;
 }
 
