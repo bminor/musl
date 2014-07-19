@@ -29,12 +29,14 @@ static inline int a_cas(volatile int *p, int t, int s)
 		".set push\n"
 		".set mips2\n"
 		".set noreorder\n"
+		"	sync\n"
 		"1:	ll %0, %2\n"
 		"	bne %0, %3, 1f\n"
 		"	addu %1, %4, $0\n"
 		"	sc %1, %2\n"
 		"	beq %1, $0, 1b\n"
 		"	nop\n"
+		"	sync\n"
 		"1:	\n"
 		".set pop\n"
 		: "=&r"(t), "=&r"(dummy), "+m"(*p) : "r"(t), "r"(s) : "memory" );
@@ -59,12 +61,13 @@ static inline int a_swap(volatile int *x, int v)
 		".set push\n"
 		".set mips2\n"
 		".set noreorder\n"
+		"	sync\n"
 		"1:	ll %0, %2\n"
 		"	addu %1, %3, $0\n"
 		"	sc %1, %2\n"
 		"	beq %1, $0, 1b\n"
 		"	nop\n"
-		"1:	\n"
+		"	sync\n"
 		".set pop\n"
 		: "=&r"(old), "=&r"(dummy), "+m"(*x) : "r"(v) : "memory" );
         return old;
@@ -77,12 +80,13 @@ static inline int a_fetch_add(volatile int *x, int v)
 		".set push\n"
 		".set mips2\n"
 		".set noreorder\n"
+		"	sync\n"
 		"1:	ll %0, %2\n"
 		"	addu %1, %0, %3\n"
 		"	sc %1, %2\n"
 		"	beq %1, $0, 1b\n"
 		"	nop\n"
-		"1:	\n"
+		"	sync\n"
 		".set pop\n"
 		: "=&r"(old), "=&r"(dummy), "+m"(*x) : "r"(v) : "memory" );
         return old;
@@ -95,12 +99,13 @@ static inline void a_inc(volatile int *x)
 		".set push\n"
 		".set mips2\n"
 		".set noreorder\n"
+		"	sync\n"
 		"1:	ll %0, %1\n"
 		"	addu %0, %0, 1\n"
 		"	sc %0, %1\n"
 		"	beq %0, $0, 1b\n"
 		"	nop\n"
-		"1:	\n"
+		"	sync\n"
 		".set pop\n"
 		: "=&r"(dummy), "+m"(*x) : : "memory" );
 }
@@ -112,31 +117,28 @@ static inline void a_dec(volatile int *x)
 		".set push\n"
 		".set mips2\n"
 		".set noreorder\n"
+		"	sync\n"
 		"1:	ll %0, %1\n"
 		"	subu %0, %0, 1\n"
 		"	sc %0, %1\n"
 		"	beq %0, $0, 1b\n"
 		"	nop\n"
-		"1:	\n"
+		"	sync\n"
 		".set pop\n"
 		: "=&r"(dummy), "+m"(*x) : : "memory" );
 }
 
 static inline void a_store(volatile int *p, int x)
 {
-	int dummy;
 	__asm__ __volatile__(
 		".set push\n"
 		".set mips2\n"
 		".set noreorder\n"
-		"1:	ll %0, %1\n"
-		"	addu %0, %2, $0\n"
-		"	sc %0, %1\n"
-		"	beq %0, $0, 1b\n"
-		"	nop\n"
-		"1:	\n"
+		"	sync\n"
+		"	sw %1, %0\n"
+		"	sync\n"
 		".set pop\n"
-		: "=&r"(dummy), "+m"(*p) : "r"(x) : "memory" );
+		: "+m"(*p) : "r"(x) : "memory" );
 }
 
 static inline void a_spin()
@@ -155,12 +157,13 @@ static inline void a_and(volatile int *p, int v)
 		".set push\n"
 		".set mips2\n"
 		".set noreorder\n"
+		"	sync\n"
 		"1:	ll %0, %1\n"
 		"	and %0, %0, %2\n"
 		"	sc %0, %1\n"
 		"	beq %0, $0, 1b\n"
 		"	nop\n"
-		"1:	\n"
+		"	sync\n"
 		".set pop\n"
 		: "=&r"(dummy), "+m"(*p) : "r"(v) : "memory" );
 }
@@ -172,12 +175,13 @@ static inline void a_or(volatile int *p, int v)
 		".set push\n"
 		".set mips2\n"
 		".set noreorder\n"
+		"	sync\n"
 		"1:	ll %0, %1\n"
 		"	or %0, %0, %2\n"
 		"	sc %0, %1\n"
 		"	beq %0, $0, 1b\n"
 		"	nop\n"
-		"1:	\n"
+		"	sync\n"
 		".set pop\n"
 		: "=&r"(dummy), "+m"(*p) : "r"(v) : "memory" );
 }
