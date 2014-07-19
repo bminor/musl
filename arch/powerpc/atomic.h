@@ -31,7 +31,7 @@ static inline int a_cas(volatile int *p, int t, int s)
 		"	stwcx. %3, 0, %1\n"
 		"	bne- 1b\n"
 		"1:	\n"
-		: "=&r"(t) : "r"(p), "r"(t), "r"(s) : "cc", "memory" );
+		: "=&r"(t), "+m"(*p) : "r"(t), "r"(s) : "cc", "memory" );
         return t;
 }
 
