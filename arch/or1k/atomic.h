@@ -74,7 +74,7 @@ static inline void a_dec(volatile int *x)
 
 static inline void a_store(volatile int *p, int x)
 {
-	*p=x;
+	a_swap(p, x);
 }
 
 static inline void a_spin()
