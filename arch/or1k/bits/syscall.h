@@ -257,6 +257,9 @@
 #define __NR_process_vm_writev 271
 #define __NR_kcmp 272
 #define __NR_finit_module 273
+#define __NR_sched_setattr 274
+#define __NR_sched_getattr 275
+#define __NR_renameat2 276
 
 #define SYS_io_setup __NR_io_setup
 #define SYS_io_destroy __NR_io_destroy
@@ -517,3 +520,6 @@
 #define SYS_process_vm_writev __NR_process_vm_writev
 #define SYS_kcmp __NR_kcmp
 #define SYS_finit_module __NR_finit_module
+#define SYS_sched_setattr __NR_sched_setattr
+#define SYS_sched_getattr __NR_sched_getattr
+#define SYS_renameat2 __NR_renameat2

@@ -370,6 +370,7 @@
 #define __NR_kcmp                  354
 #define __NR_sched_setattr         355
 #define __NR_sched_getattr         356
+#define __NR_renameat2             357
 
 /*
  * repeated with SYS prefix
@@ -746,3 +747,4 @@
 #define SYS_kcmp                  354
 #define SYS_sched_setattr         355
 #define SYS_sched_getattr         356
+#define SYS_renameat2             357

@@ -314,6 +314,8 @@
 #define __NR_finit_module			313
 #define __NR_sched_setattr			314
 #define __NR_sched_getattr			315
+#define __NR_renameat2				316
+
 
 #undef __NR_fstatat
 #undef __NR_pread
@@ -645,6 +647,7 @@
 #define SYS_finit_module			313
 #define SYS_sched_setattr			314
 #define SYS_sched_getattr			315
+#define SYS_renameat2				316
 
 #undef SYS_fstatat
 #undef SYS_pread

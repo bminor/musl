@@ -348,6 +348,7 @@
 #define __NR_finit_module            4348
 #define __NR_sched_setattr           4349
 #define __NR_sched_getattr           4350
+#define __NR_renameat2               4351
 
 
 /* Repeated with SYS_ prefix */
@@ -701,3 +702,4 @@
 #define SYS_finit_module            4348
 #define SYS_sched_setattr           4349
 #define SYS_sched_getattr           4350
+#define SYS_renameat2               4351
