@@ -162,6 +162,8 @@ struct tcp_info
 	uint32_t tcpi_rcv_rtt;
 	uint32_t tcpi_rcv_space;
 	uint32_t tcpi_total_retrans;
+	uint64_t tcpi_pacing_rate;
+	uint64_t tcpi_max_pacing_rate;
 };
 
 #define TCP_MD5SIG_MAXKEYLEN    80
