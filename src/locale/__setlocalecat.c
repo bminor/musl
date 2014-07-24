@@ -16,9 +16,9 @@ static const char envvars[][12] = {
 int __setlocalecat(locale_t loc, int cat, const char *val)
 {
 	if (!*val) {
-		(val = getenv("LC_ALL")) ||
-		(val = getenv(envvars[cat])) ||
-		(val = getenv("LANG")) ||
+		(val = getenv("LC_ALL")) && *val ||
+		(val = getenv(envvars[cat])) && *val ||
+		(val = getenv("LANG")) && *val ||
 		(val = "C.UTF-8");
 	}
 
