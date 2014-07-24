@@ -5,6 +5,13 @@
 
 #define LOCALE_NAME_MAX 15
 
+struct __locale_map {
+	const void *map;
+	size_t map_size;
+	char name[LOCALE_NAME_MAX+1];
+	struct __locale_map *next;
+};
+
 int __setlocalecat(locale_t, int, const char *);
 
 #define CURRENT_LOCALE \

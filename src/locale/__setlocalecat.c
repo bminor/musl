@@ -4,6 +4,58 @@
 #include "libc.h"
 #include "atomic.h"
 
+const unsigned char *__map_file(const char *, size_t *);
+int __munmap(void *, size_t);
+char *__strchrnul(const char *, int);
+
+static struct __locale_map *findlocale(const char *name, size_t n)
+{
+	static void *loc_head;
+	struct __locale_map *p, *new, *old_head;
+	const char *path = 0, *z;
+	char buf[256];
+	size_t l;
+	const void *map;
+	size_t map_size;
+
+	for (p=loc_head; p; p=p->next)
+		if (!strcmp(name, p->name)) return p;
+
+	if (strchr(name, '/')) return 0;
+
+	if (!libc.secure) path = getenv("MUSL_LOCPATH");
+	/* FIXME: add a default path? */
+	if (!path) return 0;
+
+	for (; *path; path=z+!!*z) {
+		z = __strchrnul(path, ':');
+		l = z - path - !!*z;
+		if (l >= sizeof buf - n - 2) continue;
+		memcpy(buf, path, l);
+		buf[l] = '/';
+		memcpy(buf+l+1, name, n);
+		buf[l+1+n] = 0;
+		map = __map_file(buf, &map_size);
+		if (map) {
+			new = malloc(sizeof *new);
+			if (!new) {
+				__munmap((void *)map, map_size);
+				return 0;
+			}
+			new->map = map;
+			new->map_size = map_size;
+			memcpy(new->name, name, n);
+			new->name[n] = 0;
+			do {
+				old_head = loc_head;
+				new->next = old_head;
+			} while (a_cas_p(&loc_head, old_head, new) != old_head);
+			return new;
+		}
+	}
+	return 0;
+}
+
 static const char envvars[][12] = {
 	"LC_CTYPE",
 	"LC_NUMERIC",
@@ -26,6 +78,7 @@ int __setlocalecat(locale_t loc, int cat, const char *val)
 	int builtin = (val[0]=='C' && !val[1])
 		|| !strcmp(val, "C.UTF-8")
 		|| !strcmp(val, "POSIX");
+	struct __locale_map *data, *old;
 
 	switch (cat) {
 	case LC_CTYPE:
@@ -40,6 +93,11 @@ int __setlocalecat(locale_t loc, int cat, const char *val)
 		}
 		/* fall through */
 	default:
+		data = builtin ? 0 : findlocale(val, n);
+		if (data == loc->cat[cat-2]) break;
+		do old = loc->cat[cat-2];
+		while (a_cas_p(&loc->cat[cat-2], old, data) != old);
+	case LC_NUMERIC:
 		break;
 	}
 	return 0;

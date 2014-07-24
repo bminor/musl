@@ -5,9 +5,12 @@
 #include <stdio.h>
 #include <limits.h>
 
+struct __locale_map;
+
 struct __locale_struct {
 	int ctype_utf8;
 	char *messages_name;
+	struct __locale_map *cat[4];
 };
 
 struct __libc {

@@ -9,6 +9,9 @@ static char buf[2+4*(LOCALE_NAME_MAX+1)];
 
 char *setlocale(int cat, const char *name)
 {
+	struct __locale_map *lm;
+	int i, j;
+
 	if (!libc.global_locale.messages_name) {
 		libc.global_locale.messages_name =
 			buf + 2 + 3*(LOCALE_NAME_MAX+1);
@@ -24,7 +27,6 @@ char *setlocale(int cat, const char *name)
 	if (cat == LC_ALL) {
 		if (name) {
 			char part[LOCALE_NAME_MAX+1];
-			int i, j;
 			if (name[0] && name[1]==';'
 			    && strlen(name) > 2 + 3*(LOCALE_NAME_MAX+1)) {
 				part[0] = name[0];
@@ -45,6 +47,11 @@ char *setlocale(int cat, const char *name)
 		}
 		memset(buf, ';', 2 + 3*(LOCALE_NAME_MAX+1));
 		buf[0] = libc.global_locale.ctype_utf8 ? 'U' : 'C';
+		for (i=LC_TIME; i<LC_MESSAGES; i++) {
+			lm = libc.global_locale.cat[i-2];
+			if (lm) memcpy(buf + 2 + (i-2)*(LOCALE_NAME_MAX+1),
+				lm->name, strlen(lm->name));
+		}
 		return buf;
 	}
 
@@ -58,10 +65,13 @@ char *setlocale(int cat, const char *name)
 	switch (cat) {
 	case LC_CTYPE:
 		return libc.global_locale.ctype_utf8 ? "C.UTF-8" : "C";
+	case LC_NUMERIC:
+		return "C";
 	case LC_MESSAGES:
 		return libc.global_locale.messages_name[0]
 			? libc.global_locale.messages_name : "C";
 	default:
-		return "C";
+		lm = libc.global_locale.cat[cat-2];
+		return lm ? lm->name : "C";
 	}
 }
