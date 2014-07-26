@@ -13,6 +13,12 @@ struct __locale_map {
 };
 
 int __setlocalecat(locale_t, int, const char *);
+const char *__mo_lookup(const void *, size_t, const char *);
+const char *__lctrans(const char *, const struct __locale_map *);
+const char *__lctrans_cur(const char *);
+
+#define LCTRANS(msg, lc, loc) __lctrans(msg, (loc)->cat[(lc)-2])
+#define LCTRANS_CUR(msg) __lctrans_cur(msg)
 
 #define CURRENT_LOCALE \
 	(libc.uselocale_cnt ? __pthread_self()->locale : &libc.global_locale)

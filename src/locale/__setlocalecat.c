@@ -4,6 +4,13 @@
 #include "libc.h"
 #include "atomic.h"
 
+const char *__lctrans_impl(const char *msg, const struct __locale_map *lm)
+{
+	const char *trans = 0;
+	if (lm) trans = __mo_lookup(lm->map, lm->map_size, msg);
+	return trans ? trans : msg;
+}
+
 const unsigned char *__map_file(const char *, size_t *);
 int __munmap(void *, size_t);
 char *__strchrnul(const char *, int);
