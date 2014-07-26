@@ -23,7 +23,7 @@ static const char c_time[] =
 	"%a %b %e %T %Y\0"
 	"%H:%M:%S";
 
-static const char c_messages[] = "^[yY]\0" "^[nN]";
+static const char c_messages[] = "^[yY]\0" "^[nN]\0" "yes\0" "no";
 static const char c_numeric[] = ".\0" "";
 
 char *__nl_langinfo_l(nl_item item, locale_t loc)
@@ -48,7 +48,7 @@ char *__nl_langinfo_l(nl_item item, locale_t loc)
 		str = "";
 		break;
 	case LC_MESSAGES:
-		if (idx > 1) return NULL;
+		if (idx > 3) return NULL;
 		str = c_messages;
 		break;
 	default:
