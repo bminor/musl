@@ -57,6 +57,7 @@ char *__nl_langinfo_l(nl_item item, locale_t loc)
 	}
 
 	for (; idx; idx--, str++) for (; *str; str++);
+	if (cat != LC_NUMERIC && *str) str = LCTRANS(str, cat, loc);
 	return (char *)str;
 }
 
