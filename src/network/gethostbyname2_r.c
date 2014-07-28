@@ -20,6 +20,8 @@ int gethostbyname2_r(const char *name, int af,
 	size_t need;
 	const char *canon;
 
+	*res = 0;
+
 	af = hint.ai_family;
 
 	/* Align buffer */

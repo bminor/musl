@@ -18,6 +18,8 @@ int gethostbyaddr_r(const void *a, socklen_t l, int af,
 	socklen_t sl = af==AF_INET6 ? sizeof sa.sin6 : sizeof sa.sin;
 	int i;
 
+	*res = 0;
+
 	/* Load address argument into sockaddr structure */
 	if (af==AF_INET6 && l==16) memcpy(&sa.sin6.sin6_addr, a, 16);
 	else if (af==AF_INET && l==4) memcpy(&sa.sin.sin_addr, a, 4);
