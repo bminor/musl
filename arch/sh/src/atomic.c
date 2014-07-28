@@ -1,7 +1,7 @@
 #include "libc.h"
 
 #define LLSC_CLOBBERS   "r0", "t", "memory"
-#define LLSC_START(mem)            \
+#define LLSC_START(mem) "synco\n"  \
 	"0:	movli.l @" mem ", r0\n"
 #define LLSC_END(mem)              \
 	"1:	movco.l r0, @" mem "\n"    \
@@ -99,6 +99,7 @@ void __sh_store(volatile int *p, int x)
 {
 	if (__hwcap & CPU_HAS_LLSC) {
 		__asm__ __volatile__(
+			"	synco\n"
 			"	mov.l %1, @%0\n"
 			"	synco\n"
 			: : "r"(p), "r"(x) : "memory");
