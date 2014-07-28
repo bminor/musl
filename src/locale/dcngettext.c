@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <limits.h>
 #include <sys/stat.h>
+#include <ctype.h>
 #include "locale_impl.h"
 #include "libc.h"
 #include "atomic.h"
@@ -95,6 +96,8 @@ struct msgcat {
 	struct msgcat *next;
 	const void *map;
 	size_t map_size;
+	void *plural_rule;
+	int nplurals;
 	char name[];
 };
 
@@ -107,6 +110,7 @@ weak_alias(dummy_gettextdomain, __gettextdomain);
 
 const unsigned char *__map_file(const char *, size_t *);
 int __munmap(void *, size_t);
+unsigned long __pleval(const char *, unsigned long);
 
 char *dcngettext(const char *domainname, const char *msgid1, const char *msgid2, unsigned long int n, int category)
 {
@@ -190,19 +194,53 @@ notrans:
 	const char *trans = __mo_lookup(p->map, p->map_size, msgid1);
 	if (!trans) goto notrans;
 
-	/* FIXME: support alternate plural rules */
-	if (n != 1) {
-		size_t l = strlen(trans);
-		if (l+1 >= p->map_size - (trans - (char *)p->map))
-			goto notrans;
-		trans += l+1;
+	/* Non-plural-processing gettext forms pass a null pointer as
+	 * msgid2 to request that dcngettext suppress plural processing. */
+	if (!msgid2) return (char *)trans;
+
+	if (!p->plural_rule) {
+		const char *rule = "n!=1;";
+		unsigned long np = 2;
+		const char *r = __mo_lookup(p->map, p->map_size, "");
+		char *z;
+		while (r && strncmp(r, "Plural-Forms:", 13)) {
+			z = strchr(r, '\n');
+			r = z ? z+1 : 0;
+		}
+		if (r) {
+			r += 13;
+			while (isspace(*r)) r++;
+			if (!strncmp(r, "nplurals=", 9)) {
+				np = strtoul(r+9, &z, 10);
+				r = z;
+			}
+			while (*r && *r != ';') r++;
+			if (*r) {
+				r++;
+				while (isspace(*r)) r++;
+				if (!strncmp(r, "plural=", 7))
+					rule = r+7;
+			}
+		}
+		a_store(&p->nplurals, np);
+		a_cas_p(&p->plural_rule, 0, (void *)rule);
+	}
+	if (p->nplurals) {
+		unsigned long plural = __pleval(p->plural_rule, n);
+		if (plural > p->nplurals) goto notrans;
+		while (plural--) {
+			size_t l = strlen(trans);
+			if (l+1 >= p->map_size - (trans - (char *)p->map))
+				goto notrans;
+			trans += l+1;
+		}
 	}
 	return (char *)trans;
 }
 
 char *dcgettext(const char *domainname, const char *msgid, int category)
 {
-	return dcngettext(domainname, msgid, msgid, 1, category);
+	return dcngettext(domainname, msgid, 0, 1, category);
 }
 
 char *dngettext(const char *domainname, const char *msgid1, const char *msgid2, unsigned long int n)
@@ -212,5 +250,5 @@ char *dngettext(const char *domainname, const char *msgid1, const char *msgid2, 
 
 char *dgettext(const char *domainname, const char *msgid)
 {
-	return dcngettext(domainname, msgid, msgid, 1, LC_MESSAGES);
+	return dcngettext(domainname, msgid, 0, 1, LC_MESSAGES);
 }
