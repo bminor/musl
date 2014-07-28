@@ -110,6 +110,8 @@ static int start(void *p)
 /* pthread_key_create.c overrides this */
 static const size_t dummy = 0;
 weak_alias(dummy, __pthread_tsd_size);
+static void *const dummy_tsd[1] = { 0 };
+weak_alias(dummy_tsd, __pthread_tsd_main);
 
 static FILE *const dummy_file = 0;
 weak_alias(dummy_file, __stdin_used);
