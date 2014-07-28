@@ -30,11 +30,6 @@ static inline void a_or_64(volatile uint64_t *p, uint64_t v)
 		: : "r"((long *)p), "r"((unsigned)v), "r"((unsigned)(v>>32)) : "memory" );
 }
 
-static inline void a_store_l(volatile void *p, long x)
-{
-	__asm__( "movl %1, %0" : "=m"(*(long *)p) : "r"(x) : "memory" );
-}
-
 static inline void a_or_l(volatile void *p, long v)
 {
 	__asm__( "lock ; orl %1, %0"
@@ -48,29 +43,11 @@ static inline void *a_cas_p(volatile void *p, void *t, void *s)
 	return t;
 }
 
-static inline long a_cas_l(volatile void *p, long t, long s)
-{
-	__asm__( "lock ; cmpxchg %3, %1"
-		: "=a"(t), "=m"(*(long *)p) : "a"(t), "r"(s) : "memory" );
-	return t;
-}
-
 static inline int a_cas(volatile int *p, int t, int s)
 {
 	__asm__( "lock ; cmpxchg %3, %1"
 		: "=a"(t), "=m"(*p) : "a"(t), "r"(s) : "memory" );
 	return t;
-}
-
-static inline void *a_swap_p(void *volatile *x, void *v)
-{
-	__asm__( "xchg %0, %1" : "=r"(v), "=m"(*(void **)x) : "0"(v) : "memory" );
-	return v;
-}
-static inline long a_swap_l(volatile void *x, long v)
-{
-	__asm__( "xchg %0, %1" : "=r"(v), "=m"(*(long *)x) : "0"(v) : "memory" );
-	return v;
 }
 
 static inline void a_or(volatile void *p, int v)

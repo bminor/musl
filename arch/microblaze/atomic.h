@@ -45,11 +45,6 @@ static inline void *a_cas_p(volatile void *p, void *t, void *s)
 	return (void *)a_cas(p, (int)t, (int)s);
 }
 
-static inline long a_cas_l(volatile void *p, long t, long s)
-{
-	return a_cas(p, t, s);
-}
-
 static inline int a_swap(volatile int *x, int v)
 {
 	register int old, tmp;

@@ -41,11 +41,6 @@ static inline void *a_cas_p(volatile void *p, void *t, void *s)
 	return (void *)a_cas(p, (int)t, (int)s);
 }
 
-static inline long a_cas_l(volatile void *p, long t, long s)
-{
-	return a_cas(p, t, s);
-}
-
 static inline void a_inc(volatile int *x)
 {
 	a_fetch_add(x, 1);
