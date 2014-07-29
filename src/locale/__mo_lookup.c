@@ -18,12 +18,16 @@ const char *__mo_lookup(const void *p, size_t size, const char *s)
 	o/=4;
 	t/=4;
 	for (;;) {
+		uint32_t ol = swapc(mo[o+2*(b+n/2)], sw);
 		uint32_t os = swapc(mo[o+2*(b+n/2)+1], sw);
-		if (os >= size) return 0;
+		if (os >= size || ol >= size-os || ((char *)p)[os+ol])
+			return 0;
 		int sign = strcmp(s, (char *)p + os);
 		if (!sign) {
+			uint32_t tl = swapc(mo[t+2*(b+n/2)], sw);
 			uint32_t ts = swapc(mo[t+2*(b+n/2)+1], sw);
-			if (ts >= size) return 0;
+			if (ts >= size || tl >= size-ts || ((char *)p)[ts+tl])
+				return 0;
 			return (char *)p + ts;
 		}
 		else if (n == 1) return 0;
