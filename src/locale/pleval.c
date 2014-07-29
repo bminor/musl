@@ -33,15 +33,10 @@ static const char *skipspace(const char *s)
 	return s;
 }
 
-static unsigned long evalconst(struct st *st)
+static unsigned long fail(struct st *st)
 {
-	char *e;
-	unsigned long n;
-	n = strtoul(st->s, &e, 10);
-	if (!isdigit(*st->s) || e == st->s || n == -1)
-		st->err = 1;
-	st->s = skipspace(e);
-	return n;
+	st->err = 1;
+	return 0;
 }
 
 static unsigned long evalexpr(struct st *st, int d);
@@ -49,47 +44,47 @@ static unsigned long evalexpr(struct st *st, int d);
 static unsigned long evalterm(struct st *st, int d)
 {
 	unsigned long a;
-	if (d <= 0) {
-		st->err = 1;
-		return 0;
-	}
+	char *e;
+	if (--d < 0) return fail(st);
 	st->s = skipspace(st->s);
-	if (*st->s == '!') {
-		st->s++;
-		return !evalterm(st, d-1);
-	}
-	if (*st->s == '(') {
-		st->s++;
-		a = evalexpr(st, d-1);
-		if (*st->s != ')') {
-			st->err = 1;
-			return 0;
-		}
-		st->s = skipspace(st->s + 1);
+	if (isdigit(*st->s)) {
+		a = strtoul(st->s, &e, 10);
+		if (e == st->s || a == -1) return fail(st);
+		st->s = skipspace(e);
 		return a;
 	}
 	if (*st->s == 'n') {
 		st->s = skipspace(st->s + 1);
 		return st->n;
 	}
-	return evalconst(st);
+	if (*st->s == '(') {
+		st->s++;
+		a = evalexpr(st, d);
+		if (*st->s != ')') return fail(st);
+		st->s = skipspace(st->s + 1);
+		return a;
+	}
+	if (*st->s == '!') {
+		st->s++;
+		return !evalterm(st, d);
+	}
+	return fail(st);
 }
 
 static unsigned long evalmul(struct st *st, int d)
 {
-	unsigned long b, a = evalterm(st, d-1);
+	unsigned long b, a = evalterm(st, d);
 	int op;
 	for (;;) {
 		op = *st->s;
 		if (op != '*' && op != '/' && op != '%')
 			return a;
 		st->s++;
-		b = evalterm(st, d-1);
+		b = evalterm(st, d);
 		if (op == '*') {
 			a *= b;
 		} else if (!b) {
-			st->err = 1;
-			return 0;
+			return fail(st);
 		} else if (op == '%') {
 			a %= b;
 		} else {
@@ -101,19 +96,19 @@ static unsigned long evalmul(struct st *st, int d)
 static unsigned long evaladd(struct st *st, int d)
 {
 	unsigned long a = 0;
-	int add = 1;
+	int sub = 0;
 	for (;;) {
-		a += (add?1:-1) * evalmul(st, d-1);
+		a += (sub ? -1 : 1) * evalmul(st, d);
 		if (*st->s != '+' && *st->s != '-')
 			return a;
-		add = *st->s == '+';
+		sub = *st->s == '-';
 		st->s++;
 	}
 }
 
 static unsigned long evalrel(struct st *st, int d)
 {
-	unsigned long b, a = evaladd(st, d-1);
+	unsigned long b, a = evaladd(st, d);
 	int less, eq;
 	for (;;) {
 		if (*st->s != '<' && *st->s != '>')
@@ -121,65 +116,60 @@ static unsigned long evalrel(struct st *st, int d)
 		less = st->s[0] == '<';
 		eq = st->s[1] == '=';
 		st->s += 1 + eq;
-		b = evaladd(st, d-1);
+		b = evaladd(st, d);
 		a = (less ? a < b : a > b) || (eq && a == b);
 	}
 }
 
 static unsigned long evaleq(struct st *st, int d)
 {
-	unsigned long a = evalrel(st, d-1);
-	int neg;
+	unsigned long a = evalrel(st, d);
+	int c;
 	for (;;) {
-		if ((st->s[0] != '=' && st->s[0] != '!') || st->s[1] != '=')
+		c = st->s[0];
+		if ((c != '=' && c != '!') || st->s[1] != '=')
 			return a;
-		neg = st->s[0] == '!';
 		st->s += 2;
-		a = evalrel(st, d-1) == a;
-		a ^= neg;
+		a = (evalrel(st, d) == a) ^ (c == '!');
 	}
 }
 
 static unsigned long evaland(struct st *st, int d)
 {
-	unsigned long a = evaleq(st, d-1);
+	unsigned long a = evaleq(st, d);
 	for (;;) {
 		if (st->s[0] != '&' || st->s[1] != '&')
 			return a;
 		st->s += 2;
-		a = evaleq(st, d-1) && a;
+		a = evaleq(st, d) && a;
 	}
 }
 
 static unsigned long evalor(struct st *st, int d)
 {
-	unsigned long a = evaland(st, d-1);
+	unsigned long a = evaland(st, d);
 	for (;;) {
 		if (st->s[0] != '|' || st->s[1] != '|')
 			return a;
 		st->s += 2;
-		a = evaland(st, d-1) || a;
+		a = evaland(st, d) || a;
 	}
 }
 
 static unsigned long evalexpr(struct st *st, int d)
 {
 	unsigned long a1, a2, a3;
-	if (d <= 0) {
-		st->err = 1;
-		return 0;
-	}
-	a1 = evalor(st, d-1);
+	if (--d < 0)
+		return fail(st);
+	a1 = evalor(st, d-6);
 	if (*st->s != '?')
 		return a1;
 	st->s++;
-	a2 = evalexpr(st, d-1);
-	if (*st->s != ':') {
-		st->err = 1;
-		return 0;
-	}
+	a2 = evalexpr(st, d);
+	if (*st->s != ':')
+		return fail(st);
 	st->s++;
-	a3 = evalexpr(st, d-1);
+	a3 = evalexpr(st, d);
 	return a1 ? a2 : a3;
 }
 
