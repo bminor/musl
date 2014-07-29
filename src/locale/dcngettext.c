@@ -229,8 +229,9 @@ notrans:
 		unsigned long plural = __pleval(p->plural_rule, n);
 		if (plural > p->nplurals) goto notrans;
 		while (plural--) {
-			size_t l = strlen(trans);
-			if (l+1 >= p->map_size - (trans - (char *)p->map))
+			size_t rem = p->map_size - (trans - (char *)p->map);
+			size_t l = strnlen(trans, rem);
+			if (l+1 >= rem)
 				goto notrans;
 			trans += l+1;
 		}
