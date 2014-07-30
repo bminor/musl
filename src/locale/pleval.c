@@ -11,21 +11,30 @@ And   = Eq | And '&&' Eq
 Eq    = Rel | Eq '==' Rel | Eq '!=' Rel
 Rel   = Add | Rel '<=' Add | Rel '>=' Add | Rel '<' Add | Rel '>' Add
 Add   = Mul | Add '+' Mul | Add '-' Mul
-Mul   = Term | Mul '*' Term | Mul '/' Term | Mul '%' Term
-Term  = '(' Expr ')' | '!' Term | decimal | 'n'
+Mul   = Prim | Mul '*' Prim | Mul '/' Prim | Mul '%' Prim
+Prim  = '(' Expr ')' | '!' Prim | decimal | 'n'
 
 internals:
 
 recursive descent expression evaluator with stack depth limit.
-eval* functions return the value of the subexpression and set
-the current string pointer to the next non-space char.
+for binary operators an operator-precedence parser is used.
+eval* functions store the result of the parsed subexpression
+and return a pointer to the next non-space character.
 */
 
 struct st {
-	const char *s;
+	unsigned long r;
 	unsigned long n;
-	int err;
+	int op;
 };
+
+/* TODO: this should go into ctypes.h */
+#undef isspace
+#define isspace(a) __isspace(a)
+static __inline int __isspace(int _c)
+{
+	return _c == ' ' || (unsigned)_c-'\t' < 5;
+}
 
 static const char *skipspace(const char *s)
 {
@@ -33,155 +42,124 @@ static const char *skipspace(const char *s)
 	return s;
 }
 
-static unsigned long fail(struct st *st)
-{
-	st->err = 1;
-	return 0;
-}
+static const char *evalexpr(struct st *st, const char *s, int d);
 
-static unsigned long evalexpr(struct st *st, int d);
-
-static unsigned long evalterm(struct st *st, int d)
+static const char *evalprim(struct st *st, const char *s, int d)
 {
-	unsigned long a;
 	char *e;
-	if (--d < 0) return fail(st);
-	st->s = skipspace(st->s);
-	if (isdigit(*st->s)) {
-		a = strtoul(st->s, &e, 10);
-		if (e == st->s || a == -1) return fail(st);
-		st->s = skipspace(e);
-		return a;
+	if (--d < 0) return "";
+	s = skipspace(s);
+	if (isdigit(*s)) {
+		st->r = strtoul(s, &e, 10);
+		if (e == s || st->r == -1) return "";
+		return skipspace(e);
 	}
-	if (*st->s == 'n') {
-		st->s = skipspace(st->s + 1);
-		return st->n;
+	if (*s == 'n') {
+		st->r = st->n;
+		return skipspace(s+1);
 	}
-	if (*st->s == '(') {
-		st->s++;
-		a = evalexpr(st, d);
-		if (*st->s != ')') return fail(st);
-		st->s = skipspace(st->s + 1);
-		return a;
+	if (*s == '(') {
+		s = evalexpr(st, s+1, d);
+		if (*s != ')') return "";
+		return skipspace(s+1);
 	}
-	if (*st->s == '!') {
-		st->s++;
-		return !evalterm(st, d);
+	if (*s == '!') {
+		s = evalprim(st, s+1, d);
+		st->r = !st->r;
+		return s;
 	}
-	return fail(st);
+	return "";
 }
 
-static unsigned long evalmul(struct st *st, int d)
+static int binop(struct st *st, int op, unsigned long left)
 {
-	unsigned long b, a = evalterm(st, d);
-	int op;
-	for (;;) {
-		op = *st->s;
-		if (op != '*' && op != '/' && op != '%')
-			return a;
-		st->s++;
-		b = evalterm(st, d);
-		if (op == '*') {
-			a *= b;
-		} else if (!b) {
-			return fail(st);
-		} else if (op == '%') {
-			a %= b;
-		} else {
-			a /= b;
+	unsigned long a = left, b = st->r;
+	switch (op) {
+	case 0: st->r = a||b; return 0;
+	case 1: st->r = a&&b; return 0;
+	case 2: st->r = a==b; return 0;
+	case 3: st->r = a!=b; return 0;
+	case 4: st->r = a>=b; return 0;
+	case 5: st->r = a<=b; return 0;
+	case 6: st->r = a>b; return 0;
+	case 7: st->r = a<b; return 0;
+	case 8: st->r = a+b; return 0;
+	case 9: st->r = a-b; return 0;
+	case 10: st->r = a*b; return 0;
+	case 11: if (b) {st->r = a%b; return 0;} return 1;
+	case 12: if (b) {st->r = a/b; return 0;} return 1;
+	}
+	return 1;
+}
+
+static const char *parseop(struct st *st, const char *s)
+{
+	static const char opch[11] = "|&=!><+-*%/";
+	static const char opch2[6] = "|&====";
+	int i;
+	for (i=0; i<11; i++)
+		if (*s == opch[i]) {
+			/* note: >,< are accepted with or without = */
+			if (i<6 && s[1] == opch2[i]) {
+				st->op = i;
+				return s+2;
+			}
+			if (i>=4) {
+				st->op = i+2;
+				return s+1;
+			}
+			break;
 		}
-	}
+	st->op = 13;
+	return s;
 }
 
-static unsigned long evaladd(struct st *st, int d)
+static const char *evalbinop(struct st *st, const char *s, int minprec, int d)
 {
-	unsigned long a = 0;
-	int sub = 0;
+	static const char prec[14] = {1,2,3,3,4,4,4,4,5,5,6,6,6,0};
+	unsigned long left;
+	int op;
+	d--;
+	s = evalprim(st, s, d);
+	s = parseop(st, s);
 	for (;;) {
-		a += (sub ? -1 : 1) * evalmul(st, d);
-		if (*st->s != '+' && *st->s != '-')
-			return a;
-		sub = *st->s == '-';
-		st->s++;
+		/*
+		st->r (left hand side value) and st->op are now set,
+		get the right hand side or back out if op has low prec,
+		if op was missing then prec[op]==0
+		*/
+		op = st->op;
+		if (prec[op] <= minprec)
+			return s;
+		left = st->r;
+		s = evalbinop(st, s, prec[op], d);
+		if (binop(st, op, left))
+			return "";
 	}
 }
 
-static unsigned long evalrel(struct st *st, int d)
+static const char *evalexpr(struct st *st, const char *s, int d)
 {
-	unsigned long b, a = evaladd(st, d);
-	int less, eq;
-	for (;;) {
-		if (*st->s != '<' && *st->s != '>')
-			return a;
-		less = st->s[0] == '<';
-		eq = st->s[1] == '=';
-		st->s += 1 + eq;
-		b = evaladd(st, d);
-		a = (less ? a < b : a > b) || (eq && a == b);
-	}
-}
-
-static unsigned long evaleq(struct st *st, int d)
-{
-	unsigned long a = evalrel(st, d);
-	int c;
-	for (;;) {
-		c = st->s[0];
-		if ((c != '=' && c != '!') || st->s[1] != '=')
-			return a;
-		st->s += 2;
-		a = (evalrel(st, d) == a) ^ (c == '!');
-	}
-}
-
-static unsigned long evaland(struct st *st, int d)
-{
-	unsigned long a = evaleq(st, d);
-	for (;;) {
-		if (st->s[0] != '&' || st->s[1] != '&')
-			return a;
-		st->s += 2;
-		a = evaleq(st, d) && a;
-	}
-}
-
-static unsigned long evalor(struct st *st, int d)
-{
-	unsigned long a = evaland(st, d);
-	for (;;) {
-		if (st->s[0] != '|' || st->s[1] != '|')
-			return a;
-		st->s += 2;
-		a = evaland(st, d) || a;
-	}
-}
-
-static unsigned long evalexpr(struct st *st, int d)
-{
-	unsigned long a1, a2, a3;
+	unsigned long a, b;
 	if (--d < 0)
-		return fail(st);
-	a1 = evalor(st, d-6);
-	if (*st->s != '?')
-		return a1;
-	st->s++;
-	a2 = evalexpr(st, d);
-	if (*st->s != ':')
-		return fail(st);
-	st->s++;
-	a3 = evalexpr(st, d);
-	return a1 ? a2 : a3;
+		return "";
+	s = evalbinop(st, s, 0, d);
+	if (*s != '?')
+		return s;
+	a = st->r;
+	s = evalexpr(st, s+1, d);
+	if (*s != ':')
+		return "";
+	b = st->r;
+	s = evalexpr(st, s+1, d);
+	st->r = a ? b : st->r;
+	return s;
 }
 
 unsigned long __pleval(const char *s, unsigned long n)
 {
-	unsigned long a;
 	struct st st;
-	st.s = s;
 	st.n = n;
-	st.err = 0;
-	a = evalexpr(&st, 100);
-	if (st.err || *st.s != ';')
-		return -1;
-	return a;
+	s = evalexpr(&st, s, 100);
+	return *s == ';' ? st.r : -1;
 }
