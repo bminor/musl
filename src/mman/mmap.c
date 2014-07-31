@@ -11,7 +11,8 @@ static void dummy0(void) { }
 weak_alias(dummy1, __vm_lock);
 weak_alias(dummy0, __vm_unlock);
 
-#define OFF_MASK ((-0x2000ULL << (8*sizeof(long)-1)) | 0xfff)
+#define UNIT SYSCALL_MMAP2_UNIT
+#define OFF_MASK ((-0x2000ULL << (8*sizeof(long)-1)) | (UNIT-1))
 
 void *__mmap(void *start, size_t len, int prot, int flags, int fd, off_t off)
 {
@@ -27,7 +28,7 @@ void *__mmap(void *start, size_t len, int prot, int flags, int fd, off_t off)
 	}
 	if (flags & MAP_FIXED) __vm_lock(-1);
 #ifdef SYS_mmap2
-	ret = (void *)syscall(SYS_mmap2, start, len, prot, flags, fd, off>>12);
+	ret = (void *)syscall(SYS_mmap2, start, len, prot, flags, fd, off/UNIT);
 #else
 	ret = (void *)syscall(SYS_mmap, start, len, prot, flags, fd, off);
 #endif

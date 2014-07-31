@@ -8,6 +8,10 @@
 #define SYSCALL_RLIM_INFINITY (~0ULL)
 #endif
 
+#ifndef SYSCALL_MMAP2_UNIT
+#define SYSCALL_MMAP2_UNIT 4096ULL
+#endif
+
 #ifndef __scc
 #define __scc(X) ((long) (X))
 typedef long syscall_arg_t;
