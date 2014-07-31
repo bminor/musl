@@ -28,8 +28,6 @@ static struct __locale_map *findlocale(const char *name, size_t n)
 	for (p=loc_head; p; p=p->next)
 		if (!strcmp(name, p->name)) return p;
 
-	if (strchr(name, '/')) return 0;
-
 	if (!libc.secure) path = getenv("MUSL_LOCPATH");
 	/* FIXME: add a default path? */
 	if (!path) return 0;
@@ -81,7 +79,9 @@ int __setlocalecat(locale_t loc, int cat, const char *val)
 		(val = "C.UTF-8");
 	}
 
-	size_t n = strnlen(val, LOCALE_NAME_MAX);
+	size_t n;
+	for (n=0; n<LOCALE_NAME_MAX && val[n] && val[n]!='/'; n++);
+	if (val[0]=='.' || val[n]) val = "C.UTF-8";
 	int builtin = (val[0]=='C' && !val[1])
 		|| !strcmp(val, "C.UTF-8")
 		|| !strcmp(val, "POSIX");
