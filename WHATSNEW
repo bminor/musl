@@ -1295,3 +1295,38 @@ bugs fixed:
 
 arch-specific bugs fixed:
 - various subtle relocation bugs in powerpc and sh dynamic linker
+
+
+
+1.1.4 release notes
+
+new features:
+- experimental locale support for LC_MESSAGES and LC_TIME
+- non-stub gettext family functions for message translation
+- or1k (OpenRISC 1000) port
+- syslog options LOG_CONS and LOG_PERROR
+- issetugid function (from OpenBSD)
+- improved if_nameindex and getifaddrs functions
+
+compatibility:
+- work around bug #61144 in gcc 4.9.0 and 4.9.1
+- support getauxval(AT_SECURE) even on kernels without AT_SECURE
+
+bugs fixed:
+- empty dynamic linker error messages (regression in 1.1.3)
+- if_nameindex omitted unconfigured and ipv6-only interfaces
+- incorrect return value for fwide function
+- failure of wide printf/scanf functions to set wide orientation
+- multiple issues in legacy function getpass
+- dynamic linker did not accept colon as a separator for LD_PRELOAD
+- errno clobber in syslog caused wrong output for %m specifier
+- crash in regexec for nonzero nmatch argument with REG_NOSUB
+- minor bugs in rarely-used nl_langinfo item lookups
+
+arch-specific bugs fixed:
+- broken relocations in mips dynamic linker (regression in 1.1.3)
+- register state corruption in setjmp asm for microblaze
+- broken struct stat st_ino field on microblaze
+- broken struct stat st_dev field on big endian mips
+- broken asm register constraints in atomics on powerpc
+- missing barriers in atomics on mips, powerpc, microblaze, and sh
