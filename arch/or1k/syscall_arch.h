@@ -3,6 +3,8 @@
 ((union { long long ll; long l[2]; }){ .ll = x }).l[1]
 #define __SYSCALL_LL_O(x) 0, __SYSCALL_LL_E((x))
 
+#define SYSCALL_MMAP2_UNIT 8192ULL
+
 long (__syscall)(long, ...);
 
 #ifndef __clang__
