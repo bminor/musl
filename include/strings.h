@@ -22,6 +22,8 @@ char *rindex (const char *, int);
 
 #if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)  || defined(_BSD_SOURCE)
 int ffs (int);
+int ffsl (long);
+int ffsll (long long);
 #endif
 
 int strcasecmp (const char *, const char *);
