@@ -1237,3 +1237,33 @@ bugs fixed:
 
 arch-specific bugs fixed:
 - broken kernel side RLIM_INFINITY on mips
+
+
+
+1.0.4 release notes
+
+compatibility:
+- work around bug #61144 in gcc 4.9.0 and 4.9.1
+
+bugs fixed:
+- incorrect return value for fwide function
+- failure of wide printf/scanf functions to set wide orientation
+- multiple issues in legacy function getpass
+- dynamic linker did not accept colon as a separator for LD_PRELOAD
+- errno clobber in syslog caused wrong output for %m specifier
+- crash in regexec for nonzero nmatch argument with REG_NOSUB
+- minor bugs in rarely-used nl_langinfo item lookups
+
+- memmem false positives/false negatives/crashes from invalid logic
+- gethostby*_r not setting result pointer to null on failure
+- aliasing violations in syscall.h SYSLOG_NAMES feature
+- fanotify_mark syscall arguments wrong
+
+arch-specific bugs fixed:
+- register state corruption in setjmp asm for microblaze
+- broken struct stat st_ino field on microblaze
+- broken struct stat st_dev field on big endian mips
+- broken asm register constraints in atomics on powerpc
+- missing barriers in atomics on mips, powerpc, and microblaze
+
+- TLS relocation bug in powerpc dynamic linker
