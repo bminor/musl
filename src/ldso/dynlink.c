@@ -1603,6 +1603,8 @@ static int invalid_dso_handle(void *h)
 }
 void *dlopen(const char *file, int mode)
 {
+	strcpy(errbuf, "Dynamic loading not supported");
+	errflag = 1;
 	return 0;
 }
 void *__dlsym(void *restrict p, const char *restrict s, void *restrict ra)
