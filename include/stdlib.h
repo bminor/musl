@@ -144,12 +144,12 @@ int mkostemps (char *, int, int);
 void *valloc (size_t);
 void *memalign(size_t, size_t);
 int getloadavg(double *, int);
+int clearenv(void);
 #define WCOREDUMP(s) ((s) & 0x80)
 #define WIFCONTINUED(s) ((s) == 0xffff)
 #endif
 
 #ifdef _GNU_SOURCE
-int clearenv(void);
 int ptsname_r(int, char *, size_t);
 char *ecvt(double, int, int *, int *);
 char *fcvt(double, int, int *, int *);
