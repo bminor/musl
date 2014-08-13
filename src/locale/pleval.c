@@ -28,14 +28,6 @@ struct st {
 	int op;
 };
 
-/* TODO: this should go into ctypes.h */
-#undef isspace
-#define isspace(a) __isspace(a)
-static __inline int __isspace(int _c)
-{
-	return _c == ' ' || (unsigned)_c-'\t' < 5;
-}
-
 static const char *skipspace(const char *s)
 {
 	while (isspace(*s)) s++;

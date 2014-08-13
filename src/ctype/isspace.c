@@ -1,5 +1,6 @@
 #include <ctype.h>
 #include "libc.h"
+#undef isspace
 
 int isspace(int c)
 {
