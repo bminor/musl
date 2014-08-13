@@ -91,12 +91,11 @@ void __init_tls(size_t *aux)
 	libc.tls_size = 2*sizeof(void *)+T.size+T.align+sizeof(struct pthread);
 
 	if (libc.tls_size > sizeof builtin_tls) {
-		mem = (void *)__syscall(
-#ifdef SYS_mmap2
-			SYS_mmap2,
-#else
-			SYS_mmap,
+#ifndef SYS_mmap2
+#define SYS_mmap2 SYS_mmap
 #endif
+		mem = (void *)__syscall(
+			SYS_mmap2,
 			0, libc.tls_size, PROT_READ|PROT_WRITE,
 			MAP_ANONYMOUS|MAP_PRIVATE, -1, 0);
 		/* -4095...-1 cast to void * will crash on dereference anyway,
