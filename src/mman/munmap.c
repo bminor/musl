@@ -11,8 +11,8 @@ int __munmap(void *start, size_t len)
 {
 	int ret;
 	__vm_lock(-1);
-	ret = syscall(SYS_munmap, start, len);
 	__vm_unlock();
+	ret = syscall(SYS_munmap, start, len);
 	return ret;
 }
 

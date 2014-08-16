@@ -16,8 +16,6 @@ weak_alias(dummy0, __vm_unlock);
 
 void *__mmap(void *start, size_t len, int prot, int flags, int fd, off_t off)
 {
-	void *ret;
-
 	if (off & OFF_MASK) {
 		errno = EINVAL;
 		return MAP_FAILED;
@@ -26,14 +24,15 @@ void *__mmap(void *start, size_t len, int prot, int flags, int fd, off_t off)
 		errno = ENOMEM;
 		return MAP_FAILED;
 	}
-	if (flags & MAP_FIXED) __vm_lock(-1);
+	if (flags & MAP_FIXED) {
+		__vm_lock(-1);
+		__vm_unlock();
+	}
 #ifdef SYS_mmap2
-	ret = (void *)syscall(SYS_mmap2, start, len, prot, flags, fd, off/UNIT);
+	return (void *)syscall(SYS_mmap2, start, len, prot, flags, fd, off/UNIT);
 #else
-	ret = (void *)syscall(SYS_mmap, start, len, prot, flags, fd, off);
+	return (void *)syscall(SYS_mmap, start, len, prot, flags, fd, off);
 #endif
-	if (flags & MAP_FIXED) __vm_unlock();
-	return ret;
 }
 
 weak_alias(__mmap, mmap);
