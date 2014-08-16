@@ -3,7 +3,7 @@
 static void undo(void *control)
 {
 	a_store(control, 0);
-	__wake(control, 1, 0);
+	__wake(control, 1, 1);
 }
 
 int pthread_once(pthread_once_t *control, void (*init)(void))
@@ -25,10 +25,10 @@ int pthread_once(pthread_once_t *control, void (*init)(void))
 		pthread_cleanup_pop(0);
 
 		a_store(control, 2);
-		if (waiters) __wake(control, -1, 0);
+		if (waiters) __wake(control, -1, 1);
 		return 0;
 	case 1:
-		__wait(control, &waiters, 1, 0);
+		__wait(control, &waiters, 1, 1);
 		continue;
 	case 2:
 		return 0;

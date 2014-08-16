@@ -1,17 +1,13 @@
 #include "pthread_impl.h"
 
-int pthread_mutex_trylock(pthread_mutex_t *m)
+int __pthread_mutex_trylock_owner(pthread_mutex_t *m)
 {
-	int tid, old, own;
-	pthread_t self;
+	int old, own;
+	int type = m->_m_type & 15;
+	pthread_t self = __pthread_self();
+	int tid = self->tid;
 
-	if (m->_m_type == PTHREAD_MUTEX_NORMAL)
-		return a_cas(&m->_m_lock, 0, EBUSY) & EBUSY;
-
-	self = __pthread_self();
-	tid = self->tid;
-
-	if (m->_m_type >= 4) {
+	if (type >= 4) {
 		if (!self->robust_list.off)
 			__syscall(SYS_set_robust_list,
 				&self->robust_list, 3*sizeof(long));
@@ -21,7 +17,7 @@ int pthread_mutex_trylock(pthread_mutex_t *m)
 
 	old = m->_m_lock;
 	own = old & 0x7fffffff;
-	if (own == tid && (m->_m_type&3) == PTHREAD_MUTEX_RECURSIVE) {
+	if (own == tid && (type&3) == PTHREAD_MUTEX_RECURSIVE) {
 		if ((unsigned)m->_m_count >= INT_MAX) return EAGAIN;
 		m->_m_count++;
 		return 0;
@@ -30,9 +26,9 @@ int pthread_mutex_trylock(pthread_mutex_t *m)
 	if ((own && !(own & 0x40000000)) || a_cas(&m->_m_lock, old, tid)!=old)
 		return EBUSY;
 
-	if (m->_m_type < 4) return 0;
+	if (type < 4) return 0;
 
-	if (m->_m_type >= 8) {
+	if (type >= 8) {
 		m->_m_lock = 0;
 		return ENOTRECOVERABLE;
 	}
@@ -49,4 +45,11 @@ int pthread_mutex_trylock(pthread_mutex_t *m)
 	}
 
 	return 0;
+}
+
+int pthread_mutex_trylock(pthread_mutex_t *m)
+{
+	if ((m->_m_type&15) == PTHREAD_MUTEX_NORMAL)
+		return a_cas(&m->_m_lock, 0, EBUSY) & EBUSY;
+	return __pthread_mutex_trylock_owner(m);
 }

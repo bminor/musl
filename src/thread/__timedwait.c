@@ -4,11 +4,14 @@
 #include "futex.h"
 #include "syscall.h"
 
-static int do_wait(volatile int *addr, int val,
-	clockid_t clk, const struct timespec *at, int priv)
+int __timedwait(volatile int *addr, int val,
+	clockid_t clk, const struct timespec *at,
+	void (*cleanup)(void *), void *arg, int priv)
 {
-	int r;
+	int r, cs;
 	struct timespec to, *top=0;
+
+	if (priv) priv = 128;
 
 	if (at) {
 		if (at->tv_nsec >= 1000000000UL) return EINVAL;
@@ -22,21 +25,12 @@ static int do_wait(volatile int *addr, int val,
 		top = &to;
 	}
 
-	r = -__syscall_cp(SYS_futex, addr, FUTEX_WAIT, val, top);
-	if (r == EINTR || r == EINVAL || r == ETIMEDOUT) return r;
-	return 0;
-}
-
-int __timedwait(volatile int *addr, int val,
-	clockid_t clk, const struct timespec *at,
-	void (*cleanup)(void *), void *arg, int priv)
-{
-	int r, cs;
-
 	if (!cleanup) pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
 	pthread_cleanup_push(cleanup, arg);
 
-	r = do_wait(addr, val, clk, at, priv);
+	r = -__syscall_cp(SYS_futex, addr, FUTEX_WAIT|priv, val, top);
+	if (r == EINVAL) r = -__syscall_cp(SYS_futex, addr, FUTEX_WAIT, val, top);
+	if (r != EINTR && r != ETIMEDOUT) r = 0;
 
 	pthread_cleanup_pop(0);
 	if (!cleanup) pthread_setcancelstate(cs, 0);

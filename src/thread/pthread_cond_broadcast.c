@@ -27,13 +27,17 @@ int pthread_cond_broadcast(pthread_cond_t *c)
 
 	/* Perform the futex requeue, waking one waiter unless we know
 	 * that the calling thread holds the mutex. */
+	int wake_cnt = !(m->_m_type & 3)
+		|| (m->_m_lock&INT_MAX)!=__pthread_self()->tid;
+	if (m->_m_type & 128) wake_cnt = INT_MAX;
+	__syscall(SYS_futex, &c->_c_seq, FUTEX_REQUEUE | 128,
+		wake_cnt, INT_MAX, &m->_m_lock) != -EINVAL ||
 	__syscall(SYS_futex, &c->_c_seq, FUTEX_REQUEUE,
-		!m->_m_type || (m->_m_lock&INT_MAX)!=__pthread_self()->tid,
-		INT_MAX, &m->_m_lock);
+		wake_cnt, INT_MAX, &m->_m_lock);
 
 out:
 	a_store(&c->_c_lock, 0);
-	if (c->_c_lockwait) __wake(&c->_c_lock, 1, 0);
+	if (c->_c_lockwait) __wake(&c->_c_lock, 1, 1);
 
 	return 0;
 }

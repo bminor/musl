@@ -76,6 +76,7 @@ struct __timer {
 #define _c_destroy __u.__i[8]
 #define _rw_lock __u.__i[0]
 #define _rw_waiters __u.__i[1]
+#define _rw_shared __u.__i[2]
 #define _b_lock __u.__i[0]
 #define _b_waiters __u.__i[1]
 #define _b_limit __u.__i[2]
@@ -108,8 +109,13 @@ void __unmapself(void *, size_t);
 
 int __timedwait(volatile int *, int, clockid_t, const struct timespec *, void (*)(void *), void *, int);
 void __wait(volatile int *, volatile int *, int, int);
-#define __wake(addr, cnt, priv) \
-	__syscall(SYS_futex, addr, FUTEX_WAKE, (cnt)<0?INT_MAX:(cnt))
+static inline void __wake(volatile void *addr, int cnt, int priv)
+{
+	if (priv) priv = 128;
+	if (cnt<0) cnt = INT_MAX;
+	__syscall(SYS_futex, addr, FUTEX_WAKE|priv, cnt) != -EINVAL ||
+	__syscall(SYS_futex, addr, FUTEX_WAKE, cnt);
+}
 
 void __acquire_ptc();
 void __release_ptc();

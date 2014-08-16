@@ -41,7 +41,7 @@ int pthread_cond_timedwait(pthread_cond_t *restrict c, pthread_mutex_t *restrict
 	struct cm cm = { .c=c, .m=m };
 	int r, e=0, seq;
 
-	if (m->_m_type && (m->_m_lock&INT_MAX) != __pthread_self()->tid)
+	if ((m->_m_type&15) && (m->_m_lock&INT_MAX) != __pthread_self()->tid)
 		return EPERM;
 
 	if (ts && ts->tv_nsec >= 1000000000UL)
@@ -64,7 +64,8 @@ int pthread_cond_timedwait(pthread_cond_t *restrict c, pthread_mutex_t *restrict
 
 	pthread_mutex_unlock(m);
 
-	do e = __timedwait(&c->_c_seq, seq, c->_c_clock, ts, cleanup, &cm, 0);
+	do e = __timedwait(&c->_c_seq, seq, c->_c_clock, ts, cleanup, &cm,
+		c->_c_mutex != (void *)-1);
 	while (c->_c_seq == seq && (!e || e==EINTR));
 	if (e == EINTR) e = 0;
 
