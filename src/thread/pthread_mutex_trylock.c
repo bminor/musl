@@ -7,12 +7,9 @@ int __pthread_mutex_trylock_owner(pthread_mutex_t *m)
 	pthread_t self = __pthread_self();
 	int tid = self->tid;
 
-	if (type >= 4) {
-		if (!self->robust_list.off)
-			__syscall(SYS_set_robust_list,
-				&self->robust_list, 3*sizeof(long));
+	if (!self->robust_list.off) {
+		__syscall(SYS_set_robust_list, &self->robust_list, 3*sizeof(long));
 		self->robust_list.off = (char*)&m->_m_lock-(char *)&m->_m_next;
-		self->robust_list.pending = &m->_m_next;
 	}
 
 	old = m->_m_lock;
@@ -23,8 +20,20 @@ int __pthread_mutex_trylock_owner(pthread_mutex_t *m)
 		return 0;
 	}
 
-	if ((own && !(own & 0x40000000)) || a_cas(&m->_m_lock, old, tid)!=old)
+	self->robust_list.pending = &m->_m_next;
+
+	if ((own && (!(own & 0x40000000) || !(type & 4)))
+	    || a_cas(&m->_m_lock, old, tid) != old) {
+		self->robust_list.pending = 0;
 		return EBUSY;
+	}
+
+	m->_m_next = self->robust_list.head;
+	m->_m_prev = &self->robust_list.head;
+	if (self->robust_list.head)
+		self->robust_list.head[-1] = &m->_m_next;
+	self->robust_list.head = &m->_m_next;
+	self->robust_list.pending = 0;
 
 	if (type < 4) return 0;
 
@@ -32,12 +41,7 @@ int __pthread_mutex_trylock_owner(pthread_mutex_t *m)
 		m->_m_lock = 0;
 		return ENOTRECOVERABLE;
 	}
-	m->_m_next = self->robust_list.head;
-	m->_m_prev = &self->robust_list.head;
-	if (self->robust_list.head)
-		self->robust_list.head[-1] = &m->_m_next;
-	self->robust_list.head = &m->_m_next;
-	self->robust_list.pending = 0;
+
 	if (own) {
 		m->_m_count = 0;
 		m->_m_type += 8;
