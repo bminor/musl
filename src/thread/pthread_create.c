@@ -10,6 +10,7 @@ static void dummy_0()
 weak_alias(dummy_0, __acquire_ptc);
 weak_alias(dummy_0, __release_ptc);
 weak_alias(dummy_0, __pthread_tsd_run_dtors);
+weak_alias(dummy_0, __do_private_robust_list);
 
 _Noreturn void pthread_exit(void *result)
 {
@@ -62,6 +63,8 @@ _Noreturn void pthread_exit(void *result)
 		if (self->locale->ctype_utf8)
 			a_dec(&libc.bytelocale_cnt_minus_1);
 	}
+
+	__do_private_robust_list();
 
 	if (self->detached && self->map_base) {
 		/* Detached threads must avoid the kernel clear_child_tid
