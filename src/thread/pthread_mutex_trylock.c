@@ -19,6 +19,7 @@ int __pthread_mutex_trylock_owner(pthread_mutex_t *m)
 		m->_m_count++;
 		return 0;
 	}
+	if (own == 0x40000000) return ENOTRECOVERABLE;
 
 	self->robust_list.pending = &m->_m_next;
 
@@ -35,16 +36,9 @@ int __pthread_mutex_trylock_owner(pthread_mutex_t *m)
 	self->robust_list.head = &m->_m_next;
 	self->robust_list.pending = 0;
 
-	if (type < 4) return 0;
-
-	if (type >= 8) {
-		m->_m_lock = 0;
-		return ENOTRECOVERABLE;
-	}
-
 	if (own) {
 		m->_m_count = 0;
-		m->_m_type += 8;
+		m->_m_type |= 8;
 		return EOWNERDEAD;
 	}
 

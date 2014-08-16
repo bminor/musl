@@ -12,8 +12,6 @@ int pthread_mutex_unlock(pthread_mutex_t *m)
 	int priv = (m->_m_type & 128) ^ 128;
 
 	if (type != PTHREAD_MUTEX_NORMAL) {
-		if (!m->_m_lock)
-			return EPERM;
 		self = __pthread_self();
 		if ((m->_m_lock&0x7fffffff) != self->tid)
 			return EPERM;
@@ -26,7 +24,7 @@ int pthread_mutex_unlock(pthread_mutex_t *m)
 		*(void **)m->_m_prev = m->_m_next;
 		if (m->_m_next) ((void **)m->_m_next)[-1] = m->_m_prev;
 	}
-	cont = a_swap(&m->_m_lock, 0);
+	cont = a_swap(&m->_m_lock, (type & 8) ? 0x40000000 : 0);
 	if (type != PTHREAD_MUTEX_NORMAL && !priv) {
 		self->robust_list.pending = 0;
 		__vm_unlock_impl();
