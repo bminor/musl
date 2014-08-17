@@ -21,8 +21,11 @@ int pthread_mutex_unlock(pthread_mutex_t *m)
 			self->robust_list.pending = &m->_m_next;
 			__vm_lock_impl(+1);
 		}
-		*(void **)m->_m_prev = m->_m_next;
-		if (m->_m_next) ((void **)m->_m_next)[-1] = m->_m_prev;
+		volatile void *prev = m->_m_prev;
+		volatile void *next = m->_m_next;
+		*(volatile void *volatile *)prev = next;
+		if (next != &self->robust_list.head) *(volatile void *volatile *)
+			((char *)next - sizeof(void *)) = prev;
 	}
 	cont = a_swap(&m->_m_lock, (type & 8) ? 0x40000000 : 0);
 	if (type != PTHREAD_MUTEX_NORMAL && !priv) {

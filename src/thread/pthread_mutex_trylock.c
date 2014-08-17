@@ -9,6 +9,7 @@ int __pthread_mutex_trylock_owner(pthread_mutex_t *m)
 
 	if (!self->robust_list.off) {
 		__syscall(SYS_set_robust_list, &self->robust_list, 3*sizeof(long));
+		self->robust_list.head = &self->robust_list.head;
 		self->robust_list.off = (char*)&m->_m_lock-(char *)&m->_m_next;
 	}
 
@@ -29,10 +30,11 @@ int __pthread_mutex_trylock_owner(pthread_mutex_t *m)
 		return EBUSY;
 	}
 
-	m->_m_next = self->robust_list.head;
+	volatile void *next = self->robust_list.head;
+	m->_m_next = next;
 	m->_m_prev = &self->robust_list.head;
-	if (self->robust_list.head)
-		self->robust_list.head[-1] = &m->_m_next;
+	if (next != &self->robust_list.head) *(volatile void *volatile *)
+		((char *)next - sizeof(void *)) = &m->_m_next;
 	self->robust_list.head = &m->_m_next;
 	self->robust_list.pending = 0;
 

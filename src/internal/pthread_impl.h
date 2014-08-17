@@ -33,9 +33,9 @@ struct pthread {
 	pthread_attr_t attr;
 	volatile int dead;
 	struct {
-		void **head;
+		volatile void *volatile head;
 		long off;
-		void *pending;
+		volatile void *volatile pending;
 	} robust_list;
 	int unblock_cancel;
 	int timer_id;
