@@ -22,7 +22,10 @@ int __pthread_mutex_trylock_owner(pthread_mutex_t *m)
 	}
 	if (own == 0x40000000) return ENOTRECOVERABLE;
 
-	self->robust_list.pending = &m->_m_next;
+	if (m->_m_type & 128) {
+		if (m->_m_waiters) tid |= 0x80000000;
+		self->robust_list.pending = &m->_m_next;
+	}
 
 	if ((own && (!(own & 0x40000000) || !(type & 4)))
 	    || a_cas(&m->_m_lock, old, tid) != old) {
