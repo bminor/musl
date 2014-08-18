@@ -24,7 +24,7 @@
 
 struct waiter {
 	struct waiter *prev, *next;
-	int state, barrier, requeued, mutex_ret;
+	int state, barrier, mutex_ret;
 	int *notify;
 	pthread_mutex_t *mutex;
 	pthread_cond_t *cond;
@@ -46,6 +46,14 @@ static inline void unlock(volatile int *l)
 {
 	if (a_swap(l, 0)==2)
 		__wake(l, 1, 1);
+}
+
+static inline void unlock_requeue(volatile int *l, volatile int *r, int w)
+{
+	a_store(l, 0);
+	if (w) __wake(l, 1, 1);
+	else __syscall(SYS_futex, l, FUTEX_REQUEUE|128, 0, 1, r) != -EINVAL
+		|| __syscall(SYS_futex, l, FUTEX_REQUEUE, 0, 1, r);
 }
 
 enum {
@@ -98,24 +106,16 @@ static void unwait(void *arg)
 
 	if (oldstate == WAITING) return;
 
-	/* If this thread was requeued to the mutex, undo the extra
-	 * waiter count that was added to the mutex. */
-	if (node->requeued) a_dec(&node->mutex->_m_waiters);
+	if (!node->next) a_inc(&node->mutex->_m_waiters);
 
-	/* Unlock the barrier that's holding back the next waiter,
-	 * and either wake it or requeue it to the mutex. */
+	/* Unlock the barrier that's holding back the next waiter, and
+	 * either wake it or requeue it to the mutex. */
 	if (node->prev) {
-		unlock(&node->prev->barrier);
-		node->prev->requeued = 1;
-		a_inc(&node->mutex->_m_waiters);
-		/* The futex requeue command cannot requeue from
-		 * private to shared, so for process-shared mutexes,
-		 * simply wake the target. */
-		int wake = node->mutex->_m_type & 128;
-		__syscall(SYS_futex, &node->prev->state, FUTEX_REQUEUE|128,
-			wake, 1, &node->mutex->_m_lock) != -EINVAL
-		|| __syscall(SYS_futex, &node->prev->state, FUTEX_REQUEUE,
-			0, 1, &node->mutex->_m_lock);
+		unlock_requeue(&node->prev->barrier,
+			&node->mutex->_m_lock,
+			node->mutex->_m_type & 128);
+	} else {
+		a_dec(&node->mutex->_m_waiters);
 	}
 }
 
@@ -140,9 +140,9 @@ int pthread_cond_timedwait(pthread_cond_t *restrict c, pthread_mutex_t *restrict
 	} else {
 		lock(&c->_c_lock);
 
-		node.barrier = 1;
-		fut = &node.state;
-		seq = node.state = WAITING;
+		seq = node.barrier = 2;
+		fut = &node.barrier;
+		node.state = WAITING;
 		node.next = c->_c_head;
 		c->_c_head = &node;
 		if (!c->_c_tail) c->_c_tail = &node;
@@ -169,11 +169,6 @@ int __private_cond_signal(pthread_cond_t *c, int n)
 
 	lock(&c->_c_lock);
 	for (p=c->_c_tail; n && p; p=p->prev) {
-		/* The per-waiter-node barrier lock is held at this
-		 * point, so while the following CAS may allow forward
-		 * progress in the target thread, it doesn't allow
-		 * access to the waiter list yet. Ideally the target
-		 * does not run until the futex wake anyway. */
 		if (a_cas(&p->state, WAITING, SIGNALED) != WAITING) {
 			ref++;
 			p->notify = &ref;
@@ -198,10 +193,7 @@ int __private_cond_signal(pthread_cond_t *c, int n)
 	while ((cur = ref)) __wait(&ref, 0, cur, 1);
 
 	/* Allow first signaled waiter, if any, to proceed. */
-	if (first) {
-		__wake(&first->state, 1, 1);
-		unlock(&first->barrier);
-	}
+	if (first) unlock(&first->barrier);
 
 	return 0;
 }
