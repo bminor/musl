@@ -10,12 +10,10 @@
  * degenerate list of one member.
  *
  * Waiter lists attached to the condition variable itself are
- * protected by the lock on the cv. Detached waiter lists are
- * protected by the associated mutex. The hand-off between protections
- * is handled by a "barrier" lock in each node, which disallows
- * signaled waiters from making forward progress to the code that will
- * access the list using the mutex until the list is in a consistent
- * state and the cv lock as been released.
+ * protected by the lock on the cv. Detached waiter lists are never
+ * modified again, but can only be traversed in reverse order, and are
+ * protected by the "barrier" locks in each node, which are unlocked
+ * in turn to control wake order.
  *
  * Since process-shared cond var semantics do not necessarily allow
  * one thread to see another's automatic storage (they may be in
@@ -58,7 +56,7 @@ enum {
 
 static void unwait(void *arg)
 {
-	struct waiter *node = arg, *p;
+	struct waiter *node = arg;
 
 	if (node->shared) {
 		pthread_cond_t *c = node->cond;
@@ -91,49 +89,34 @@ static void unwait(void *arg)
 			if (a_fetch_add(node->notify, -1)==1)
 				__wake(node->notify, 1, 1);
 		}
+	} else {
+		/* Lock barrier first to control wake order. */
+		lock(&node->barrier);
 	}
 
 	node->mutex_ret = pthread_mutex_lock(node->mutex);
 
 	if (oldstate == WAITING) return;
 
-	/* If the mutex can't be locked, we're in big trouble because
-	 * it's all that protects access to the shared list state.
-	 * In order to prevent catastrophic stack corruption from
-	 * unsynchronized access, simply deadlock. */
-	if (node->mutex_ret && node->mutex_ret != EOWNERDEAD)
-		for (;;) lock(&(int){0});
-
-	/* Wait until control of the list has been handed over from
-	 * the cv lock (signaling thread) to the mutex (waiters). */
-	lock(&node->barrier);
-
 	/* If this thread was requeued to the mutex, undo the extra
 	 * waiter count that was added to the mutex. */
 	if (node->requeued) a_dec(&node->mutex->_m_waiters);
 
-	/* Find a thread to requeue to the mutex, starting from the
-	 * end of the list (oldest waiters). */
-	for (p=node; p->next; p=p->next);
-	if (p==node) p=node->prev;
-	for (; p && p->requeued; p=p->prev);
-	if (p==node) p=node->prev;
-	if (p) {
-		p->requeued = 1;
+	/* Unlock the barrier that's holding back the next waiter,
+	 * and either wake it or requeue it to the mutex. */
+	if (node->prev) {
+		unlock(&node->prev->barrier);
+		node->prev->requeued = 1;
 		a_inc(&node->mutex->_m_waiters);
 		/* The futex requeue command cannot requeue from
 		 * private to shared, so for process-shared mutexes,
 		 * simply wake the target. */
 		int wake = node->mutex->_m_type & 128;
-		__syscall(SYS_futex, &p->state, FUTEX_REQUEUE|128,
+		__syscall(SYS_futex, &node->prev->state, FUTEX_REQUEUE|128,
 			wake, 1, &node->mutex->_m_lock) != -EINVAL
-		|| __syscall(SYS_futex, &p->state, FUTEX_REQUEUE,
+		|| __syscall(SYS_futex, &node->prev->state, FUTEX_REQUEUE,
 			0, 1, &node->mutex->_m_lock);
 	}
-
-	/* Remove this thread from the list. */
-	if (node->next) node->next->prev = node->prev;
-	if (node->prev) node->prev->next = node->next;
 }
 
 int pthread_cond_timedwait(pthread_cond_t *restrict c, pthread_mutex_t *restrict m, const struct timespec *restrict ts)
@@ -181,7 +164,7 @@ int pthread_cond_timedwait(pthread_cond_t *restrict c, pthread_mutex_t *restrict
 
 int __private_cond_signal(pthread_cond_t *c, int n)
 {
-	struct waiter *p, *q=0;
+	struct waiter *p, *first=0;
 	int ref = 0, cur;
 
 	lock(&c->_c_lock);
@@ -196,7 +179,7 @@ int __private_cond_signal(pthread_cond_t *c, int n)
 			p->notify = &ref;
 		} else {
 			n--;
-			if (!q) q=p;
+			if (!first) first=p;
 		}
 	}
 	/* Split the list, leaving any remainder on the cv. */
@@ -214,12 +197,11 @@ int __private_cond_signal(pthread_cond_t *c, int n)
 	 * signaled threads to proceed. */
 	while ((cur = ref)) __wait(&ref, 0, cur, 1);
 
-	/* Wake the first signaled thread and unlock the per-waiter
-	 * barriers preventing their forward progress. */
-	for (p=q; p; p=q) {
-		q = p->prev;
-		if (!p->next) __wake(&p->state, 1, 1);
-		unlock(&p->barrier);
+	/* Allow first signaled waiter, if any, to proceed. */
+	if (first) {
+		__wake(&first->state, 1, 1);
+		unlock(&first->barrier);
 	}
+
 	return 0;
 }
