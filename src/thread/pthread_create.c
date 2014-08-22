@@ -3,6 +3,7 @@
 #include "stdio_impl.h"
 #include "libc.h"
 #include <sys/mman.h>
+#include <string.h>
 
 static void dummy_0()
 {
@@ -161,6 +162,7 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attrp
 		if (need < size/8 && need < 2048) {
 			tsd = stack - __pthread_tsd_size;
 			stack = tsd - libc.tls_size;
+			memset(stack, 0, need);
 		} else {
 			size = ROUND(need);
 			guard = 0;
