@@ -10,7 +10,7 @@ void __wait(volatile int *addr, volatile int *waiters, int val, int priv)
 	}
 	if (waiters) a_inc(waiters);
 	while (*addr==val) {
-		__syscall(SYS_futex, addr, FUTEX_WAIT|priv, val, 0) != -EINVAL
+		__syscall(SYS_futex, addr, FUTEX_WAIT|priv, val, 0) != -ENOSYS
 		|| __syscall(SYS_futex, addr, FUTEX_WAIT, val, 0);
 	}
 	if (waiters) a_dec(waiters);

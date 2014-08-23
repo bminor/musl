@@ -29,7 +29,7 @@ int __timedwait(volatile int *addr, int val,
 	pthread_cleanup_push(cleanup, arg);
 
 	r = -__syscall_cp(SYS_futex, addr, FUTEX_WAIT|priv, val, top);
-	if (r == EINVAL) r = -__syscall_cp(SYS_futex, addr, FUTEX_WAIT, val, top);
+	if (r == ENOSYS) r = -__syscall_cp(SYS_futex, addr, FUTEX_WAIT, val, top);
 	if (r != EINTR && r != ETIMEDOUT) r = 0;
 
 	pthread_cleanup_pop(0);
