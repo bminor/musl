@@ -46,6 +46,7 @@ struct _IO_FILE {
 	void *mustbezero_2;
 	unsigned char *shend;
 	off_t shlim, shcnt;
+	FILE *prev_locked, *next_locked;
 };
 
 size_t __stdio_read(FILE *, unsigned char *, size_t);

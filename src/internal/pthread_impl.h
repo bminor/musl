@@ -44,6 +44,7 @@ struct pthread {
 	int exitlock[2];
 	int startlock[2];
 	unsigned long sigmask[_NSIG/8/sizeof(long)];
+	void *stdio_locks;
 };
 
 struct __timer {

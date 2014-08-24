@@ -12,6 +12,7 @@ weak_alias(dummy_0, __acquire_ptc);
 weak_alias(dummy_0, __release_ptc);
 weak_alias(dummy_0, __pthread_tsd_run_dtors);
 weak_alias(dummy_0, __do_private_robust_list);
+weak_alias(dummy_0, __do_orphaned_stdio_locks);
 
 _Noreturn void pthread_exit(void *result)
 {
@@ -66,6 +67,7 @@ _Noreturn void pthread_exit(void *result)
 	}
 
 	__do_private_robust_list();
+	__do_orphaned_stdio_locks();
 
 	if (self->detached && self->map_base) {
 		/* Detached threads must avoid the kernel clear_child_tid
