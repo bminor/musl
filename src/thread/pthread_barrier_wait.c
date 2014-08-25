@@ -79,7 +79,7 @@ int pthread_barrier_wait(pthread_barrier_t *b)
 	/* First thread to enter the barrier becomes the "instance owner" */
 	if (!inst) {
 		struct instance new_inst = { 0 };
-		int spins = 10000;
+		int spins = 200;
 		b->_b_inst = inst = &new_inst;
 		a_store(&b->_b_lock, 0);
 		if (b->_b_waiters) __wake(&b->_b_lock, 1, 1);
