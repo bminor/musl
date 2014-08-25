@@ -53,6 +53,7 @@ static inline void a_dec(volatile int *x)
 
 static inline void a_spin()
 {
+	a_cas(&(int){0}, 0, 0);
 }
 
 static inline void a_crash()

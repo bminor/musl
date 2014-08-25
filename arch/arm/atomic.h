@@ -103,6 +103,7 @@ static inline void a_store(volatile int *p, int x)
 
 static inline void a_spin()
 {
+	__k_cas(&(int){0}, 0, 0));
 }
 
 static inline void a_crash()
