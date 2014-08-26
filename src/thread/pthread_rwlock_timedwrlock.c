@@ -8,7 +8,7 @@ int pthread_rwlock_timedwrlock(pthread_rwlock_t *restrict rw, const struct times
 	if (r != EBUSY) return r;
 	
 	int spins = 100;
-	while (spins-- && rw->_rw_lock) a_spin();
+	while (spins-- && rw->_rw_lock && !rw->_rw_waiters) a_spin();
 
 	while ((r=pthread_rwlock_trywrlock(rw))==EBUSY) {
 		if (!(r=rw->_rw_lock)) continue;

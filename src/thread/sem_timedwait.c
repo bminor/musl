@@ -11,7 +11,7 @@ int sem_timedwait(sem_t *restrict sem, const struct timespec *restrict at)
 	if (!sem_trywait(sem)) return 0;
 
 	int spins = 100;
-	while (spins-- && sem->__val[0] <= 0) a_spin();
+	while (spins-- && sem->__val[0] <= 0 && !sem->__val[1]) a_spin();
 
 	while (sem_trywait(sem)) {
 		int r;
