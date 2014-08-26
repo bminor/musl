@@ -8,6 +8,12 @@ int pthread_mutex_timedlock(pthread_mutex_t *restrict m, const struct timespec *
 
 	int r, t, priv = (m->_m_type & 128) ^ 128;
 
+	r = pthread_mutex_trylock(m);
+	if (r != EBUSY) return r;
+	
+	int spins = 100;
+	while (spins-- && m->_m_lock) a_spin();
+
 	while ((r=pthread_mutex_trylock(m)) == EBUSY) {
 		if (!(r=m->_m_lock) || ((r&0x40000000) && (m->_m_type&4)))
 			continue;
