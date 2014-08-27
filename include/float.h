@@ -11,8 +11,10 @@
 #define FLT_MANT_DIG 24
 #define FLT_MIN_EXP (-125)
 #define FLT_MAX_EXP 128
+#define FLT_HAS_SUBNORM 1
 
 #define FLT_DIG 6
+#define FLT_DECIMAL_DIG 9
 #define FLT_MIN_10_EXP (-37)
 #define FLT_MAX_10_EXP 38
 
@@ -24,10 +26,15 @@
 #define DBL_MANT_DIG 53
 #define DBL_MIN_EXP (-1021)
 #define DBL_MAX_EXP 1024
+#define DBL_HAS_SUBNORM 1
 
 #define DBL_DIG 15
+#define DBL_DECIMAL_DIG 17
 #define DBL_MIN_10_EXP (-307)
 #define DBL_MAX_10_EXP 308
+
+#define LDBL_HAS_SUBNORM 1
+#define LDBL_DECIMAL_DIG DECIMAL_DIG
 
 #include <bits/float.h>
 
