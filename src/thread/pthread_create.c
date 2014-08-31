@@ -5,6 +5,10 @@
 #include <sys/mman.h>
 #include <string.h>
 
+void *__mmap(void *, size_t, int, int, int, off_t);
+int __munmap(void *, size_t);
+int __mprotect(void *, size_t, int);
+
 static void dummy_0()
 {
 }
@@ -14,7 +18,7 @@ weak_alias(dummy_0, __pthread_tsd_run_dtors);
 weak_alias(dummy_0, __do_private_robust_list);
 weak_alias(dummy_0, __do_orphaned_stdio_locks);
 
-_Noreturn void pthread_exit(void *result)
+_Noreturn void __pthread_exit(void *result)
 {
 	pthread_t self = __pthread_self();
 	sigset_t set;
@@ -139,7 +143,7 @@ static void init_file_lock(FILE *f)
 
 void *__copy_tls(unsigned char *);
 
-int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attrp, void *(*entry)(void *), void *restrict arg)
+int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attrp, void *(*entry)(void *), void *restrict arg)
 {
 	int ret;
 	size_t size, guard;
@@ -191,14 +195,14 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attrp
 
 	if (!tsd) {
 		if (guard) {
-			map = mmap(0, size, PROT_NONE, MAP_PRIVATE|MAP_ANON, -1, 0);
+			map = __mmap(0, size, PROT_NONE, MAP_PRIVATE|MAP_ANON, -1, 0);
 			if (map == MAP_FAILED) goto fail;
-			if (mprotect(map+guard, size-guard, PROT_READ|PROT_WRITE)) {
-				munmap(map, size);
+			if (__mprotect(map+guard, size-guard, PROT_READ|PROT_WRITE)) {
+				__munmap(map, size);
 				goto fail;
 			}
 		} else {
-			map = mmap(0, size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, -1, 0);
+			map = __mmap(0, size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, -1, 0);
 			if (map == MAP_FAILED) goto fail;
 		}
 		tsd = map + size - __pthread_tsd_size;
@@ -240,7 +244,7 @@ int pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attrp
 
 	if (ret < 0) {
 		a_dec(&libc.threads_minus_1);
-		if (map) munmap(map, size);
+		if (map) __munmap(map, size);
 		return EAGAIN;
 	}
 
@@ -258,3 +262,6 @@ fail:
 	__release_ptc();
 	return EAGAIN;
 }
+
+weak_alias(__pthread_exit, pthread_exit);
+weak_alias(__pthread_create, pthread_create);

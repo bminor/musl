@@ -9,7 +9,7 @@ static void nodtor(void *dummy)
 {
 }
 
-int pthread_key_create(pthread_key_t *k, void (*dtor)(void *))
+int __pthread_key_create(pthread_key_t *k, void (*dtor)(void *))
 {
 	unsigned i = (uintptr_t)&k / 16 % PTHREAD_KEYS_MAX;
 	unsigned j = i;
@@ -31,7 +31,7 @@ int pthread_key_create(pthread_key_t *k, void (*dtor)(void *))
 	return EAGAIN;
 }
 
-int pthread_key_delete(pthread_key_t k)
+int __pthread_key_delete(pthread_key_t k)
 {
 	keys[k] = 0;
 	return 0;
@@ -53,3 +53,6 @@ void __pthread_tsd_run_dtors()
 		}
 	}
 }
+
+weak_alias(__pthread_key_delete, pthread_key_delete);
+weak_alias(__pthread_key_create, pthread_key_create);

@@ -1,6 +1,6 @@
 #include "pthread_impl.h"
 
-int pthread_mutex_timedlock(pthread_mutex_t *restrict m, const struct timespec *restrict at)
+int __pthread_mutex_timedlock(pthread_mutex_t *restrict m, const struct timespec *restrict at)
 {
 	if ((m->_m_type&15) == PTHREAD_MUTEX_NORMAL
 	    && !a_cas(&m->_m_lock, 0, EBUSY))
@@ -30,3 +30,5 @@ int pthread_mutex_timedlock(pthread_mutex_t *restrict m, const struct timespec *
 	}
 	return r;
 }
+
+weak_alias(__pthread_mutex_timedlock, pthread_mutex_timedlock);

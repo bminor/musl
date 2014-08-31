@@ -1,5 +1,9 @@
 #include "pthread_impl.h"
 
+void __pthread_testcancel(void);
+int __pthread_mutex_lock(pthread_mutex_t *);
+int __pthread_mutex_unlock(pthread_mutex_t *);
+
 /*
  * struct waiter
  *
@@ -119,7 +123,7 @@ static void unwait(void *arg)
 	}
 }
 
-int pthread_cond_timedwait(pthread_cond_t *restrict c, pthread_mutex_t *restrict m, const struct timespec *restrict ts)
+int __pthread_cond_timedwait(pthread_cond_t *restrict c, pthread_mutex_t *restrict m, const struct timespec *restrict ts)
 {
 	struct waiter node = { .cond = c, .mutex = m };
 	int e, seq, *fut, clock = c->_c_clock;
@@ -130,7 +134,7 @@ int pthread_cond_timedwait(pthread_cond_t *restrict c, pthread_mutex_t *restrict
 	if (ts && ts->tv_nsec >= 1000000000UL)
 		return EINVAL;
 
-	pthread_testcancel();
+	__pthread_testcancel();
 
 	if (c->_c_shared) {
 		node.shared = 1;
@@ -151,7 +155,7 @@ int pthread_cond_timedwait(pthread_cond_t *restrict c, pthread_mutex_t *restrict
 		unlock(&c->_c_lock);
 	}
 
-	pthread_mutex_unlock(m);
+	__pthread_mutex_unlock(m);
 
 	do e = __timedwait(fut, seq, clock, ts, unwait, &node, !node.shared);
 	while (*fut==seq && (!e || e==EINTR));
@@ -197,3 +201,5 @@ int __private_cond_signal(pthread_cond_t *c, int n)
 
 	return 0;
 }
+
+weak_alias(__pthread_cond_timedwait, pthread_cond_timedwait);

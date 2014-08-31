@@ -3,7 +3,7 @@
 void __vm_lock_impl(int);
 void __vm_unlock_impl(void);
 
-int pthread_mutex_unlock(pthread_mutex_t *m)
+int __pthread_mutex_unlock(pthread_mutex_t *m)
 {
 	pthread_t self;
 	int waiters = m->_m_waiters;
@@ -36,3 +36,5 @@ int pthread_mutex_unlock(pthread_mutex_t *m)
 		__wake(&m->_m_lock, 1, priv);
 	return 0;
 }
+
+weak_alias(__pthread_mutex_unlock, pthread_mutex_unlock);
