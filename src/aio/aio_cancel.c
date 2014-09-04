@@ -1,6 +1,7 @@
 #include <aio.h>
 #include <pthread.h>
 #include <errno.h>
+#include "libc.h"
 
 int aio_cancel(int fd, struct aiocb *cb)
 {
@@ -14,3 +15,5 @@ int aio_cancel(int fd, struct aiocb *cb)
 	}
 	return cb->__err==EINPROGRESS ? AIO_NOTCANCELED : AIO_ALLDONE;
 }
+
+LFS64(aio_cancel);

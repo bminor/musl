@@ -1,6 +1,7 @@
 #include <aio.h>
 #include <errno.h>
 #include "pthread_impl.h"
+#include "libc.h"
 
 /* Due to the requirement that aio_suspend be async-signal-safe, we cannot
  * use any locks, wait queues, etc. that would make it more efficient. The
@@ -55,3 +56,5 @@ int aio_suspend(const struct aiocb *const cbs[], int cnt, const struct timespec 
 		}
 	}
 }
+
+LFS64(aio_suspend);

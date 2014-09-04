@@ -105,3 +105,6 @@ int aio_write(struct aiocb *cb)
 	cb->aio_lio_opcode = LIO_WRITE;
 	return new_req(cb);
 }
+
+LFS64(aio_read);
+LFS64(aio_write);
