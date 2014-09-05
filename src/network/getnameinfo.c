@@ -96,7 +96,7 @@ static void reverse_services(char *buf, int port, int dgram)
 		if ((p=strchr(line, '#'))) *p++='\n', *p=0;
 
 		for (p=line; *p && !isspace(*p); p++);
-		if (!p) continue;
+		if (!*p) continue;
 		*p++ = 0;
 		svport = strtoul(p, &z, 10);
 
