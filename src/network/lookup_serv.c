@@ -52,7 +52,6 @@ int __lookup_serv(struct service buf[static MAXSERVS], const char *name, int pro
 
 		/* Skip past canonical name at beginning of line */
 		for (p=line; *p && !isspace(*p); p++);
-		if (!p) continue;
 
 		port = strtoul(p, &z, 10);
 		if (port > 65535 || z==p) continue;
