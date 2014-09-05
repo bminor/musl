@@ -34,7 +34,7 @@ char *fgets(char *restrict s, int n, FILE *restrict f)
 		n--;
 		if ((*p++ = c) == '\n') break;
 	}
-	*p = 0;
+	if (s) *p = 0;
 
 	FUNLOCK(f);
 
