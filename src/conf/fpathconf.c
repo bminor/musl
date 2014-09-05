@@ -27,7 +27,7 @@ long fpathconf(int fd, int name)
 		[_PC_SYMLINK_MAX] = SYMLINK_MAX,
 		[_PC_2_SYMLINKS] = 1
 	};
-	if (name > sizeof(values)/sizeof(values[0])) {
+	if (name >= sizeof(values)/sizeof(values[0])) {
 		errno = EINVAL;
 		return -1;
 	}
