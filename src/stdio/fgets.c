@@ -10,13 +10,15 @@ char *fgets(char *restrict s, int n, FILE *restrict f)
 	size_t k;
 	int c;
 
+	FLOCK(f);
+
 	if (n--<=1) {
+		f->mode |= f->mode-1;
+		FUNLOCK(f);
 		if (n) return 0;
 		*s = 0;
 		return s;
 	}
-
-	FLOCK(f);
 
 	while (n) {
 		z = memchr(f->rpos, '\n', f->rend - f->rpos);
