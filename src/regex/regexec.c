@@ -52,7 +52,7 @@ tre_fill_pmatch(size_t nmatch, regmatch_t pmatch[], int cflags,
 #define GET_NEXT_WCHAR() do {                                                 \
     prev_c = next_c; pos += pos_add_next;                                     \
     if ((pos_add_next = mbtowc(&next_c, str_byte, MB_LEN_MAX)) <= 0) {        \
-        if (pos_add_next < 0) return REG_NOMATCH;                             \
+        if (pos_add_next < 0) { ret = REG_NOMATCH; goto error_exit; }         \
         else pos_add_next++;                                                  \
     }                                                                         \
     str_byte += pos_add_next;                                                 \
@@ -181,6 +181,7 @@ tre_tnfa_run_parallel(const tre_tnfa_t *tnfa, const void *string,
   int reg_notbol = eflags & REG_NOTBOL;
   int reg_noteol = eflags & REG_NOTEOL;
   int reg_newline = tnfa->cflags & REG_NEWLINE;
+  reg_errcode_t ret;
 
   char *buf;
   tre_tnfa_transition_t *trans_i;
@@ -439,11 +440,11 @@ tre_tnfa_run_parallel(const tre_tnfa_t *tnfa, const void *string,
       reach_next_i->state = NULL;
     }
 
-  if (buf)
-    xfree(buf);
-
   *match_end_ofs = match_eo;
-  return match_eo >= 0 ? REG_OK : REG_NOMATCH;
+  ret = match_eo >= 0 ? REG_OK : REG_NOMATCH;
+error_exit:
+  xfree(buf);
+  return ret;
 }
 
 
