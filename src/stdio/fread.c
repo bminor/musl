@@ -8,10 +8,9 @@ size_t fread(void *restrict destv, size_t size, size_t nmemb, FILE *restrict f)
 	unsigned char *dest = destv;
 	size_t len = size*nmemb, l = len, k;
 
-	/* Never touch the file if length is zero.. */
-	if (!l) return 0;
-
 	FLOCK(f);
+
+	f->mode |= f->mode-1;
 
 	if (f->rend - f->rpos > 0) {
 		/* First exhaust the buffer. */

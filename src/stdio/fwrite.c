@@ -28,7 +28,6 @@ size_t __fwritex(const unsigned char *restrict s, size_t l, FILE *restrict f)
 size_t fwrite(const void *restrict src, size_t size, size_t nmemb, FILE *restrict f)
 {
 	size_t k, l = size*nmemb;
-	if (!l) return l;
 	FLOCK(f);
 	k = __fwritex(src, l, f);
 	FUNLOCK(f);
