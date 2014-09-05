@@ -73,7 +73,6 @@ typedef unsigned long long u_quad_t;
 #endif
 
 #if defined(_LARGEFILE64_SOURCE) || defined(_GNU_SOURCE)
-#define blksize64_t blksize_t
 #define blkcnt64_t blkcnt_t
 #define fsblkcnt64_t fsblkcnt_t
 #define fsfilcnt64_t fsfilcnt_t
