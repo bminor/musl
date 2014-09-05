@@ -3,7 +3,7 @@
 
 int iswlower(wint_t wc)
 {
-	return towupper(wc) != wc || wc == 0xdf;
+	return towupper(wc) != wc;
 }
 
 int __iswlower_l(wint_t c, locale_t l)
