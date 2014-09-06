@@ -17,11 +17,11 @@ extern "C" {
 #define __NEED_size_t
 #define __NEED_time_t
 #define __NEED_clock_t
+#define __NEED_struct_timespec
 
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) \
  || defined(_BSD_SOURCE)
-#define __NEED_struct_timespec
 #define __NEED_clockid_t
 #define __NEED_timer_t
 #define __NEED_pid_t
@@ -59,9 +59,11 @@ struct tm *gmtime (const time_t *);
 struct tm *localtime (const time_t *);
 char *asctime (const struct tm *);
 char *ctime (const time_t *);
+int timespec_get(struct timespec *, int);
 
 #define CLOCKS_PER_SEC 1000000L
 
+#define TIME_UTC 1
 
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) \
