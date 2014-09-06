@@ -2,7 +2,7 @@
 #include "locale_impl.h"
 #include "libc.h"
 
-const char *dummy(const char *msg, const struct __locale_map *lm)
+static const char *dummy(const char *msg, const struct __locale_map *lm)
 {
 	return msg;
 }
