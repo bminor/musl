@@ -1,8 +1,9 @@
 #include "pthread_impl.h"
+#include <threads.h>
 
 int __pthread_join(pthread_t, void **);
 
-int __pthread_detach(pthread_t t)
+static int __pthread_detach(pthread_t t)
 {
 	/* Cannot detach a thread that's already exiting */
 	if (a_swap(t->exitlock, 1))
@@ -13,3 +14,4 @@ int __pthread_detach(pthread_t t)
 }
 
 weak_alias(__pthread_detach, pthread_detach);
+weak_alias(__pthread_detach, thrd_detach);

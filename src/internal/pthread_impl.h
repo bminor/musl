@@ -128,4 +128,6 @@ void __restore_sigs(void *);
 #define DEFAULT_STACK_SIZE 81920
 #define DEFAULT_GUARD_SIZE PAGE_SIZE
 
+#define __ATTRP_C11_THREAD ((void*)(uintptr_t)-1)
+
 #endif

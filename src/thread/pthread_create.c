@@ -119,7 +119,15 @@ static int start(void *p)
 	if (self->unblock_cancel)
 		__syscall(SYS_rt_sigprocmask, SIG_UNBLOCK,
 			SIGPT_SET, 0, _NSIG/8);
-	pthread_exit(self->start(self->start_arg));
+	__pthread_exit(self->start(self->start_arg));
+	return 0;
+}
+
+static int start_c11(void *p)
+{
+	pthread_t self = p;
+	int (*start)(void*) = (int(*)(void*)) self->start;
+	__pthread_exit((void *)(uintptr_t)start(self->start_arg));
 	return 0;
 }
 
@@ -145,7 +153,7 @@ void *__copy_tls(unsigned char *);
 
 int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attrp, void *(*entry)(void *), void *restrict arg)
 {
-	int ret;
+	int ret, c11 = (attrp == __ATTRP_C11_THREAD);
 	size_t size, guard;
 	struct pthread *self, *new;
 	unsigned char *map = 0, *stack = 0, *tsd = 0, *stack_limit;
@@ -167,7 +175,7 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 		self->tsd = (void **)__pthread_tsd_main;
 		libc.threaded = 1;
 	}
-	if (attrp) attr = *attrp;
+	if (attrp && !c11) attr = *attrp;
 
 	__acquire_ptc();
 
@@ -234,7 +242,7 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 	new->canary = self->canary;
 
 	a_inc(&libc.threads_minus_1);
-	ret = __clone(start, stack, flags, new, &new->tid, TP_ADJ(new), &new->tid);
+	ret = __clone((c11 ? start_c11 : start), stack, flags, new, &new->tid, TP_ADJ(new), &new->tid);
 
 	__release_ptc();
 
