@@ -20,6 +20,8 @@ TYPEDEF long suseconds_t;
 
 TYPEDEF struct { union { int __i[9]; unsigned __s[9]; } __u; } pthread_attr_t;
 TYPEDEF struct { union { int __i[6]; volatile void *volatile __p[6]; } __u; } pthread_mutex_t;
+TYPEDEF struct { union { int __i[6]; volatile void *volatile __p[6]; } __u; } mtx_t;
 TYPEDEF struct { union { int __i[12]; void *__p[12]; } __u; } pthread_cond_t;
+TYPEDEF struct { union { int __i[12]; void *__p[12]; } __u; } cnd_t;
 TYPEDEF struct { union { int __i[8]; void *__p[8]; } __u; } pthread_rwlock_t;
 TYPEDEF struct { union { int __i[5]; void *__p[5]; } __u; } pthread_barrier_t;
