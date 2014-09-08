@@ -2,6 +2,12 @@
 #include <math.h>
 #include "libc.h"
 
+#if LDBL_MANT_DIG == 53 && LDBL_MAX_EXP == 1024
+long double exp10l(long double x)
+{
+	return exp10(x);
+}
+#else
 long double exp10l(long double x)
 {
 	static const long double p10[] = {
@@ -18,5 +24,6 @@ long double exp10l(long double x)
 	}
 	return powl(10.0, x);
 }
+#endif
 
 weak_alias(exp10l, pow10l);
