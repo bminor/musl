@@ -114,9 +114,6 @@ long int random (void);
 void srandom (unsigned int);
 char *initstate (unsigned int, char *, size_t);
 char *setstate (char *);
-#endif
-
-#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
 int putenv (char *);
 int posix_openpt (int);
 int grantpt (int);

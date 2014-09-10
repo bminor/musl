@@ -196,7 +196,7 @@ void psignal(int, const char *);
 
 #endif
 
-#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
+#if defined(_XOPEN_SOURCE) || defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
 int killpg(pid_t, int);
 int sigaltstack(const stack_t *__restrict, stack_t *__restrict);
 int sighold(int);

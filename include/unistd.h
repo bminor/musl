@@ -140,9 +140,6 @@ int lockf(int, int, off_t);
 long gethostid(void);
 int nice(int);
 void sync(void);
-#endif
-
-#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
 pid_t setpgrp(void);
 char *crypt(const char *, const char *);
 void encrypt(char *, int);
