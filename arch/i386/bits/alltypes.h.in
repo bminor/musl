@@ -27,7 +27,11 @@ TYPEDEF long double float_t;
 TYPEDEF long double double_t;
 #endif
 
+#ifdef __cplusplus
+TYPEDEF struct { alignas(8) long long __ll; long double __ld; } max_align_t;
+#else
 TYPEDEF struct { _Alignas(8) long long __ll; long double __ld; } max_align_t;
+#endif
 
 TYPEDEF long time_t;
 TYPEDEF long suseconds_t;
