@@ -34,6 +34,7 @@ int ftrylockfile(FILE *f)
 	f->lockcount = 1;
 	f->prev_locked = 0;
 	f->next_locked = self->stdio_locks;
+	if (f->next_locked) f->next_locked->prev_locked = f;
 	self->stdio_locks = f;
 	return 0;
 }
