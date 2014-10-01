@@ -358,6 +358,7 @@ struct ip6_mtuinfo
 #define IPV6_DONTFRAG           62
 #define IPV6_RECVTCLASS         66
 #define IPV6_TCLASS             67
+#define IPV6_AUTOFLOWLABEL      70
 #define IPV6_ADDR_PREFERENCES   72
 #define IPV6_MINHOPCOUNT        73
 #define IPV6_ORIGDSTADDR        74
