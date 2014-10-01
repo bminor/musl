@@ -336,6 +336,9 @@
 #define __NR_sched_setattr	380
 #define __NR_sched_getattr	381
 #define __NR_renameat2	382
+#define __NR_seccomp	383
+#define __NR_getrandom	384
+#define __NR_memfd_create	385
 
 
 /* Repeated with SYS_ prefix */
@@ -678,3 +681,6 @@
 #define SYS_sched_setattr	380
 #define SYS_sched_getattr	381
 #define SYS_renameat2	382
+#define SYS_seccomp	383
+#define SYS_getrandom	384
+#define SYS_memfd_create	385

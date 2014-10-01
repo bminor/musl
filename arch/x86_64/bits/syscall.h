@@ -315,6 +315,9 @@
 #define __NR_sched_setattr			314
 #define __NR_sched_getattr			315
 #define __NR_renameat2				316
+#define __NR_seccomp				317
+#define __NR_getrandom				318
+#define __NR_memfd_create			319
 
 
 #undef __NR_fstatat
@@ -648,6 +651,9 @@
 #define SYS_sched_setattr			314
 #define SYS_sched_getattr			315
 #define SYS_renameat2				316
+#define SYS_seccomp				317
+#define SYS_getrandom				318
+#define SYS_memfd_create			319
 
 #undef SYS_fstatat
 #undef SYS_pread

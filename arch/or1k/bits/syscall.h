@@ -260,6 +260,9 @@
 #define __NR_sched_setattr 274
 #define __NR_sched_getattr 275
 #define __NR_renameat2 276
+#define __NR_seccomp 277
+#define __NR_getrandom 278
+#define __NR_memfd_create 279
 
 #define SYS_io_setup __NR_io_setup
 #define SYS_io_destroy __NR_io_destroy
@@ -523,3 +526,6 @@
 #define SYS_sched_setattr __NR_sched_setattr
 #define SYS_sched_getattr __NR_sched_getattr
 #define SYS_renameat2 __NR_renameat2
+#define SYS_seccomp __NR_seccomp
+#define SYS_getrandom __NR_getrandom
+#define SYS_memfd_create __NR_memfd_create
