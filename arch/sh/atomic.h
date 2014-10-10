@@ -51,7 +51,9 @@ static inline void a_dec(volatile int *x)
 	a_fetch_add(x, -1);
 }
 
-static inline void a_spin()
+#define a_spin a_barrier
+
+static inline void a_barrier()
 {
 	a_cas(&(int){0}, 0, 0);
 }

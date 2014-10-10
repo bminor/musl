@@ -72,7 +72,9 @@ static inline void a_store(volatile int *p, int x)
 	a_swap(p, x);
 }
 
-static inline void a_spin()
+#define a_spin a_barrier
+
+static inline void a_barrier()
 {
 	a_cas(&(int){0}, 0, 0);
 }

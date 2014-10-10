@@ -101,7 +101,9 @@ static inline void a_store(volatile int *p, int x)
 	while (__k_cas(*p, x, p));
 }
 
-static inline void a_spin()
+#define a_spin a_barrier
+
+static inline void a_barrier()
 {
 	__k_cas(0, 0, &(int){0});
 }
