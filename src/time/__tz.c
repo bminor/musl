@@ -36,19 +36,16 @@ static int getint(const char **p)
 	return x;
 }
 
-static int getsigned(const char **p)
-{
-	if (**p == '-') {
-		++*p;
-		return -getint(p);
-	}
-	if (**p == '+') ++*p;
-	return getint(p);
-}
-
 static int getoff(const char **p)
 {
-	int off = 3600*getsigned(p);
+	int neg = 0;
+	if (**p == '-') {
+		++*p;
+		neg = 1;
+	} else if (**p == '+') {
+		++*p;
+	}
+	int off = 3600*getint(p);
 	if (**p == ':') {
 		++*p;
 		off += 60*getint(p);
@@ -57,7 +54,7 @@ static int getoff(const char **p)
 			off += getint(p);
 		}
 	}
-	return off;
+	return neg ? -off : off;
 }
 
 static void getrule(const char **p, int rule[5])
