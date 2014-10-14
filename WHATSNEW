@@ -1330,3 +1330,41 @@ arch-specific bugs fixed:
 - broken struct stat st_dev field on big endian mips
 - broken asm register constraints in atomics on powerpc
 - missing barriers in atomics on mips, powerpc, microblaze, and sh
+
+
+
+1.1.5 release notes
+
+new features:
+- full C11 coverage (threads, UTF-16/32 API, timespec_get, etc.)
+- malloc_usable_size function (nonstandard)
+- support for new F_OFD_* fcntl operations (linux 3.15, POSIX-future)
+- new _DEFAULT_SOURCE feature test macro to request default profile
+
+performance:
+- private-futex support
+- redesigned cond var implementation with major performance improvement
+- tweaked spinning in userspace before performing futex waits
+
+bugs fixed:
+- failure of dn_expand to null-terminate name for crafted DNS packets
+- corruption of cond var mutex state when switching mutexes
+- use of uninitialized memory with application-provided thread stacks
+- false ownership of orphaned mutexes due to tid reuse
+- possible failure-to-wake for robust mutexes on owner death
+- subtle errors in robust mutex unrecoverable status handling
+- missing memory/compiler barrier spinning to obtain locks
+- wrong behavior in various zero-length stdio operations
+- buffer overflow in swab with odd argument
+- incorrect sequence generation in the rand48 family of prng functions
+- missing cancellation check in non-wait paths of sem_wait, pthread_join
+- missing barrier in pthread_once fast path
+- memory leak in regexec when input contains illegal sequence
+- various parser bugs in regcomp
+- wrong return value on overflow in some strtoul-family functions
+- broken CPU_EQUAL macro in sched.h
+- dlerror not working in static-linked programs
+- mishandling of negative non-whole-hour TZ offsets
+- incorrect case mappings for U+00DF
+- namespace pollution via accidentally-non-static function named "dummy"
+- missing __fpclassifyl and __signbitl definitions for ld64 archs
