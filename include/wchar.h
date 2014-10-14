@@ -12,6 +12,7 @@ extern "C" {
 #define __NEED_size_t
 #define __NEED_wchar_t
 #define __NEED_wint_t
+#define __NEED_mbstate_t
 
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
@@ -41,11 +42,6 @@ extern "C" {
 
 #undef WEOF
 #define WEOF 0xffffffffU
-
-typedef struct __mbstate_t
-{
-	unsigned __opaque1, __opaque2;
-} mbstate_t;
 
 wchar_t *wcscpy (wchar_t *__restrict, const wchar_t *__restrict);
 wchar_t *wcsncpy (wchar_t *__restrict, const wchar_t *__restrict, size_t);

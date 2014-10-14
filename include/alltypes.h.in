@@ -58,6 +58,8 @@ TYPEDEF struct { unsigned __attr[2]; } pthread_rwlockattr_t;
 
 TYPEDEF struct _IO_FILE FILE;
 
+TYPEDEF struct __mbstate_t { unsigned __opaque1, __opaque2; } mbstate_t;
+
 TYPEDEF struct __locale_struct * locale_t;
 
 TYPEDEF struct __sigset_t { unsigned long __bits[128/sizeof(long)]; } sigset_t;
