@@ -22,6 +22,7 @@ int   isxdigit(int);
 int   tolower(int);
 int   toupper(int);
 
+#ifndef __cplusplus
 static __inline int __isspace(int _c)
 {
 	return _c == ' ' || (unsigned)_c-'\t' < 5;
@@ -34,6 +35,7 @@ static __inline int __isspace(int _c)
 #define isprint(a) (((unsigned)(a)-0x20) < 0x5f)
 #define isgraph(a) (((unsigned)(a)-0x21) < 0x5e)
 #define isspace(a) __isspace(a)
+#endif
 
 
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \

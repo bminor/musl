@@ -172,8 +172,11 @@ int       iswctype(wint_t, wctype_t);
 wint_t    towlower(wint_t);
 wint_t    towupper(wint_t);
 wctype_t  wctype(const char *);
+
+#ifndef __cplusplus
 #undef iswdigit
 #define iswdigit(a) ((unsigned)(a)-'0' < 10)
+#endif
 #endif
 
 #ifdef __cplusplus
