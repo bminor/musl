@@ -8,15 +8,8 @@ static void undo(void *control)
 		__wake(control, -1, 1);
 }
 
-int __pthread_once(pthread_once_t *control, void (*init)(void))
+int __pthread_once_full(pthread_once_t *control, void (*init)(void))
 {
-	/* Return immediately if init finished before, but ensure that
-	 * effects of the init routine are visible to the caller. */
-	if (*control == 2) {
-		a_barrier();
-		return 0;
-	}
-
 	/* Try to enter initializing state. Four possibilities:
 	 *  0 - we're the first or the other cancelled; run init
 	 *  1 - another thread is running init; wait
@@ -41,6 +34,17 @@ int __pthread_once(pthread_once_t *control, void (*init)(void))
 	case 2:
 		return 0;
 	}
+}
+
+int __pthread_once(pthread_once_t *control, void (*init)(void))
+{
+	/* Return immediately if init finished before, but ensure that
+	 * effects of the init routine are visible to the caller. */
+	if (*control == 2) {
+		a_barrier();
+		return 0;
+	}
+	return __pthread_once_full(control, init);
 }
 
 weak_alias(__pthread_once, pthread_once);
