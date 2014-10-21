@@ -55,7 +55,8 @@ int getopt(int argc, char * const argv[], const char *optstring)
 		return '?';
 	}
 	if (optstring[i+1] == ':') {
-		if (optind >= argc) {
+		if (optstring[i+2] == ':') optarg = 0;
+		else if (optind >= argc) {
 			if (optstring[0] == ':') return ':';
 			if (opterr) {
 				write(2, argv[0], strlen(argv[0]));
@@ -65,7 +66,6 @@ int getopt(int argc, char * const argv[], const char *optstring)
 			}
 			return '?';
 		}
-		if (optstring[i+2] == ':') optarg = 0;
 		if (optstring[i+2] != ':' || optpos) {
 			optarg = argv[optind++] + optpos;
 			optpos = 0;
