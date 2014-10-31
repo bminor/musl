@@ -5,7 +5,7 @@
 
 int openat(int fd, const char *filename, int flags, ...)
 {
-	mode_t mode;
+	mode_t mode = 0;
 
 	if ((flags & O_CREAT) || (flags & O_TMPFILE) == O_TMPFILE) {
 		va_list ap;
