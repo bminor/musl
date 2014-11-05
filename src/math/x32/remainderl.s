@@ -5,7 +5,7 @@ remainderl:
 	fldt 8(%esp)
 1:	fprem1
 	fstsw %ax
-	sahf
-	jp 1b
+	testb $4,%ah
+	jnz 1b
 	fstp %st(1)
 	ret
