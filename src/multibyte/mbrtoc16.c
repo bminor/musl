@@ -3,6 +3,8 @@
 
 size_t mbrtoc16(char16_t *restrict pc16, const char *restrict s, size_t n, mbstate_t *restrict ps)
 {
+	static unsigned internal_state;
+	if (!ps) ps = (void *)&internal_state;
 	unsigned *pending = (unsigned *)ps;
 
 	if (!s) return mbrtoc16(0, "", 1, ps);

@@ -4,6 +4,8 @@
 
 size_t c16rtomb(char *restrict s, char16_t c16, mbstate_t *restrict ps)
 {
+	static unsigned internal_state;
+	if (!ps) ps = (void *)&internal_state;
 	unsigned *x = (unsigned *)ps;
 	wchar_t wc;
 
