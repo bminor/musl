@@ -22,37 +22,150 @@ static inline int a_ctz_64(uint64_t x)
 	return a_ctz_l(y);
 }
 
-#if ((__ARM_ARCH_6__ || __ARM_ARCH_6K__ || __ARM_ARCH_6ZK__) && !__thumb__) \
- || __ARM_ARCH_7A__ || __ARM_ARCH_7R__ || __ARM_ARCH >= 7
-
 #if __ARM_ARCH_7A__ || __ARM_ARCH_7R__ ||  __ARM_ARCH >= 7
-#define MEM_BARRIER "dmb ish"
-#else
-#define MEM_BARRIER "mcr p15,0,r0,c7,c10,5"
-#endif
 
-static inline int __k_cas(int t, int s, volatile int *p)
+static inline void a_barrier()
 {
-	int ret;
-	__asm__(
-		"	" MEM_BARRIER "\n"
+	__asm__ __volatile__("dmb ish");
+}
+
+static inline int a_cas(volatile int *p, int t, int s)
+{
+	int old;
+	__asm__ __volatile__(
+		"	dmb ish\n"
 		"1:	ldrex %0,%3\n"
-		"	subs %0,%0,%1\n"
-#ifdef __thumb__
-		"	itt eq\n"
-#endif
-		"	strexeq %0,%2,%3\n"
-		"	teqeq %0,#1\n"
-		"	beq 1b\n"
-		"	" MEM_BARRIER "\n"
-		: "=&r"(ret)
+		"	cmp %0,%1\n"
+		"	bne 1f\n"
+		"	strex %0,%2,%3\n"
+		"	cmp %0, #0\n"
+		"	bne 1b\n"
+		"	mov %0, %1\n"
+		"1:	dmb ish\n"
+		: "=&r"(old)
 		: "r"(t), "r"(s), "Q"(*p)
 		: "memory", "cc" );
-	return ret;
+	return old;
 }
+
+static inline int a_swap(volatile int *x, int v)
+{
+	int old, tmp;
+	__asm__ __volatile__(
+		"	dmb ish\n"
+		"1:	ldrex %0,%3\n"
+		"	strex %1,%2,%3\n"
+		"	cmp %1, #0\n"
+		"	bne 1b\n"
+		"	dmb ish\n"
+		: "=&r"(old), "=&r"(tmp)
+		: "r"(v), "Q"(*x)
+		: "memory", "cc" );
+	return old;
+}
+
+static inline int a_fetch_add(volatile int *x, int v)
+{
+	int old, tmp;
+	__asm__ __volatile__(
+		"	dmb ish\n"
+		"1:	ldrex %0,%3\n"
+		"	add %0,%0,%2\n"
+		"	strex %1,%0,%3\n"
+		"	cmp %1, #0\n"
+		"	bne 1b\n"
+		"	dmb ish\n"
+		: "=&r"(old), "=&r"(tmp)
+		: "r"(v), "Q"(*x)
+		: "memory", "cc" );
+	return old-v;
+}
+
+static inline void a_inc(volatile int *x)
+{
+	int tmp, tmp2;
+	__asm__ __volatile__(
+		"	dmb ish\n"
+		"1:	ldrex %0,%2\n"
+		"	add %0,%0,#1\n"
+		"	strex %1,%0,%2\n"
+		"	cmp %1, #0\n"
+		"	bne 1b\n"
+		"	dmb ish\n"
+		: "=&r"(tmp), "=&r"(tmp2)
+		: "Q"(*x)
+		: "memory", "cc" );
+}
+
+static inline void a_dec(volatile int *x)
+{
+	int tmp, tmp2;
+	__asm__ __volatile__(
+		"	dmb ish\n"
+		"1:	ldrex %0,%2\n"
+		"	sub %0,%0,#1\n"
+		"	strex %1,%0,%2\n"
+		"	cmp %1, #0\n"
+		"	bne 1b\n"
+		"	dmb ish\n"
+		: "=&r"(tmp), "=&r"(tmp2)
+		: "Q"(*x)
+		: "memory", "cc" );
+}
+
+static inline void a_and(volatile int *x, int v)
+{
+	int tmp, tmp2;
+	__asm__ __volatile__(
+		"	dmb ish\n"
+		"1:	ldrex %0,%3\n"
+		"	and %0,%0,%2\n"
+		"	strex %1,%0,%3\n"
+		"	cmp %1, #0\n"
+		"	bne 1b\n"
+		"	dmb ish\n"
+		: "=&r"(tmp), "=&r"(tmp2)
+		: "r"(v), "Q"(*x)
+		: "memory", "cc" );
+}
+
+static inline void a_or(volatile int *x, int v)
+{
+	int tmp, tmp2;
+	__asm__ __volatile__(
+		"	dmb ish\n"
+		"1:	ldrex %0,%3\n"
+		"	orr %0,%0,%2\n"
+		"	strex %1,%0,%3\n"
+		"	cmp %1, #0\n"
+		"	bne 1b\n"
+		"	dmb ish\n"
+		: "=&r"(tmp), "=&r"(tmp2)
+		: "r"(v), "Q"(*x)
+		: "memory", "cc" );
+}
+
+static inline void a_store(volatile int *p, int x)
+{
+	__asm__ __volatile__(
+		"	dmb ish\n"
+		"	str %1,%0\n"
+		"	dmb ish\n"
+		: "=m"(*p)
+		: "r"(x)
+		: "memory", "cc" );
+}
+
 #else
-#define __k_cas ((int (*)(int, int, volatile int *))0xffff0fc0)
-#endif
+
+int __a_cas(int, int, volatile int *) __attribute__((__visibility__("hidden")));
+#define __k_cas __a_cas
+
+static inline void a_barrier()
+{
+	__asm__ __volatile__("bl __a_barrier"
+		: : : "memory", "cc", "ip", "lr" );
+}
 
 static inline int a_cas(volatile int *p, int t, int s)
 {
@@ -63,11 +176,6 @@ static inline int a_cas(volatile int *p, int t, int s)
 		if ((old=*p) != t)
 			return old;
 	}
-}
-
-static inline void *a_cas_p(volatile void *p, void *t, void *s)
-{
-	return (void *)a_cas(p, (int)t, (int)s);
 }
 
 static inline int a_swap(volatile int *x, int v)
@@ -98,19 +206,9 @@ static inline void a_dec(volatile int *x)
 
 static inline void a_store(volatile int *p, int x)
 {
-	while (__k_cas(*p, x, p));
-}
-
-#define a_spin a_barrier
-
-static inline void a_barrier()
-{
-	__k_cas(0, 0, &(int){0});
-}
-
-static inline void a_crash()
-{
-	*(volatile char *)0=0;
+	a_barrier();
+	*p = x;
+	a_barrier();
 }
 
 static inline void a_and(volatile int *p, int v)
@@ -125,6 +223,20 @@ static inline void a_or(volatile int *p, int v)
 	int old;
 	do old = *p;
 	while (__k_cas(old, old|v, p));
+}
+
+#endif
+
+static inline void *a_cas_p(volatile void *p, void *t, void *s)
+{
+	return (void *)a_cas(p, (int)t, (int)s);
+}
+
+#define a_spin a_barrier
+
+static inline void a_crash()
+{
+	*(volatile char *)0=0;
 }
 
 static inline void a_or_l(volatile void *p, long v)
