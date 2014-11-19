@@ -1126,6 +1126,7 @@ void *__dynlink(int argc, char **argv)
 		libc.secure = 1;
 	}
 	libc.page_size = aux[AT_PAGESZ];
+	libc.auxv = auxv;
 
 	/* If the dynamic linker was invoked as a program itself, AT_BASE
 	 * will not be set. In that case, we assume the base address is
