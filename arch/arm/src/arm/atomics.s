@@ -81,6 +81,10 @@ __a_cas_v7:
 	.word 0xf57ff05b        /* dmb ish */
 	bx lr
 
+.global __aeabi_read_tp
+.type __aeabi_read_tp,%function
+__aeabi_read_tp:
+
 .global __a_gettp
 .hidden __a_gettp
 .type __a_gettp,%function
@@ -92,10 +96,6 @@ __a_gettp:
 .global __a_gettp_dummy
 .hidden __a_gettp_dummy
 __a_gettp_dummy:
-	.word 0xe7fddef1
-.global __a_gettp_native
-.hidden __a_gettp_native
-__a_gettp_native:
 	mrc p15,0,r0,c13,c0,3
 	bx lr
 

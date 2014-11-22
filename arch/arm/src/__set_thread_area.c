@@ -9,7 +9,7 @@ extern const unsigned char __attribute__((__visibility__("hidden")))
 	__a_barrier_dummy[], __a_barrier_oldkuser[],
 	__a_barrier_v6[], __a_barrier_v7[],
 	__a_cas_dummy[], __a_cas_v6[], __a_cas_v7[],
-	__a_gettp_dummy[], __a_gettp_native[];
+	__a_gettp_dummy[];
 
 #define __a_barrier_kuser 0xffff0fa0
 #define __a_cas_kuser 0xffff0fc0
@@ -26,7 +26,6 @@ int __set_thread_area(void *p)
 #if !__ARM_ARCH_7A__ && !__ARM_ARCH_7R__ && __ARM_ARCH < 7
 	if (__hwcap & HWCAP_TLS) {
 		size_t *aux;
-		SET(gettp, native);
 		SET(cas, v7);
 		SET(barrier, v7);
 		for (aux=libc.auxv; *aux; aux+=2) {
