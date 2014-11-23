@@ -517,6 +517,8 @@ static void decode_dyn(struct dso *p)
 		p->hashtab = (void *)(p->base + dyn[DT_HASH]);
 	if (dyn[0]&(1<<DT_RPATH))
 		p->rpath_orig = (void *)(p->strings + dyn[DT_RPATH]);
+	if (dyn[0]&(1<<DT_RUNPATH))
+		p->rpath_orig = (void *)(p->strings + dyn[DT_RUNPATH]);
 	if (search_vec(p->dynv, dyn, DT_GNU_HASH))
 		p->ghashtab = (void *)(p->base + *dyn);
 	if (search_vec(p->dynv, dyn, DT_VERSYM))
