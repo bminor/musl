@@ -100,39 +100,7 @@ static inline long __syscall6(long n, long a, long b, long c, long d, long e, lo
 
 #else
 
-static inline long __syscall0(long n)
-{
-	return (__syscall)(n);
-}
-
-static inline long __syscall1(long n, long a)
-{
-	return (__syscall)(n, a);
-}
-
-static inline long __syscall2(long n, long a, long b)
-{
-	return (__syscall)(n, a, b);
-}
-
-static inline long __syscall3(long n, long a, long b, long c)
-{
-	return (__syscall)(n, a, b, c);
-}
-
-static inline long __syscall4(long n, long a, long b, long c, long d)
-{
-	return (__syscall)(n, a, b, c, d);
-}
-
-static inline long __syscall5(long n, long a, long b, long c, long d, long e)
-{
-	return (__syscall)(n, a, b, c, d, e);
-}
-
-static inline long __syscall6(long n, long a, long b, long c, long d, long e, long f)
-{
-	return (__syscall)(n, a, b, c, d, e, f);
-}
+#undef SYSCALL_NO_INLINE
+#define SYSCALL_NO_INLINE
 
 #endif
