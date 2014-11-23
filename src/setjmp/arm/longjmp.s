@@ -20,7 +20,7 @@ longjmp:
 	ldc p2, cr4, [ip], #48
 2:	tst r1,#0x40
 	beq 2f
-	.inst 0xecbc8b10 /* vldmia ip!, {d8-d15} */
+	.word 0xecbc8b10 /* vldmia ip!, {d8-d15} */
 2:	tst r1,#0x200
 	beq 3f
 	ldcl p1, cr10, [ip], #8
