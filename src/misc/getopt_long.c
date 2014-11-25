@@ -12,9 +12,10 @@ static int __getopt_long(int argc, char *const *argv, const char *optstring, con
 		__optpos = 0;
 		optind = 1;
 	}
-	if (optind >= argc || !argv[optind] || argv[optind][0] != '-') return -1;
-	if ((longonly && argv[optind][1]) ||
-		(argv[optind][1] == '-' && argv[optind][2]))
+	if (optind >= argc || !argv[optind]) return -1;
+	if (argv[optind][0] == '-' &&
+		((longonly && argv[optind][1]) ||
+		 (argv[optind][1] == '-' && argv[optind][2])))
 	{
 		int i;
 		for (i=0; longopts[i].name; i++) {

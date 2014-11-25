@@ -24,8 +24,20 @@ int getopt(int argc, char * const argv[], const char *optstring)
 		optind = 1;
 	}
 
-	if (optind >= argc || !argv[optind] || argv[optind][0] != '-' || !argv[optind][1])
+	if (optind >= argc || !argv[optind])
 		return -1;
+
+	if (argv[optind][0] != '-') {
+		if (optstring[0] == '-') {
+			optarg = argv[optind++];
+			return 1;
+		}
+		return -1;
+	}
+
+	if (!argv[optind][1])
+		return -1;
+
 	if (argv[optind][1] == '-' && !argv[optind][2])
 		return optind++, -1;
 
@@ -42,6 +54,9 @@ int getopt(int argc, char * const argv[], const char *optstring)
 		optind++;
 		optpos = 0;
 	}
+
+	if (optstring[0] == '-')
+		optstring++;
 
 	for (i=0; (l = mbtowc(&d, optstring+i, MB_LEN_MAX)) && d!=c; i+=l>0?l:1);
 
