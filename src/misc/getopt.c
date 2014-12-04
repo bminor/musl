@@ -58,7 +58,12 @@ int getopt(int argc, char * const argv[], const char *optstring)
 	if (optstring[0] == '-')
 		optstring++;
 
-	for (i=0; (l = mbtowc(&d, optstring+i, MB_LEN_MAX)) && d!=c; i+=l>0?l:1);
+	i = 0;
+	d = 0;
+	do {
+		l = mbtowc(&d, optstring+i, MB_LEN_MAX);
+		if (l>0) i+=l; else i++;
+	} while (l && d != c);
 
 	if (d != c) {
 		if (optstring[0] != ':' && opterr) {
@@ -69,8 +74,8 @@ int getopt(int argc, char * const argv[], const char *optstring)
 		}
 		return '?';
 	}
-	if (optstring[i+1] == ':') {
-		if (optstring[i+2] == ':') optarg = 0;
+	if (optstring[i] == ':') {
+		if (optstring[i+1] == ':') optarg = 0;
 		else if (optind >= argc) {
 			if (optstring[0] == ':') return ':';
 			if (opterr) {
@@ -81,7 +86,7 @@ int getopt(int argc, char * const argv[], const char *optstring)
 			}
 			return '?';
 		}
-		if (optstring[i+2] != ':' || optpos) {
+		if (optstring[i+1] != ':' || optpos) {
 			optarg = argv[optind++] + optpos;
 			optpos = 0;
 		}
