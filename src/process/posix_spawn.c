@@ -136,7 +136,7 @@ static int child(void *args_vp)
 fail:
 	/* Since sizeof errno < PIPE_BUF, the write is atomic. */
 	ret = -ret;
-	if (ret) while (write(p, &ret, sizeof ret) < 0);
+	if (ret) while (__syscall(SYS_write, p, &ret, sizeof ret) < 0);
 	_exit(127);
 }
 
