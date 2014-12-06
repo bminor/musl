@@ -102,8 +102,7 @@ static int child(void *args_vp)
 			}
 			switch(op->cmd) {
 			case FDOP_CLOSE:
-				if ((ret=__syscall(SYS_close, op->fd)))
-					goto fail;
+				__syscall(SYS_close, op->fd);
 				break;
 			case FDOP_DUP2:
 				if ((ret=__sys_dup2(op->srcfd, op->fd))<0)
