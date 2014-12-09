@@ -51,7 +51,9 @@ void thrd_yield(void);
 
 thrd_t thrd_current(void);
 int thrd_equal(thrd_t, thrd_t);
+#ifndef __cplusplus
 #define thrd_equal(A, B) ((A) == (B))
+#endif
 
 void call_once(once_flag *, void (*)(void));
 

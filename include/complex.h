@@ -101,6 +101,7 @@ double creal(double complex);
 float crealf(float complex);
 long double creall(long double complex);
 
+#ifndef __cplusplus
 #define __CIMAG(x, t) \
 	((union { _Complex t __z; t __xy[2]; }){(_Complex t)(x)}.__xy[1])
 
@@ -111,6 +112,7 @@ long double creall(long double complex);
 #define cimag(x) __CIMAG(x, double)
 #define cimagf(x) __CIMAG(x, float)
 #define cimagl(x) __CIMAG(x, long double)
+#endif
 
 #define __CMPLX(x, y, t) \
 	((union { _Complex t __z; t __xy[2]; }){.__xy = {(x),(y)}}.__z)

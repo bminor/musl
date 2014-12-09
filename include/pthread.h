@@ -84,7 +84,9 @@ __attribute__((const))
 pthread_t pthread_self(void);
 
 int pthread_equal(pthread_t, pthread_t);
+#ifndef __cplusplus
 #define pthread_equal(x,y) ((x)==(y))
+#endif
 
 int pthread_setcancelstate(int, int *);
 int pthread_setcanceltype(int, int *);
