@@ -5,14 +5,53 @@
 
 extern int __optpos, __optreset;
 
+static void permute(char *const *argv, int dest, int src)
+{
+	char **av = (char **)argv;
+	char *tmp = av[src];
+	int i;
+	for (i=src; i>dest; i--)
+		av[i] = av[i-1];
+	av[dest] = tmp;
+}
+
+static int __getopt_long_core(int argc, char *const *argv, const char *optstring, const struct option *longopts, int *idx, int longonly);
+
 static int __getopt_long(int argc, char *const *argv, const char *optstring, const struct option *longopts, int *idx, int longonly)
 {
+	int ret, skipped, resumed;
 	if (!optind || __optreset) {
 		__optreset = 0;
 		__optpos = 0;
 		optind = 1;
 	}
 	if (optind >= argc || !argv[optind]) return -1;
+	skipped = optind;
+	if (optstring[0] != '+' && optstring[0] != '-') {
+		int i;
+		for (i=optind; ; i++) {
+			if (i >= argc || !argv[i]) return -1;
+			if (argv[i][0] != '-') continue;
+			if (!argv[i][1]) continue;
+			if (argv[i][1] == '-' && !argv[i][2]) return -1;
+			break;
+		}
+		optind = i;
+	}
+	resumed = optind;
+	ret = __getopt_long_core(argc, argv, optstring, longopts, idx, longonly);
+	if (resumed > skipped) {
+		int i, cnt = optind-resumed;
+		for (i=0; i<cnt; i++)
+			permute(argv, skipped, optind-1);
+		optind = skipped + cnt;
+	}
+	return ret;
+}
+
+static int __getopt_long_core(int argc, char *const *argv, const char *optstring, const struct option *longopts, int *idx, int longonly)
+{
+
 	if (argv[optind][0] == '-' &&
 		((longonly && argv[optind][1]) ||
 		 (argv[optind][1] == '-' && argv[optind][2])))
