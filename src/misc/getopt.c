@@ -55,7 +55,7 @@ int getopt(int argc, char * const argv[], const char *optstring)
 		optpos = 0;
 	}
 
-	if (optstring[0] == '-')
+	if (optstring[0] == '-' || optstring[0] == '+')
 		optstring++;
 
 	i = 0;
