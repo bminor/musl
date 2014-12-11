@@ -56,23 +56,34 @@ static int __getopt_long_core(int argc, char *const *argv, const char *optstring
 		((longonly && argv[optind][1]) ||
 		 (argv[optind][1] == '-' && argv[optind][2])))
 	{
-		int i;
-		for (i=0; longopts[i].name; i++) {
+		int i, cnt, match;
+		char *opt;
+		for (cnt=i=0; longopts[i].name; i++) {
 			const char *name = longopts[i].name;
-			char *opt = argv[optind]+1;
+			opt = argv[optind]+1;
 			if (*opt == '-') opt++;
 			for (; *name && *name == *opt; name++, opt++);
-			if (*name || (*opt && *opt != '=')) continue;
+			if (*opt && *opt != '=') continue;
+			match = i;
+			if (!*name) {
+				cnt = 1;
+				break;
+			}
+			cnt++;
+		}
+		if (cnt==1) {
+			i = match;
+			optind++;
 			if (*opt == '=') {
-				if (!longopts[i].has_arg) continue;
+				if (!longopts[i].has_arg) return '?';
 				optarg = opt+1;
 			} else {
 				if (longopts[i].has_arg == required_argument) {
-					if (!(optarg = argv[++optind]))
+					if (!(optarg = argv[optind]))
 						return ':';
+					optind++;
 				} else optarg = NULL;
 			}
-			optind++;
 			if (idx) *idx = i;
 			if (longopts[i].flag) {
 				*longopts[i].flag = longopts[i].val;
