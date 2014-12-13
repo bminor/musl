@@ -33,7 +33,6 @@ static int __getopt_long(int argc, char *const *argv, const char *optstring, con
 			if (i >= argc || !argv[i]) return -1;
 			if (argv[i][0] != '-') continue;
 			if (!argv[i][1]) continue;
-			if (argv[i][1] == '-' && !argv[i][2]) return -1;
 			break;
 		}
 		optind = i;
