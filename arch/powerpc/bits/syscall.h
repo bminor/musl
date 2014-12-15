@@ -374,6 +374,7 @@
 #define __NR_seccomp               358
 #define __NR_getrandom             359
 #define __NR_memfd_create          360
+#define __NR_bpf                   361
 
 /*
  * repeated with SYS prefix
@@ -754,3 +755,4 @@
 #define SYS_seccomp               358
 #define SYS_getrandom             359
 #define SYS_memfd_create          360
+#define SYS_bpf                   361

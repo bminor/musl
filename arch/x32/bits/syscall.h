@@ -277,6 +277,8 @@
 #define __NR_seccomp (__X32_SYSCALL_BIT + 317)
 #define __NR_getrandom (__X32_SYSCALL_BIT + 318)
 #define __NR_memfd_create (__X32_SYSCALL_BIT + 319)
+#define __NR_kexec_file_load (__X32_SYSCALL_BIT + 320)
+#define __NR_bpf (__X32_SYSCALL_BIT + 321)
 
 #define __NR_rt_sigaction (__X32_SYSCALL_BIT + 512)
 #define __NR_rt_sigreturn (__X32_SYSCALL_BIT + 513)
@@ -604,6 +606,8 @@
 #define SYS_seccomp __NR_seccomp
 #define SYS_getrandom __NR_getrandom
 #define SYS_memfd_create __NR_memfd_create
+#define SYS_kexec_file_load __NR_kexec_file_load
+#define SYS_bpf __NR_bpf
 
 #define SYS_rt_sigaction __NR_rt_sigaction
 #define SYS_rt_sigreturn __NR_rt_sigreturn

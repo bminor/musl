@@ -318,6 +318,8 @@
 #define __NR_seccomp				317
 #define __NR_getrandom				318
 #define __NR_memfd_create			319
+#define __NR_kexec_file_load			320
+#define __NR_bpf				321
 
 
 #undef __NR_fstatat
@@ -654,6 +656,8 @@
 #define SYS_seccomp				317
 #define SYS_getrandom				318
 #define SYS_memfd_create			319
+#define SYS_kexec_file_load			320
+#define SYS_bpf					321
 
 #undef SYS_fstatat
 #undef SYS_pread

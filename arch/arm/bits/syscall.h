@@ -339,6 +339,7 @@
 #define __NR_seccomp	383
 #define __NR_getrandom	384
 #define __NR_memfd_create	385
+#define __NR_bpf	386
 
 #define __ARM_NR_breakpoint	0x0f0001
 #define __ARM_NR_cacheflush	0x0f0002
@@ -689,3 +690,4 @@
 #define SYS_seccomp	383
 #define SYS_getrandom	384
 #define SYS_memfd_create	385
+#define SYS_bpf	386
