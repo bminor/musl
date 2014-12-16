@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
+
 #define PR_SET_PDEATHSIG  1
 #define PR_GET_PDEATHSIG  2
 #define PR_GET_DUMPABLE   3
@@ -80,6 +82,25 @@ extern "C" {
 #define PR_SET_MM_ENV_END              11
 #define PR_SET_MM_AUXV                 12
 #define PR_SET_MM_EXE_FILE             13
+#define PR_SET_MM_MAP                  14
+#define PR_SET_MM_MAP_SIZE             15
+
+struct prctl_mm_map {
+	uint64_t start_code;
+	uint64_t end_code;
+	uint64_t start_data;
+	uint64_t end_data;
+	uint64_t start_brk;
+	uint64_t brk;
+	uint64_t start_stack;
+	uint64_t arg_start;
+	uint64_t arg_end;
+	uint64_t env_start;
+	uint64_t env_end;
+	uint64_t *auxv;
+	uint32_t auxv_size;
+	uint32_t exe_fd;
+};
 
 #define PR_SET_PTRACER 0x59616d61
 #define PR_SET_PTRACER_ANY (-1UL)
