@@ -160,7 +160,7 @@ static void pop_arg(union arg *arg, int type, va_list *ap)
 
 static void out(FILE *f, const char *s, size_t l)
 {
-	__fwritex((void *)s, l, f);
+	if (!(f->flags & F_ERR)) __fwritex((void *)s, l, f);
 }
 
 static void pad(FILE *f, char c, int w, int l, int fl)
@@ -658,6 +658,7 @@ int vfprintf(FILE *restrict f, const char *restrict fmt, va_list ap)
 	int nl_type[NL_ARGMAX+1] = {0};
 	union arg nl_arg[NL_ARGMAX+1];
 	unsigned char internal_buf[80], *saved_buf = 0;
+	int olderr;
 	int ret;
 
 	/* the copy allows passing va_list* even if va_list is an array */
@@ -668,6 +669,8 @@ int vfprintf(FILE *restrict f, const char *restrict fmt, va_list ap)
 	}
 
 	FLOCK(f);
+	olderr = f->flags & F_ERR;
+	if (f->mode < 1) f->flags &= ~F_ERR;
 	if (!f->buf_size) {
 		saved_buf = f->buf;
 		f->wpos = f->wbase = f->buf = internal_buf;
@@ -682,6 +685,8 @@ int vfprintf(FILE *restrict f, const char *restrict fmt, va_list ap)
 		f->buf_size = 0;
 		f->wpos = f->wbase = f->wend = 0;
 	}
+	if (f->flags & F_ERR) ret = -1;
+	f->flags |= olderr;
 	FUNLOCK(f);
 	va_end(ap2);
 	return ret;
