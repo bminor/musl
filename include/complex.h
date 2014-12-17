@@ -114,12 +114,18 @@ long double creall(long double complex);
 #define cimagl(x) __CIMAG(x, long double)
 #endif
 
-#define __CMPLX(x, y, t) \
-	((union { _Complex t __z; t __xy[2]; }){.__xy = {(x),(y)}}.__z)
-
+#if __STDC_VERSION__ >= 201112L
+#if defined(_Imaginary_I)
+#define __CMPLX(x, y, t) ((t)(x) + _Imaginary_I*(t)(y)))
+#elif defined(__clang__)
+#define __CMPLX(x, y, t) (+(_Complex t){ (t)(x), (t)(y) })
+#else
+#define __CMPLX(x, y, t) (__builtin_complex((t)(x), (t)(y)))
+#endif
 #define CMPLX(x, y) __CMPLX(x, y, double)
 #define CMPLXF(x, y) __CMPLX(x, y, float)
 #define CMPLXL(x, y) __CMPLX(x, y, long double)
+#endif
 
 #ifdef __cplusplus
 }
