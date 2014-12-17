@@ -128,6 +128,18 @@ do {                                              \
   (d) = __u.f;                                    \
 } while (0)
 
+#undef __CMPLX
+#undef CMPLX
+#undef CMPLXF
+#undef CMPLXL
+
+#define __CMPLX(x, y, t) \
+	((union { _Complex t __z; t __xy[2]; }){.__xy = {(x),(y)}}.__z)
+
+#define CMPLX(x, y) __CMPLX(x, y, double)
+#define CMPLXF(x, y) __CMPLX(x, y, float)
+#define CMPLXL(x, y) __CMPLX(x, y, long double)
+
 /* fdlibm kernel functions */
 
 int    __rem_pio2_large(double*,double*,int,int,int);
