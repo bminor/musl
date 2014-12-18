@@ -40,7 +40,7 @@ size_t wcsnrtombs(char *restrict dst, const wchar_t **restrict wcs, size_t wn, s
 		ws++; wn--;
 		/* safe - this loop runs fewer than sizeof(buf) times */
 		s+=l; n-=l;
-		cnt++;
+		cnt += l;
 	}
 	if (dst) *wcs = ws;
 	return cnt;
