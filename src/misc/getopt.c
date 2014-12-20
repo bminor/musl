@@ -11,6 +11,17 @@ int optind=1, opterr=1, optopt, __optpos, __optreset=0;
 #define optpos __optpos
 weak_alias(__optreset, optreset);
 
+void __getopt_msg(const char *a, const char *b, const char *c, int l)
+{
+	FILE *f = stderr;
+	flockfile(f);
+	fwrite(a, strlen(a), 1, f)
+	&& fwrite(b, strlen(b), 1, f)
+	&& fwrite(c, l, 1, f)
+	&& putc('\n', f);
+	funlockfile(f);
+}
+
 int getopt(int argc, char * const argv[], const char *optstring)
 {
 	int i;
@@ -66,24 +77,17 @@ int getopt(int argc, char * const argv[], const char *optstring)
 	} while (l && d != c);
 
 	if (d != c) {
-		if (optstring[0] != ':' && opterr) {
-			write(2, argv[0], strlen(argv[0]));
-			write(2, ": illegal option: ", 18);
-			write(2, optchar, k);
-			write(2, "\n", 1);
-		}
+		if (optstring[0] != ':' && opterr)
+			__getopt_msg(argv[0], ": illegal option: ", optchar, k);
 		return '?';
 	}
 	if (optstring[i] == ':') {
 		if (optstring[i+1] == ':') optarg = 0;
 		else if (optind >= argc) {
 			if (optstring[0] == ':') return ':';
-			if (opterr) {
-				write(2, argv[0], strlen(argv[0]));
-				write(2, ": option requires an argument: ", 31);
-				write(2, optchar, k);
-				write(2, "\n", 1);
-			}
+			if (opterr) __getopt_msg(argv[0],
+				": option requires an argument: ",
+				optchar, k);
 			return '?';
 		}
 		if (optstring[i+1] != ':' || optpos) {
