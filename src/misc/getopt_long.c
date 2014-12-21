@@ -76,6 +76,7 @@ static int __getopt_long_core(int argc, char *const *argv, const char *optstring
 		if (cnt==1) {
 			i = match;
 			optind++;
+			optopt = longopts[i].val;
 			if (*opt == '=') {
 				if (!longopts[i].has_arg) {
 					if (optstring[0] == ':' || !opterr)
