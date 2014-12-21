@@ -35,6 +35,8 @@ void         setutent(void);
 
 void updwtmp(const char *, const struct utmp *);
 
+int login_tty(int);
+
 #define _PATH_UTMP "/dev/null/utmp"
 #define _PATH_WTMP "/dev/null/wtmp"
 
