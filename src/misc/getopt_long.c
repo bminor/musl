@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <getopt.h>
 #include <stdio.h>
+#include <string.h>
 
 extern int __optpos, __optreset;
 
@@ -15,11 +16,14 @@ static void permute(char *const *argv, int dest, int src)
 	av[dest] = tmp;
 }
 
+void __getopt_msg(const char *, const char *, const char *, size_t);
+
 static int __getopt_long_core(int argc, char *const *argv, const char *optstring, const struct option *longopts, int *idx, int longonly);
 
 static int __getopt_long(int argc, char *const *argv, const char *optstring, const struct option *longopts, int *idx, int longonly)
 {
 	int ret, skipped, resumed;
+	const char *optstring2 = optstring + 1;
 	if (!optind || __optreset) {
 		__optreset = 0;
 		__optpos = 0;
@@ -34,9 +38,10 @@ static int __getopt_long(int argc, char *const *argv, const char *optstring, con
 			if (argv[i][0] == '-' && argv[i][1]) break;
 		}
 		optind = i;
+		optstring2 = optstring;
 	}
 	resumed = optind;
-	ret = __getopt_long_core(argc, argv, optstring, longopts, idx, longonly);
+	ret = __getopt_long_core(argc, argv, optstring2, longopts, idx, longonly);
 	if (resumed > skipped) {
 		int i, cnt = optind-resumed;
 		for (i=0; i<cnt; i++)
@@ -72,12 +77,27 @@ static int __getopt_long_core(int argc, char *const *argv, const char *optstring
 			i = match;
 			optind++;
 			if (*opt == '=') {
-				if (!longopts[i].has_arg) return '?';
+				if (!longopts[i].has_arg) {
+					if (optstring[0] == ':' || !opterr)
+						return '?';
+					__getopt_msg(argv[0],
+						": option does not take an argument: ",
+						longopts[i].name,
+						strlen(longopts[i].name));
+					return '?';
+				}
 				optarg = opt+1;
 			} else {
 				if (longopts[i].has_arg == required_argument) {
-					if (!(optarg = argv[optind]))
-						return ':';
+					if (!(optarg = argv[optind])) {
+						if (optstring[0] == ':' || !opterr)
+							return ':';
+						__getopt_msg(argv[0],
+							": option requires an argument: ",
+							longopts[i].name,
+							strlen(longopts[i].name));
+						return '?';
+					}
 					optind++;
 				} else optarg = NULL;
 			}
@@ -89,6 +109,12 @@ static int __getopt_long_core(int argc, char *const *argv, const char *optstring
 			return longopts[i].val;
 		}
 		if (argv[optind][1] == '-') {
+			if (optstring[0] != ':' && opterr)
+				__getopt_msg(argv[0], cnt ?
+					": option is ambiguous: " :
+					": unrecognized option: ",
+					argv[optind]+2,
+					strlen(argv[optind]+2));
 			optind++;
 			return '?';
 		}
