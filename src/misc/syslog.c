@@ -46,8 +46,12 @@ void closelog(void)
 
 static void __openlog()
 {
-	log_fd = socket(AF_UNIX, SOCK_DGRAM|SOCK_CLOEXEC, 0);
-	if (log_fd >= 0) connect(log_fd, (void *)&log_addr, sizeof log_addr);
+	int fd = socket(AF_UNIX, SOCK_DGRAM|SOCK_CLOEXEC, 0);
+	if (fd < 0) return;
+	if (connect(fd, (void *)&log_addr, sizeof log_addr) < 0)
+		close(fd);
+	else
+		log_fd = fd;
 }
 
 void openlog(const char *ident, int opt, int facility)
