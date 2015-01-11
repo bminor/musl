@@ -23,7 +23,6 @@ static int __getopt_long_core(int argc, char *const *argv, const char *optstring
 static int __getopt_long(int argc, char *const *argv, const char *optstring, const struct option *longopts, int *idx, int longonly)
 {
 	int ret, skipped, resumed;
-	const char *optstring2 = optstring + 1;
 	if (!optind || __optreset) {
 		__optreset = 0;
 		__optpos = 0;
@@ -38,10 +37,9 @@ static int __getopt_long(int argc, char *const *argv, const char *optstring, con
 			if (argv[i][0] == '-' && argv[i][1]) break;
 		}
 		optind = i;
-		optstring2 = optstring;
 	}
 	resumed = optind;
-	ret = __getopt_long_core(argc, argv, optstring2, longopts, idx, longonly);
+	ret = __getopt_long_core(argc, argv, optstring, longopts, idx, longonly);
 	if (resumed > skipped) {
 		int i, cnt = optind-resumed;
 		for (i=0; i<cnt; i++)
@@ -58,6 +56,7 @@ static int __getopt_long_core(int argc, char *const *argv, const char *optstring
 		((longonly && argv[optind][1]) ||
 		 (argv[optind][1] == '-' && argv[optind][2])))
 	{
+		int colon = optstring[optstring[0]=='+'||optstring[0]=='-']==':';
 		int i, cnt, match;
 		char *opt;
 		for (cnt=i=0; longopts[i].name; i++) {
@@ -79,7 +78,7 @@ static int __getopt_long_core(int argc, char *const *argv, const char *optstring
 			optopt = longopts[i].val;
 			if (*opt == '=') {
 				if (!longopts[i].has_arg) {
-					if (optstring[0] == ':' || !opterr)
+					if (colon || !opterr)
 						return '?';
 					__getopt_msg(argv[0],
 						": option does not take an argument: ",
@@ -91,8 +90,8 @@ static int __getopt_long_core(int argc, char *const *argv, const char *optstring
 			} else {
 				if (longopts[i].has_arg == required_argument) {
 					if (!(optarg = argv[optind])) {
-						if (optstring[0] == ':' || !opterr)
-							return ':';
+						if (colon) return ':';
+						if (!opterr) return '?';
 						__getopt_msg(argv[0],
 							": option requires an argument: ",
 							longopts[i].name,
@@ -110,7 +109,7 @@ static int __getopt_long_core(int argc, char *const *argv, const char *optstring
 			return longopts[i].val;
 		}
 		if (argv[optind][1] == '-') {
-			if (optstring[0] != ':' && opterr)
+			if (!colon && opterr)
 				__getopt_msg(argv[0], cnt ?
 					": option is ambiguous: " :
 					": unrecognized option: ",
