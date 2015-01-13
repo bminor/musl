@@ -81,7 +81,7 @@ static void _vsyslog(int priority, const char *message, va_list ap)
 	char timebuf[16];
 	time_t now;
 	struct tm tm;
-	char buf[256];
+	char buf[1024];
 	int errno_save = errno;
 	int pid;
 	int l, l2;
