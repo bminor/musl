@@ -1368,3 +1368,45 @@ bugs fixed:
 - incorrect case mappings for U+00DF
 - namespace pollution via accidentally-non-static function named "dummy"
 - missing __fpclassifyl and __signbitl definitions for ld64 archs
+
+
+
+1.1.6 release notes
+
+new features:
+- getopt '-' flag for processing non-option arguments
+- getopt_long argument permutation extension
+- getopt_long abbreviated options
+- ns_parserr and related DNS-packet-parsing functions
+- fnmatch FNM_CASEFOLD extension
+- support for translation of getopt error messages
+- login_tty function (legacy)
+
+performance:
+- efficient atomics on armv7+ targets
+- pthread_once shrink-wrapping of fast path
+
+compatibility:
+- baseline arm binaries now work on new cpus/kernels without kuser_helper
+- dynamic linker now honors DT_RUNPATH without DT_RPATH (new binutils)
+- arm asm is now compatible with clang's internal assembler
+- suppress macro implementations of functions when headers are used in C++
+- increased message length limit for syslog
+
+bugs fixed:
+- open ignored file creation mode argument for O_TMPFILE
+- wrong printf formatting for %#.0o with value zero
+- missing private state for uchar.h functions (null ps pointer)
+- sched_getaffinity left uninitialized data in output bit array
+- wrong return values for pthread_getaffinity_np and pthread_setaffinity_np
+- buggy handling of multibyte option chars with arguments in getopt
+- printf failed to report or stop on write errors
+- printf failed to honor '+' modifier when printing NANs
+- wcsnrtombs returned the wrong value in one code path
+- syslog failed to check for connect error
+- multi-threaded set*id() had spurious failures from ugly workaround code
+- various minor header conformance bugs (signedness, constant expressions, ...)
+
+arch-specific bugs fixed:
+- on or1k, some syscalls with 64-bit arguments were broken (misaligned)
+- usage of sahf instruction on x86_64 crashed on some early cpu models
