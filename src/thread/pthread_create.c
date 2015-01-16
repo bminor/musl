@@ -139,6 +139,8 @@ weak_alias(dummy, __pthread_tsd_size);
 static void *dummy_tsd[1] = { 0 };
 weak_alias(dummy_tsd, __pthread_tsd_main);
 
+volatile int __block_new_threads = 0;
+
 static FILE *volatile dummy_file = 0;
 weak_alias(dummy_file, __stdin_used);
 weak_alias(dummy_file, __stdout_used);
@@ -178,6 +180,7 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 	if (attrp && !c11) attr = *attrp;
 
 	__acquire_ptc();
+	if (__block_new_threads) __wait(&__block_new_threads, 0, 1, 1);
 
 	if (attr._a_stackaddr) {
 		size_t need = libc.tls_size + __pthread_tsd_size;
