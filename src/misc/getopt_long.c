@@ -51,7 +51,7 @@ static int __getopt_long(int argc, char *const *argv, const char *optstring, con
 
 static int __getopt_long_core(int argc, char *const *argv, const char *optstring, const struct option *longopts, int *idx, int longonly)
 {
-
+	optarg = 0;
 	if (longopts && argv[optind][0] == '-' &&
 		((longonly && argv[optind][1]) ||
 		 (argv[optind][1] == '-' && argv[optind][2])))
