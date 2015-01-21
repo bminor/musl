@@ -87,19 +87,17 @@ static int __getopt_long_core(int argc, char *const *argv, const char *optstring
 					return '?';
 				}
 				optarg = opt+1;
-			} else {
-				if (longopts[i].has_arg == required_argument) {
-					if (!(optarg = argv[optind])) {
-						if (colon) return ':';
-						if (!opterr) return '?';
-						__getopt_msg(argv[0],
-							": option requires an argument: ",
-							longopts[i].name,
-							strlen(longopts[i].name));
-						return '?';
-					}
-					optind++;
-				} else optarg = NULL;
+			} else if (longopts[i].has_arg == required_argument) {
+				if (!(optarg = argv[optind])) {
+					if (colon) return ':';
+					if (!opterr) return '?';
+					__getopt_msg(argv[0],
+						": option requires an argument: ",
+						longopts[i].name,
+						strlen(longopts[i].name));
+					return '?';
+				}
+				optind++;
 			}
 			if (idx) *idx = i;
 			if (longopts[i].flag) {
