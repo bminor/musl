@@ -98,7 +98,7 @@ int getspnam_r(const char *name, struct spwd *sp, char *buf, size_t size, struct
 
 	pthread_cleanup_push(cleanup, f);
 	while (fgets(buf, size, f) && (k=strlen(buf))>0) {
-		if (skip || strncmp(name, buf, l)) {
+		if (skip || strncmp(name, buf, l) || buf[l]!=':') {
 			skip = buf[k-1] != '\n';
 			continue;
 		}
