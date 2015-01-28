@@ -32,6 +32,8 @@ int mlockall (int);
 int munlockall (void);
 
 #ifdef _GNU_SOURCE
+#define MREMAP_MAYMOVE 1
+#define MREMAP_FIXED 2
 void *mremap (void *, size_t, size_t, int, ...);
 int remap_file_pages (void *, size_t, int, size_t, int);
 #endif

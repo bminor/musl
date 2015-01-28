@@ -54,7 +54,4 @@
 #define MADV_DONTDUMP    16
 #define MADV_DODUMP      17
 #define MADV_HWPOISON    100
-
-#define MREMAP_MAYMOVE  1
-#define MREMAP_FIXED    2
 #endif
