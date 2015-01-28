@@ -13,7 +13,7 @@ setjmp:
 	fmov.s fr13, @-r4
 	fmov.s fr12, @-r4
 	sts.l  pr,   @-r4
-	mov.l  r15   @-r4
+	mov.l  r15,  @-r4
 	mov.l  r14,  @-r4
 	mov.l  r13,  @-r4
 	mov.l  r12,  @-r4
