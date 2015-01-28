@@ -110,8 +110,6 @@
 #define ENAVAIL         138
 #define EISNAM          139
 #define EREMOTEIO       140
-#define EINIT           141
-#define EREMDEV         142
 #define ESHUTDOWN       143
 #define ETOOMANYREFS    144
 #define ETIMEDOUT       145
