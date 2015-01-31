@@ -204,7 +204,7 @@ fi
 # musl-gcc wrapper, and for critical bug detection in some gcc versions.
 #
 printf "checking whether compiler is gcc... "
-if fnmatch '*gcc\ version*' "$($CC -v 2>&1)" ; then
+if fnmatch '*gcc\ version*' "$(LC_ALL=C $CC -v 2>&1)" ; then
 cc_is_gcc=yes
 else
 cc_is_gcc=no
