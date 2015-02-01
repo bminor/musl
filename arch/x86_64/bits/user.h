@@ -5,7 +5,7 @@ typedef struct user_fpregs_struct
 {
 	uint16_t cwd, swd, ftw, fop;
 	uint64_t rip, rdp;
-	uint32_t mxcsr, mxcs_mask;
+	uint32_t mxcsr, mxcr_mask;
 	uint32_t st_space[32], xmm_space[64], padding[24];
 } elf_fpregset_t;
 
