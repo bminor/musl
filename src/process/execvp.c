@@ -11,6 +11,7 @@ int __execvpe(const char *file, char *const argv[], char *const envp[])
 {
 	const char *p, *z, *path = getenv("PATH");
 	size_t l, k;
+	int seen_eacces = 0;
 
 	errno = ENOENT;
 	if (!*file) return -1;
@@ -38,9 +39,11 @@ int __execvpe(const char *file, char *const argv[], char *const envp[])
 		b[z-p] = '/';
 		memcpy(b+(z-p)+(z>p), file, k+1);
 		execve(b, argv, envp);
-		if (errno != ENOENT) return -1;
+		if (errno == EACCES) seen_eacces = 1;
+		else if (errno != ENOENT) return -1;
 		if (!*z++) break;
 	}
+	if (seen_eacces) errno = EACCES;
 	return -1;
 }
 
