@@ -42,6 +42,7 @@ static void cancel_handler(int sig, siginfo_t *si, void *ctx)
 	const char *ip = ((char **)&uc->uc_mcontext)[CANCEL_REG_IP];
 	extern const char __cp_begin[1], __cp_end[1];
 
+	a_barrier();
 	if (!self->cancel || self->canceldisable) return;
 
 	_sigaddset(&uc->uc_sigmask, SIGCANCEL);
