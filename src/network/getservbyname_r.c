@@ -26,7 +26,7 @@ int getservbyname_r(const char *name, const char *prots,
 	else if (!strcmp(prots, "udp")) proto = IPPROTO_UDP;
 	else return EINVAL;
 
-	cnt = __lookup_serv(servs, name, proto, 0);
+	cnt = __lookup_serv(servs, name, proto, 0, 0);
 	if (cnt<0) switch (cnt) {
 	case EAI_MEMORY:
 	case EAI_SYSTEM:

@@ -11,7 +11,7 @@ int getaddrinfo(const char *restrict host, const char *restrict serv, const stru
 	struct address addrs[MAXADDRS];
 	char canon[256], *outcanon;
 	int nservs, naddrs, nais, canon_len, i, j, k;
-	int family = AF_UNSPEC, flags = 0, proto = 0;
+	int family = AF_UNSPEC, flags = 0, proto = 0, socktype = 0;
 	struct aibuf {
 		struct addrinfo ai;
 		union sa {
@@ -24,6 +24,7 @@ int getaddrinfo(const char *restrict host, const char *restrict serv, const stru
 		family = hint->ai_family;
 		flags = hint->ai_flags;
 		proto = hint->ai_protocol;
+		socktype = hint->ai_socktype;
 
 		const int mask = AI_PASSIVE | AI_CANONNAME | AI_NUMERICHOST |
 			AI_V4MAPPED | AI_ALL | AI_ADDRCONFIG | AI_NUMERICSERV;
@@ -38,35 +39,9 @@ int getaddrinfo(const char *restrict host, const char *restrict serv, const stru
 		default:
 			return EAI_FAMILY;
 		}
-
-		switch (hint->ai_socktype) {
-		case SOCK_STREAM:
-			switch (proto) {
-			case 0:
-				proto = IPPROTO_TCP;
-			case IPPROTO_TCP:
-				break;
-			default:
-				return EAI_SERVICE;
-			}
-			break;
-		case SOCK_DGRAM:
-			switch (proto) {
-			case 0:
-				proto = IPPROTO_UDP;
-			case IPPROTO_UDP:
-				break;
-			default:
-				return EAI_SERVICE;
-			}
-		case 0:
-			break;
-		default:
-			return EAI_SOCKTYPE;
-		}
 	}
 
-	nservs = __lookup_serv(ports, serv, proto, flags);
+	nservs = __lookup_serv(ports, serv, proto, socktype, flags);
 	if (nservs < 0) return nservs;
 
 	naddrs = __lookup_name(addrs, canon, host, family, flags);
@@ -87,8 +62,7 @@ int getaddrinfo(const char *restrict host, const char *restrict serv, const stru
 	for (k=i=0; i<naddrs; i++) for (j=0; j<nservs; j++, k++) {
 		out[k].ai = (struct addrinfo){
 			.ai_family = addrs[i].family,
-			.ai_socktype = ports[j].proto == IPPROTO_TCP
-				? SOCK_STREAM : SOCK_DGRAM,
+			.ai_socktype = ports[j].socktype,
 			.ai_protocol = ports[j].proto,
 			.ai_addrlen = addrs[i].family == AF_INET
 				? sizeof(struct sockaddr_in)
