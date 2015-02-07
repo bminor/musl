@@ -322,17 +322,6 @@
 #define __NR_bpf				321
 
 
-#undef __NR_fstatat
-#undef __NR_pread
-#undef __NR_pwrite
-#undef __NR_getdents
-#define __NR_fstatat __NR_newfstatat
-#define __NR_pread __NR_pread64
-#define __NR_pwrite __NR_pwrite64
-#define __NR_getdents __NR_getdents64
-#define __NR_fadvise __NR_fadvise64
-
-
 
 /* Repeat with SYS_ prefix */
 
@@ -658,15 +647,3 @@
 #define SYS_memfd_create			319
 #define SYS_kexec_file_load			320
 #define SYS_bpf					321
-
-#undef SYS_fstatat
-#undef SYS_pread
-#undef SYS_pwrite
-#undef SYS_getdents
-#define SYS_fstatat SYS_newfstatat
-#define SYS_pread SYS_pread64
-#define SYS_pwrite SYS_pwrite64
-#define SYS_getdents SYS_getdents64
-#define SYS_fadvise SYS_fadvise64
-
-

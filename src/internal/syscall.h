@@ -191,6 +191,9 @@ long __syscall_ret(unsigned long), __syscall(syscall_arg_t, ...),
 #ifdef SYS_fadvise64_64
 #undef SYS_fadvise
 #define SYS_fadvise SYS_fadvise64_64
+#elif defined(SYS_fadvise64)
+#undef SYS_fadvise
+#define SYS_fadvise SYS_fadvise64
 #endif
 
 #ifdef SYS_sendfile64
