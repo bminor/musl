@@ -54,7 +54,6 @@ fegetenv:
 .global fesetenv
 .type fesetenv,%function
 fesetenv:
-	mrc p10, 7, r3, cr1, cr0, 0
 	cmn r0, #1
 	moveq r3, #0
 	ldrne r3, [r0]
