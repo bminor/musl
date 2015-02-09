@@ -4,25 +4,28 @@
 /* do we really need all these?? */
 
 static int idx;
-static const unsigned char protos[][8] = {
-	"\000ip",
-	"\001icmp",
-	"\002igmp",
-	"\003ggp",
-	"\006tcp",
-	"\014pup",
-	"\021udp",
-	"\026idp",
-	"\051ipv6",
-	"\057gre",
-	"\062esp",
-	"\063ah",
-	"\072icmpv6",
-	"\131ospf",
-	"\136ipip",
-	"\147pim",
-	"\377raw",
-	"\0\0"
+static const unsigned char protos[] = {
+	"\000ip\0"
+	"\001icmp\0"
+	"\002igmp\0"
+	"\003ggp\0"
+	"\006tcp\0"
+	"\014pup\0"
+	"\021udp\0"
+	"\026idp\0"
+	"\051ipv6\0"
+	"\053ipv6-route\0"
+	"\054ipv6-frag\0"
+	"\057gre\0"
+	"\062esp\0"
+	"\063ah\0"
+	"\072ipv6-icmp\0"
+	"\073ipv6-nonxt\0"
+	"\074ipv6-opts\0"
+	"\131ospf\0"
+	"\136ipip\0"
+	"\147pim\0"
+	"\377raw"
 };
 
 void endprotoent(void)
@@ -39,10 +42,11 @@ struct protoent *getprotoent(void)
 {
 	static struct protoent p;
 	static const char *aliases;
-	if (!protos[idx][1]) return NULL;
-	p.p_proto = protos[idx][0];
-	p.p_name = (char *)protos[idx++]+1;
+	if (idx >= sizeof protos) return NULL;
+	p.p_proto = protos[idx];
+	p.p_name = (char *)&protos[idx+1];
 	p.p_aliases = (char **)&aliases;
+	idx += strlen(p.p_name) + 2;
 	return &p;
 }
 
