@@ -182,10 +182,8 @@
 #define __NR_futex (__X32_SYSCALL_BIT + 202)
 #define __NR_sched_setaffinity (__X32_SYSCALL_BIT + 203)
 #define __NR_sched_getaffinity (__X32_SYSCALL_BIT + 204)
-#define __NR_io_setup (__X32_SYSCALL_BIT + 206)
 #define __NR_io_destroy (__X32_SYSCALL_BIT + 207)
 #define __NR_io_getevents (__X32_SYSCALL_BIT + 208)
-#define __NR_io_submit (__X32_SYSCALL_BIT + 209)
 #define __NR_io_cancel (__X32_SYSCALL_BIT + 210)
 #define __NR_lookup_dcookie (__X32_SYSCALL_BIT + 212)
 #define __NR_epoll_create (__X32_SYSCALL_BIT + 213)
@@ -311,6 +309,9 @@
 #define __NR_process_vm_writev (__X32_SYSCALL_BIT + 540)
 #define __NR_setsockopt (__X32_SYSCALL_BIT + 541)
 #define __NR_getsockopt (__X32_SYSCALL_BIT + 542)
+#define __NR_io_setup (__X32_SYSCALL_BIT + 543)
+#define __NR_io_submit (__X32_SYSCALL_BIT + 544)
+#define __NR_execveat (__X32_SYSCALL_BIT + 545)
 
 #undef __NR_fstatat
 #undef __NR_pread
@@ -511,10 +512,8 @@
 #define SYS_futex __NR_futex
 #define SYS_sched_setaffinity __NR_sched_setaffinity
 #define SYS_sched_getaffinity __NR_sched_getaffinity
-#define SYS_io_setup __NR_io_setup
 #define SYS_io_destroy __NR_io_destroy
 #define SYS_io_getevents __NR_io_getevents
-#define SYS_io_submit __NR_io_submit
 #define SYS_io_cancel __NR_io_cancel
 #define SYS_lookup_dcookie __NR_lookup_dcookie
 #define SYS_epoll_create __NR_epoll_create
@@ -609,6 +608,7 @@
 #define SYS_kexec_file_load __NR_kexec_file_load
 #define SYS_bpf __NR_bpf
 
+
 #define SYS_rt_sigaction __NR_rt_sigaction
 #define SYS_rt_sigreturn __NR_rt_sigreturn
 #define SYS_ioctl __NR_ioctl
@@ -640,6 +640,9 @@
 #define SYS_process_vm_writev __NR_process_vm_writev
 #define SYS_setsockopt __NR_setsockopt
 #define SYS_getsockopt __NR_getsockopt
+#define SYS_io_setup __NR_io_setup
+#define SYS_io_submit __NR_io_submit
+#define SYS_execveat __NR_execveat
 
 #undef SYS_fstatat
 #undef SYS_pread

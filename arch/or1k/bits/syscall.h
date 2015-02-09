@@ -264,6 +264,7 @@
 #define __NR_getrandom 278
 #define __NR_memfd_create 279
 #define __NR_bpf 280
+#define __NR_execveat 281
 
 #define SYS_io_setup __NR_io_setup
 #define SYS_io_destroy __NR_io_destroy
@@ -531,3 +532,4 @@
 #define SYS_getrandom __NR_getrandom
 #define SYS_memfd_create __NR_memfd_create
 #define SYS_bpf __NR_bpf
+#define SYS_execveat __NR_execveat

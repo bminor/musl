@@ -320,6 +320,7 @@
 #define __NR_memfd_create			319
 #define __NR_kexec_file_load			320
 #define __NR_bpf				321
+#define __NR_execveat				322
 
 
 
@@ -647,3 +648,4 @@
 #define SYS_memfd_create			319
 #define SYS_kexec_file_load			320
 #define SYS_bpf					321
+#define SYS_execveat				322
