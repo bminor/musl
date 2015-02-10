@@ -9,7 +9,7 @@ memset:
 	cmp $16,%rdx
 	jb 1f
 
-	mov %rdx,%rcx
+	lea -1(%rdx),%rcx
 	mov %rdi,%r8
 	shr $3,%rcx
 	mov %rax,-8(%rdi,%rdx)
