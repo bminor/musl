@@ -77,6 +77,7 @@ static int do_wordexp(const char *s, wordexp_t *we, int flags)
 		if (!(sq|dq|np)) return WRDE_BADCHAR;
 		break;
 	case '$':
+		if (sq) break;
 		if (s[i+1]=='(' && s[i+2]=='(') {
 			i += 2;
 			np += 2;
