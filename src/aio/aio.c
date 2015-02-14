@@ -148,7 +148,7 @@ static void cleanup(void *ctx)
 	 * Types 1-3 are notified via atomics/futexes, mainly for AS-safety
 	 * considerations. Type 4 is notified later via a cond var. */
 
-	a_store(&cb->__ret, at->ret);
+	cb->__ret = at->ret;
 	if (a_swap(&at->running, 0) < 0)
 		__wake(&at->running, -1, 1);
 	if (a_swap(&cb->__err, at->err) != EINPROGRESS)
