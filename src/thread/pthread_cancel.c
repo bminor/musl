@@ -3,9 +3,6 @@
 
 void __cancel()
 {
-	pthread_t self = __pthread_self();
-	self->canceldisable = 1;
-	self->cancelasync = 0;
 	pthread_exit(PTHREAD_CANCELED);
 }
 

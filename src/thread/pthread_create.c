@@ -23,6 +23,8 @@ _Noreturn void __pthread_exit(void *result)
 	pthread_t self = __pthread_self();
 	sigset_t set;
 
+	self->canceldisable = 1;
+	self->cancelasync = 0;
 	self->result = result;
 
 	while (self->cancelbuf) {
