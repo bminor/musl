@@ -1,10 +1,17 @@
 #include "pthread_impl.h"
 #include "syscall.h"
+#include "libc.h"
 
 void __cancel()
 {
 	pthread_exit(PTHREAD_CANCELED);
 }
+
+/* If __syscall_cp_asm has adjusted the stack pointer, it must provide a
+ * definition of __cp_cancel to undo those adjustments and call __cancel.
+ * Otherwise, __cancel provides a definition for __cp_cancel. */
+
+weak_alias(__cancel, __cp_cancel);
 
 long __syscall_cp_asm(volatile void *, syscall_arg_t,
                       syscall_arg_t, syscall_arg_t, syscall_arg_t,

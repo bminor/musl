@@ -31,7 +31,6 @@ __cp_begin:
 	beq+ cr7, 1f #jump to label 1 if r0 was 0
 	
 	b __cancel #else call cancel 
-	# (the return address is not needed, since __cancel never returns)
 1:
 	#ok, the cancel flag was not set
 	# syscall: number goes to r0, the rest 3-8

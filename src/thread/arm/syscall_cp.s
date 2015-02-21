@@ -7,7 +7,7 @@ __syscall_cp_asm:
 __cp_begin:
 	ldr r0,[r0]
 	cmp r0,#0
-	blne __cancel
+	blne __cp_cancel
 	mov r7,r1
 	mov r0,r2
 	mov r1,r3
@@ -19,3 +19,7 @@ __cp_end:
 	tst lr,#1
 	moveq pc,lr
 	bx lr
+.global __cp_cancel
+__cp_cancel:
+	ldmfd sp!,{r4,r5,r6,r7,lr}
+	b __cancel

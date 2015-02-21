@@ -11,7 +11,7 @@ __syscall_cp_asm:
 __cp_begin:
 	movl (%ecx),%eax
 	testl %eax,%eax
-	jnz __cancel
+	jnz __cp_cancel
 	movl 24(%esp),%eax
 	movl 28(%esp),%ebx
 	movl 32(%esp),%ecx
@@ -27,3 +27,10 @@ __cp_end:
 	popl %esi
 	popl %ebx
 	ret
+.global __cp_cancel
+__cp_cancel:
+	popl %ebp
+	popl %edi
+	popl %esi
+	popl %ebx
+	jmp __cancel
