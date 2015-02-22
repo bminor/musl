@@ -2,9 +2,13 @@
 #include "syscall.h"
 #include "libc.h"
 
-void __cancel()
+long __cancel()
 {
-	pthread_exit(PTHREAD_CANCELED);
+	pthread_t self = __pthread_self();
+	if (self->canceldisable == PTHREAD_CANCEL_ENABLE || self->cancelasync)
+		pthread_exit(PTHREAD_CANCELED);
+	self->canceldisable = PTHREAD_CANCEL_DISABLE;
+	return -ECANCELED;
 }
 
 /* If __syscall_cp_asm has adjusted the stack pointer, it must provide a
@@ -23,13 +27,16 @@ long __syscall_cp_c(syscall_arg_t nr,
 {
 	pthread_t self;
 	long r;
+	int st;
 
-	if (!libc.has_thread_pointer || (self = __pthread_self())->canceldisable)
+	if (!libc.has_thread_pointer || (st=(self=__pthread_self())->canceldisable)
+	    && (st==PTHREAD_CANCEL_DISABLE || nr==SYS_close))
 		return __syscall(nr, u, v, w, x, y, z);
 
 	r = __syscall_cp_asm(&self->cancel, nr, u, v, w, x, y, z);
-	if (r==-EINTR && nr!=SYS_close && self->cancel && !self->canceldisable)
-		__cancel();
+	if (r==-EINTR && nr!=SYS_close && self->cancel &&
+	    self->canceldisable != PTHREAD_CANCEL_DISABLE)
+		r = __cancel();
 	return r;
 }
 
@@ -47,14 +54,13 @@ static void cancel_handler(int sig, siginfo_t *si, void *ctx)
 	extern const char __cp_begin[1], __cp_end[1];
 
 	a_barrier();
-	if (!self->cancel || self->canceldisable) return;
+	if (!self->cancel || self->canceldisable == PTHREAD_CANCEL_DISABLE) return;
 
 	_sigaddset(&uc->uc_sigmask, SIGCANCEL);
 
 	if (self->cancelasync || ip >= __cp_begin && ip < __cp_end) {
-		self->canceldisable = 1;
-		pthread_sigmask(SIG_SETMASK, &uc->uc_sigmask, 0);
-		__cancel();
+		((char **)&uc->uc_mcontext)[CANCEL_REG_IP] = (char *)__cp_cancel;
+		return;
 	}
 
 	__syscall(SYS_tkill, self->tid, SIGCANCEL);
