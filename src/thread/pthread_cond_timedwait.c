@@ -3,6 +3,7 @@
 void __pthread_testcancel(void);
 int __pthread_mutex_lock(pthread_mutex_t *);
 int __pthread_mutex_unlock(pthread_mutex_t *);
+int __pthread_setcancelstate(int, int *);
 
 /*
  * struct waiter
@@ -28,11 +29,8 @@ int __pthread_mutex_unlock(pthread_mutex_t *);
 
 struct waiter {
 	struct waiter *prev, *next;
-	int state, barrier, mutex_ret;
+	int state, barrier;
 	int *notify;
-	pthread_mutex_t *mutex;
-	pthread_cond_t *cond;
-	int shared, err;
 };
 
 /* Self-synchronized-destruction-safe lock functions */
@@ -66,83 +64,14 @@ enum {
 	LEAVING,
 };
 
-static void unwait(void *arg)
-{
-	struct waiter *node = arg;
-
-	if (node->shared) {
-		pthread_cond_t *c = node->cond;
-		pthread_mutex_t *m = node->mutex;
-		/* Suppress cancellation if a signal was potentially
-		 * consumed; this is a legitimate form of spurious
-		 * wake even if not. */
-		if (node->err == ECANCELED && c->_c_seq != node->state)
-			node->err = 0;
-		if (a_fetch_add(&c->_c_waiters, -1) == -0x7fffffff)
-			__wake(&c->_c_waiters, 1, 0);
-		node->mutex_ret = pthread_mutex_lock(m);
-		return;
-	}
-
-	int oldstate = a_cas(&node->state, WAITING, LEAVING);
-
-	if (oldstate == WAITING) {
-		/* Access to cv object is valid because this waiter was not
-		 * yet signaled and a new signal/broadcast cannot return
-		 * after seeing a LEAVING waiter without getting notified
-		 * via the futex notify below. */
-
-		pthread_cond_t *c = node->cond;
-		lock(&c->_c_lock);
-		
-		if (c->_c_head == node) c->_c_head = node->next;
-		else if (node->prev) node->prev->next = node->next;
-		if (c->_c_tail == node) c->_c_tail = node->prev;
-		else if (node->next) node->next->prev = node->prev;
-		
-		unlock(&c->_c_lock);
-
-		if (node->notify) {
-			if (a_fetch_add(node->notify, -1)==1)
-				__wake(node->notify, 1, 1);
-		}
-	} else {
-		/* Lock barrier first to control wake order. */
-		lock(&node->barrier);
-	}
-
-	node->mutex_ret = pthread_mutex_lock(node->mutex);
-
-	if (oldstate == WAITING) return;
-
-	if (!node->next) a_inc(&node->mutex->_m_waiters);
-
-	/* Unlock the barrier that's holding back the next waiter, and
-	 * either wake it or requeue it to the mutex. */
-	if (node->prev) {
-		unlock_requeue(&node->prev->barrier,
-			&node->mutex->_m_lock,
-			node->mutex->_m_type & 128);
-	} else {
-		a_dec(&node->mutex->_m_waiters);
-	}
-
-	/* Since a signal was consumed, acting on cancellation is not
-	 * permitted. The only other error possible at this stage,
-	 * ETIMEDOUT, is permitted even if a signal was consumed. */
-	if (node->err = ECANCELED) node->err = 0;
-}
-
 static void dummy(void *arg)
 {
 }
 
-int __pthread_setcancelstate(int, int *);
-
 int __pthread_cond_timedwait(pthread_cond_t *restrict c, pthread_mutex_t *restrict m, const struct timespec *restrict ts)
 {
-	struct waiter node = { .cond = c, .mutex = m };
-	int e, seq, *fut, clock = c->_c_clock, cs;
+	struct waiter node = { 0 };
+	int e, seq, *fut, clock = c->_c_clock, cs, shared=0, oldstate, tmp;
 
 	if ((m->_m_type&15) && (m->_m_lock&INT_MAX) != __pthread_self()->tid)
 		return EPERM;
@@ -153,9 +82,9 @@ int __pthread_cond_timedwait(pthread_cond_t *restrict c, pthread_mutex_t *restri
 	__pthread_testcancel();
 
 	if (c->_c_shared) {
-		node.shared = 1;
+		shared = 1;
 		fut = &c->_c_seq;
-		seq = node.state = c->_c_seq;
+		seq = c->_c_seq;
 		a_inc(&c->_c_waiters);
 	} else {
 		lock(&c->_c_lock);
@@ -175,20 +104,68 @@ int __pthread_cond_timedwait(pthread_cond_t *restrict c, pthread_mutex_t *restri
 
 	__pthread_setcancelstate(PTHREAD_CANCEL_MASKED, &cs);
 
-	do e = __timedwait(fut, seq, clock, ts, dummy, 0, !node.shared);
+	do e = __timedwait(fut, seq, clock, ts, dummy, 0, !shared);
 	while (*fut==seq && (!e || e==EINTR));
 	if (e == EINTR) e = 0;
 
-	node.err = e;
-	unwait(&node);
-	e = node.err;
+	if (shared) {
+		/* Suppress cancellation if a signal was potentially
+		 * consumed; this is a legitimate form of spurious
+		 * wake even if not. */
+		if (e == ECANCELED && c->_c_seq != seq) e = 0;
+		if (a_fetch_add(&c->_c_waiters, -1) == -0x7fffffff)
+			__wake(&c->_c_waiters, 1, 0);
+		oldstate = WAITING;
+		goto relock;
+	}
 
-	/* Suppress cancellation if there was an error locking the mutex,
-	 * since the contract for cancellation requires the mutex to be
-	 * locked when the cleanup handler is called, and there is no
-	 * way to report an error. */
-	if (node.mutex_ret) e = node.mutex_ret;
+	oldstate = a_cas(&node.state, WAITING, LEAVING);
 
+	if (oldstate == WAITING) {
+		/* Access to cv object is valid because this waiter was not
+		 * yet signaled and a new signal/broadcast cannot return
+		 * after seeing a LEAVING waiter without getting notified
+		 * via the futex notify below. */
+
+		lock(&c->_c_lock);
+		
+		if (c->_c_head == &node) c->_c_head = node.next;
+		else if (node.prev) node.prev->next = node.next;
+		if (c->_c_tail == &node) c->_c_tail = node.prev;
+		else if (node.next) node.next->prev = node.prev;
+		
+		unlock(&c->_c_lock);
+
+		if (node.notify) {
+			if (a_fetch_add(node.notify, -1)==1)
+				__wake(node.notify, 1, 1);
+		}
+	} else {
+		/* Lock barrier first to control wake order. */
+		lock(&node.barrier);
+	}
+
+relock:
+	/* Errors locking the mutex override any existing error or
+	 * cancellation, since the caller must see them to know the
+	 * state of the mutex. */
+	if ((tmp = pthread_mutex_lock(m))) e = tmp;
+
+	if (oldstate == WAITING) goto done;
+
+	if (!node.next) a_inc(&m->_m_waiters);
+
+	/* Unlock the barrier that's holding back the next waiter, and
+	 * either wake it or requeue it to the mutex. */
+	if (node.prev)
+		unlock_requeue(&node.prev->barrier, &m->_m_lock, m->_m_type & 128);
+	else
+		a_dec(&m->_m_waiters);
+
+	/* Since a signal was consumed, cancellation is not permitted. */
+	if (e = ECANCELED) e = 0;
+
+done:
 	__pthread_setcancelstate(cs, 0);
 
 	if (e == ECANCELED) {
