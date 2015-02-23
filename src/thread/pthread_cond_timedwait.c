@@ -32,7 +32,7 @@ struct waiter {
 	int *notify;
 	pthread_mutex_t *mutex;
 	pthread_cond_t *cond;
-	int shared;
+	int shared, err;
 };
 
 /* Self-synchronized-destruction-safe lock functions */
@@ -73,6 +73,11 @@ static void unwait(void *arg)
 	if (node->shared) {
 		pthread_cond_t *c = node->cond;
 		pthread_mutex_t *m = node->mutex;
+		/* Suppress cancellation if a signal was potentially
+		 * consumed; this is a legitimate form of spurious
+		 * wake even if not. */
+		if (node->err == ECANCELED && c->_c_seq != node->state)
+			node->err = 0;
 		if (a_fetch_add(&c->_c_waiters, -1) == -0x7fffffff)
 			__wake(&c->_c_waiters, 1, 0);
 		node->mutex_ret = pthread_mutex_lock(m);
@@ -121,12 +126,23 @@ static void unwait(void *arg)
 	} else {
 		a_dec(&node->mutex->_m_waiters);
 	}
+
+	/* Since a signal was consumed, acting on cancellation is not
+	 * permitted. The only other error possible at this stage,
+	 * ETIMEDOUT, is permitted even if a signal was consumed. */
+	if (node->err = ECANCELED) node->err = 0;
 }
+
+static void dummy(void *arg)
+{
+}
+
+int __pthread_setcancelstate(int, int *);
 
 int __pthread_cond_timedwait(pthread_cond_t *restrict c, pthread_mutex_t *restrict m, const struct timespec *restrict ts)
 {
 	struct waiter node = { .cond = c, .mutex = m };
-	int e, seq, *fut, clock = c->_c_clock;
+	int e, seq, *fut, clock = c->_c_clock, cs;
 
 	if ((m->_m_type&15) && (m->_m_lock&INT_MAX) != __pthread_self()->tid)
 		return EPERM;
@@ -139,7 +155,7 @@ int __pthread_cond_timedwait(pthread_cond_t *restrict c, pthread_mutex_t *restri
 	if (c->_c_shared) {
 		node.shared = 1;
 		fut = &c->_c_seq;
-		seq = c->_c_seq;
+		seq = node.state = c->_c_seq;
 		a_inc(&c->_c_waiters);
 	} else {
 		lock(&c->_c_lock);
@@ -157,13 +173,30 @@ int __pthread_cond_timedwait(pthread_cond_t *restrict c, pthread_mutex_t *restri
 
 	__pthread_mutex_unlock(m);
 
-	do e = __timedwait(fut, seq, clock, ts, unwait, &node, !node.shared);
+	__pthread_setcancelstate(PTHREAD_CANCEL_MASKED, &cs);
+
+	do e = __timedwait(fut, seq, clock, ts, dummy, 0, !node.shared);
 	while (*fut==seq && (!e || e==EINTR));
 	if (e == EINTR) e = 0;
 
+	node.err = e;
 	unwait(&node);
+	e = node.err;
 
-	return node.mutex_ret ? node.mutex_ret : e;
+	/* Suppress cancellation if there was an error locking the mutex,
+	 * since the contract for cancellation requires the mutex to be
+	 * locked when the cleanup handler is called, and there is no
+	 * way to report an error. */
+	if (node.mutex_ret) e = node.mutex_ret;
+
+	__pthread_setcancelstate(cs, 0);
+
+	if (e == ECANCELED) {
+		__pthread_testcancel();
+		__pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, 0);
+	}
+
+	return e;
 }
 
 int __private_cond_signal(pthread_cond_t *c, int n)
