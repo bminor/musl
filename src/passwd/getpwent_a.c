@@ -17,7 +17,7 @@ int __getpwent_a(FILE *f, struct passwd *pw, char **line, size_t *size, struct p
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
 	for (;;) {
 		if ((l=getline(line, size, f)) < 0) {
-			rv = errno;
+			rv = ferror(f) ? errno : 0;
 			free(*line);
 			*line = 0;
 			pw = 0;
