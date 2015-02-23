@@ -163,7 +163,7 @@ relock:
 		a_dec(&m->_m_waiters);
 
 	/* Since a signal was consumed, cancellation is not permitted. */
-	if (e = ECANCELED) e = 0;
+	if (e == ECANCELED) e = 0;
 
 done:
 	__pthread_setcancelstate(cs, 0);
