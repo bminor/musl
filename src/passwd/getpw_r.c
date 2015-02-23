@@ -13,11 +13,11 @@ static int getpw_r(const char *name, uid_t uid, struct passwd *pw, char *buf, si
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
 
 	rv = __getpw_a(name, uid, pw, &line, &len, res);
-	if (!rv && size < len) {
+	if (*res && size < len) {
 		*res = 0;
 		rv = ERANGE;
 	}
-	if (!rv) {
+	if (*res) {
 		memcpy(buf, line, len);
 		FIX(name);
 		FIX(passwd);

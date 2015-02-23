@@ -16,11 +16,11 @@ static int getgr_r(const char *name, gid_t gid, struct group *gr, char *buf, siz
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
 
 	rv = __getgr_a(name, gid, gr, &line, &len, &mem, &nmem, res);
-	if (!rv && size < len + (nmem+1)*sizeof(char *) + 32) {
+	if (*res && size < len + (nmem+1)*sizeof(char *) + 32) {
 		*res = 0;
 		rv = ERANGE;
 	}
-	if (!rv) {
+	if (*res) {
 		buf += (16-(uintptr_t)buf)%16;
 		gr->gr_mem = (void *)buf;
 		buf += (nmem+1)*sizeof(char *);
