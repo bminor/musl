@@ -33,7 +33,7 @@ int __timedwait(volatile int *addr, int val,
 
 	r = -__syscall_cp(SYS_futex, addr, FUTEX_WAIT|priv, val, top);
 	if (r == ENOSYS) r = -__syscall_cp(SYS_futex, addr, FUTEX_WAIT, val, top);
-	if (r != EINTR && r != ETIMEDOUT) r = 0;
+	if (r != EINTR && r != ETIMEDOUT && r != ECANCELED) r = 0;
 
 	pthread_cleanup_pop(0);
 	if (!cleanup) __pthread_setcancelstate(cs, 0);
