@@ -3,15 +3,15 @@
 #include <errno.h>
 #include "futex.h"
 #include "syscall.h"
+#include "pthread_impl.h"
 
 int __pthread_setcancelstate(int, int *);
 int __clock_gettime(clockid_t, struct timespec *);
 
-int __timedwait(volatile int *addr, int val,
-	clockid_t clk, const struct timespec *at,
-	void (*cleanup)(void *), void *arg, int priv)
+int __timedwait_cp(volatile int *addr, int val,
+	clockid_t clk, const struct timespec *at, int priv)
 {
-	int r, cs;
+	int r;
 	struct timespec to, *top=0;
 
 	if (priv) priv = 128;
@@ -28,15 +28,19 @@ int __timedwait(volatile int *addr, int val,
 		top = &to;
 	}
 
-	if (!cleanup) __pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
-	pthread_cleanup_push(cleanup, arg);
-
 	r = -__syscall_cp(SYS_futex, addr, FUTEX_WAIT|priv, val, top);
 	if (r == ENOSYS) r = -__syscall_cp(SYS_futex, addr, FUTEX_WAIT, val, top);
 	if (r != EINTR && r != ETIMEDOUT && r != ECANCELED) r = 0;
 
-	pthread_cleanup_pop(0);
-	if (!cleanup) __pthread_setcancelstate(cs, 0);
+	return r;
+}
 
+int __timedwait(volatile int *addr, int val,
+	clockid_t clk, const struct timespec *at, int priv)
+{
+	int cs, r;
+	__pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
+	r = __timedwait_cp(addr, val, clk, at, priv);
+	__pthread_setcancelstate(cs, 0);
 	return r;
 }

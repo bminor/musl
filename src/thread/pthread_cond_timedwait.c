@@ -64,10 +64,6 @@ enum {
 	LEAVING,
 };
 
-static void dummy(void *arg)
-{
-}
-
 int __pthread_cond_timedwait(pthread_cond_t *restrict c, pthread_mutex_t *restrict m, const struct timespec *restrict ts)
 {
 	struct waiter node = { 0 };
@@ -104,7 +100,7 @@ int __pthread_cond_timedwait(pthread_cond_t *restrict c, pthread_mutex_t *restri
 
 	__pthread_setcancelstate(PTHREAD_CANCEL_MASKED, &cs);
 
-	do e = __timedwait(fut, seq, clock, ts, dummy, 0, !shared);
+	do e = __timedwait_cp(fut, seq, clock, ts, !shared);
 	while (*fut==seq && (!e || e==EINTR));
 	if (e == EINTR) e = 0;
 

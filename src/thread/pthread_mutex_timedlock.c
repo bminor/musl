@@ -24,7 +24,7 @@ int __pthread_mutex_timedlock(pthread_mutex_t *restrict m, const struct timespec
 		a_inc(&m->_m_waiters);
 		t = r | 0x80000000;
 		a_cas(&m->_m_lock, r, t);
-		r = __timedwait(&m->_m_lock, t, CLOCK_REALTIME, at, 0, 0, priv);
+		r = __timedwait(&m->_m_lock, t, CLOCK_REALTIME, at, priv);
 		a_dec(&m->_m_waiters);
 		if (r && r != EINTR) break;
 	}

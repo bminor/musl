@@ -61,7 +61,7 @@ int aio_suspend(const struct aiocb *const cbs[], int cnt, const struct timespec 
 			break;
 		}
 
-		ret = __timedwait(pfut, expect, CLOCK_MONOTONIC, ts?&at:0, 0, 0, 1);
+		ret = __timedwait(pfut, expect, CLOCK_MONOTONIC, ts?&at:0, 1);
 
 		if (ret) {
 			errno = ret==ETIMEDOUT ? EAGAIN : ret;

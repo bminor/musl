@@ -15,7 +15,7 @@ int pthread_rwlock_timedwrlock(pthread_rwlock_t *restrict rw, const struct times
 		t = r | 0x80000000;
 		a_inc(&rw->_rw_waiters);
 		a_cas(&rw->_rw_lock, r, t);
-		r = __timedwait(&rw->_rw_lock, t, CLOCK_REALTIME, at, 0, 0, rw->_rw_shared^128);
+		r = __timedwait(&rw->_rw_lock, t, CLOCK_REALTIME, at, rw->_rw_shared^128);
 		a_dec(&rw->_rw_waiters);
 		if (r && r != EINTR) return r;
 	}

@@ -107,7 +107,8 @@ int __libc_sigprocmask(int, const sigset_t *, sigset_t *);
 void __lock(volatile int *);
 void __unmapself(void *, size_t);
 
-int __timedwait(volatile int *, int, clockid_t, const struct timespec *, void (*)(void *), void *, int);
+int __timedwait(volatile int *, int, clockid_t, const struct timespec *, int);
+int __timedwait_cp(volatile int *, int, clockid_t, const struct timespec *, int);
 void __wait(volatile int *, volatile int *, int, int);
 static inline void __wake(volatile void *addr, int cnt, int priv)
 {
