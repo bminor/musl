@@ -24,7 +24,7 @@ extern "C" {
 #ifndef POLLMSG
 #define POLLMSG    0x400
 #define POLLRDHUP  0x2000
-#define
+#endif
 
 typedef unsigned long nfds_t;
 
