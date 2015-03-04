@@ -364,7 +364,7 @@ void *malloc(size_t n)
 		j = first_set(mask);
 		lock_bin(j);
 		c = mal.bins[j].head;
-		if (c != BIN_TO_CHUNK(j) && j == bin_index(c->csize)) {
+		if (c != BIN_TO_CHUNK(j)) {
 			if (!pretrim(c, n, i, j)) unbin(c, j);
 			unlock_bin(j);
 			break;
