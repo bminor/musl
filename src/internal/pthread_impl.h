@@ -38,11 +38,11 @@ struct pthread {
 		volatile void *volatile pending;
 	} robust_list;
 	int unblock_cancel;
-	int timer_id;
+	volatile int timer_id;
 	locale_t locale;
-	int killlock[2];
-	int exitlock[2];
-	int startlock[2];
+	volatile int killlock[2];
+	volatile int exitlock[2];
+	volatile int startlock[2];
 	unsigned long sigmask[_NSIG/8/sizeof(long)];
 	void *stdio_locks;
 };
@@ -62,26 +62,26 @@ struct __timer {
 #define _a_policy __u.__i[3*__SU+2]
 #define _a_prio __u.__i[3*__SU+3]
 #define _m_type __u.__i[0]
-#define _m_lock __u.__i[1]
-#define _m_waiters __u.__i[2]
+#define _m_lock __u.__vi[1]
+#define _m_waiters __u.__vi[2]
 #define _m_prev __u.__p[3]
 #define _m_next __u.__p[4]
 #define _m_count __u.__i[5]
 #define _c_shared __u.__p[0]
-#define _c_seq __u.__i[2]
-#define _c_waiters __u.__i[3]
+#define _c_seq __u.__vi[2]
+#define _c_waiters __u.__vi[3]
 #define _c_clock __u.__i[4]
-#define _c_lock __u.__i[8]
+#define _c_lock __u.__vi[8]
 #define _c_head __u.__p[1]
 #define _c_tail __u.__p[5]
-#define _rw_lock __u.__i[0]
-#define _rw_waiters __u.__i[1]
+#define _rw_lock __u.__vi[0]
+#define _rw_waiters __u.__vi[1]
 #define _rw_shared __u.__i[2]
-#define _b_lock __u.__i[0]
-#define _b_waiters __u.__i[1]
+#define _b_lock __u.__vi[0]
+#define _b_waiters __u.__vi[1]
 #define _b_limit __u.__i[2]
-#define _b_count __u.__i[3]
-#define _b_waiters2 __u.__i[4]
+#define _b_count __u.__vi[3]
+#define _b_waiters2 __u.__vi[4]
 #define _b_inst __u.__p[3]
 
 #include "pthread_arch.h"

@@ -17,7 +17,7 @@ char *__strchrnul(const char *, int);
 
 static struct __locale_map *findlocale(const char *name, size_t n)
 {
-	static void *loc_head;
+	static void *volatile loc_head;
 	struct __locale_map *p, *new, *old_head;
 	const char *path = 0, *z;
 	char buf[256];

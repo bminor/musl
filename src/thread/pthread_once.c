@@ -40,7 +40,7 @@ int __pthread_once(pthread_once_t *control, void (*init)(void))
 {
 	/* Return immediately if init finished before, but ensure that
 	 * effects of the init routine are visible to the caller. */
-	if (*control == 2) {
+	if (*(volatile int *)control == 2) {
 		a_barrier();
 		return 0;
 	}

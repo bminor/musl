@@ -12,11 +12,11 @@
 #include "libc.h"
 #include "atomic.h"
 
-static int lock[2];
+static volatile int lock[2];
 static char log_ident[32];
 static int log_opt;
 static int log_facility = LOG_USER;
-static int log_mask = 0xff;
+static volatile int log_mask = 0xff;
 static int log_fd = -1;
 
 int setlogmask(int maskpri)

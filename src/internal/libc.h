@@ -8,9 +8,9 @@
 struct __locale_map;
 
 struct __locale_struct {
-	int ctype_utf8;
+	volatile int ctype_utf8;
 	char *messages_name;
-	struct __locale_map *cat[4];
+	struct __locale_map *volatile cat[4];
 };
 
 struct __libc {
@@ -21,7 +21,7 @@ struct __libc {
 	size_t *auxv;
 	volatile int threads_minus_1;
 	FILE *ofl_head;
-	int ofl_lock[2];
+	volatile int ofl_lock[2];
 	size_t tls_size;
 	size_t page_size;
 	volatile int uselocale_cnt;

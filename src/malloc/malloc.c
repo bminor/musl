@@ -25,7 +25,7 @@ struct chunk {
 };
 
 struct bin {
-	int lock[2];
+	volatile int lock[2];
 	struct chunk *head;
 	struct chunk *tail;
 };
@@ -33,10 +33,10 @@ struct bin {
 static struct {
 	uintptr_t brk;
 	size_t *heap;
-	uint64_t binmap;
+	volatile uint64_t binmap;
 	struct bin bins[64];
-	int brk_lock[2];
-	int free_lock[2];
+	volatile int brk_lock[2];
+	volatile int free_lock[2];
 	unsigned mmap_step;
 } mal;
 
@@ -205,7 +205,7 @@ fail:
 
 static int init_malloc(size_t n)
 {
-	static int init, waiters;
+	static volatile int init, waiters;
 	int state;
 	struct chunk *c;
 

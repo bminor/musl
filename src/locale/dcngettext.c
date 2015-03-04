@@ -12,7 +12,7 @@
 struct binding {
 	struct binding *next;
 	int dirlen;
-	int active;
+	volatile int active;
 	char *domainname;
 	char *dirname;
 	char buf[];
@@ -34,7 +34,7 @@ static char *gettextdir(const char *domainname, size_t *dirlen)
 
 char *bindtextdomain(const char *domainname, const char *dirname)
 {
-	static int lock[2];
+	static volatile int lock[2];
 	struct binding *p, *q;
 
 	if (!domainname) return 0;
@@ -96,8 +96,8 @@ struct msgcat {
 	struct msgcat *next;
 	const void *map;
 	size_t map_size;
-	void *plural_rule;
-	int nplurals;
+	void *volatile plural_rule;
+	volatile int nplurals;
 	char name[];
 };
 

@@ -26,7 +26,7 @@ void *__vdsosym(const char *, const char *);
 int __clock_gettime(clockid_t clk, struct timespec *ts)
 {
 #ifdef VDSO_CGT_SYM
-	static int (*cgt)(clockid_t, struct timespec *);
+	static int (*volatile cgt)(clockid_t, struct timespec *);
 	if (!cgt) {
 		void *f = __vdsosym(VDSO_CGT_VER, VDSO_CGT_SYM);
 		if (!f) f = (void *)sc_clock_gettime;

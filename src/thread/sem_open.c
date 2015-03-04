@@ -20,7 +20,7 @@ static struct {
 	sem_t *sem;
 	int refcnt;
 } *semtab;
-static int lock[2];
+static volatile int lock[2];
 
 #define FLAGS (O_RDWR|O_NOFOLLOW|O_CLOEXEC|O_NONBLOCK)
 

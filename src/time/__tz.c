@@ -27,7 +27,7 @@ static char old_tz_buf[32];
 static char *old_tz = old_tz_buf;
 static size_t old_tz_size = sizeof old_tz_buf;
 
-static int lock[2];
+static volatile int lock[2];
 
 static int getint(const char **p)
 {

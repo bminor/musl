@@ -53,7 +53,8 @@ struct aio_thread {
 	struct aiocb *cb;
 	struct aio_thread *next, *prev;
 	struct aio_queue *q;
-	int running, err, op;
+	volatile int running;
+	int err, op;
 	ssize_t ret;
 };
 

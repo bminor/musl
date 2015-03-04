@@ -29,8 +29,8 @@ int __pthread_setcancelstate(int, int *);
 
 struct waiter {
 	struct waiter *prev, *next;
-	int state, barrier;
-	int *notify;
+	volatile int state, barrier;
+	volatile int *notify;
 };
 
 /* Self-synchronized-destruction-safe lock functions */
@@ -67,7 +67,8 @@ enum {
 int __pthread_cond_timedwait(pthread_cond_t *restrict c, pthread_mutex_t *restrict m, const struct timespec *restrict ts)
 {
 	struct waiter node = { 0 };
-	int e, seq, *fut, clock = c->_c_clock, cs, shared=0, oldstate, tmp;
+	int e, seq, clock = c->_c_clock, cs, shared=0, oldstate, tmp;
+	volatile int *fut;
 
 	if ((m->_m_type&15) && (m->_m_lock&INT_MAX) != __pthread_self()->tid)
 		return EPERM;
@@ -175,7 +176,8 @@ done:
 int __private_cond_signal(pthread_cond_t *c, int n)
 {
 	struct waiter *p, *first=0;
-	int ref = 0, cur;
+	volatile int ref = 0;
+	int cur;
 
 	lock(&c->_c_lock);
 	for (p=c->_c_tail; n && p; p=p->prev) {

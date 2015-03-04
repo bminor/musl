@@ -38,8 +38,8 @@ struct _IO_FILE {
 	short dummy3;
 	signed char mode;
 	signed char lbf;
-	int lock;
-	int waiters;
+	volatile int lock;
+	volatile int waiters;
 	void *cookie;
 	off_t off;
 	char *getln_buf;

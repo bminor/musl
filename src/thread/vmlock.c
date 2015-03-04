@@ -1,6 +1,6 @@
 #include "pthread_impl.h"
 
-static int vmlock[2];
+static volatile int vmlock[2];
 
 void __vm_lock(int inc)
 {
