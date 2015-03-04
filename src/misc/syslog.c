@@ -10,19 +10,21 @@
 #include <errno.h>
 #include <fcntl.h>
 #include "libc.h"
-#include "atomic.h"
 
 static volatile int lock[2];
 static char log_ident[32];
 static int log_opt;
 static int log_facility = LOG_USER;
-static volatile int log_mask = 0xff;
+static int log_mask = 0xff;
 static int log_fd = -1;
 
 int setlogmask(int maskpri)
 {
-	if (maskpri) return a_swap(&log_mask, maskpri);
-	else return log_mask;
+	LOCK(lock);
+	int ret = log_mask;
+	if (maskpri) log_mask = maskpri;
+	UNLOCK(lock);
+	return ret;
 }
 
 static const struct {
