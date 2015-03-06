@@ -2,6 +2,7 @@
 #include <limits.h>
 #include <sys/mman.h>
 #include <string.h>
+#include <stddef.h>
 #include "pthread_impl.h"
 #include "libc.h"
 #include "atomic.h"
@@ -22,7 +23,12 @@ int __init_tp(void *p)
 
 #ifndef SHARED
 
-static long long builtin_tls[(sizeof(struct pthread) + 64)/sizeof(long long)];
+static struct builtin_tls {
+	char c;
+	struct pthread pt;
+	void *space[16];
+} builtin_tls[1];
+#define MIN_TLS_ALIGN offsetof(struct builtin_tls, pt)
 
 struct tls_image {
 	void *image;
@@ -86,7 +92,7 @@ void __init_tls(size_t *aux)
 	}
 
 	T.size += (-T.size - (uintptr_t)T.image) & (T.align-1);
-	if (T.align < 4*sizeof(size_t)) T.align = 4*sizeof(size_t);
+	if (T.align < MIN_TLS_ALIGN) T.align = MIN_TLS_ALIGN;
 
 	libc.tls_size = 2*sizeof(void *)+T.size+T.align+sizeof(struct pthread);
 

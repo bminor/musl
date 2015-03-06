@@ -122,6 +122,13 @@ void __init_libc(char **, char *);
 
 const char *__libc_get_version(void);
 
+static struct builtin_tls {
+	char c;
+	struct pthread pt;
+	void *space[16];
+} builtin_tls[1];
+#define MIN_TLS_ALIGN offsetof(struct builtin_tls, pt)
+
 static struct dso *head, *tail, *ldso, *fini_head;
 static char *env_path, *sys_path;
 static unsigned long long gencnt;
@@ -132,10 +139,9 @@ static int noload;
 static jmp_buf *rtld_fail;
 static pthread_rwlock_t lock;
 static struct debug debug;
-static size_t tls_cnt, tls_offset, tls_align = 4*sizeof(size_t);
+static size_t tls_cnt, tls_offset, tls_align = MIN_TLS_ALIGN;
 static size_t static_tls_cnt;
 static pthread_mutex_t init_fini_lock = { ._m_type = PTHREAD_MUTEX_RECURSIVE };
-static long long builtin_tls[(sizeof(struct pthread) + 64)/sizeof(long long)];
 
 struct debug *_dl_debug_addr = &debug;
 
