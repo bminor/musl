@@ -1,4 +1,3 @@
-#define FLT_ROUNDS 1
 #ifdef __FLT_EVAL_METHOD__
 #define FLT_EVAL_METHOD __FLT_EVAL_METHOD__
 #else
