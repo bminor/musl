@@ -100,6 +100,7 @@ int __pthread_cond_timedwait(pthread_cond_t *restrict c, pthread_mutex_t *restri
 	__pthread_mutex_unlock(m);
 
 	__pthread_setcancelstate(PTHREAD_CANCEL_MASKED, &cs);
+	if (cs == PTHREAD_CANCEL_DISABLE) __pthread_setcancelstate(cs, 0);
 
 	do e = __timedwait_cp(fut, seq, clock, ts, !shared);
 	while (*fut==seq && (!e || e==EINTR));
