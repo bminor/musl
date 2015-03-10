@@ -245,6 +245,7 @@ case "$target" in
 # Catch these early to simplify matching for 32-bit archs
 mips64*|powerpc64*) fail "$0: unsupported target \"$target\"" ;;
 arm*) ARCH=arm ;;
+aarch64*) ARCH=aarch64 ;;
 i?86*) ARCH=i386 ;;
 x86_64-x32*|x32*|x86_64*x32) ARCH=x32 ;;
 x86_64*) ARCH=x86_64 ;;
@@ -438,6 +439,10 @@ fi
 if test "$ARCH" = "arm" ; then
 trycppif __ARMEB__ "$t" && SUBARCH=${SUBARCH}eb
 trycppif __ARM_PCS_VFP "$t" && SUBARCH=${SUBARCH}hf
+fi
+
+if test "$ARCH" = "aarch64" ; then
+trycppif __AARCH64EB__ "$t" && SUBARCH=${SUBARCH}_be
 fi
 
 if test "$ARCH" = "mips" ; then
