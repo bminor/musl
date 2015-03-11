@@ -54,7 +54,7 @@ void *__copy_tls(unsigned char *mem)
 	td = (pthread_t)mem;
 	mem -= T.size;
 #endif
-	td->dtv = dtv;
+	td->dtv = td->dtv_copy = dtv;
 	dtv[1] = mem;
 	memcpy(mem, T.image, T.len);
 	return td;

@@ -1015,7 +1015,7 @@ void *__copy_tls(unsigned char *mem)
 	dtv[0] = (void *)tls_cnt;
 	if (!tls_cnt) {
 		td = (void *)(dtv+1);
-		td->dtv = dtv;
+		td->dtv = td->dtv_copy = dtv;
 		return td;
 	}
 
@@ -1041,7 +1041,7 @@ void *__copy_tls(unsigned char *mem)
 		memcpy(dtv[p->tls_id], p->tls_image, p->tls_len);
 	}
 #endif
-	td->dtv = dtv;
+	td->dtv = td->dtv_copy = dtv;
 	return td;
 }
 
@@ -1071,7 +1071,7 @@ void *__tls_get_new(size_t *v)
 		memcpy(newdtv, self->dtv,
 			((size_t)self->dtv[0]+1) * sizeof(void *));
 		newdtv[0] = (void *)v[0];
-		self->dtv = newdtv;
+		self->dtv = self->dtv_copy = newdtv;
 	}
 
 	/* Get new TLS memory from all new DSOs up to the requested one */

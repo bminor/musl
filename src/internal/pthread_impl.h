@@ -45,6 +45,7 @@ struct pthread {
 	volatile int startlock[2];
 	unsigned long sigmask[_NSIG/8/sizeof(long)];
 	void *stdio_locks;
+	void **dtv_copy;
 };
 
 struct __timer {
