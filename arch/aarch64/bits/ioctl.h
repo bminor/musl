@@ -54,7 +54,7 @@
 #define TIOCSRS485      0x542F
 #define TIOCGPTN        _IOR('T', 0x30, unsigned int)
 #define TIOCSPTLCK      _IOW('T', 0x31, int)
-#define TIOCGDEV        _IOR('T', 0x32, unsigned int) */
+#define TIOCGDEV        _IOR('T', 0x32, unsigned int)
 #define TCGETX		0x5432
 #define TCSETX		0x5433
 #define TCSETXF		0x5434
