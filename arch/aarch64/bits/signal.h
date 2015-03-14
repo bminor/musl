@@ -17,6 +17,23 @@ typedef struct sigcontext
 	unsigned long sp, pc, pstate;
 	long double __reserved[256];
 } mcontext_t;
+
+#define FPSIMD_MAGIC 0x46508001
+#define ESR_MAGIC 0x45535201
+struct _aarch64_ctx {
+	unsigned int magic;
+	unsigned int size;
+};
+struct fpsimd_context {
+	struct _aarch64_ctx head;
+	unsigned int fpsr;
+	unsigned int fpcr;
+	long double vregs[32];
+};
+struct esr_context {
+	struct _aarch64_ctx head;
+	unsigned long esr;
+};
 #else
 typedef struct {
 	long double __regs[18+256];
