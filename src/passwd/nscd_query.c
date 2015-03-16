@@ -32,31 +32,33 @@ FILE *__nscd_query(int32_t req, const char *key, int32_t *buf, size_t len, int *
 		.msg_iovlen = 2
 	};
 
-	if (strlen(key) > INT32_MAX - 1) {
-		return (FILE*)-1;
-	}
-
 	*swap = 0;
 retry:
+	memset(buf, 0, len);
+	buf[0] = NSCDVERSION;
 
 	fd = socket(PF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
 	if (fd < 0) return NULL;
+
+	if(!(f = fdopen(fd, "r"))) {
+		close(fd);
+		return 0;
+	}
+
+	if (strlen(key) > INT32_MAX - 1)
+		return f;
 
 	if (connect(fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
 		/* If there isn't a running nscd we return -1 to indicate that
 		 * that is precisely what happened
 		 */
-		if (errno == EACCES || errno == ECONNREFUSED || errno == ENOENT) {
-			close(fd);
-			return (FILE *)-1;
-		}
+		if (errno == EACCES || errno == ECONNREFUSED || errno == ENOENT)
+			return f;
 		goto error;
 	}
 
 	if (sendmsg(fd, &msg, MSG_NOSIGNAL) < 0)
 		goto error;
-
-	if(!(f = fdopen(fd, "r"))) goto error;
 
 	if (!fread(buf, len, 1, f)) {
 		/* If the VERSION entry mismatches nscd will disconnect. The
@@ -95,6 +97,6 @@ retry:
 
 	return f;
 error:
-	if (f) fclose(f); else close(fd);
+	fclose(f);
 	return 0;
 }

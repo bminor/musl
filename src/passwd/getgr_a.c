@@ -63,7 +63,6 @@ int __getgr_a(const char *name, gid_t gid, struct group *gr, char **buf, size_t 
 
 		f = __nscd_query(req, key, groupbuf, sizeof groupbuf, &swap);
 		if (!f) { rv = errno; goto done; }
-		if (f == (FILE*)-1) { rv = 0; goto done; }
 
 		if (!groupbuf[GRFOUND]) { rv = 0; goto cleanup_f; }
 
