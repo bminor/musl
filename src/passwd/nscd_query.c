@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <limits.h>
 #include "nscd.h"
 
 static const struct {
@@ -22,7 +23,7 @@ FILE *__nscd_query(int32_t req, const char *key, int32_t *buf, size_t len, int *
 	int32_t req_buf[REQ_LEN] = {
 		NSCDVERSION,
 		req,
-		strlen(key)+1
+		strnlen(key,LOGIN_NAME_MAX)+1
 	};
 	struct msghdr msg = {
 		.msg_iov = (struct iovec[]){
@@ -45,7 +46,7 @@ retry:
 		return 0;
 	}
 
-	if (strlen(key) > INT32_MAX - 1)
+	if (req_buf[2] > LOGIN_NAME_MAX)
 		return f;
 
 	if (connect(fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
