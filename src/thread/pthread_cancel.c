@@ -1,3 +1,4 @@
+#include <string.h>
 #include "pthread_impl.h"
 #include "syscall.h"
 #include "libc.h"
@@ -80,7 +81,7 @@ static void init_cancellation()
 		.sa_flags = SA_SIGINFO | SA_RESTART,
 		.sa_sigaction = cancel_handler
 	};
-	sigfillset(&sa.sa_mask);
+	memset(&sa.sa_mask, -1, _NSIG/8);
 	__libc_sigaction(SIGCANCEL, &sa, 0);
 }
 
