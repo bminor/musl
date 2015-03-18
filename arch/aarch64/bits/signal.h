@@ -1,6 +1,11 @@
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 
+#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+#define MINSIGSTKSZ 6144
+#define SIGSTKSZ 12288
+#endif
+
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 typedef unsigned long greg_t;
 typedef unsigned long gregset_t[34];

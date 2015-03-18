@@ -1,6 +1,11 @@
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 
+#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+#define MINSIGSTKSZ 2048
+#define SIGSTKSZ 8192
+#endif
+
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 typedef int greg_t, gregset_t[16];
 typedef int freg_t, fpregset_t[16];
