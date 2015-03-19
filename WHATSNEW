@@ -1410,3 +1410,46 @@ bugs fixed:
 arch-specific bugs fixed:
 - on or1k, some syscalls with 64-bit arguments were broken (misaligned)
 - usage of sahf instruction on x86_64 crashed on some early cpu models
+
+
+
+1.1.7 release notes
+
+new features:
+- alternate passwd/group backend support via nscd protocol
+- masked cancellation mode extension (experimental)
+- aio cancellation
+- aarch64 port (experimental)
+
+performance:
+- significant memset asm optimizations on i386 and x86_64
+
+compatibility:
+- suppress EINTR in semaphores for old kernels where futex restart is broken
+- always set optarg in getopt_long
+- support SOCK_RAW socket type in getaddrinfo
+- report success instead of EINPROGRESS when close is interrupted
+
+bugs fixed:
+- multithreaded set*id() was not async-signal safe, had various race bugs
+- getspnam_r returned results for partial username matches
+- wordexp bad character checker mis-counted parentheses
+- close on fd with pending aio could lead to file corruption
+- old aio implementation had numerous conformance bugs
+- malloc init code could deadlock due to race condition
+- pthread_exit did not disable cancellation
+- pthread_cond_wait could wrongly consume signal on cancellation
+- execvp wrongly stopped path search on EACCESS
+- fsync, fdatasync, and msync were not honored as cancellation points
+- fchmodat was subject to fd leak race (missing O_CLOEXEC)
+- fchmodat failed to report EOPNOTSUPP in race path
+- passwd/group lookup functions had various minor error-reporting bugs
+- isatty had false-positives/device-state-corruption for OSS sound devices
+- configure script failed to detect gcc with translated messages
+- FLT_ROUNDS macro failed to reflect rounding mode changes in fenv
+
+arch-specific bugs fixed:
+- mips fesetenv did not handle FE_DFL_ENV
+- mips POLLWRNORM and POLLWRBAND macros had wrong values
+- x32 pthread synchronization object type definitions were wrong
+- powerpc minimum signal stack size was insufficient
