@@ -847,7 +847,7 @@ static reg_errcode_t parse_atom(tre_parse_ctx_t *ctx, const char *s)
 			} else {
 				/* extension: accept unknown escaped char
 				   as a literal */
-				node = tre_ast_new_literal(ctx->mem, *s, *s, ctx->position);
+				goto parse_literal;
 			}
 			ctx->position++;
 		}
