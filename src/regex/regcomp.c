@@ -839,7 +839,7 @@ static reg_errcode_t parse_atom(tre_parse_ctx_t *ctx, const char *s)
 			s--;
 			break;
 		default:
-			if (!ere && isdigit(*s)) {
+			if (!ere && (unsigned)*s-'1' < 9) {
 				/* back reference */
 				int val = *s - '0';
 				node = tre_ast_new_literal(ctx->mem, BACKREF, val, ctx->position);
