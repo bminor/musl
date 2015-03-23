@@ -1,6 +1,10 @@
 #ifndef _FLOAT_H
 #define _FLOAT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int __flt_rounds(void);
 #define FLT_ROUNDS (__flt_rounds())
 
@@ -40,5 +44,9 @@ int __flt_rounds(void);
 #define LDBL_DECIMAL_DIG DECIMAL_DIG
 
 #include <bits/float.h>
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
