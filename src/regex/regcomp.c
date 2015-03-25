@@ -1700,6 +1700,11 @@ tre_copy_ast(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *ast,
 		*result = tre_ast_new_literal(mem, min, max, pos);
 		if (*result == NULL)
 		  status = REG_ESPACE;
+		else {
+		  tre_literal_t *p = (*result)->obj;
+		  p->class = lit->class;
+		  p->neg_classes = lit->neg_classes;
+		}
 
 		if (pos > *max_pos)
 		  *max_pos = pos;
