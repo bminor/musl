@@ -1267,3 +1267,39 @@ arch-specific bugs fixed:
 - missing barriers in atomics on mips, powerpc, and microblaze
 
 - TLS relocation bug in powerpc dynamic linker
+
+
+
+1.0.5 release notes
+
+compatibility:
+- dynamic linker now honors DT_RUNPATH without DT_RPATH (new binutils)
+
+bugs fixed:
+- stack-based buffer overflow in inet_pton (CVE-2015-1817)
+- regcomp mishandling of high bytes after backslash
+- regcomp miscompiled character class brace-repetitions
+- use of uninitialized memory with application-provided thread stacks
+- failure of dn_expand to null-terminate name for crafted DNS packets
+- buffer overflow in swab with odd argument
+- missing barrier in pthread_once fast path
+- wordexp bad character checker mis-counted parentheses
+- malloc init code could deadlock due to race condition
+- getspnam_r returned results for partial username matches
+- mishandling of negative non-whole-hour TZ offsets
+- printf failed to report or stop on write errors
+- syslog failed to check for connect error
+- fchmodat was subject to fd leak race (missing O_CLOEXEC)
+- fchmodat failed to report EOPNOTSUPP in race path
+- wrong behavior in various zero-length stdio operations
+- wrong return value on overflow in some strtoul-family functions
+- incorrect sequence generation in the rand48 family of prng functions
+- wrong printf formatting for %#.0o with value zero
+- sched_getaffinity left uninitialized data in output bit array
+- wrong return values for pthread_getaffinity_np and pthread_setaffinity_np
+- broken CPU_EQUAL macro in sched.h
+
+arch-specific bugs fixed:
+- usage of sahf instruction on x86_64 crashed on some early cpu models
+- mips fesetenv did not handle FE_DFL_ENV
+- mips POLLWRNORM and POLLWRBAND macros had wrong values
