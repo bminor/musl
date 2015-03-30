@@ -1298,10 +1298,7 @@ tre_parse(tre_parse_ctx_t *ctx)
 		  else
 		    {
 		      /* Escaped character. */
-		      result = tre_ast_new_literal(ctx->mem, *ctx->re, *ctx->re,
-						   ctx->position);
-		      ctx->position++;
-		      ctx->re++;
+		      goto parse_literal;
 		    }
 		  break;
 		}
