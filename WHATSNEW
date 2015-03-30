@@ -1453,3 +1453,18 @@ arch-specific bugs fixed:
 - mips POLLWRNORM and POLLWRBAND macros had wrong values
 - x32 pthread synchronization object type definitions were wrong
 - powerpc minimum signal stack size was insufficient
+
+
+
+1.1.8 release notes
+
+bugs fixed:
+- stack-based buffer overflow in inet_pton (CVE-2015-1817)
+- regcomp crash/mem-corruption with illegal bytes after backslash
+- regcomp wrongly allowed backrefs in ER
+- regcomp miscompiled character class brace-repetitions
+- regcomp wrongly processed \0 as an unmatchable backref
+- new FLT_ROUNDS definition failed to work in C++ code
+
+arch-specific bugs fixed:
+- aarch64 was missing max_align_t definition
