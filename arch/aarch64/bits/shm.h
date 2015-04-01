@@ -19,7 +19,7 @@ struct shminfo {
 };
 
 struct shm_info {
-	int used_ids;
+	int __used_ids;
 	unsigned long shm_tot, shm_rss, shm_swp;
-	unsigned long swap_attempts, swap_successes;
+	unsigned long __swap_attempts, __swap_successes;
 };
