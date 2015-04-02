@@ -576,9 +576,20 @@ static int path_open(const char *name, const char *s, char *buf, size_t buf_size
 		s += strspn(s, ":\n");
 		l = strcspn(s, ":\n");
 		if (l-1 >= INT_MAX) return -1;
-		if (snprintf(buf, buf_size, "%.*s/%s", (int)l, s, name) >= buf_size)
-			continue;
-		if ((fd = open(buf, O_RDONLY|O_CLOEXEC))>=0) return fd;
+		if (snprintf(buf, buf_size, "%.*s/%s", (int)l, s, name) < buf_size) {
+			if ((fd = open(buf, O_RDONLY|O_CLOEXEC))>=0) return fd;
+			switch (errno) {
+			case ENOENT:
+			case ENOTDIR:
+			case EACCES:
+			case ENAMETOOLONG:
+				break;
+			default:
+				/* Any negative value but -1 will inhibit
+				 * futher path search. */
+				return -2;
+			}
+		}
 		s += l;
 	}
 }
@@ -724,10 +735,10 @@ static struct dso *load_library(const char *name, struct dso *needed_by)
 		if (strlen(name) > NAME_MAX) return 0;
 		fd = -1;
 		if (env_path) fd = path_open(name, env_path, buf, sizeof buf);
-		for (p=needed_by; fd < 0 && p; p=p->needed_by)
+		for (p=needed_by; fd == -1 && p; p=p->needed_by)
 			if (!fixup_rpath(p, buf, sizeof buf))
 				fd = path_open(name, p->rpath, buf, sizeof buf);
-		if (fd < 0) {
+		if (fd == -1) {
 			if (!sys_path) {
 				char *prefix = 0;
 				size_t prefix_len;
