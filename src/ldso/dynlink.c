@@ -599,8 +599,7 @@ static int fixup_rpath(struct dso *p, char *buf, size_t buf_size)
 	size_t n, l;
 	const char *s, *t, *origin;
 	char *d;
-	if (p->rpath) return 0;
-	if (!p->rpath_orig) return -1;
+	if (p->rpath || !p->rpath_orig) return 0;
 	if (!strchr(p->rpath_orig, '$')) {
 		p->rpath = p->rpath_orig;
 		return 0;
@@ -609,11 +608,11 @@ static int fixup_rpath(struct dso *p, char *buf, size_t buf_size)
 	s = p->rpath_orig;
 	while ((t=strchr(s, '$'))) {
 		if (strncmp(t, "$ORIGIN", 7) && strncmp(t, "${ORIGIN}", 9))
-			return -1;
+			return 0;
 		s = t+1;
 		n++;
 	}
-	if (n > SSIZE_MAX/PATH_MAX) return -1;
+	if (n > SSIZE_MAX/PATH_MAX) return 0;
 
 	if (p->kernel_mapped) {
 		/* $ORIGIN searches cannot be performed for the main program
@@ -623,10 +622,18 @@ static int fixup_rpath(struct dso *p, char *buf, size_t buf_size)
 		 * since the library's pathname came from a trusted source
 		 * (either system paths or a call to dlopen). */
 		if (libc.secure)
-			return -1;
+			return 0;
 		l = readlink("/proc/self/exe", buf, buf_size);
-		if (l >= buf_size)
+		if (l == -1) switch (errno) {
+		case ENOENT:
+		case ENOTDIR:
+		case EACCES:
+			break;
+		default:
 			return -1;
+		}
+		if (l >= buf_size)
+			return 0;
 		buf[l] = 0;
 		origin = buf;
 	} else {
@@ -735,9 +742,12 @@ static struct dso *load_library(const char *name, struct dso *needed_by)
 		if (strlen(name) > NAME_MAX) return 0;
 		fd = -1;
 		if (env_path) fd = path_open(name, env_path, buf, sizeof buf);
-		for (p=needed_by; fd == -1 && p; p=p->needed_by)
-			if (!fixup_rpath(p, buf, sizeof buf))
+		for (p=needed_by; fd == -1 && p; p=p->needed_by) {
+			if (fixup_rpath(p, buf, sizeof buf) < 0)
+				fd = -2; /* Inhibit further search. */
+			if (p->rpath)
 				fd = path_open(name, p->rpath, buf, sizeof buf);
+		}
 		if (fd == -1) {
 			if (!sys_path) {
 				char *prefix = 0;
