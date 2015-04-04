@@ -1413,6 +1413,8 @@ void *dlopen(const char *file, int mode)
 				free(p->td_index);
 				p->td_index = tmp;
 			}
+			if (p->rpath != p->rpath_orig)
+				free(p->rpath);
 			free(p->deps);
 			free(p);
 		}
