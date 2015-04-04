@@ -13,14 +13,16 @@ ssize_t getdelim(char **restrict s, size_t *restrict n, int delim, FILE *restric
 	size_t i=0;
 	int c;
 
+	FLOCK(f);
+
 	if (!n || !s) {
+		f->flags |= F_ERR;
+		FUNLOCK(f);
 		errno = EINVAL;
 		return -1;
 	}
 
 	if (!*s) *n=0;
-
-	FLOCK(f);
 
 	for (;;) {
 		z = memchr(f->rpos, delim, f->rend - f->rpos);
@@ -56,6 +58,7 @@ ssize_t getdelim(char **restrict s, size_t *restrict n, int delim, FILE *restric
 
 	return i;
 oom:
+	f->flags |= F_ERR;
 	FUNLOCK(f);
 	errno = ENOMEM;
 	return -1;
