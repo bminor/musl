@@ -60,8 +60,9 @@ static inline long __syscall2(long n, long a, long b)
 		: "$1", "$3", "$8", "$9", "$10", "$11", "$12", "$13",
 		  "$14", "$15", "$24", "$25", "hi", "lo", "memory");
 	if (r7) return -r2;
+	long ret = r2;
 	if (n == SYS_stat64 || n == SYS_fstat64 || n == SYS_lstat64) __stat_fix(b);
-	return r2;
+	return ret;
 }
 
 static inline long __syscall3(long n, long a, long b, long c)
@@ -78,8 +79,9 @@ static inline long __syscall3(long n, long a, long b, long c)
 		: "$1", "$3", "$8", "$9", "$10", "$11", "$12", "$13",
 		  "$14", "$15", "$24", "$25", "hi", "lo", "memory");
 	if (r7) return -r2;
+	long ret = r2;
 	if (n == SYS_stat64 || n == SYS_fstat64 || n == SYS_lstat64) __stat_fix(b);
-	return r2;
+	return ret;
 }
 
 static inline long __syscall4(long n, long a, long b, long c, long d)
@@ -96,9 +98,10 @@ static inline long __syscall4(long n, long a, long b, long c, long d)
 		: "$1", "$3", "$8", "$9", "$10", "$11", "$12", "$13",
 		  "$14", "$15", "$24", "$25", "hi", "lo", "memory");
 	if (r7) return -r2;
+	long ret = r2;
 	if (n == SYS_stat64 || n == SYS_fstat64 || n == SYS_lstat64) __stat_fix(b);
 	if (n == SYS_fstatat) __stat_fix(c);
-	return r2;
+	return ret;
 }
 
 #else
