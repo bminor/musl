@@ -108,6 +108,10 @@ _Noreturn void __pthread_exit(void *result)
 		if (self->robust_list.off)
 			__syscall(SYS_set_robust_list, 0, 3*sizeof(long));
 
+		/* Since __unmapself bypasses the normal munmap code path,
+		 * explicitly wait for vmlock holders first. */
+		__vm_wait();
+
 		/* The following call unmaps the thread's stack mapping
 		 * and then exits without touching the stack. */
 		__unmapself(self->map_base, self->map_size);
