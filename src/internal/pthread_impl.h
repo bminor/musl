@@ -108,6 +108,10 @@ int __libc_sigprocmask(int, const sigset_t *, sigset_t *);
 void __lock(volatile int *);
 void __unmapself(void *, size_t);
 
+void __vm_wait();
+void __vm_lock();
+void __vm_unlock();
+
 int __timedwait(volatile int *, int, clockid_t, const struct timespec *, int);
 int __timedwait_cp(volatile int *, int, clockid_t, const struct timespec *, int);
 void __wait(volatile int *, volatile int *, int, int);

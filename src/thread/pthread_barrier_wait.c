@@ -1,8 +1,5 @@
 #include "pthread_impl.h"
 
-void __vm_lock_impl(int);
-void __vm_unlock_impl(void);
-
 static int pshared_barrier_wait(pthread_barrier_t *b)
 {
 	int limit = (b->_b_limit & INT_MAX) + 1;
@@ -26,7 +23,7 @@ static int pshared_barrier_wait(pthread_barrier_t *b)
 			__wait(&b->_b_count, &b->_b_waiters2, v, 0);
 	}
 
-	__vm_lock_impl(+1);
+	__vm_lock();
 
 	/* Ensure all threads have a vm lock before proceeding */
 	if (a_fetch_add(&b->_b_count, -1)==1-limit) {
@@ -47,7 +44,7 @@ static int pshared_barrier_wait(pthread_barrier_t *b)
 	if (v==INT_MIN+1 || (v==1 && w))
 		__wake(&b->_b_lock, 1, 0);
 
-	__vm_unlock_impl();
+	__vm_unlock();
 
 	return ret;
 }

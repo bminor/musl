@@ -9,8 +9,6 @@
 void *__mmap(void *, size_t, int, int, int, off_t);
 int __munmap(void *, size_t);
 int __mprotect(void *, size_t, int);
-void __vm_lock_impl(int);
-void __vm_unlock_impl(void);
 
 static void dummy_0()
 {
@@ -77,7 +75,7 @@ _Noreturn void __pthread_exit(void *result)
 	/* Process robust list in userspace to handle non-pshared mutexes
 	 * and the detached thread case where the robust list head will
 	 * be invalid when the kernel would process it. */
-	__vm_lock_impl(+1);
+	__vm_lock();
 	volatile void *volatile *rp;
 	while ((rp=self->robust_list.head) && rp != &self->robust_list.head) {
 		pthread_mutex_t *m = (void *)((char *)rp
@@ -91,7 +89,7 @@ _Noreturn void __pthread_exit(void *result)
 		if (cont < 0 || waiters)
 			__wake(&m->_m_lock, 1, priv);
 	}
-	__vm_unlock_impl();
+	__vm_unlock();
 
 	__do_orphaned_stdio_locks();
 

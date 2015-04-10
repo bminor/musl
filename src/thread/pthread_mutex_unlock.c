@@ -1,8 +1,5 @@
 #include "pthread_impl.h"
 
-void __vm_lock_impl(int);
-void __vm_unlock_impl(void);
-
 int __pthread_mutex_unlock(pthread_mutex_t *m)
 {
 	pthread_t self;
@@ -19,7 +16,7 @@ int __pthread_mutex_unlock(pthread_mutex_t *m)
 			return m->_m_count--, 0;
 		if (!priv) {
 			self->robust_list.pending = &m->_m_next;
-			__vm_lock_impl(+1);
+			__vm_lock();
 		}
 		volatile void *prev = m->_m_prev;
 		volatile void *next = m->_m_next;
@@ -30,7 +27,7 @@ int __pthread_mutex_unlock(pthread_mutex_t *m)
 	cont = a_swap(&m->_m_lock, (type & 8) ? 0x40000000 : 0);
 	if (type != PTHREAD_MUTEX_NORMAL && !priv) {
 		self->robust_list.pending = 0;
-		__vm_unlock_impl();
+		__vm_unlock();
 	}
 	if (waiters || cont<0)
 		__wake(&m->_m_lock, 1, priv);
