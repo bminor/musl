@@ -4,10 +4,13 @@
 #include "libc.h"
 #include <sys/mman.h>
 #include <string.h>
+#include <stddef.h>
 
 void *__mmap(void *, size_t, int, int, int, off_t);
 int __munmap(void *, size_t);
 int __mprotect(void *, size_t, int);
+void __vm_lock_impl(int);
+void __vm_unlock_impl(void);
 
 static void dummy_0()
 {
@@ -15,7 +18,6 @@ static void dummy_0()
 weak_alias(dummy_0, __acquire_ptc);
 weak_alias(dummy_0, __release_ptc);
 weak_alias(dummy_0, __pthread_tsd_run_dtors);
-weak_alias(dummy_0, __do_private_robust_list);
 weak_alias(dummy_0, __do_orphaned_stdio_locks);
 
 _Noreturn void __pthread_exit(void *result)
@@ -72,7 +74,25 @@ _Noreturn void __pthread_exit(void *result)
 			a_dec(&libc.bytelocale_cnt_minus_1);
 	}
 
-	__do_private_robust_list();
+	/* Process robust list in userspace to handle non-pshared mutexes
+	 * and the detached thread case where the robust list head will
+	 * be invalid when the kernel would process it. */
+	__vm_lock_impl(+1);
+	volatile void *volatile *rp;
+	while ((rp=self->robust_list.head) && rp != &self->robust_list.head) {
+		pthread_mutex_t *m = (void *)((char *)rp
+			- offsetof(pthread_mutex_t, _m_next));
+		int waiters = m->_m_waiters;
+		int priv = (m->_m_type & 128) ^ 128;
+		self->robust_list.pending = rp;
+		self->robust_list.head = *rp;
+		int cont = a_swap(&m->_m_lock, self->tid|0x40000000);
+		self->robust_list.pending = 0;
+		if (cont < 0 || waiters)
+			__wake(&m->_m_lock, 1, priv);
+	}
+	__vm_unlock_impl();
+
 	__do_orphaned_stdio_locks();
 
 	if (self->detached && self->map_base) {
@@ -84,6 +104,11 @@ _Noreturn void __pthread_exit(void *result)
 		 * initial clone flags are correct, but if the thread was
 		 * detached later (== 2), we need to clear it here. */
 		if (self->detached == 2) __syscall(SYS_set_tid_address, 0);
+
+		/* Robust list will no longer be valid, and was already
+		 * processed above, so unregister it with the kernel. */
+		if (self->robust_list.off)
+			__syscall(SYS_set_robust_list, 0, 3*sizeof(long));
 
 		/* The following call unmaps the thread's stack mapping
 		 * and then exits without touching the stack. */
