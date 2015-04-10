@@ -268,6 +268,7 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 		do_sched = new->startlock[0] = 1;
 		__block_app_sigs(new->sigmask);
 	}
+	new->robust_list.head = &new->robust_list.head;
 	new->unblock_cancel = self->cancel;
 	new->canary = self->canary;
 

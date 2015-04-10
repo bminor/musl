@@ -18,6 +18,7 @@ int __init_tp(void *p)
 	libc.has_thread_pointer = 1;
 	td->tid = __syscall(SYS_set_tid_address, &td->tid);
 	td->locale = &libc.global_locale;
+	td->robust_list.head = &td->robust_list.head;
 	return 0;
 }
 
