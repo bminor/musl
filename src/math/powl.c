@@ -227,7 +227,7 @@ long double powl(long double x, long double y)
 	if (y <= -LDBL_MAX) {
 		if (x > 1.0 || x < -1.0)
 			return 0.0;
-		if (x != 0.0)
+		if (x != 0.0 || y == -INFINITY)
 			return INFINITY;
 	}
 	if (x >= LDBL_MAX) {
