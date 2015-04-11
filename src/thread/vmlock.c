@@ -9,12 +9,12 @@ void __vm_wait()
 		__wait(vmlock, vmlock+1, tmp, 1);
 }
 
-void __vm_lock(pthread_t self)
+void __vm_lock()
 {
 	a_inc(vmlock);
 }
 
-void __vm_unlock(pthread_t self)
+void __vm_unlock()
 {
 	if (a_fetch_add(vmlock, -1)==1 && vmlock[1])
 		__wake(vmlock, -1, 1);
