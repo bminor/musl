@@ -1159,7 +1159,15 @@ _Noreturn void __dls3(size_t *sp)
 	char **argv = (void *)(sp+1);
 	char **argv_orig = argv;
 	char **envp = argv+argc+1;
-	void *initial_tls;
+
+	/* Setup early thread pointer in builtin_tls for ldso/libc itself to
+	 * use during dynamic linking. If possible it will also serve as the
+	 * thread pointer at runtime. */
+	libc.tls_size = sizeof builtin_tls;
+	if (__init_tp(__copy_tls((void *)builtin_tls)) < 0) {
+		dprintf(2, "%s: Thread-local storage not supported by kernel.\n", argv[0]);
+		_exit(127);
+	}
 
 	/* Find aux vector just past environ[] */
 	for (i=argc+1; argv[i]; i++)
@@ -1336,19 +1344,26 @@ _Noreturn void __dls3(size_t *sp)
 	reloc_all(&app);
 
 	update_tls_size();
-	if (libc.tls_size > sizeof builtin_tls) {
-		initial_tls = calloc(libc.tls_size, 1);
+	if (libc.tls_size > sizeof builtin_tls || tls_align > MIN_TLS_ALIGN) {
+		void *initial_tls = calloc(libc.tls_size, 1);
 		if (!initial_tls) {
 			dprintf(2, "%s: Error getting %zu bytes thread-local storage: %m\n",
 				argv[0], libc.tls_size);
 			_exit(127);
 		}
+		if (__init_tp(__copy_tls(initial_tls)) < 0) {
+			dprintf(2, "%s: Failed to switch to new thread pointer.\n", argv[0]);
+			_exit(127);
+		}
 	} else {
-		initial_tls = builtin_tls;
-	}
-	if (__init_tp(__copy_tls(initial_tls)) < 0 && tls_cnt) {
-		dprintf(2, "%s: Thread-local storage not supported by kernel.\n", argv[0]);
-		_exit(127);
+		size_t tmp_tls_size = libc.tls_size;
+		pthread_t self = __pthread_self();
+		/* Temporarily set the tls size to the full size of
+		 * builtin_tls so that __copy_tls will use the same layout
+		 * as it did for before. Then check, just to be safe. */
+		libc.tls_size = sizeof builtin_tls;
+		if (__copy_tls((void*)builtin_tls) != self) a_crash();
+		libc.tls_size = tmp_tls_size;
 	}
 	static_tls_cnt = tls_cnt;
 
