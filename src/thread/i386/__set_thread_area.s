@@ -6,7 +6,11 @@ __set_thread_area:
 	push $0x51
 	push $0xfffff
 	push 16(%esp)
-	push $-1
+	xor %edx,%edx
+	mov %gs,%dx
+	sub $3,%edx
+	sar $3,%edx
+	push %edx
 	mov %esp,%ebx
 	xor %eax,%eax
 	mov $243,%al
