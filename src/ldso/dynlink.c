@@ -1025,17 +1025,11 @@ void *__copy_tls(unsigned char *mem)
 {
 	pthread_t td;
 	struct dso *p;
-
-	void **dtv = (void *)mem;
-	dtv[0] = (void *)tls_cnt;
-	if (!tls_cnt) {
-		td = (void *)(dtv+1);
-		td->dtv = td->dtv_copy = dtv;
-		return td;
-	}
+	void **dtv;
 
 #ifdef TLS_ABOVE_TP
-	mem += sizeof(void *) * (tls_cnt+1);
+	dtv = (void **)(mem + libc.tls_size) - (tls_cnt + 1);
+
 	mem += -((uintptr_t)mem + sizeof(struct pthread)) & (tls_align-1);
 	td = (pthread_t)mem;
 	mem += sizeof(struct pthread);
@@ -1046,6 +1040,8 @@ void *__copy_tls(unsigned char *mem)
 		memcpy(dtv[p->tls_id], p->tls_image, p->tls_len);
 	}
 #else
+	dtv = (void **)mem;
+
 	mem += libc.tls_size - sizeof(struct pthread);
 	mem -= (uintptr_t)mem & (tls_align-1);
 	td = (pthread_t)mem;
@@ -1056,6 +1052,7 @@ void *__copy_tls(unsigned char *mem)
 		memcpy(dtv[p->tls_id], p->tls_image, p->tls_len);
 	}
 #endif
+	dtv[0] = (void *)tls_cnt;
 	td->dtv = td->dtv_copy = dtv;
 	return td;
 }
