@@ -19,25 +19,12 @@
 #include <dlfcn.h>
 #include "pthread_impl.h"
 #include "libc.h"
+#include "dynlink.h"
 
 static int errflag;
 static char errbuf[128];
 
 #ifdef SHARED
-
-#if ULONG_MAX == 0xffffffff
-typedef Elf32_Ehdr Ehdr;
-typedef Elf32_Phdr Phdr;
-typedef Elf32_Sym Sym;
-#define R_TYPE(x) ((x)&255)
-#define R_SYM(x) ((x)>>8)
-#else
-typedef Elf64_Ehdr Ehdr;
-typedef Elf64_Phdr Phdr;
-typedef Elf64_Sym Sym;
-#define R_TYPE(x) ((x)&0xffffffff)
-#define R_SYM(x) ((x)>>32)
-#endif
 
 #define MAXP2(a,b) (-(-(a)&-(b)))
 #define ALIGN(x,y) ((x)+(y)-1 & -(y))
@@ -88,6 +75,7 @@ struct dso {
 	volatile int new_dtv_idx, new_tls_idx;
 	struct td_index *td_index;
 	struct dso *fini_next;
+	int rel_early_relative, rel_update_got;
 	char *shortname;
 	char buf[];
 };
@@ -96,26 +84,6 @@ struct symdef {
 	Sym *sym;
 	struct dso *dso;
 };
-
-enum {
-	REL_ERR,
-	REL_SYMBOLIC,
-	REL_GOT,
-	REL_PLT,
-	REL_RELATIVE,
-	REL_OFFSET,
-	REL_OFFSET32,
-	REL_COPY,
-	REL_SYM_OR_REL,
-	REL_TLS, /* everything past here is TLS */
-	REL_DTPMOD,
-	REL_DTPOFF,
-	REL_TPOFF,
-	REL_TPOFF_NEG,
-	REL_TLSDESC,
-};
-
-#include "reloc.h"
 
 int __init_tp(void *);
 void __init_libc(char **, char *);
@@ -129,7 +97,8 @@ static struct builtin_tls {
 } builtin_tls[1];
 #define MIN_TLS_ALIGN offsetof(struct builtin_tls, pt)
 
-static struct dso *head, *tail, *ldso, *fini_head;
+static struct dso ldso;
+static struct dso *head, *tail, *fini_head;
 static char *env_path, *sys_path;
 static unsigned long long gencnt;
 static int runtime;
@@ -145,14 +114,19 @@ static pthread_mutex_t init_fini_lock = { ._m_type = PTHREAD_MUTEX_RECURSIVE };
 
 struct debug *_dl_debug_addr = &debug;
 
-#define AUX_CNT 38
-#define DYN_CNT 34
+static int dl_strcmp(const char *l, const char *r)
+{
+	for (; *l==*r && *l; l++, r++);
+	return *(unsigned char *)l - *(unsigned char *)r;
+}
+#define strcmp(l,r) dl_strcmp(l,r)
 
 static void decode_vec(size_t *v, size_t *a, size_t cnt)
 {
-	memset(a, 0, cnt*sizeof(size_t));
-	for (; v[0]; v+=2) if (v[0]<cnt) {
-		a[0] |= 1ULL<<v[0];
+	size_t i;
+	for (i=0; i<cnt; i++) a[i] = 0;
+	for (; v[0]; v+=2) if (v[0]-1<cnt-1) {
+		a[0] |= 1UL<<v[0];
 		a[v[0]] = v[1];
 	}
 }
@@ -276,8 +250,6 @@ static struct symdef find_sym(struct dso *dso, const char *s, int need_def)
 	return def;
 }
 
-#define NO_INLINE_ADDEND (1<<REL_COPY | 1<<REL_GOT | 1<<REL_PLT)
-
 ptrdiff_t __tlsdesc_static(), __tlsdesc_dynamic();
 
 static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stride)
@@ -288,7 +260,7 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 	Sym *sym;
 	const char *name;
 	void *ctx;
-	int astype, type;
+	int type;
 	int sym_index;
 	struct symdef def;
 	size_t *reloc_addr;
@@ -297,14 +269,8 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 	size_t addend;
 
 	for (; rel_size; rel+=stride, rel_size-=stride*sizeof(size_t)) {
-		astype = R_TYPE(rel[1]);
-		if (!astype) continue;
-		type = remap_rel(astype);
-		if (!type) {
-			error("Error relocating %s: unsupported relocation type %d",
-				dso->name, astype);
-			continue;
-		}
+		if (dso->rel_early_relative && IS_RELATIVE(rel[1])) continue;
+		type = R_TYPE(rel[1]);
 		sym_index = R_SYM(rel[1]);
 		reloc_addr = (void *)(base + rel[0]);
 		if (sym_index) {
@@ -324,14 +290,19 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 			def.dso = dso;
 		}
 
+		int gotplt = (type == REL_GOT || type == REL_PLT);
+		if (dso->rel_update_got && !gotplt) continue;
+
 		addend = stride>2 ? rel[2]
-			: (1<<type & NO_INLINE_ADDEND) ? 0
+			: gotplt || type==REL_COPY ? 0
 			: *reloc_addr;
 
 		sym_val = def.sym ? (size_t)def.dso->base+def.sym->st_value : 0;
 		tls_val = def.sym ? def.sym->st_value : 0;
 
 		switch(type) {
+		case REL_NONE:
+			break;
 		case REL_OFFSET:
 			addend -= (size_t)reloc_addr;
 		case REL_SYMBOLIC:
@@ -395,6 +366,10 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 #endif
 			}
 			break;
+		default:
+			error("Error relocating %s: unsupported relocation type %d",
+				dso->name, type);
+			continue;
 		}
 	}
 }
@@ -711,22 +686,22 @@ static struct dso *load_library(const char *name, struct dso *needed_by)
 					if (!(reported & mask)) {
 						reported |= mask;
 						dprintf(1, "\t%s => %s (%p)\n",
-							name, ldso->name,
-							ldso->base);
+							name, ldso.name,
+							ldso.base);
 					}
 				}
 				is_self = 1;
 			}
 		}
 	}
-	if (!strcmp(name, ldso->name)) is_self = 1;
+	if (!strcmp(name, ldso.name)) is_self = 1;
 	if (is_self) {
-		if (!ldso->prev) {
-			tail->next = ldso;
-			ldso->prev = tail;
-			tail = ldso->next ? ldso->next : ldso;
+		if (!ldso.prev) {
+			tail->next = &ldso;
+			ldso.prev = tail;
+			tail = ldso.next ? ldso.next : &ldso;
 		}
-		return ldso;
+		return &ldso;
 	}
 	if (strchr(name, '/')) {
 		pathname = name;
@@ -752,13 +727,13 @@ static struct dso *load_library(const char *name, struct dso *needed_by)
 			if (!sys_path) {
 				char *prefix = 0;
 				size_t prefix_len;
-				if (ldso->name[0]=='/') {
+				if (ldso.name[0]=='/') {
 					char *s, *t, *z;
-					for (s=t=z=ldso->name; *s; s++)
+					for (s=t=z=ldso.name; *s; s++)
 						if (*s=='/') z=t, t=s;
-					prefix_len = z-ldso->name;
+					prefix_len = z-ldso.name;
 					if (prefix_len < PATH_MAX)
-						prefix = ldso->name;
+						prefix = ldso.name;
 				}
 				if (!prefix) {
 					prefix = "";
@@ -910,21 +885,40 @@ static void make_global(struct dso *p)
 	for (; p; p=p->next) p->global = 1;
 }
 
+static void do_mips_relocs(struct dso *p, size_t *got)
+{
+	size_t i, j, rel[2];
+	unsigned char *base = p->base;
+	i=0; search_vec(p->dynv, &i, DT_MIPS_LOCAL_GOTNO);
+	if (p->rel_early_relative) {
+		got += i;
+	} else {
+		while (i--) *got++ += (size_t)base;
+	}
+	j=0; search_vec(p->dynv, &j, DT_MIPS_GOTSYM);
+	i=0; search_vec(p->dynv, &i, DT_MIPS_SYMTABNO);
+	Sym *sym = p->syms + j;
+	rel[0] = (unsigned char *)got - base;
+	for (i-=j; i; i--, sym++, rel[0]+=sizeof(size_t)) {
+		rel[1] = sym-p->syms << 8 | R_MIPS_JUMP_SLOT;
+		do_relocs(p, rel, sizeof rel, 2);
+	}
+}
+
 static void reloc_all(struct dso *p)
 {
 	size_t dyn[DYN_CNT] = {0};
 	for (; p; p=p->next) {
 		if (p->relocated) continue;
 		decode_vec(p->dynv, dyn, DYN_CNT);
-#ifdef NEED_ARCH_RELOCS
-		do_arch_relocs(p, head);
-#endif
+		if (NEED_MIPS_GOT_RELOCS)
+			do_mips_relocs(p, (void *)(p->base+dyn[DT_PLTGOT]));
 		do_relocs(p, (void *)(p->base+dyn[DT_JMPREL]), dyn[DT_PLTRELSZ],
 			2+(dyn[DT_PLTREL]==DT_RELA));
 		do_relocs(p, (void *)(p->base+dyn[DT_REL]), dyn[DT_RELSZ], 2);
 		do_relocs(p, (void *)(p->base+dyn[DT_RELA]), dyn[DT_RELASZ], 3);
 
-		if (p->relro_start != p->relro_end &&
+		if (head != &ldso && p->relro_start != p->relro_end &&
 		    mprotect(p->base+p->relro_start, p->relro_end-p->relro_start, PROT_READ) < 0) {
 			error("Error relocating %s: RELRO protection failed: %m",
 				p->name);
@@ -1121,19 +1115,52 @@ static void update_tls_size()
 	tls_align);
 }
 
-void *__dynlink(int argc, char **argv)
+/* Stage 1 of the dynamic linker is defined in dlstart.c. It calls the
+ * following stage 2 and stage 3 functions via primitive symbolic lookup
+ * since it does not have access to their addresses to begin with. */
+
+/* Stage 2 of the dynamic linker is called after relative relocations 
+ * have been processed. It can make function calls to static functions
+ * and access string literals and static data, but cannot use extern
+ * symbols. Its job is to perform symbolic relocations on the dynamic
+ * linker itself, but some of the relocations performed may need to be
+ * replaced later due to copy relocations in the main program. */
+
+void __dls2(unsigned char *base)
 {
-	size_t aux[AUX_CNT] = {0};
+	Ehdr *ehdr = (void *)base;
+	ldso.base = base;
+	ldso.name = ldso.shortname = "libc.so";
+	ldso.global = 1;
+	ldso.phnum = ehdr->e_phnum;
+	ldso.phdr = (void *)(base + ehdr->e_phoff);
+	ldso.phentsize = ehdr->e_phentsize;
+	ldso.rel_early_relative = 1;
+	kernel_mapped_dso(&ldso);
+	decode_dyn(&ldso);
+
+	head = &ldso;
+	reloc_all(&ldso);
+
+	ldso.relocated = 0;
+	ldso.rel_update_got = 1;
+}
+
+/* Stage 3 of the dynamic linker is called with the dynamic linker/libc
+ * fully functional. Its job is to load (if not already loaded) and
+ * process dependencies and relocations for the main application and
+ * transfer control to its entry point. */
+
+_Noreturn void __dls3(size_t *sp)
+{
+	static struct dso app, vdso;
+	size_t aux[AUX_CNT] = {0}, *auxv;
 	size_t i;
-	Phdr *phdr;
-	Ehdr *ehdr;
-	static struct dso builtin_dsos[3];
-	struct dso *const app = builtin_dsos+0;
-	struct dso *const lib = builtin_dsos+1;
-	struct dso *const vdso = builtin_dsos+2;
 	char *env_preload=0;
 	size_t vdso_base;
-	size_t *auxv;
+	int argc = *sp;
+	char **argv = (void *)(sp+1);
+	char **argv_orig = argv;
 	char **envp = argv+argc+1;
 	void *initial_tls;
 
@@ -1157,60 +1184,42 @@ void *__dynlink(int argc, char **argv)
 	libc.page_size = aux[AT_PAGESZ];
 	libc.auxv = auxv;
 
-	/* If the dynamic linker was invoked as a program itself, AT_BASE
-	 * will not be set. In that case, we assume the base address is
-	 * the start of the page containing the PHDRs; I don't know any
-	 * better approach... */
-	if (!aux[AT_BASE]) {
-		aux[AT_BASE] = aux[AT_PHDR] & -PAGE_SIZE;
-		aux[AT_PHDR] = aux[AT_PHENT] = aux[AT_PHNUM] = 0;
-	}
-
-	/* The dynamic linker load address is passed by the kernel
-	 * in the AUX vector, so this is easy. */
-	lib->base = (void *)aux[AT_BASE];
-	lib->name = lib->shortname = "libc.so";
-	lib->global = 1;
-	ehdr = (void *)lib->base;
-	lib->phnum = ehdr->e_phnum;
-	lib->phdr = (void *)(aux[AT_BASE]+ehdr->e_phoff);
-	lib->phentsize = ehdr->e_phentsize;
-	kernel_mapped_dso(lib);
-	decode_dyn(lib);
-
-	if (aux[AT_PHDR]) {
+	/* If the main program was already loaded by the kernel,
+	 * AT_PHDR will point to some location other than the dynamic
+	 * linker's program headers. */
+	if (aux[AT_PHDR] != (size_t)ldso.phdr) {
 		size_t interp_off = 0;
 		size_t tls_image = 0;
 		/* Find load address of the main program, via AT_PHDR vs PT_PHDR. */
-		app->phdr = phdr = (void *)aux[AT_PHDR];
-		app->phnum = aux[AT_PHNUM];
-		app->phentsize = aux[AT_PHENT];
+		Phdr *phdr = app.phdr = (void *)aux[AT_PHDR];
+		app.phnum = aux[AT_PHNUM];
+		app.phentsize = aux[AT_PHENT];
 		for (i=aux[AT_PHNUM]; i; i--, phdr=(void *)((char *)phdr + aux[AT_PHENT])) {
 			if (phdr->p_type == PT_PHDR)
-				app->base = (void *)(aux[AT_PHDR] - phdr->p_vaddr);
+				app.base = (void *)(aux[AT_PHDR] - phdr->p_vaddr);
 			else if (phdr->p_type == PT_INTERP)
 				interp_off = (size_t)phdr->p_vaddr;
 			else if (phdr->p_type == PT_TLS) {
 				tls_image = phdr->p_vaddr;
-				app->tls_len = phdr->p_filesz;
-				app->tls_size = phdr->p_memsz;
-				app->tls_align = phdr->p_align;
+				app.tls_len = phdr->p_filesz;
+				app.tls_size = phdr->p_memsz;
+				app.tls_align = phdr->p_align;
 			}
 		}
-		if (app->tls_size) app->tls_image = (char *)app->base + tls_image;
-		if (interp_off) lib->name = (char *)app->base + interp_off;
+		if (app.tls_size) app.tls_image = (char *)app.base + tls_image;
+		if (interp_off) ldso.name = (char *)app.base + interp_off;
 		if ((aux[0] & (1UL<<AT_EXECFN))
 		    && strncmp((char *)aux[AT_EXECFN], "/proc/", 6))
-			app->name = (char *)aux[AT_EXECFN];
+			app.name = (char *)aux[AT_EXECFN];
 		else
-			app->name = argv[0];
-		kernel_mapped_dso(app);
+			app.name = argv[0];
+		kernel_mapped_dso(&app);
 	} else {
 		int fd;
 		char *ldname = argv[0];
 		size_t l = strlen(ldname);
 		if (l >= 3 && !strcmp(ldname+l-3, "ldd")) ldd_mode = 1;
-		*argv++ = (void *)-1;
+		argv++;
 		while (argv[0] && argv[0][0]=='-' && argv[0][1]=='-') {
 			char *opt = argv[0]+2;
 			*argv++ = (void *)-1;
@@ -1229,8 +1238,8 @@ void *__dynlink(int argc, char **argv)
 			} else {
 				argv[0] = 0;
 			}
-			argv[-1] = (void *)-1;
 		}
+		argv[-1] = (void *)(argc - (argv-argv_orig));
 		if (!argv[0]) {
 			dprintf(2, "musl libc\n"
 				"Version %s\n"
@@ -1246,96 +1255,88 @@ void *__dynlink(int argc, char **argv)
 			_exit(1);
 		}
 		runtime = 1;
-		ehdr = (void *)map_library(fd, app);
+		Ehdr *ehdr = (void *)map_library(fd, &app);
 		if (!ehdr) {
 			dprintf(2, "%s: %s: Not a valid dynamic program\n", ldname, argv[0]);
 			_exit(1);
 		}
 		runtime = 0;
 		close(fd);
-		lib->name = ldname;
-		app->name = argv[0];
-		aux[AT_ENTRY] = (size_t)app->base + ehdr->e_entry;
+		ldso.name = ldname;
+		app.name = argv[0];
+		aux[AT_ENTRY] = (size_t)app.base + ehdr->e_entry;
 		/* Find the name that would have been used for the dynamic
 		 * linker had ldd not taken its place. */
 		if (ldd_mode) {
-			for (i=0; i<app->phnum; i++) {
-				if (app->phdr[i].p_type == PT_INTERP)
-					lib->name = (void *)(app->base
-						+ app->phdr[i].p_vaddr);
+			for (i=0; i<app.phnum; i++) {
+				if (app.phdr[i].p_type == PT_INTERP)
+					ldso.name = (void *)(app.base
+						+ app.phdr[i].p_vaddr);
 			}
-			dprintf(1, "\t%s (%p)\n", lib->name, lib->base);
+			dprintf(1, "\t%s (%p)\n", ldso.name, ldso.base);
 		}
 	}
-	if (app->tls_size) {
-		app->tls_id = tls_cnt = 1;
+	if (app.tls_size) {
+		app.tls_id = tls_cnt = 1;
 #ifdef TLS_ABOVE_TP
-		app->tls_offset = 0;
-		tls_offset = app->tls_size
-			+ ( -((uintptr_t)app->tls_image + app->tls_size)
-			& (app->tls_align-1) );
+		app.tls_offset = 0;
+		tls_offset = app.tls_size
+			+ ( -((uintptr_t)app.tls_image + app.tls_size)
+			& (app.tls_align-1) );
 #else
-		tls_offset = app->tls_offset = app->tls_size
-			+ ( -((uintptr_t)app->tls_image + app->tls_size)
-			& (app->tls_align-1) );
+		tls_offset = app.tls_offset = app.tls_size
+			+ ( -((uintptr_t)app.tls_image + app.tls_size)
+			& (app.tls_align-1) );
 #endif
-		tls_align = MAXP2(tls_align, app->tls_align);
+		tls_align = MAXP2(tls_align, app.tls_align);
 	}
-	app->global = 1;
-	decode_dyn(app);
+	app.global = 1;
+	decode_dyn(&app);
 
 	/* Attach to vdso, if provided by the kernel */
 	if (search_vec(auxv, &vdso_base, AT_SYSINFO_EHDR)) {
-		ehdr = (void *)vdso_base;
-		vdso->phdr = phdr = (void *)(vdso_base + ehdr->e_phoff);
-		vdso->phnum = ehdr->e_phnum;
-		vdso->phentsize = ehdr->e_phentsize;
+		Ehdr *ehdr = (void *)vdso_base;
+		Phdr *phdr = vdso.phdr = (void *)(vdso_base + ehdr->e_phoff);
+		vdso.phnum = ehdr->e_phnum;
+		vdso.phentsize = ehdr->e_phentsize;
 		for (i=ehdr->e_phnum; i; i--, phdr=(void *)((char *)phdr + ehdr->e_phentsize)) {
 			if (phdr->p_type == PT_DYNAMIC)
-				vdso->dynv = (void *)(vdso_base + phdr->p_offset);
+				vdso.dynv = (void *)(vdso_base + phdr->p_offset);
 			if (phdr->p_type == PT_LOAD)
-				vdso->base = (void *)(vdso_base - phdr->p_vaddr + phdr->p_offset);
+				vdso.base = (void *)(vdso_base - phdr->p_vaddr + phdr->p_offset);
 		}
-		vdso->name = "";
-		vdso->shortname = "linux-gate.so.1";
-		vdso->global = 1;
-		decode_dyn(vdso);
-		vdso->prev = lib;
-		lib->next = vdso;
+		vdso.name = "";
+		vdso.shortname = "linux-gate.so.1";
+		vdso.global = 1;
+		vdso.relocated = 1;
+		decode_dyn(&vdso);
+		vdso.prev = &ldso;
+		ldso.next = &vdso;
 	}
 
-	/* Initial dso chain consists only of the app. We temporarily
-	 * append the dynamic linker/libc so we can relocate it, then
-	 * restore the initial chain in preparation for loading third
-	 * party libraries (preload/needed). */
-	head = tail = app;
-	ldso = lib;
-	app->next = lib;
-	reloc_all(lib);
-	app->next = 0;
-
-	/* PAST THIS POINT, ALL LIBC INTERFACES ARE FULLY USABLE. */
+	/* Initial dso chain consists only of the app. */
+	head = tail = &app;
 
 	/* Donate unused parts of app and library mapping to malloc */
-	reclaim_gaps(app);
-	reclaim_gaps(lib);
+	reclaim_gaps(&app);
+	reclaim_gaps(&ldso);
 
 	/* Load preload/needed libraries, add their symbols to the global
-	 * namespace, and perform all remaining relocations. The main
-	 * program must be relocated LAST since it may contain copy
-	 * relocations which depend on libraries' relocations. */
+	 * namespace, and perform all remaining relocations. */
 	if (env_preload) load_preload(env_preload);
-	load_deps(app);
-	make_global(app);
+	load_deps(&app);
+	make_global(&app);
 
 #ifndef DYNAMIC_IS_RO
-	for (i=0; app->dynv[i]; i+=2)
-		if (app->dynv[i]==DT_DEBUG)
-			app->dynv[i+1] = (size_t)&debug;
+	for (i=0; app.dynv[i]; i+=2)
+		if (app.dynv[i]==DT_DEBUG)
+			app.dynv[i+1] = (size_t)&debug;
 #endif
 
-	reloc_all(app->next);
-	reloc_all(app);
+	/* The main program must be relocated LAST since it may contin
+	 * copy relocations which depend on libraries' relocations. */
+	reloc_all(app.next);
+	reloc_all(&app);
 
 	update_tls_size();
 	if (libc.tls_size > sizeof builtin_tls) {
@@ -1359,14 +1360,13 @@ void *__dynlink(int argc, char **argv)
 
 	/* Switch to runtime mode: any further failures in the dynamic
 	 * linker are a reportable failure rather than a fatal startup
-	 * error. If the dynamic loader (dlopen) will not be used, free
-	 * all memory used by the dynamic linker. */
+	 * error. */
 	runtime = 1;
 
 	debug.ver = 1;
 	debug.bp = _dl_debug_state;
 	debug.head = head;
-	debug.base = lib->base;
+	debug.base = ldso.base;
 	debug.state = 0;
 	_dl_debug_state();
 
@@ -1375,7 +1375,8 @@ void *__dynlink(int argc, char **argv)
 	errno = 0;
 	do_init_fini(tail);
 
-	return (void *)aux[AT_ENTRY];
+	CRTJMP((void *)aux[AT_ENTRY], argv-1);
+	for(;;);
 }
 
 void *dlopen(const char *file, int mode)

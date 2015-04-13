@@ -85,7 +85,7 @@ src/internal/version.h: $(wildcard VERSION .git)
 
 src/internal/version.lo: src/internal/version.h
 
-src/ldso/dynlink.lo: arch/$(ARCH)/reloc.h
+src/ldso/dlstart.lo src/ldso/dynlink.lo: src/internal/dynlink.h arch/$(ARCH)/reloc.h
 
 crt/crt1.o crt/Scrt1.o: $(wildcard arch/$(ARCH)/crt_arch.h)
 

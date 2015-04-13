@@ -1,5 +1,3 @@
-#include <string.h>
-#include <elf.h>
 #include <endian.h>
 
 #if __BYTE_ORDER == __BIG_ENDIAN
@@ -14,27 +12,15 @@
 
 #define TPOFF_K 16
 
-static int remap_rel(int type)
-{
-	switch(type) {
-	case R_AARCH64_ABS64:
-		return REL_SYMBOLIC;
-	case R_AARCH64_GLOB_DAT:
-		return REL_GOT;
-	case R_AARCH64_JUMP_SLOT:
-		return REL_PLT;
-	case R_AARCH64_RELATIVE:
-		return REL_RELATIVE;
-	case R_AARCH64_COPY:
-		return REL_COPY;
-	case R_AARCH64_TLS_DTPMOD64:
-		return REL_DTPMOD;
-	case R_AARCH64_TLS_DTPREL64:
-		return REL_DTPOFF;
-	case R_AARCH64_TLS_TPREL64:
-		return REL_TPOFF;
-	case R_AARCH64_TLSDESC:
-		return REL_TLSDESC;
-	}
-	return 0;
-}
+#define REL_SYMBOLIC    R_AARCH64_ABS64
+#define REL_GOT         R_AARCH64_GLOB_DAT
+#define REL_PLT         R_AARCH64_JUMP_SLOT
+#define REL_RELATIVE    R_AARCH64_RELATIVE
+#define REL_COPY        R_AARCH64_COPY
+#define REL_DTPMOD      R_AARCH64_TLS_DTPMOD64
+#define REL_DTPOFF      R_AARCH64_TLS_DTPREL64
+#define REL_TPOFF       R_AARCH64_TLS_TPREL64
+#define REL_TLSDESC     R_AARCH64_TLSDESC
+
+#define CRTJMP(pc,sp) __asm__ __volatile__( \
+	"mov sp,%1 ; bx %0" : : "r"(pc), "r"(sp) : "memory" )

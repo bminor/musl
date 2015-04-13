@@ -1,7 +1,3 @@
-#include <stdint.h>
-#include <string.h>
-#include <elf.h>
-
 #define LDSO_ARCH "x32"
 
 /* FIXME: x32 is very strange in its use of 64-bit relocation types in
@@ -11,30 +7,20 @@
  * checked. In particular, R_X86_64_64, R_X86_64_DTPOFF64, and
  * R_X86_64_TPOFF64 may need checking. */
 
-static int remap_rel(int type)
-{
-	switch(type) {
-	case R_X86_64_64:
-	case R_X86_64_32:
-		return REL_SYMBOLIC;
-	case R_X86_64_PC32:
-		return REL_OFFSET;
-	case R_X86_64_GLOB_DAT:
-		return REL_GOT;
-	case R_X86_64_JUMP_SLOT:
-		return REL_PLT;
-	case R_X86_64_RELATIVE:
-		return REL_RELATIVE;
-	case R_X86_64_COPY:
-		return REL_COPY;
-	case R_X86_64_DTPMOD64:
-		return REL_DTPMOD;
-	case R_X86_64_DTPOFF64:
-	case R_X86_64_DTPOFF32:
-		return REL_DTPOFF;
-	case R_X86_64_TPOFF64:
-	case R_X86_64_TPOFF32:
-		return REL_TPOFF;
-	}
-	return 0;
-}
+/* The R_X86_64_64, R_X86_64_DTPOFF32, and R_X86_64_TPOFF32 reloc types
+ * were previously mapped in the switch table form of this file; however,
+ * they do not seem to be used/usable for anything. If needed, new
+ * mappings will have to be added. */
+
+#define REL_SYMBOLIC    R_X86_64_32
+#define REL_OFFSET      R_X86_64_PC32
+#define REL_GOT         R_X86_64_GLOB_DAT
+#define REL_PLT         R_X86_64_JUMP_SLOT
+#define REL_RELATIVE    R_X86_64_RELATIVE
+#define REL_COPY        R_X86_64_COPY
+#define REL_DTPMOD      R_X86_64_DTPMOD64
+#define REL_DTPOFF      R_X86_64_DTPOFF64
+#define REL_TPOFF       R_X86_64_TPOFF64
+
+#define CRTJMP(pc,sp) __asm__ __volatile__( \
+	"mov %1,%%esp ; jmp *%0" : : "r"(pc), "r"(sp) : "memory" )
