@@ -810,12 +810,6 @@ static struct dso *load_library(const char *name, struct dso *needed_by)
 	/* Add a shortname only if name arg was not an explicit pathname. */
 	if (pathname != name) p->shortname = strrchr(p->name, '/')+1;
 	if (p->tls_image) {
-		if (runtime && !libc.has_thread_pointer) {
-			munmap(map, p->map_len);
-			free(p);
-			errno = ENOSYS;
-			return 0;
-		}
 		p->tls_id = ++tls_cnt;
 		tls_align = MAXP2(tls_align, p->tls_align);
 #ifdef TLS_ABOVE_TP
@@ -1165,8 +1159,7 @@ _Noreturn void __dls3(size_t *sp)
 	 * thread pointer at runtime. */
 	libc.tls_size = sizeof builtin_tls;
 	if (__init_tp(__copy_tls((void *)builtin_tls)) < 0) {
-		dprintf(2, "%s: Thread-local storage not supported by kernel.\n", argv[0]);
-		_exit(127);
+		a_crash();
 	}
 
 	/* Find aux vector just past environ[] */
@@ -1352,8 +1345,7 @@ _Noreturn void __dls3(size_t *sp)
 			_exit(127);
 		}
 		if (__init_tp(__copy_tls(initial_tls)) < 0) {
-			dprintf(2, "%s: Failed to switch to new thread pointer.\n", argv[0]);
-			_exit(127);
+			a_crash();
 		}
 	} else {
 		size_t tmp_tls_size = libc.tls_size;

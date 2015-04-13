@@ -14,12 +14,11 @@ struct __locale_struct {
 };
 
 struct __libc {
-	int has_thread_pointer;
 	int can_do_threads;
 	int threaded;
 	int secure;
-	size_t *auxv;
 	volatile int threads_minus_1;
+	size_t *auxv;
 	FILE *ofl_head;
 	volatile int ofl_lock[2];
 	size_t tls_size;

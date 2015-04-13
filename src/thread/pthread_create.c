@@ -122,7 +122,6 @@ _Noreturn void __pthread_exit(void *result)
 
 void __do_cleanup_push(struct __ptcb *cb)
 {
-	if (!libc.has_thread_pointer) return;
 	struct pthread *self = __pthread_self();
 	cb->__next = self->cancelbuf;
 	self->cancelbuf = cb;
@@ -130,7 +129,6 @@ void __do_cleanup_push(struct __ptcb *cb)
 
 void __do_cleanup_pop(struct __ptcb *cb)
 {
-	if (!libc.has_thread_pointer) return;
 	__pthread_self()->cancelbuf = cb->__next;
 }
 

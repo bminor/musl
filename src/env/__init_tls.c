@@ -15,7 +15,6 @@ int __init_tp(void *p)
 	int r = __set_thread_area(TP_ADJ(p));
 	if (r < 0) return -1;
 	if (!r) libc.can_do_threads = 1;
-	libc.has_thread_pointer = 1;
 	td->tid = __syscall(SYS_set_tid_address, &td->tid);
 	td->locale = &libc.global_locale;
 	td->robust_list.head = &td->robust_list.head;
@@ -112,8 +111,8 @@ void __init_tls(size_t *aux)
 		mem = builtin_tls;
 	}
 
-	/* Failure to initialize thread pointer is fatal if TLS is used. */
-	if (__init_tp(__copy_tls(mem)) < 0 && tls_phdr)
+	/* Failure to initialize thread pointer is always fatal. */
+	if (__init_tp(__copy_tls(mem)) < 0)
 		a_crash();
 }
 #else

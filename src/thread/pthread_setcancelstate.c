@@ -3,7 +3,6 @@
 int __pthread_setcancelstate(int new, int *old)
 {
 	if (new > 2U) return EINVAL;
-	if (!libc.has_thread_pointer) return ENOSYS;
 	struct pthread *self = __pthread_self();
 	if (old) *old = self->canceldisable;
 	self->canceldisable = new;

@@ -22,7 +22,7 @@ pid_t fork(void)
 #else
 	ret = syscall(SYS_clone, SIGCHLD, 0);
 #endif
-	if (libc.has_thread_pointer && !ret) {
+	if (!ret) {
 		pthread_t self = __pthread_self();
 		self->tid = __syscall(SYS_gettid);
 		self->robust_list.off = 0;

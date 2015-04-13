@@ -30,7 +30,7 @@ long __syscall_cp_c(syscall_arg_t nr,
 	long r;
 	int st;
 
-	if (!libc.has_thread_pointer || (st=(self=__pthread_self())->canceldisable)
+	if ((st=(self=__pthread_self())->canceldisable)
 	    && (st==PTHREAD_CANCEL_DISABLE || nr==SYS_close))
 		return __syscall(nr, u, v, w, x, y, z);
 
@@ -69,7 +69,6 @@ static void cancel_handler(int sig, siginfo_t *si, void *ctx)
 
 void __testcancel()
 {
-	if (!libc.has_thread_pointer) return;
 	pthread_t self = __pthread_self();
 	if (self->cancel && !self->canceldisable)
 		__cancel();
