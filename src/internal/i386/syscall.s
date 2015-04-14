@@ -59,6 +59,7 @@ __vsyscall6:
 	ret
 
 .global __syscall
+.hidden __syscall
 .type __syscall,@function
 __syscall:
 	lea 24(%esp),%eax

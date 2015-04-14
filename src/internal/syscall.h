@@ -17,7 +17,7 @@
 typedef long syscall_arg_t;
 #endif
 
-#if defined(__PIC__) && (100*__GNUC__+__GNUC_MINOR__ >= 303)
+#ifdef SHARED
 __attribute__((visibility("hidden")))
 #endif
 long __syscall_ret(unsigned long), __syscall(syscall_arg_t, ...),

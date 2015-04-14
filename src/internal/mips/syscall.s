@@ -1,6 +1,7 @@
 .set    noreorder
 
 .global __syscall
+.hidden __syscall
 .type   __syscall,@function
 __syscall:
 	move    $2, $4

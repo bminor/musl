@@ -1,4 +1,5 @@
 .global __syscall
+.hidden __syscall
 .type   __syscall, @function
 __syscall:
 	! The kernel syscall entry point documents that the trap number indicates
