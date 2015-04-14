@@ -382,6 +382,7 @@
 #define __NR_getrandom 385
 #define __NR_memfd_create 386
 #define __NR_bpf 387
+#define __NR_execveat 388
 
 /* Repeated with SYS_ prefix */
 
@@ -770,3 +771,4 @@
 #define SYS_getrandom 385
 #define SYS_memfd_create 386
 #define SYS_bpf 387
+#define SYS_execveat 388
