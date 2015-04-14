@@ -7,6 +7,7 @@
 # code, respectively), and optimizes for size/simplicity in the caller.
 
 .global __vsyscall
+.hidden __vsyscall
 .type __vsyscall,@function
 __vsyscall:
 	push %edi
@@ -41,6 +42,7 @@ __vsyscall:
 # possible to pass two arguments on the stack.
 
 .global __vsyscall6
+.hidden __vsyscall6
 .type __vsyscall6,@function
 __vsyscall6:
 	push %ebp
