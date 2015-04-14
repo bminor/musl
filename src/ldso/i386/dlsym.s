@@ -1,5 +1,6 @@
 .text
 .global dlsym
+.hidden __dlsym
 .type dlsym,@function
 dlsym:
 	push (%esp)

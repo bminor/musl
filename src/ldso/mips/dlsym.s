@@ -1,5 +1,6 @@
 .set noreorder
 .global dlsym
+.hidden __dlsym
 .type dlsym,@function
 dlsym:
 	lui $gp, %hi(_gp_disp)

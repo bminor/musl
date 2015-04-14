@@ -1598,6 +1598,7 @@ int __dladdr(const void *addr, Dl_info *info)
 	return 1;
 }
 
+__attribute__((__visibility__("hidden")))
 void *__dlsym(void *restrict p, const char *restrict s, void *restrict ra)
 {
 	void *res;
