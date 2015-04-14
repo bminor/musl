@@ -199,6 +199,7 @@ uint16_t ntohs(uint16_t);
 #define IP_RECVORIGDSTADDR IP_ORIGDSTADDR
 #define IP_MINTTL          21
 #define IP_NODEFRAG        22
+#define IP_CHECKSUM        23
 #define IP_MULTICAST_IF    32
 #define IP_MULTICAST_TTL   33
 #define IP_MULTICAST_LOOP  34
