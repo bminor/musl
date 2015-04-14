@@ -1,3 +1,13 @@
+.global __cp_begin
+.hidden __cp_begin
+.global __cp_end
+.hidden __cp_end
+.global __cp_cancel
+.hidden __cp_cancel
+.hidden __cancel
+.global __syscall_cp_asm
+.hidden __syscall_cp_asm
+
 #r0: volatile. may be modified during linkage.
 #r1: stack frame: 16 byte alignment.
 #r2: tls/thread pointer on pp32
@@ -16,11 +26,9 @@
 #the fields CR2,CR2,CR4 of the cond reg must be preserved
 #LR (link reg) shall contain the funcs return address
 	.text
-	.global __syscall_cp_asm
 	.type   __syscall_cp_asm,%function
 __syscall_cp_asm:
 	# at enter: r3 = pointer to self->cancel, r4: syscall no, r5: first arg, r6: 2nd, r7: 3rd, r8: 4th, r9: 5th, r10: 6th
-	.global __cp_begin
 __cp_begin:
 	# r3 holds first argument, its a pointer to self->cancel. 
 	# we must compare the dereferenced value with 0 and jump to __cancel if its not
@@ -42,7 +50,6 @@ __cp_begin:
 	mr      7, 9                  # arg5
 	mr      8, 10                  # arg6
 	sc
-	.global __cp_end
 __cp_end:
 	bnslr+ # return if no summary overflow. 
 	#else negate result.

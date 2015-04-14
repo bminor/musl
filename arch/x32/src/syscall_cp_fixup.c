@@ -1,4 +1,8 @@
 #include <sys/syscall.h>
+
+#ifdef SHARED
+__attribute__((__visibility__("hidden")))
+#endif
 long __syscall_cp_internal(volatile void*, long long, long long, long long, long long,
                              long long, long long, long long);
 
@@ -8,6 +12,9 @@ struct __timespec_kernel { long long tv_sec; long long tv_nsec; };
 #define __fixup(X) do { if(X) X = (unsigned long) (&(struct __timespec_kernel) \
                    { .tv_sec = __tsc(X)->tv_sec, .tv_nsec = __tsc(X)->tv_nsec}); } while(0)
 
+#ifdef SHARED
+__attribute__((__visibility__("hidden")))
+#endif
 long __syscall_cp_asm (volatile void * foo, long long n, long long a1, long long a2, long long a3,
 	                     long long a4, long long a5, long long a6) {
 	switch (n) {

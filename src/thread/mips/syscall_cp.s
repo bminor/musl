@@ -1,10 +1,17 @@
 .set    noreorder
 
+.global __cp_begin
+.hidden __cp_begin
+.global __cp_end
+.hidden __cp_end
+.global __cp_cancel
+.hidden __cp_cancel
+.hidden __cancel
 .global __syscall_cp_asm
+.hidden __syscall_cp_asm
 .type   __syscall_cp_asm,@function
 __syscall_cp_asm:
 	subu    $sp, $sp, 32
-.global __cp_begin
 __cp_begin:
 	lw      $4, 0($4)
 	bne     $4, $0, __cp_cancel
@@ -22,7 +29,6 @@ __cp_begin:
 	sw      $2, 28($sp)
 	lw      $2, 28($sp)
 	syscall
-.global __cp_end
 __cp_end:
 	beq     $7, $0, 1f
 	addu    $sp, $sp, 32
@@ -30,7 +36,6 @@ __cp_end:
 1:	jr      $ra
 	nop
 
-.global __cp_cancel
 __cp_cancel:
 	addu    $sp, $sp, 32
 	lw      $25, %call16(__cancel)($gp)

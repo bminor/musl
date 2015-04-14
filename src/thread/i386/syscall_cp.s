@@ -1,5 +1,13 @@
 .text
+.global __cp_begin
+.hidden __cp_begin
+.global __cp_end
+.hidden __cp_end
+.global __cp_cancel
+.hidden __cp_cancel
+.hidden __cancel
 .global __syscall_cp_asm
+.hidden __syscall_cp_asm
 .type   __syscall_cp_asm,@function
 __syscall_cp_asm:
 	mov 4(%esp),%ecx
@@ -7,7 +15,6 @@ __syscall_cp_asm:
 	pushl %esi
 	pushl %edi
 	pushl %ebp
-.global __cp_begin
 __cp_begin:
 	movl (%ecx),%eax
 	testl %eax,%eax
@@ -20,14 +27,12 @@ __cp_begin:
 	movl 44(%esp),%edi
 	movl 48(%esp),%ebp
 	int $128
-.global __cp_end
 __cp_end:
 	popl %ebp
 	popl %edi
 	popl %esi
 	popl %ebx
 	ret
-.global __cp_cancel
 __cp_cancel:
 	popl %ebp
 	popl %edi

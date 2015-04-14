@@ -1,9 +1,16 @@
 .text
+.global __cp_begin
+.hidden __cp_begin
+.global __cp_end
+.hidden __cp_end
+.global __cp_cancel
+.hidden __cp_cancel
+.hidden __cancel
 .global __syscall_cp_internal
+.hidden __syscall_cp_internal
 .type   __syscall_cp_internal,@function
 __syscall_cp_internal:
 
-.global __cp_begin
 __cp_begin:
 	mov (%rdi),%eax
 	test %eax,%eax
@@ -18,6 +25,5 @@ __cp_begin:
 	mov 16(%rsp),%r9
 	mov %r11,8(%rsp)
 	syscall
-.global __cp_end
 __cp_end:
 	ret
