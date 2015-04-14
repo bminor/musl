@@ -1051,6 +1051,7 @@ void *__copy_tls(unsigned char *mem)
 	return td;
 }
 
+__attribute__((__visibility__("hidden")))
 void *__tls_get_new(size_t *v)
 {
 	pthread_t self = __pthread_self();
