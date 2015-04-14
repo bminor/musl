@@ -108,9 +108,9 @@ int __libc_sigprocmask(int, const sigset_t *, sigset_t *);
 void __lock(volatile int *);
 void __unmapself(void *, size_t);
 
-void __vm_wait();
-void __vm_lock();
-void __vm_unlock();
+void __vm_wait(void);
+void __vm_lock(void);
+void __vm_unlock(void);
 
 int __timedwait(volatile int *, int, clockid_t, const struct timespec *, int);
 int __timedwait_cp(volatile int *, int, clockid_t, const struct timespec *, int);
@@ -123,9 +123,9 @@ static inline void __wake(volatile void *addr, int cnt, int priv)
 	__syscall(SYS_futex, addr, FUTEX_WAKE, cnt);
 }
 
-void __acquire_ptc();
-void __release_ptc();
-void __inhibit_ptc();
+void __acquire_ptc(void);
+void __release_ptc(void);
+void __inhibit_ptc(void);
 
 void __block_all_sigs(void *);
 void __block_app_sigs(void *);
