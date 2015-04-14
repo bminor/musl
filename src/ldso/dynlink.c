@@ -636,7 +636,7 @@ static int fixup_rpath(struct dso *p, char *buf, size_t buf_size)
 
 static void decode_dyn(struct dso *p)
 {
-	size_t dyn[DYN_CNT] = {0};
+	size_t dyn[DYN_CNT];
 	decode_vec(p->dynv, dyn, DYN_CNT);
 	p->syms = (void *)(p->base + dyn[DT_SYMTAB]);
 	p->strings = (void *)(p->base + dyn[DT_STRTAB]);
@@ -901,7 +901,7 @@ static void do_mips_relocs(struct dso *p, size_t *got)
 
 static void reloc_all(struct dso *p)
 {
-	size_t dyn[DYN_CNT] = {0};
+	size_t dyn[DYN_CNT];
 	for (; p; p=p->next) {
 		if (p->relocated) continue;
 		decode_vec(p->dynv, dyn, DYN_CNT);
@@ -949,7 +949,7 @@ static void kernel_mapped_dso(struct dso *p)
 static void do_fini()
 {
 	struct dso *p;
-	size_t dyn[DYN_CNT] = {0};
+	size_t dyn[DYN_CNT];
 	for (p=fini_head; p; p=p->fini_next) {
 		if (!p->constructed) continue;
 		decode_vec(p->dynv, dyn, DYN_CNT);
@@ -967,7 +967,7 @@ static void do_fini()
 
 static void do_init_fini(struct dso *p)
 {
-	size_t dyn[DYN_CNT] = {0};
+	size_t dyn[DYN_CNT];
 	int need_locking = libc.threads_minus_1;
 	/* Allow recursive calls that arise when a library calls
 	 * dlopen from one of its constructors, but block any
@@ -1145,7 +1145,7 @@ void __dls2(unsigned char *base)
 _Noreturn void __dls3(size_t *sp)
 {
 	static struct dso app, vdso;
-	size_t aux[AUX_CNT] = {0}, *auxv;
+	size_t aux[AUX_CNT], *auxv;
 	size_t i;
 	char *env_preload=0;
 	size_t vdso_base;
