@@ -111,6 +111,7 @@ fi
 CFLAGS_C99FSE=
 CFLAGS_AUTO=
 CFLAGS_MEMOPS=
+CFLAGS_NOSSP=
 LDFLAGS_AUTO=
 OPTIMIZE_GLOBS=
 prefix=/usr/local/musl
@@ -291,6 +292,13 @@ CFLAGS_C99FSE="$CFLAGS_C99FSE -D__may_alias__="
 fi
 
 #
+# Check for options to disable stack protector, which needs to be
+# disabled for a few early-bootstrap translation units. If not found,
+# this is not an error; we assume the toolchain does not do ssp.
+#
+tryflag CFLAGS_NOSSP -fno-stack-protector
+
+#
 # Check for options that may be needed to prevent the compiler from
 # generating self-referential versions of memcpy,, memmove, memcmp,
 # and memset. Really, we should add a check to determine if this
@@ -408,7 +416,6 @@ tryflag CFLAGS_AUTO -Wno-pointer-to-int-cast
 fi
 
 # Some patched GCC builds have these defaults messed up...
-tryflag CFLAGS_AUTO -fno-stack-protector
 tryldflag LDFLAGS_AUTO -Wl,--hash-style=both
 
 test "$shared" = "no" || {
@@ -526,6 +533,7 @@ CC = $CC
 CFLAGS = $CFLAGS_AUTO $CFLAGS
 CFLAGS_C99FSE = $CFLAGS_C99FSE
 CFLAGS_MEMOPS = $CFLAGS_MEMOPS
+CFLAGS_NOSSP = $CFLAGS_NOSSP
 CPPFLAGS = $CPPFLAGS
 LDFLAGS = $LDFLAGS_AUTO $LDFLAGS
 CROSS_COMPILE = $CROSS_COMPILE

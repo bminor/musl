@@ -16,3 +16,13 @@ void __stack_chk_fail(void)
 {
 	a_crash();
 }
+
+#ifdef SHARED
+
+__attribute__((__visibility__("hidden")))
+void __stack_chk_fail_local(void)
+{
+	a_crash();
+}
+
+#endif
