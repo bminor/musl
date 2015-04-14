@@ -9,6 +9,7 @@
 
 #include "crt_arch.h"
 
+__attribute__((__visibility__("hidden")))
 void _dlstart_c(size_t *sp, size_t *dynv)
 {
 	size_t i, aux[AUX_CNT], dyn[DYN_CNT];
