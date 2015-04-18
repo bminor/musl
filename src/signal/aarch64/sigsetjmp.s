@@ -4,16 +4,18 @@
 .type __sigsetjmp,%function
 sigsetjmp:
 __sigsetjmp:
-	str x1,[x0,#176]
 	cbz x1,setjmp
 
-	// TODO errno?
-	// sigprocmask(SIG_SETMASK, 0, (sigset_t*)buf->__ss);
-	stp x0,x30,[sp,#-16]!
-	add x2,x0,#184
-	mov x1,#0
-	mov x0,#2
-	bl sigprocmask
-	ldp x0,x30,[sp],#16
+	str lr,[x0,#176]
+	str x19,[x0,#176+8+8]
+	mov x19,x0
 
-	b setjmp
+	bl setjmp
+
+	mov w1,w0
+	mov x0,x19
+	ldr lr,[x0,#176]
+	ldr x19,[x0,#176+8+8]
+
+.hidden __sigsetjmp_tail
+	b __sigsetjmp_tail

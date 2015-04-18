@@ -4,14 +4,22 @@
 .type __sigsetjmp,@function
 sigsetjmp:
 __sigsetjmp:
-	mov 4(%esp),%eax
 	mov 8(%esp),%ecx
-	mov %ecx,24(%eax)
 	jecxz 1f
-	add $28,%eax
-	push %eax
-	push $0
-	push $2
-	call sigprocmask
-	add $12,%esp
+
+	mov 4(%esp),%eax
+	popl 24(%eax)
+	mov %ebx,28+8(%eax)
+	mov %eax,%ebx
+
+	call setjmp
+
+	pushl 24(%ebx)
+	mov %ebx,4(%esp)
+	mov %eax,8(%esp)
+	mov 28+8(%ebx),%ebx
+
+.hidden __sigsetjmp_tail
+	jmp __sigsetjmp_tail
+
 1:	jmp setjmp

@@ -1,17 +1,24 @@
-/* Copyright 2011-2012 Nicholas J. Kain, licensed under standard MIT license */
 .global sigsetjmp
 .global __sigsetjmp
 .type sigsetjmp,@function
 .type __sigsetjmp,@function
 sigsetjmp:
 __sigsetjmp:
-	andl %esi,%esi
-	movq %rsi,64(%rdi)
+	test %esi,%esi
 	jz 1f
-	pushq %rdi
-	leaq 72(%rdi),%rdx
-	xorl %esi,%esi
-	movl $2,%edi
-	call sigprocmask
-	popq %rdi
+
+	popq 64(%rdi)
+	mov %rbx,72+8(%rdi)
+	mov %rdi,%rbx
+
+	call setjmp
+
+	pushq 64(%rbx)
+	mov %rbx,%rdi
+	mov %eax,%esi
+	mov 72+8(%rbx),%rbx
+
+.hidden __sigsetjmp_tail
+	jmp __sigsetjmp_tail
+
 1:	jmp setjmp

@@ -4,27 +4,37 @@
 .type __sigsetjmp,@function
 sigsetjmp:
 __sigsetjmp:
-	mov.l r5, @(36,r4)
 	tst r5, r5
-	bf  2f
+	bt 9f
 
-	sts.l pr, @-r15
-	mov.l r4, @-r15
 	mov r4, r6
-	add #40, r6
-	mov #0, r5
-	mov #2, r4
-	mov.l L1, r0
-	bsrf  r0
-	 nop
-1:	mov.l @r15+, r4
-	lds.l @r15+, pr
+	add #52, r6
+	sts pr, r0
+	mov.l r0, @r6
+	mov.l r8, @(4+8,r6)
 
-2:	mov.l L2, r0
-	braf  r0
+	mov.l 1f, r0
+2:	bsrf r0
+	 mov r4, r8
+
+	mov r0, r5
+	mov r8, r4
+	mov r4, r6
+	add #52, r6
+
+	mov.l @r6, r0
+	lds r0, pr
+
+	mov.l 3f, r0
+4:	braf r0
+	 mov.l @(4+8,r4), r8
+
+9:	mov.l 5f, r0
+6:	braf r0
 	 nop
-3:
 
 .align 2
-L1:	.long pthread_sigmask@PLT-(1b-.)
-L2:	.long setjmp@PLT-(3b-.)
+1:	.long setjmp@PLT-(2b+4-.)
+.hidden __sigsetjmp_tail
+3:	.long __sigsetjmp_tail@PLT-(4b+4-.)
+5:	.long setjmp@PLT-(6b+4-.)

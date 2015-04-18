@@ -4,13 +4,19 @@
 .type __sigsetjmp,%function
 sigsetjmp:
 __sigsetjmp:
-	str a2,[a1,#256]
-	tst a2,a2
+	tst r1,r1
 	beq setjmp
-	push {a1,lr}
-	add a3,a1,#260
-	mov a2,#0
-	mov a1,#2
-	bl sigprocmask
-	pop {a1,lr}
-	b setjmp
+
+	str lr,[r0,#256]
+	str r4,[r0,#260+8]
+	mov r4,r0
+
+	bl setjmp
+
+	mov r1,r0
+	mov r0,r4
+	ldr lr,[r0,#256]
+	ldr r4,[r0,#260+8]
+
+.hidden __sigsetjmp_tail
+	b __sigsetjmp_tail
