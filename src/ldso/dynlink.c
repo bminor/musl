@@ -250,6 +250,7 @@ static struct symdef find_sym(struct dso *dso, const char *s, int need_def)
 	return def;
 }
 
+__attribute__((__visibility__("hidden")))
 ptrdiff_t __tlsdesc_static(), __tlsdesc_dynamic();
 
 static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stride)
