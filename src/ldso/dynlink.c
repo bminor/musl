@@ -998,9 +998,11 @@ static void do_init_fini(struct dso *p)
 	if (need_locking) pthread_mutex_unlock(&init_fini_lock);
 }
 
-void _dl_debug_state(void)
+static void dl_debug_state(void)
 {
 }
+
+weak_alias(dl_debug_state, _dl_debug_state);
 
 void __reset_tls()
 {
@@ -1369,7 +1371,7 @@ _Noreturn void __dls3(size_t *sp)
 	runtime = 1;
 
 	debug.ver = 1;
-	debug.bp = _dl_debug_state;
+	debug.bp = dl_debug_state;
 	debug.head = head;
 	debug.base = ldso.base;
 	debug.state = 0;
