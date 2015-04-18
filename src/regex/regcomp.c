@@ -837,6 +837,10 @@ static reg_errcode_t parse_atom(tre_parse_ctx_t *ctx, const char *s)
 			node = tre_ast_new_literal(ctx->mem, v, v, ctx->position++);
 			s--;
 			break;
+		case '{':
+			/* reject repetitions after empty expression in BRE */
+			if (!ere)
+				return REG_BADRPT;
 		default:
 			if (!ere && (unsigned)*s-'1' < 9) {
 				/* back reference */
@@ -880,10 +884,14 @@ static reg_errcode_t parse_atom(tre_parse_ctx_t *ctx, const char *s)
 		s++;
 		break;
 	case '*':
-	case '|':
+		return REG_BADPAT;
 	case '{':
 	case '+':
 	case '?':
+		/* reject repetitions after empty expression in ERE */
+		if (ere)
+			return REG_BADRPT;
+	case '|':
 		if (!ere)
 			goto parse_literal;
 	case 0:
@@ -964,8 +972,9 @@ static reg_errcode_t tre_parse(tre_parse_ctx_t *ctx)
 		}
 
 	parse_iter:
-		/* extension: repetitions are accepted after an empty node
-		   eg. (+), ^*, a$?, a|{2} */
+		/* extension: repetitions are rejected after an empty node
+		   eg. (+), |*, {2}, but assertions are not treated as empty
+		   so ^* or $? are accepted currently. */
 		switch (*s) {
 		case '+':
 		case '?':
