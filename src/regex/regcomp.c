@@ -708,7 +708,7 @@ static const char *parse_dup_count(const char *s, int *n)
 	return s;
 }
 
-static reg_errcode_t parse_dup(tre_parse_ctx_t *ctx, const char *s)
+static const char *parse_dup(const char *s, int ere, int *pmin, int *pmax)
 {
 	int min, max;
 
@@ -723,19 +723,13 @@ static reg_errcode_t parse_dup(tre_parse_ctx_t *ctx, const char *s)
 		max > RE_DUP_MAX ||
 		min > RE_DUP_MAX ||
 		min < 0 ||
-		(!(ctx->cflags & REG_EXTENDED) && *s++ != '\\') ||
+		(!ere && *s++ != '\\') ||
 		*s++ != '}'
 	)
-		return REG_BADBR;
-
-	if (min == 0 && max == 0)
-		ctx->n = tre_ast_new_literal(ctx->mem, EMPTY, -1, -1);
-	else
-		ctx->n = tre_ast_new_iter(ctx->mem, ctx->n, min, max, 0);
-	if (!ctx->n)
-		return REG_ESPACE;
-	ctx->s = s;
-	return REG_OK;
+		return 0;
+	*pmin = min;
+	*pmax = max;
+	return s;
 }
 
 static int hexval(unsigned c)
@@ -988,6 +982,8 @@ static reg_errcode_t tre_parse(tre_parse_ctx_t *ctx)
 		   eg. (+), |*, {2}, but assertions are not treated as empty
 		   so ^* or $? are accepted currently. */
 		for (;;) {
+			int min, max;
+
 			if (*s!='\\' && *s!='*') {
 				if (!ere)
 					break;
@@ -1007,21 +1003,24 @@ static reg_errcode_t tre_parse(tre_parse_ctx_t *ctx)
 			   sense, note however that the RE_DUP_MAX limit can be
 			   circumvented: (a{255}){255} uses a lot of memory.. */
 			if (*s=='{') {
-				err = parse_dup(ctx, s+1);
-				if (err != REG_OK)
-					return err;
-				s = ctx->s;
+				s = parse_dup(s+1, ere, &min, &max);
+				if (!s)
+					return REG_BADBR;
 			} else {
-				int min=0, max=-1;
+				min=0;
+				max=-1;
 				if (*s == '+')
 					min = 1;
 				if (*s == '?')
 					max = 1;
 				s++;
-				ctx->n = tre_ast_new_iter(ctx->mem, ctx->n, min, max, 0);
-				if (!ctx->n)
-					return REG_ESPACE;
 			}
+			if (max == 0)
+				ctx->n = tre_ast_new_literal(ctx->mem, EMPTY, -1, -1);
+			else
+				ctx->n = tre_ast_new_iter(ctx->mem, ctx->n, min, max, 0);
+			if (!ctx->n)
+				return REG_ESPACE;
 		}
 
 		nbranch = tre_ast_new_catenation(ctx->mem, nbranch, ctx->n);
