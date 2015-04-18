@@ -22,7 +22,7 @@ __cp_begin:
 1:
 
 .align 2
-L1:	.long __cancel-(1b-.)
+L1:	.long __cancel@PLT-(1b-.)
 
 2:	mov   r5, r3
 	mov   r6, r4

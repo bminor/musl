@@ -8,4 +8,4 @@ dlsym:
 1:	 mov.l @r15, r6
 
 .align 2
-L1:	.long __dlsym-(1b-.)
+L1:	.long __dlsym@PLT-(1b-.)
