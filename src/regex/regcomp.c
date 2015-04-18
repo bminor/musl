@@ -834,22 +834,20 @@ static reg_errcode_t parse_atom(tre_parse_ctx_t *ctx, const char *s)
 					return REG_EBRACE;
 				s++;
 			}
-			node = tre_ast_new_literal(ctx->mem, v, v, ctx->position);
-			ctx->position++;
+			node = tre_ast_new_literal(ctx->mem, v, v, ctx->position++);
 			s--;
 			break;
 		default:
 			if (!ere && (unsigned)*s-'1' < 9) {
 				/* back reference */
 				int val = *s - '0';
-				node = tre_ast_new_literal(ctx->mem, BACKREF, val, ctx->position);
+				node = tre_ast_new_literal(ctx->mem, BACKREF, val, ctx->position++);
 				ctx->max_backref = MAX(val, ctx->max_backref);
 			} else {
 				/* extension: accept unknown escaped char
 				   as a literal */
 				goto parse_literal;
 			}
-			ctx->position++;
 		}
 		s++;
 		break;
