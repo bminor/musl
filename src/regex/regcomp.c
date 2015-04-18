@@ -838,6 +838,9 @@ static reg_errcode_t parse_atom(tre_parse_ctx_t *ctx, const char *s)
 			s--;
 			break;
 		case '{':
+		case '+':
+		case '?':
+			/* extension: treat \+, \? as repetitions in BRE */
 			/* reject repetitions after empty expression in BRE */
 			if (!ere)
 				return REG_BADRPT;
@@ -993,7 +996,8 @@ static reg_errcode_t tre_parse(tre_parse_ctx_t *ctx)
 			}
 			if (*s=='\\' && ere)
 				break;
-			if (*s=='\\' && s[1]!='{')
+			/* extension: treat \+, \? as repetitions in BRE */
+			if (*s=='\\' && s[1]!='+' && s[1]!='?' && s[1]!='{')
 				break;
 			if (*s=='\\')
 				s++;
