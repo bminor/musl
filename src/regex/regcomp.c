@@ -841,6 +841,14 @@ static reg_errcode_t parse_atom(tre_parse_ctx_t *ctx, const char *s)
 			/* reject repetitions after empty expression in BRE */
 			if (!ere)
 				return REG_BADRPT;
+		case '|':
+			/* extension: treat \| as alternation in BRE */
+			if (!ere) {
+				node = tre_ast_new_literal(ctx->mem, EMPTY, -1, -1);
+				s--;
+				goto end;
+			}
+			/* fallthrough */
 		default:
 			if (!ere && (unsigned)*s-'1' < 9) {
 				/* back reference */
@@ -918,6 +926,7 @@ parse_literal:
 		s += len;
 		break;
 	}
+end:
 	if (!node)
 		return REG_ESPACE;
 	ctx->n = node;
@@ -1016,13 +1025,20 @@ static reg_errcode_t tre_parse(tre_parse_ctx_t *ctx)
 		if ((ere && *s == '|') ||
 		    (ere && *s == ')' && depth) ||
 		    (!ere && *s == '\\' && s[1] == ')') ||
+		    /* extension: treat \| as alternation in BRE */
+		    (!ere && *s == '\\' && s[1] == '|') ||
 		    !*s) {
 			/* extension: empty branch is unspecified (), (|a), (a|)
 			   here they are not rejected but match on empty string */
 			int c = *s;
 			nunion = tre_ast_new_union(ctx->mem, nunion, nbranch);
 			nbranch = 0;
-			if (c != '|') {
+
+			if (c == '\\' && s[1] == '|') {
+				s+=2;
+			} else if (c == '|') {
+				s++;
+			} else {
 				if (c == '\\') {
 					if (!depth) return REG_EPAREN;
 					s+=2;
@@ -1042,7 +1058,6 @@ static reg_errcode_t tre_parse(tre_parse_ctx_t *ctx)
 				nunion = tre_stack_pop_voidptr(stack);
 				goto parse_iter;
 			}
-			s++;
 		}
 	}
 }
