@@ -44,6 +44,8 @@ struct pthread {
 	volatile int exitlock[2];
 	volatile int startlock[2];
 	unsigned long sigmask[_NSIG/8/sizeof(long)];
+	char *dlerror_buf;
+	int dlerror_flag;
 	void *stdio_locks;
 	void **dtv_copy;
 };

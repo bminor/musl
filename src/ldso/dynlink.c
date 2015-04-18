@@ -21,8 +21,7 @@
 #include "libc.h"
 #include "dynlink.h"
 
-static int errflag;
-static char errbuf[128];
+static void error(const char *, ...);
 
 #ifdef SHARED
 
@@ -137,17 +136,6 @@ static int search_vec(size_t *v, size_t *r, size_t key)
 		if (!v[0]) return 0;
 	*r = v[1];
 	return 1;
-}
-
-static void error(const char *fmt, ...)
-{
-	va_list ap;
-	va_start(ap, fmt);
-	vsnprintf(errbuf, sizeof errbuf, fmt, ap);
-	va_end(ap);
-	if (runtime) longjmp(*rtld_fail, 1);
-	dprintf(2, "%s\n", errbuf);
-	ldso_fail = 1;
 }
 
 static uint32_t sysv_hash(const char *s0)
@@ -283,6 +271,7 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 			    || sym->st_info>>4 != STB_WEAK)) {
 				error("Error relocating %s: %s: symbol not found",
 					dso->name, name);
+				if (runtime) longjmp(*rtld_fail, 1);
 				continue;
 			}
 		} else {
@@ -347,9 +336,12 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 			if (stride<3) addend = reloc_addr[1];
 			if (runtime && def.dso->tls_id >= static_tls_cnt) {
 				struct td_index *new = malloc(sizeof *new);
-				if (!new) error(
+				if (!new) {
+					error(
 					"Error relocating %s: cannot allocate TLSDESC for %s",
 					dso->name, sym ? name : "(local)" );
+					if (runtime) longjmp(*rtld_fail, 1);
+				}
 				new->next = dso->td_index;
 				dso->td_index = new;
 				new->args[0] = def.dso->tls_id;
@@ -370,6 +362,7 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 		default:
 			error("Error relocating %s: unsupported relocation type %d",
 				dso->name, type);
+			if (runtime) longjmp(*rtld_fail, 1);
 			continue;
 		}
 	}
@@ -848,6 +841,7 @@ static void load_deps(struct dso *p)
 			if (!dep) {
 				error("Error loading shared library %s: %m (needed by %s)",
 					p->strings + p->dynv[i+1], p->name);
+				if (runtime) longjmp(*rtld_fail, 1);
 				continue;
 			}
 			if (runtime) {
@@ -917,6 +911,7 @@ static void reloc_all(struct dso *p)
 		    mprotect(p->base+p->relro_start, p->relro_end-p->relro_start, PROT_READ) < 0) {
 			error("Error relocating %s: RELRO protection failed: %m",
 				p->name);
+			if (runtime) longjmp(*rtld_fail, 1);
 		}
 
 		p->relocated = 1;
@@ -1433,16 +1428,14 @@ void *dlopen(const char *file, int mode)
 		tail = orig_tail;
 		tail->next = 0;
 		p = 0;
-		errflag = 1;
 		goto end;
 	} else p = load_library(file, head);
 
 	if (!p) {
-		snprintf(errbuf, sizeof errbuf, noload ?
+		error(noload ?
 			"Library %s is not already loaded" :
 			"Error loading shared library %s: %m",
 			file);
-		errflag = 1;
 		goto end;
 	}
 
@@ -1482,8 +1475,7 @@ static int invalid_dso_handle(void *h)
 {
 	struct dso *p;
 	for (p=head; p; p=p->next) if (h==p) return 0;
-	snprintf(errbuf, sizeof errbuf, "Invalid library handle %p", (void *)h);
-	errflag = 1;
+	error("Invalid library handle %p", (void *)h);
 	return 1;
 }
 
@@ -1535,8 +1527,7 @@ static void *do_dlsym(struct dso *p, const char *s, void *ra)
 			return p->deps[i]->base + sym->st_value;
 	}
 failed:
-	errflag = 1;
-	snprintf(errbuf, sizeof errbuf, "Symbol not found: %s", s);
+	error("Symbol not found: %s", s);
 	return 0;
 }
 
@@ -1639,20 +1630,17 @@ int dl_iterate_phdr(int(*callback)(struct dl_phdr_info *info, size_t size, void 
 #else
 static int invalid_dso_handle(void *h)
 {
-	snprintf(errbuf, sizeof errbuf, "Invalid library handle %p", (void *)h);
-	errflag = 1;
+	error("Invalid library handle %p", (void *)h);
 	return 1;
 }
 void *dlopen(const char *file, int mode)
 {
-	strcpy(errbuf, "Dynamic loading not supported");
-	errflag = 1;
+	error("Dynamic loading not supported");
 	return 0;
 }
 void *__dlsym(void *restrict p, const char *restrict s, void *restrict ra)
 {
-	errflag = 1;
-	snprintf(errbuf, sizeof errbuf, "Symbol not found: %s", s);
+	error("Symbol not found: %s", s);
 	return 0;
 }
 int __dladdr (const void *addr, Dl_info *info)
@@ -1665,8 +1653,7 @@ int __dlinfo(void *dso, int req, void *res)
 {
 	if (invalid_dso_handle(dso)) return -1;
 	if (req != RTLD_DI_LINKMAP) {
-		snprintf(errbuf, sizeof errbuf, "Unsupported request %d", req);
-		errflag = 1;
+		error("Unsupported request %d", req);
 		return -1;
 	}
 	*(struct link_map **)res = dso;
@@ -1675,12 +1662,54 @@ int __dlinfo(void *dso, int req, void *res)
 
 char *dlerror()
 {
-	if (!errflag) return 0;
-	errflag = 0;
-	return errbuf;
+	pthread_t self = __pthread_self();
+	if (!self->dlerror_flag) return 0;
+	self->dlerror_flag = 0;
+	char *s = self->dlerror_buf;
+	if (s == (void *)-1)
+		return "Dynamic linker failed to allocate memory for error message";
+	else
+		return s;
 }
 
 int dlclose(void *p)
 {
 	return invalid_dso_handle(p);
+}
+
+void __dl_thread_cleanup(void)
+{
+	pthread_t self = __pthread_self();
+	if (self->dlerror_buf != (void *)-1)
+		free(self->dlerror_buf);
+}
+
+static void error(const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+#ifdef SHARED
+	if (!runtime) {
+		vdprintf(2, fmt, ap);
+		dprintf(2, "\n");
+		ldso_fail = 1;
+		va_end(ap);
+		return;
+	}
+#endif
+	pthread_t self = __pthread_self();
+	if (self->dlerror_buf != (void *)-1)
+		free(self->dlerror_buf);
+	size_t len = vsnprintf(0, 0, fmt, ap);
+	va_end(ap);
+	char *buf = malloc(len+1);
+	if (buf) {
+		va_start(ap, fmt);
+		vsnprintf(buf, len+1, fmt, ap);
+		va_end(ap);
+	} else {
+		buf = (void *)-1;	
+	}
+	self->dlerror_buf = buf;
+	self->dlerror_flag = 1;
 }
