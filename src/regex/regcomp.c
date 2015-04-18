@@ -984,41 +984,40 @@ static reg_errcode_t tre_parse(tre_parse_ctx_t *ctx)
 		/* extension: repetitions are rejected after an empty node
 		   eg. (+), |*, {2}, but assertions are not treated as empty
 		   so ^* or $? are accepted currently. */
-		switch (*s) {
-		case '+':
-		case '?':
-			if (!ere)
+		for (;;) {
+			if (*s!='\\' && *s!='*') {
+				if (!ere)
+					break;
+				if (*s!='+' && *s!='?' && *s!='{')
+					break;
+			}
+			if (*s=='\\' && ere)
 				break;
-			/* fallthrough */
-		case '*':;
-			int min=0, max=-1;
-			if (*s == '+')
-				min = 1;
-			if (*s == '?')
-				max = 1;
-			s++;
-			ctx->n = tre_ast_new_iter(ctx->mem, ctx->n, min, max, 0);
-			if (!ctx->n)
-				return REG_ESPACE;
+			if (*s=='\\' && s[1]!='{')
+				break;
+			if (*s=='\\')
+				s++;
+
 			/* extension: multiple consecutive *+?{,} is unspecified,
 			   but (a+)+ has to be supported so accepting a++ makes
 			   sense, note however that the RE_DUP_MAX limit can be
 			   circumvented: (a{255}){255} uses a lot of memory.. */
-			goto parse_iter;
-		case '\\':
-			if (ere || s[1] != '{')
-				break;
-			s++;
-			goto parse_brace;
-		case '{':
-			if (!ere)
-				break;
-		parse_brace:
-			err = parse_dup(ctx, s+1);
-			if (err != REG_OK)
-				return err;
-			s = ctx->s;
-			goto parse_iter;
+			if (*s=='{') {
+				err = parse_dup(ctx, s+1);
+				if (err != REG_OK)
+					return err;
+				s = ctx->s;
+			} else {
+				int min=0, max=-1;
+				if (*s == '+')
+					min = 1;
+				if (*s == '?')
+					max = 1;
+				s++;
+				ctx->n = tre_ast_new_iter(ctx->mem, ctx->n, min, max, 0);
+				if (!ctx->n)
+					return REG_ESPACE;
+			}
 		}
 
 		nbranch = tre_ast_new_catenation(ctx->mem, nbranch, ctx->n);
