@@ -12,7 +12,8 @@ __sigsetjmp:
 	mov %ebx,28+8(%eax)
 	mov %eax,%ebx
 
-	call setjmp
+.hidden ___setjmp
+	call ___setjmp
 
 	pushl 24(%ebx)
 	mov %ebx,4(%esp)
@@ -22,4 +23,4 @@ __sigsetjmp:
 .hidden __sigsetjmp_tail
 	jmp __sigsetjmp_tail
 
-1:	jmp setjmp
+1:	jmp ___setjmp

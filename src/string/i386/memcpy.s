@@ -1,6 +1,9 @@
 .global memcpy
+.global __memcpy_fwd
+.hidden __memcpy_fwd
 .type memcpy,@function
 memcpy:
+__memcpy_fwd:
 	push %esi
 	push %edi
 	mov 12(%esp),%edi

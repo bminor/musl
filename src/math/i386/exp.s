@@ -72,8 +72,11 @@ exp2f:
 	jmp 1f
 
 .global exp2l
+.global __exp2l
+.hidden __exp2l
 .type exp2l,@function
 exp2l:
+__exp2l:
 	fldt 4(%esp)
 	jmp 1f
 
