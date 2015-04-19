@@ -11,7 +11,7 @@ __sigsetjmp:
 	mov %rbx,72+8(%rdi)
 	mov %rdi,%rbx
 
-	call setjmp
+	call setjmp@PLT
 
 	pushq 64(%rbx)
 	mov %rbx,%rdi
@@ -21,4 +21,4 @@ __sigsetjmp:
 .hidden __sigsetjmp_tail
 	jmp __sigsetjmp_tail
 
-1:	jmp setjmp
+1:	jmp setjmp@PLT
