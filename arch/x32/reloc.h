@@ -23,4 +23,4 @@
 #define REL_TPOFF       R_X86_64_TPOFF64
 
 #define CRTJMP(pc,sp) __asm__ __volatile__( \
-	"mov %1,%%esp ; jmp *%0" : : "r"(pc), "r"(sp) : "memory" )
+	"mov %1,%%esp ; jmp *%0" : : "r"((uint64_t)(uintptr_t)pc), "r"(sp) : "memory" )
