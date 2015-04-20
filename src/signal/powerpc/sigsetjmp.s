@@ -12,7 +12,8 @@ __sigsetjmp:
 	stw 16, 448+4+8(3)
 	mr 16, 3
 
-	bl setjmp
+.hidden ___setjmp
+	bl ___setjmp
 
 	mr 4, 3
 	mr 3, 16
@@ -23,4 +24,4 @@ __sigsetjmp:
 .hidden __sigsetjmp_tail
 	b __sigsetjmp_tail
 
-1:	b setjmp
+1:	b ___setjmp
