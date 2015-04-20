@@ -428,8 +428,8 @@ printf "checking whether global visibility preinclude works... "
 echo 'int (*fp)(void);' > "$tmpc"
 echo 'int foo(void) { }' >> "$tmpc"
 echo 'int bar(void) { fp = foo; return foo(); }' >> "$tmpc"
-if $CC $CFLAGS_C99FSE -I./arch/$ARCH -I src/internal -I./include \
-  $CPPFLAGS $CFLAGS -DSHARED -fPIC -include vis.h \
+if $CC $CFLAGS_C99FSE $CPPFLAGS $CFLAGS \
+  -DSHARED -fPIC -include src/internal/vis.h \
   -nostdlib -shared -Wl,-Bsymbolic-functions \
   -o /dev/null "$tmpc" >/dev/null 2>&1 ; then
 visibility=yes
@@ -440,7 +440,7 @@ printf "%s\n" "$visibility"
 fi
 
 if test "x$visibility" == xyes ; then
-CFLAGS_AUTO="$CFLAGS_AUTO -include vis.h"
+CFLAGS_AUTO="$CFLAGS_AUTO -include src/internal/vis.h"
 CFLAGS_AUTO="${CFLAGS_AUTO# }"
 fi
 
