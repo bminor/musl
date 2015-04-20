@@ -27,6 +27,7 @@ Optional features:
   --enable-optimize=...   optimize listed components for speed over size [auto]
   --enable-debug          build with debugging information [disabled]
   --enable-warnings       build with recommended warnings flags [disabled]
+  --enable-visibility     use global visibility options to optimize PIC [auto]
   --enable-gcc-wrapper    build musl-gcc toolchain wrapper [auto]
   --disable-shared        inhibit building shared library [enabled]
   --disable-static        inhibit building static library [enabled]
@@ -79,7 +80,7 @@ fi
 tryflag () {
 printf "checking whether compiler accepts %s... " "$2"
 echo "typedef int x;" > "$tmpc"
-if $CC "$2" -c -o /dev/null "$tmpc" >/dev/null 2>&1 ; then
+if $CC $2 -c -o /dev/null "$tmpc" >/dev/null 2>&1 ; then
 printf "yes\n"
 eval "$1=\"\${$1} \$2\""
 eval "$1=\${$1# }"
@@ -124,6 +125,7 @@ target=
 optimize=auto
 debug=no
 warnings=no
+visibility=auto
 shared=auto
 static=yes
 wrapper=auto
@@ -148,6 +150,8 @@ case "$arg" in
 --disable-debug|--enable-debug=no) debug=no ;;
 --enable-warnings|--enable-warnings=yes) warnings=yes ;;
 --disable-warnings|--enable-warnings=no) warnings=no ;;
+--enable-visibility|--enable-visibility=yes) visibility=yes ;;
+--disable-visibility|--enable-visibility=no) visibility=no ;;
 --enable-gcc-wrapper|--enable-gcc-wrapper=yes) wrapper=yes ;;
 --disable-gcc-wrapper|--enable-gcc-wrapper=no) wrapper=no ;;
 --enable-*|--disable-*|--with-*|--without-*|--*dir=*|--build=*) ;;
@@ -413,6 +417,31 @@ tryflag CFLAGS_AUTO -Wno-unused-value
 tryflag CFLAGS_AUTO -Wno-unused-but-set-variable
 tryflag CFLAGS_AUTO -Wno-unknown-pragmas
 tryflag CFLAGS_AUTO -Wno-pointer-to-int-cast
+fi
+
+if test "x$visibility" == xauto ; then
+# This test checks toolchain support for several things:
+# - the -include option
+# - the attributes/pragmas used in vis.h
+# - linking code that takes the address of protected symbols
+printf "checking whether global visibility preinclude works... "
+echo 'int (*fp)(void);' > "$tmpc"
+echo 'int foo(void) { }' >> "$tmpc"
+echo 'int bar(void) { fp = foo; return foo(); }' >> "$tmpc"
+if $CC $CFLAGS_C99FSE -I./arch/$ARCH -I src/internal -I./include \
+  $CPPFLAGS $CFLAGS -DSHARED -fPIC -include vis.h \
+  -nostdlib -shared -Wl,-Bsymbolic-functions \
+  -o /dev/null "$tmpc" >/dev/null 2>&1 ; then
+visibility=yes
+else
+visibility=no
+fi
+printf "%s\n" "$visibility"
+fi
+
+if test "x$visibility" == xyes ; then
+CFLAGS_AUTO="$CFLAGS_AUTO -include vis.h"
+CFLAGS_AUTO="${CFLAGS_AUTO# }"
 fi
 
 # Some patched GCC builds have these defaults messed up...
