@@ -4,12 +4,13 @@
 .type __sigsetjmp,@function
 sigsetjmp:
 __sigsetjmp:
-	beqi r6, setjmp@PLT
+.hidden ___setjmp
+	beqi r6, ___setjmp
 
 	swi r15,r5,72
 	swi r19,r5,72+4+8
 
-	brlid r15,setjmp@PLT
+	brlid r15,___setjmp
 	 ori r19,r5,0
 
 	ori r6,r3,0
