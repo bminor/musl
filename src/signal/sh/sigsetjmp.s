@@ -34,7 +34,8 @@ __sigsetjmp:
 	 nop
 
 .align 2
-1:	.long setjmp@PLT-(2b+4-.)
+.hidden ___setjmp
+1:	.long ___setjmp@PLT-(2b+4-.)
 .hidden __sigsetjmp_tail
 3:	.long __sigsetjmp_tail@PLT-(4b+4-.)
-5:	.long setjmp@PLT-(6b+4-.)
+5:	.long ___setjmp@PLT-(6b+4-.)
