@@ -391,10 +391,12 @@ tryflag CFLAGS_AUTO -Wa,--noexecstack
 # extensions enabled by default. This is bad for making static binaries.
 # We cheat and use i486 rather than i386 because i386 really does not
 # work anyway (issues with atomic ops).
+# Some build environments pass -march and -mtune options via CC, so
+# check both CC and CFLAGS.
 #
 if test "$ARCH" = "i386" ; then
-fnmatch '-march=*|*\ -march=*' "$CFLAGS" || tryldflag CFLAGS_AUTO -march=i486
-fnmatch '-mtune=*|*\ -mtune=*' "$CFLAGS" || tryldflag CFLAGS_AUTO -mtune=generic
+fnmatch '-march=*|*\ -march=*' "$CC $CFLAGS" || tryldflag CFLAGS_AUTO -march=i486
+fnmatch '-mtune=*|*\ -mtune=*' "$CC $CFLAGS" || tryldflag CFLAGS_AUTO -mtune=generic
 fi
 
 #
