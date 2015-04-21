@@ -340,7 +340,7 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 					error(
 					"Error relocating %s: cannot allocate TLSDESC for %s",
 					dso->name, sym ? name : "(local)" );
-					if (runtime) longjmp(*rtld_fail, 1);
+					longjmp(*rtld_fail, 1);
 				}
 				new->next = dso->td_index;
 				dso->td_index = new;
