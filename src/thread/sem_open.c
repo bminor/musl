@@ -126,6 +126,7 @@ sem_t *sem_open(const char *name, int flags, ...)
 		e = link(tmp, name) ? errno : 0;
 		unlink(tmp);
 		if (!e) break;
+		munmap(map, sizeof(sem_t));
 		/* Failure is only fatal when doing an exclusive open;
 		 * otherwise, next iteration will try to open the
 		 * existing file. */
