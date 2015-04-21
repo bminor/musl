@@ -14,7 +14,8 @@ locale_t __duplocale(locale_t old)
 	if (old->messages_name)
 		strcpy(new->messages_name, old->messages_name);
 
-	if (new && old != LC_GLOBAL_LOCALE) memcpy(new, old, sizeof *new);
+	for (size_t i=0; i<sizeof new->cat/sizeof new->cat[0]; i++)
+		new->cat[i] = old->cat[i];
 	return new;
 }
 
