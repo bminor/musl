@@ -7,9 +7,11 @@
 #define bittab __fsmu8
 
 #include <stdint.h>
-#include "libc.h"
 
-extern const uint32_t bittab[] ATTR_LIBC_VISIBILITY;
+#ifdef __PIC__
+__attribute__((__visibility__("hidden")))
+#endif
+extern const uint32_t bittab[];
 
 /* Upper 6 state bits are a negative integer offset to bound-check next byte */
 /*    equivalent to: ( (b-0x80) | (b+offset) ) & ~0x3f      */
