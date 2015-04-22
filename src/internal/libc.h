@@ -34,12 +34,7 @@ extern size_t __hwcap;
 #define PAGE_SIZE libc.page_size
 #endif
 
-#if !defined(__PIC__) || (100*__GNUC__+__GNUC_MINOR__ >= 303 && !defined(__PCC__))
-
 #ifdef __PIC__
-#if __GNUC__ < 4
-#define BROKEN_VISIBILITY 1
-#endif
 #define ATTR_LIBC_VISIBILITY __attribute__((visibility("hidden")))
 #else
 #define ATTR_LIBC_VISIBILITY
@@ -47,15 +42,6 @@ extern size_t __hwcap;
 
 extern struct __libc __libc ATTR_LIBC_VISIBILITY;
 #define libc __libc
-
-#else
-
-#define USE_LIBC_ACCESSOR
-#define ATTR_LIBC_VISIBILITY
-extern struct __libc *__libc_loc(void) __attribute__((const));
-#define libc (*__libc_loc())
-
-#endif
 
 
 /* Designed to avoid any overhead in non-threaded processes */
