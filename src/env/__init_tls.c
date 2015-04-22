@@ -33,7 +33,7 @@ static struct builtin_tls {
 struct tls_image {
 	void *image;
 	size_t len, size, align;
-} __static_tls ATTR_LIBC_VISIBILITY;
+} __static_tls;
 
 #define T __static_tls
 
