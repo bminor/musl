@@ -28,8 +28,6 @@ struct __libc {
 	struct __locale_struct global_locale;
 };
 
-extern size_t __hwcap;
-
 #ifndef PAGE_SIZE
 #define PAGE_SIZE libc.page_size
 #endif
@@ -43,6 +41,9 @@ extern size_t __hwcap;
 extern struct __libc __libc ATTR_LIBC_VISIBILITY;
 #define libc __libc
 
+extern size_t __hwcap ATTR_LIBC_VISIBILITY;
+extern size_t __sysinfo ATTR_LIBC_VISIBILITY;
+extern char *__progname, *__progname_full;
 
 /* Designed to avoid any overhead in non-threaded processes */
 void __lock(volatile int *) ATTR_LIBC_VISIBILITY;

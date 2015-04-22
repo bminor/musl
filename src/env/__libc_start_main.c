@@ -20,9 +20,6 @@ weak_alias(dummy1, __init_ssp);
 
 #define AUX_CNT 38
 
-extern size_t __hwcap, __sysinfo;
-extern char *__progname, *__progname_full;
-
 #ifndef SHARED
 static
 #endif
