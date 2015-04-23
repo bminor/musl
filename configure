@@ -421,7 +421,7 @@ tryflag CFLAGS_AUTO -Wno-unknown-pragmas
 tryflag CFLAGS_AUTO -Wno-pointer-to-int-cast
 fi
 
-if test "x$visibility" == xauto ; then
+if test "x$visibility" = xauto ; then
 # This test checks toolchain support for several things:
 # - the -include option
 # - the attributes/pragmas used in vis.h
@@ -441,7 +441,7 @@ fi
 printf "%s\n" "$visibility"
 fi
 
-if test "x$visibility" == xyes ; then
+if test "x$visibility" = xyes ; then
 CFLAGS_AUTO="$CFLAGS_AUTO -include vis.h"
 CFLAGS_AUTO="${CFLAGS_AUTO# }"
 fi
