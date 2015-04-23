@@ -87,7 +87,7 @@ src/internal/version.lo: src/internal/version.h
 
 src/ldso/dlstart.lo src/ldso/dynlink.lo: src/internal/dynlink.h arch/$(ARCH)/reloc.h
 
-crt/crt1.o crt/Scrt1.o: $(wildcard arch/$(ARCH)/crt_arch.h)
+crt/crt1.o crt/Scrt1.o src/ldso/dlstart.lo: $(wildcard arch/$(ARCH)/crt_arch.h)
 
 crt/Scrt1.o: CFLAGS += -fPIC
 
