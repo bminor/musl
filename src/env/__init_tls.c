@@ -8,6 +8,9 @@
 #include "atomic.h"
 #include "syscall.h"
 
+#ifndef SHARED
+static
+#endif
 int __init_tp(void *p)
 {
 	pthread_t td = p;
