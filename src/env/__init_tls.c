@@ -77,8 +77,6 @@ void __init_tls(size_t *aux)
 	size_t base = 0;
 	void *mem;
 
-	libc.tls_size = sizeof(struct pthread);
-
 	for (p=(void *)aux[AT_PHDR],n=aux[AT_PHNUM]; n; n--,p+=aux[AT_PHENT]) {
 		phdr = (void *)p;
 		if (phdr->p_type == PT_PHDR)
