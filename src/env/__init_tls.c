@@ -95,7 +95,8 @@ void __init_tls(size_t *aux)
 	T.size += (-T.size - (uintptr_t)T.image) & (T.align-1);
 	if (T.align < MIN_TLS_ALIGN) T.align = MIN_TLS_ALIGN;
 
-	libc.tls_size = 2*sizeof(void *)+T.size+T.align+sizeof(struct pthread);
+	libc.tls_size = 2*sizeof(void *)+T.size+T.align+sizeof(struct pthread)
+		+ MIN_TLS_ALIGN-1 & -MIN_TLS_ALIGN;
 
 	if (libc.tls_size > sizeof builtin_tls) {
 #ifndef SYS_mmap2
