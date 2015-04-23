@@ -6,7 +6,7 @@ expm1l:
 	fmulp
 	movl $0xc2820000,-4(%rsp)
 	flds -4(%rsp)
-	fucomip %st(1)
+	fucomip %st(1),%st
 	fld1
 	jb 1f
 		# x*log2e <= -65, return -1 without underflow
@@ -15,7 +15,7 @@ expm1l:
 	ret
 1:	fld %st(1)
 	fabs
-	fucomip %st(1)
+	fucomip %st(1),%st
 	fstp %st(0)
 	ja 1f
 	f2xm1
@@ -48,7 +48,7 @@ exp2l:
 	fld %st(1)
 	fsub %st(1)
 	faddp
-	fucomip %st(1)
+	fucomip %st(1),%st
 	je 2f             # x - 0x1p63 + 0x1p63 == x
 	movl $1,(%rsp)
 	flds (%rsp)       # 0x1p-149
