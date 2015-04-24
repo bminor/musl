@@ -6,7 +6,13 @@
 #define ENDIAN_SUFFIX ""
 #endif
 
-#define LDSO_ARCH "sh" ENDIAN_SUFFIX
+#if __SH_FPU_ANY__ || __SH4__
+#define FP_SUFFIX ""
+#else
+#define FP_SUFFIX "-nofpu"
+#endif
+
+#define LDSO_ARCH "sh" ENDIAN_SUFFIX FP_SUFFIX
 
 #define TPOFF_K 8
 
