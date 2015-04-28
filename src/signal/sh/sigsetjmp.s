@@ -8,7 +8,7 @@ __sigsetjmp:
 	bt 9f
 
 	mov r4, r6
-	add #52, r6
+	add #60, r6
 	sts pr, r0
 	mov.l r0, @r6
 	mov.l r8, @(4+8,r6)
@@ -20,7 +20,7 @@ __sigsetjmp:
 	mov r0, r5
 	mov r8, r4
 	mov r4, r6
-	add #52, r6
+	add #60, r6
 
 	mov.l @r6, r0
 	lds r0, pr
