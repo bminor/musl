@@ -3,8 +3,6 @@
 ((union { long long ll; long l[2]; }){ .ll = x }).l[1]
 #define __SYSCALL_LL_O(x) 0, __SYSCALL_LL_E((x))
 
-long (__syscall)(long, ...);
-
 #define __asm_syscall(...) do { \
 	__asm__ __volatile__ ( "svc 0" \
 	: "=r"(x0) : __VA_ARGS__ : "memory", "cc"); \

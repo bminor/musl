@@ -5,8 +5,6 @@
 
 #define SYSCALL_MMAP2_UNIT 8192ULL
 
-long (__syscall)(long, ...);
-
 #ifndef __clang__
 
 static __inline long __syscall0(long n)
