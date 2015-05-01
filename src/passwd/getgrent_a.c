@@ -48,7 +48,8 @@ int __getgrent_a(FILE *f, struct group *gr, char **line, size_t *size, char ***m
 		rv = errno;
 		free(*line);
 		*line = 0;
-		return 0;
+		gr = 0;
+		goto end;
 	}
 	if (*mems) {
 		mem[0][0] = mems;
