@@ -319,7 +319,7 @@ typedef struct {
 #define SHF_MASKOS	     0x0ff00000
 #define SHF_MASKPROC	     0xf0000000
 #define SHF_ORDERED	     (1 << 30)
-#define SHF_EXCLUDE	     (1 << 31)
+#define SHF_EXCLUDE	     (1U << 31)
 
 #define GRP_COMDAT	0x1
 
