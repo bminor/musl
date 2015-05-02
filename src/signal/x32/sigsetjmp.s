@@ -14,6 +14,7 @@ __sigsetjmp:
 	call setjmp@PLT
 
 	pushq 64(%rbx)
+	movl $0, 4(%rsp)
 	mov %rbx,%rdi
 	mov %eax,%esi
 	mov 72+8(%rbx),%rbx
