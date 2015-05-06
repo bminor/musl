@@ -16,7 +16,7 @@ struct pthread {
 	struct pthread *self;
 	void **dtv, *unused1, *unused2;
 	uintptr_t sysinfo;
-	uintptr_t canary;
+	uintptr_t canary, canary2;
 	pid_t tid, pid;
 	int tsd_used, errno_val;
 	volatile int cancel, canceldisable, cancelasync;
@@ -47,6 +47,7 @@ struct pthread {
 	char *dlerror_buf;
 	int dlerror_flag;
 	void *stdio_locks;
+	uintptr_t canary_at_end;
 	void **dtv_copy;
 };
 
@@ -88,6 +89,10 @@ struct __timer {
 #define _b_inst __u.__p[3]
 
 #include "pthread_arch.h"
+
+#ifndef CANARY
+#define CANARY canary
+#endif
 
 #define SIGTIMER 32
 #define SIGCANCEL 33

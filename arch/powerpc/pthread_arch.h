@@ -17,3 +17,4 @@ static inline struct pthread *__pthread_self()
 // GPRs.
 #define CANCEL_REG_IP 32
 
+#define CANARY canary_at_end

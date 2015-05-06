@@ -272,7 +272,7 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 	}
 	new->robust_list.head = &new->robust_list.head;
 	new->unblock_cancel = self->cancel;
-	new->canary = self->canary;
+	new->CANARY = self->CANARY;
 
 	a_inc(&libc.threads_minus_1);
 	ret = __clone((c11 ? start_c11 : start), stack, flags, new, &new->tid, TP_ADJ(new), &new->tid);
