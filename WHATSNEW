@@ -1468,3 +1468,42 @@ bugs fixed:
 
 arch-specific bugs fixed:
 - aarch64 was missing max_align_t definition
+
+
+
+1.1.9 release notes
+
+new features:
+- ability to protect libc code itself with stack protector
+- sigsetjmp now restores signal mask after restoring context, not before
+- thread-local dlerror status/messages
+- dlerror messages are no longer truncated
+- diagnostics for constraint violations with ctype.h macros
+
+optimizations:
+- reduce cost of PIC on archs where PLT calls need a fixed GOT register
+- spin locks no longer constantly invalidate cache lines while spinning
+- code size reduction in static-linked TLS init
+
+bugs fixed:
+- failure to process robust mutexes on detached-thread exit
+- possible memory corruption due to robust mutex list on detached-thread exit
+- crash on memory exhaustion in getgr* internals
+- misaligned memory accesses in static binaries with low-alignment TLS blocks
+- multiple cases of wrongful path search continuation after transient failure
+- small memory leak on failure of dlopen with RPATH $ORIGIN
+- several small math bugs related to exception flags with non-finite args
+- mmap leak in sem_open failure path for link call
+- duplocale clobbered new locale struct with memcpy of old
+- futimes crashed with null timeval argument
+
+arch-specific bugs fixed:
+- stack protector spuriously aborted after forking on x32
+- stack protector spuriously aborted with flockfile on powerpc
+- theoretically-possible clobbering of syscall return value on mips
+- random thread-pointer setup failure on sh (uninitialized return value)
+- possible crash in dlsym on sh due to incorrectly-computed branch target
+- broken fesetenv(FE_DFL_ENV) on mips
+- dynamic linker name for sh ignored fpu/nofpu and endianness
+- various minor aarch64 bugs
+- dangling pointers in x32 syscall timespec fixup code
