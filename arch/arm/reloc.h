@@ -28,5 +28,10 @@
 #define REL_TPOFF       R_ARM_TLS_TPOFF32
 //#define REL_TLSDESC     R_ARM_TLS_DESC
 
+#ifdef __thumb__
+#define CRTJMP(pc,sp) __asm__ __volatile__( \
+	"mov sp,%1 ; bx %0" : : "r"(pc), "r"(sp) : "memory" )
+#else
 #define CRTJMP(pc,sp) __asm__ __volatile__( \
 	"mov sp,%1 ; tst %0,#1 ; moveq pc,%0 ; bx %0" : : "r"(pc), "r"(sp) : "memory" )
+#endif
