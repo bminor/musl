@@ -67,12 +67,6 @@ _Noreturn void __pthread_exit(void *result)
 		exit(0);
 	}
 
-	if (self->locale != &libc.global_locale) {
-		a_dec(&libc.uselocale_cnt);
-		if (self->locale->ctype_utf8)
-			a_dec(&libc.bytelocale_cnt_minus_1);
-	}
-
 	/* Process robust list in userspace to handle non-pshared mutexes
 	 * and the detached thread case where the robust list head will
 	 * be invalid when the kernel would process it. */

@@ -55,12 +55,7 @@ char *setlocale(int cat, const char *name)
 		return buf;
 	}
 
-	if (name) {
-		int adj = libc.global_locale.ctype_utf8;
-		__setlocalecat(&libc.global_locale, cat, name);
-		adj -= libc.global_locale.ctype_utf8;
-		if (adj) a_fetch_add(&libc.bytelocale_cnt_minus_1, adj);
-	}
+	if (name) __setlocalecat(&libc.global_locale, cat, name);
 
 	switch (cat) {
 	case LC_CTYPE:

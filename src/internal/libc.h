@@ -23,8 +23,6 @@ struct __libc {
 	volatile int ofl_lock[2];
 	size_t tls_size;
 	size_t page_size;
-	volatile int uselocale_cnt;
-	volatile int bytelocale_cnt_minus_1;
 	struct __locale_struct global_locale;
 };
 

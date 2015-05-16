@@ -10,15 +10,7 @@ locale_t __uselocale(locale_t new)
 
 	if (new == LC_GLOBAL_LOCALE) new = global;
 
-	if (new && new != old) {
-		int adj = 0;
-		if (new == global) a_dec(&libc.uselocale_cnt);
-		else if (!new->ctype_utf8) adj++;
-		if (old == global) a_inc(&libc.uselocale_cnt);
-		else if (!old->ctype_utf8) adj--;
-		a_fetch_add(&libc.bytelocale_cnt_minus_1, adj);
-		self->locale = new;
-	}
+	self->locale = new;
 
 	return old == global ? LC_GLOBAL_LOCALE : old;
 }

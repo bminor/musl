@@ -20,11 +20,9 @@ const char *__lctrans_cur(const char *);
 #define LCTRANS(msg, lc, loc) __lctrans(msg, (loc)->cat[(lc)-2])
 #define LCTRANS_CUR(msg) __lctrans_cur(msg)
 
-#define CURRENT_LOCALE \
-	(libc.uselocale_cnt ? __pthread_self()->locale : &libc.global_locale)
+#define CURRENT_LOCALE (__pthread_self()->locale)
 
-#define CURRENT_UTF8 \
-	(libc.bytelocale_cnt_minus_1<0 || __pthread_self()->locale->ctype_utf8)
+#define CURRENT_UTF8 (__pthread_self()->locale->ctype_utf8)
 
 #undef MB_CUR_MAX
 #define MB_CUR_MAX (CURRENT_UTF8 ? 4 : 1)
