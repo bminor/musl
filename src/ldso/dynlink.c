@@ -281,7 +281,7 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 		}
 
 		int gotplt = (type == REL_GOT || type == REL_PLT);
-		if (dso->rel_update_got && !gotplt) continue;
+		if (dso->rel_update_got && !gotplt && stride==2) continue;
 
 		addend = stride>2 ? rel[2]
 			: gotplt || type==REL_COPY ? 0
