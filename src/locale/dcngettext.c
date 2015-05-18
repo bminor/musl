@@ -132,7 +132,7 @@ char *dcngettext(const char *domainname, const char *msgid1, const char *msgid2,
 	switch (category) {
 	case LC_MESSAGES:
 		locname = loc->messages_name;
-		if (!*locname) goto notrans;
+		if (!locname || !*locname) goto notrans;
 		break;
 	case LC_TIME:
 	case LC_MONETARY:
