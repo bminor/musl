@@ -47,16 +47,16 @@ static inline int a_cas(volatile int *p, int t, int s)
 	return t;
 }
 
-static inline void a_or(volatile void *p, int v)
+static inline void a_or(volatile int *p, int v)
 {
 	__asm__( "lock ; or %1, %0"
-		: "=m"(*(int *)p) : "r"(v) : "memory" );
+		: "=m"(*p) : "r"(v) : "memory" );
 }
 
-static inline void a_and(volatile void *p, int v)
+static inline void a_and(volatile int *p, int v)
 {
 	__asm__( "lock ; and %1, %0"
-		: "=m"(*(int *)p) : "r"(v) : "memory" );
+		: "=m"(*p) : "r"(v) : "memory" );
 }
 
 static inline int a_swap(volatile int *x, int v)
