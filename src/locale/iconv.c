@@ -23,12 +23,6 @@
 #define BIG5        0340
 #define EUC_KR      0350
 
-/* FIXME: these are not implemented yet
- * EUC:   A1-FE A1-FE
- * GBK:   81-FE 40-7E,80-FE
- * Big5:  A1-FE 40-7E,A1-FE
- */
-
 /* Definitions of charmaps. Each charmap consists of:
  * 1. Empty-string-terminated list of null-terminated aliases.
  * 2. Special type code or number of elided entries.
