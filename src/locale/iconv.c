@@ -35,7 +35,7 @@
  * 3. Character table (size determined by field 2). */
 
 static const unsigned char charmaps[] =
-"utf8\0\0\310"
+"utf8\0char\0\0\310"
 "wchart\0\0\306"
 "ucs2\0ucs2be\0\0\304"
 "ucs2le\0\0\305"
@@ -90,6 +90,7 @@ static int fuzzycmp(const unsigned char *a, const unsigned char *b)
 static size_t find_charmap(const void *name)
 {
 	const unsigned char *s;
+	if (!*(char *)name) name=charmaps; /* "utf8" */
 	for (s=charmaps; *s; ) {
 		if (!fuzzycmp(name, s)) {
 			for (; *s; s+=strlen((void *)s)+1);
