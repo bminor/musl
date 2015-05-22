@@ -1,6 +1,7 @@
 __asm__(
 ".set push\n"
 ".set noreorder\n"
+".text \n"
 ".global _" START "\n"
 ".global " START "\n"
 ".type   _" START ", @function\n"

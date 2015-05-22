@@ -1,4 +1,5 @@
 __asm__(
+".text \n"
 ".global " START " \n"
 START ": \n"
 "	mova 1f, r0 \n"

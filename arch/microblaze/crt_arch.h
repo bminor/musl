@@ -1,4 +1,5 @@
 __asm__(
+".text \n"
 ".global " START " \n"
 ".align  2 \n"
 START ": \n"
