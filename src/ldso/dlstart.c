@@ -65,7 +65,6 @@ void _dlstart_c(size_t *sp, size_t *dynv)
 		size_t size;
 		size_t stride;
 	} reloc_info[] = {
-		{ base+dyn[DT_JMPREL], dyn[DT_PLTRELSZ], 2+(dyn[DT_PLTREL]==DT_RELA) },
 		{ base+dyn[DT_REL], dyn[DT_RELSZ], 2 },
 		{ base+dyn[DT_RELA], dyn[DT_RELASZ], 3 },
 		{ 0, 0, 0 }
