@@ -56,30 +56,22 @@ void _dlstart_c(size_t *sp, size_t *dynv)
 		for (i=0; i<local_cnt; i++) got[i] += (size_t)base;
 	}
 
-	/* The use of the reloc_info structure and nested loops is a trick
-	 * to work around the fact that we can't necessarily make function
-	 * calls yet. Each struct in the array serves like the arguments
-	 * to a function call. */
-	struct {
-		void *rel;
-		size_t size;
-		size_t stride;
-	} reloc_info[] = {
-		{ base+dyn[DT_REL], dyn[DT_RELSZ], 2 },
-		{ base+dyn[DT_RELA], dyn[DT_RELASZ], 3 },
-		{ 0, 0, 0 }
-	};
+	size_t *rel, rel_size;
 
-	for (i=0; reloc_info[i].stride; i++) {
-		size_t *rel = reloc_info[i].rel;
-		size_t rel_size = reloc_info[i].size;
-		size_t stride = reloc_info[i].stride;
-		for (; rel_size; rel+=stride, rel_size-=stride*sizeof(size_t)) {
-			if (!IS_RELATIVE(rel[1])) continue;
-			size_t *rel_addr = (void *)(base + rel[0]);
-			size_t addend = stride==3 ? rel[2] : *rel_addr;
-			*rel_addr = (size_t)base + addend;
-		}
+	rel = (void *)(base+dyn[DT_REL]);
+	rel_size = dyn[DT_RELSZ];
+	for (; rel_size; rel+=2, rel_size-=2*sizeof(size_t)) {
+		if (!IS_RELATIVE(rel[1])) continue;
+		size_t *rel_addr = (void *)(base + rel[0]);
+		*rel_addr += (size_t)base;
+	}
+
+	rel = (void *)(base+dyn[DT_RELA]);
+	rel_size = dyn[DT_RELASZ];
+	for (; rel_size; rel+=3, rel_size-=3*sizeof(size_t)) {
+		if (!IS_RELATIVE(rel[1])) continue;
+		size_t *rel_addr = (void *)(base + rel[0]);
+		*rel_addr = (size_t)base + rel[2];
 	}
 
 	const char *strings = (void *)(base + dyn[DT_STRTAB]);
