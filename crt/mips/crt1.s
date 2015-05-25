@@ -4,6 +4,8 @@
 .weak  _fini
 .global __start
 .global _start
+.type __start,@function
+.type _start,@function
 __start:
 _start:
 	subu    $fp, $fp, $fp            # Zero the frame pointer.
