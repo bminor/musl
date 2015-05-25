@@ -2,10 +2,13 @@
 
 .global __cp_begin
 .hidden __cp_begin
+.type   __cp_begin,@function
 .global __cp_end
 .hidden __cp_end
+.type   __cp_end,@function
 .global __cp_cancel
 .hidden __cp_cancel
+.type   __cp_cancel,@function
 .hidden __cancel
 .global __syscall_cp_asm
 .hidden __syscall_cp_asm
