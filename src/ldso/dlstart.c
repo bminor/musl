@@ -84,16 +84,7 @@ void _dlstart_c(size_t *sp, size_t *dynv)
 		 && s[3]=='l' && s[4]=='s' && s[5]=='2' && !s[6])
 			break;
 	}
-	((stage2_func)(base + syms[i].st_value))(base);
-
-	/* Call dynamic linker stage-3, __dls3 */
-	for (i=0; ;i++) {
-		const char *s = strings + syms[i].st_name;
-		if (s[0]=='_' && s[1]=='_' && s[2]=='d'
-		 && s[3]=='l' && s[4]=='s' && s[5]=='3' && !s[6])
-			break;
-	}
-	((stage3_func)(base + syms[i].st_value))(sp);
+	((stage2_func)(base + syms[i].st_value))(base, sp);
 }
 
 #endif

@@ -1116,7 +1116,7 @@ static void update_tls_size()
  * linker itself, but some of the relocations performed may need to be
  * replaced later due to copy relocations in the main program. */
 
-void __dls2(unsigned char *base)
+void __dls2(unsigned char *base, size_t *sp)
 {
 	Ehdr *ehdr = (void *)base;
 	ldso.base = base;
@@ -1134,6 +1134,12 @@ void __dls2(unsigned char *base)
 
 	ldso.relocated = 0;
 	ldso.rel_update_got = 1;
+
+	/* Call dynamic linker stage-3, __dls3, looking it up
+	 * symbolically as a barrier against moving the address
+	 * load across the above relocation processing. */
+	struct symdef dls3_def = find_sym(&ldso, "__dls3", 0);
+	((stage3_func)(ldso.base+dls3_def.sym->st_value))(sp);
 }
 
 /* Stage 3 of the dynamic linker is called with the dynamic linker/libc
