@@ -74,7 +74,6 @@ struct dso {
 	volatile int new_dtv_idx, new_tls_idx;
 	struct td_index *td_index;
 	struct dso *fini_next;
-	int rel_early_relative, rel_update_got;
 	char *shortname;
 	char buf[];
 };
@@ -95,6 +94,9 @@ static struct builtin_tls {
 	void *space[16];
 } builtin_tls[1];
 #define MIN_TLS_ALIGN offsetof(struct builtin_tls, pt)
+
+#define ADDEND_LIMIT 4096
+static size_t *saved_addends, *apply_addends_to;
 
 static struct dso ldso;
 static struct dso *head, *tail, *fini_head;
@@ -256,9 +258,17 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 	size_t sym_val;
 	size_t tls_val;
 	size_t addend;
+	int skip_relative = 0, reuse_addends = 0, save_slot = 0;
+
+	if (dso == &ldso) {
+		/* Only ldso's REL table needs addend saving/reuse. */
+		if (rel == apply_addends_to)
+			reuse_addends = 1;
+		skip_relative = 1;
+	}
 
 	for (; rel_size; rel+=stride, rel_size-=stride*sizeof(size_t)) {
-		if (dso->rel_early_relative && IS_RELATIVE(rel[1])) continue;
+		if (skip_relative && IS_RELATIVE(rel[1])) continue;
 		type = R_TYPE(rel[1]);
 		sym_index = R_SYM(rel[1]);
 		reloc_addr = (void *)(base + rel[0]);
@@ -280,12 +290,20 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 			def.dso = dso;
 		}
 
-		int gotplt = (type == REL_GOT || type == REL_PLT);
-		if (dso->rel_update_got && !gotplt && stride==2) continue;
-
-		addend = stride>2 ? rel[2]
-			: gotplt || type==REL_COPY ? 0
-			: *reloc_addr;
+		if (stride > 2) {
+			addend = rel[2];
+		} else if (type==REL_GOT || type==REL_PLT|| type==REL_COPY) {
+			addend = 0;
+		} else if (reuse_addends) {
+			/* Save original addend in stage 2 where the dso
+			 * chain consists of just ldso; otherwise read back
+			 * saved addend since the inline one was clobbered. */
+			if (head==&ldso)
+				saved_addends[save_slot] = *reloc_addr;
+			addend = saved_addends[save_slot++];
+		} else {
+			addend = *reloc_addr;
+		}
 
 		sym_val = def.sym ? (size_t)def.dso->base+def.sym->st_value : 0;
 		tls_val = def.sym ? def.sym->st_value : 0;
@@ -879,7 +897,7 @@ static void do_mips_relocs(struct dso *p, size_t *got)
 	size_t i, j, rel[2];
 	unsigned char *base = p->base;
 	i=0; search_vec(p->dynv, &i, DT_MIPS_LOCAL_GOTNO);
-	if (p->rel_early_relative) {
+	if (p==&ldso) {
 		got += i;
 	} else {
 		while (i--) *got++ += (size_t)base;
@@ -1125,15 +1143,29 @@ void __dls2(unsigned char *base, size_t *sp)
 	ldso.phnum = ehdr->e_phnum;
 	ldso.phdr = (void *)(base + ehdr->e_phoff);
 	ldso.phentsize = ehdr->e_phentsize;
-	ldso.rel_early_relative = 1;
 	kernel_mapped_dso(&ldso);
 	decode_dyn(&ldso);
+
+	/* Prepare storage for to save clobbered REL addends so they
+	 * can be reused in stage 3. There should be very few. If
+	 * something goes wrong and there are a huge number, abort
+	 * instead of risking stack overflow. */
+	size_t dyn[DYN_CNT];
+	decode_vec(ldso.dynv, dyn, DYN_CNT);
+	size_t *rel = (void *)(base+dyn[DT_REL]);
+	size_t rel_size = dyn[DT_RELSZ];
+	size_t symbolic_rel_cnt = 0;
+	apply_addends_to = rel;
+	for (; rel_size; rel+=2, rel_size-=2*sizeof(size_t))
+		if (!IS_RELATIVE(rel[1])) symbolic_rel_cnt++;
+	if (symbolic_rel_cnt >= ADDEND_LIMIT) a_crash();
+	size_t addends[symbolic_rel_cnt+1];
+	saved_addends = addends;
 
 	head = &ldso;
 	reloc_all(&ldso);
 
 	ldso.relocated = 0;
-	ldso.rel_update_got = 1;
 
 	/* Call dynamic linker stage-3, __dls3, looking it up
 	 * symbolically as a barrier against moving the address
