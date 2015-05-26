@@ -44,7 +44,7 @@ ALL_INCLUDES = $(sort $(wildcard include/*.h include/*/*.h) $(GENH) $(ARCH_INCLU
 
 EMPTY_LIB_NAMES = m rt pthread crypt util xnet resolv dl
 EMPTY_LIBS = $(EMPTY_LIB_NAMES:%=lib/lib%.a)
-CRT_LIBS = lib/crt1.o lib/Scrt1.o lib/crti.o lib/crtn.o
+CRT_LIBS = lib/crt1.o lib/Scrt1.o lib/rcrt1.o lib/crti.o lib/crtn.o
 STATIC_LIBS = lib/libc.a
 SHARED_LIBS = lib/libc.so
 TOOL_LIBS = lib/musl-gcc.specs
@@ -89,7 +89,7 @@ src/ldso/dlstart.lo src/ldso/dynlink.lo: src/internal/dynlink.h arch/$(ARCH)/rel
 
 crt/crt1.o crt/Scrt1.o src/ldso/dlstart.lo: $(wildcard arch/$(ARCH)/crt_arch.h)
 
-crt/Scrt1.o: CFLAGS += -fPIC
+crt/Scrt1.o crt/rcrt1.o: CFLAGS += -fPIC
 
 OPTIMIZE_SRCS = $(wildcard $(OPTIMIZE_GLOBS:%=src/%))
 $(OPTIMIZE_SRCS:%.c=%.o) $(OPTIMIZE_SRCS:%.c=%.lo): CFLAGS += -O3
