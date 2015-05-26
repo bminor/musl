@@ -104,7 +104,7 @@ NOSSP_SRCS = $(wildcard crt/*.c) \
 	src/ldso/dlstart.c src/ldso/dynlink.c
 $(NOSSP_SRCS:%.c=%.o) $(NOSSP_SRCS:%.c=%.lo): CFLAGS += $(CFLAGS_NOSSP)
 
-$(CRT_LIBS): CFLAGS += -DCRT
+$(CRT_LIBS:lib/%=crt/%): CFLAGS += -DCRT
 
 # This incantation ensures that changes to any subarch asm files will
 # force the corresponding object file to be rebuilt, even if the implicit
