@@ -8,9 +8,7 @@
 struct __locale_map;
 
 struct __locale_struct {
-	volatile int ctype_utf8;
-	char *messages_name;
-	struct __locale_map *volatile cat[4];
+	const struct __locale_map *volatile cat[6];
 };
 
 struct __libc {

@@ -16,5 +16,5 @@ const char *__lctrans(const char *msg, const struct __locale_map *lm)
 
 const char *__lctrans_cur(const char *msg)
 {
-	return __lctrans_impl(msg, CURRENT_LOCALE->cat[LC_MESSAGES-2]);
+	return __lctrans_impl(msg, CURRENT_LOCALE->cat[LC_MESSAGES]);
 }

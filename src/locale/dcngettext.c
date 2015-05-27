@@ -84,13 +84,15 @@ char *bindtextdomain(const char *domainname, const char *dirname)
 }
 
 static const char catnames[][12] = {
+	"LC_CTYPE",
+	"LC_NUMERIC",
 	"LC_TIME",
 	"LC_COLLATE",
 	"LC_MONETARY",
 	"LC_MESSAGES",
 };
 
-static const char catlens[] = { 7, 10, 11, 11 };
+static const char catlens[] = { 8, 10, 7, 10, 11, 11 };
 
 struct msgcat {
 	struct msgcat *next;
@@ -117,9 +119,11 @@ char *dcngettext(const char *domainname, const char *msgid1, const char *msgid2,
 	static struct msgcat *volatile cats;
 	struct msgcat *p;
 	struct __locale_struct *loc = CURRENT_LOCALE;
-	struct __locale_map *lm;
+	const struct __locale_map *lm;
 	const char *dirname, *locname, *catname;
 	size_t dirlen, loclen, catlen, domlen;
+
+	if ((unsigned)category >= LC_ALL) goto notrans;
 
 	if (!domainname) domainname = __gettextdomain();
 
@@ -129,25 +133,15 @@ char *dcngettext(const char *domainname, const char *msgid1, const char *msgid2,
 	dirname = gettextdir(domainname, &dirlen);
 	if (!dirname) goto notrans;
 
-	switch (category) {
-	case LC_MESSAGES:
-		locname = loc->messages_name;
-		if (!locname || !*locname) goto notrans;
-		break;
-	case LC_TIME:
-	case LC_MONETARY:
-	case LC_COLLATE:
-		lm = loc->cat[category-2];
-		if (!lm) goto notrans;
-		locname = lm->name;
-		break;
-	default:
+	lm = loc->cat[category];
+	if (!lm) {
 notrans:
 		return (char *) ((n == 1) ? msgid1 : msgid2);
 	}
+	locname = lm->name;
 
-	catname = catnames[category-2];
-	catlen = catlens[category-2];
+	catname = catnames[category];
+	catlen = catlens[category];
 	loclen = strlen(locname);
 
 	size_t namelen = dirlen+1 + loclen+1 + catlen+1 + domlen+3;

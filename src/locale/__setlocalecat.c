@@ -15,24 +15,60 @@ const unsigned char *__map_file(const char *, size_t *);
 int __munmap(void *, size_t);
 char *__strchrnul(const char *, int);
 
-static struct __locale_map *findlocale(const char *name, size_t n)
+static const char envvars[][12] = {
+	"LC_CTYPE",
+	"LC_NUMERIC",
+	"LC_TIME",
+	"LC_COLLATE",
+	"LC_MONETARY",
+	"LC_MESSAGES",
+};
+
+static const uint32_t empty_mo[] = { 0x950412de, 0, -1, -1, -1 };
+
+static const struct __locale_map c_dot_utf8 = {
+	.map = empty_mo,
+	.map_size = sizeof empty_mo,
+	.name = "C.UTF-8"
+};
+
+const struct __locale_map *__get_locale(int cat, const char *val)
 {
 	static int lock[2];
 	static void *volatile loc_head;
-	struct __locale_map *p, *new = 0;
+	const struct __locale_map *p;
+	struct __locale_map *new = 0;
 	const char *path = 0, *z;
 	char buf[256];
-	size_t l;
-	const void *map;
-	size_t map_size;
+	size_t l, n;
+
+	if (!*val) {
+		(val = getenv("LC_ALL")) && *val ||
+		(val = getenv(envvars[cat])) && *val ||
+		(val = getenv("LANG")) && *val ||
+		(val = "C.UTF-8");
+	}
+
+	/* Limit name length and forbid leading dot or any slashes. */
+	for (n=0; n<LOCALE_NAME_MAX && val[n] && val[n]!='/'; n++);
+	if (val[0]=='.' || val[n]) val = "C.UTF-8";
+	int builtin = (val[0]=='C' && !val[1])
+		|| !strcmp(val, "C.UTF-8")
+		|| !strcmp(val, "POSIX");
+
+	if (builtin) {
+		if (cat == LC_CTYPE && val[1]=='.')
+			return (void *)&c_dot_utf8;
+		return 0;
+	}
 
 	for (p=loc_head; p; p=p->next)
-		if (!strcmp(name, p->name)) return p;
+		if (!strcmp(val, p->name)) return p;
 
 	LOCK(lock);
 
 	for (p=loc_head; p; p=p->next)
-		if (!strcmp(name, p->name)) {
+		if (!strcmp(val, p->name)) {
 			UNLOCK(lock);
 			return p;
 		}
@@ -46,9 +82,10 @@ static struct __locale_map *findlocale(const char *name, size_t n)
 		if (l >= sizeof buf - n - 2) continue;
 		memcpy(buf, path, l);
 		buf[l] = '/';
-		memcpy(buf+l+1, name, n);
+		memcpy(buf+l+1, val, n);
 		buf[l+1+n] = 0;
-		map = __map_file(buf, &map_size);
+		size_t map_size;
+		const void *map = __map_file(buf, &map_size);
 		if (map) {
 			new = malloc(sizeof *new);
 			if (!new) {
@@ -57,58 +94,31 @@ static struct __locale_map *findlocale(const char *name, size_t n)
 			}
 			new->map = map;
 			new->map_size = map_size;
-			memcpy(new->name, name, n);
+			memcpy(new->name, val, n);
 			new->name[n] = 0;
 			new->next = loc_head;
 			loc_head = new;
 			break;
 		}
 	}
+
+	/* If no locale definition was found, make a locale map
+	 * object anyway to store the name, which is kept for the
+	 * sake of being able to do message translations at the
+	 * application level. */
+	if (!new && (new = malloc(sizeof *new))) {
+		new->map = empty_mo;
+		new->map_size = sizeof empty_mo;
+		memcpy(new->name, val, n);
+		new->name[n] = 0;
+		new->next = loc_head;
+		loc_head = new;
+	}
+
+	/* For LC_CTYPE, never return a null pointer unless the
+	 * requested name was "C" or "POSIX". */
+	if (!new && cat == LC_CTYPE) new = (void *)&c_dot_utf8;
+
 	UNLOCK(lock);
 	return new;
-}
-
-static const char envvars[][12] = {
-	"LC_CTYPE",
-	"LC_NUMERIC",
-	"LC_TIME",
-	"LC_COLLATE",
-	"LC_MONETARY",
-	"LC_MESSAGES",
-};
-
-int __setlocalecat(locale_t loc, int cat, const char *val)
-{
-	if (!*val) {
-		(val = getenv("LC_ALL")) && *val ||
-		(val = getenv(envvars[cat])) && *val ||
-		(val = getenv("LANG")) && *val ||
-		(val = "C.UTF-8");
-	}
-
-	size_t n;
-	for (n=0; n<LOCALE_NAME_MAX && val[n] && val[n]!='/'; n++);
-	if (val[0]=='.' || val[n]) val = "C.UTF-8";
-	int builtin = (val[0]=='C' && !val[1])
-		|| !strcmp(val, "C.UTF-8")
-		|| !strcmp(val, "POSIX");
-
-	switch (cat) {
-	case LC_CTYPE:
-		loc->ctype_utf8 = !builtin || val[1]=='.';
-		break;
-	case LC_MESSAGES:
-		if (builtin) {
-			loc->messages_name[0] = 0;
-		} else {
-			memcpy(loc->messages_name, val, n);
-			loc->messages_name[n] = 0;
-		}
-		/* fall through */
-	default:
-		loc->cat[cat-2] = builtin ? 0 : findlocale(val, n);
-	case LC_NUMERIC:
-		break;
-	}
-	return 0;
 }
