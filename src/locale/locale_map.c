@@ -26,7 +26,7 @@ static const char envvars[][12] = {
 
 static const uint32_t empty_mo[] = { 0x950412de, 0, -1, -1, -1 };
 
-static const struct __locale_map c_dot_utf8 = {
+const struct __locale_map __c_dot_utf8 = {
 	.map = empty_mo,
 	.map_size = sizeof empty_mo,
 	.name = "C.UTF-8"
@@ -58,7 +58,7 @@ const struct __locale_map *__get_locale(int cat, const char *val)
 
 	if (builtin) {
 		if (cat == LC_CTYPE && val[1]=='.')
-			return (void *)&c_dot_utf8;
+			return (void *)&__c_dot_utf8;
 		return 0;
 	}
 
@@ -117,7 +117,7 @@ const struct __locale_map *__get_locale(int cat, const char *val)
 
 	/* For LC_CTYPE, never return a null pointer unless the
 	 * requested name was "C" or "POSIX". */
-	if (!new && cat == LC_CTYPE) new = (void *)&c_dot_utf8;
+	if (!new && cat == LC_CTYPE) new = (void *)&__c_dot_utf8;
 
 	UNLOCK(lock);
 	return new;
