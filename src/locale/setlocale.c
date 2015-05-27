@@ -7,8 +7,29 @@
 
 static char buf[2+4*(LOCALE_NAME_MAX+1)];
 
+static char *setlocale_one_unlocked(int cat, const char *name)
+{
+	struct __locale_map *lm;
+
+	if (name) __setlocalecat(&libc.global_locale, cat, name);
+
+	switch (cat) {
+	case LC_CTYPE:
+		return libc.global_locale.ctype_utf8 ? "C.UTF-8" : "C";
+	case LC_NUMERIC:
+		return "C";
+	case LC_MESSAGES:
+		return libc.global_locale.messages_name[0]
+			? libc.global_locale.messages_name : "C";
+	default:
+		lm = libc.global_locale.cat[cat-2];
+		return lm ? lm->name : "C";
+	}
+}
+
 char *setlocale(int cat, const char *name)
 {
+	static volatile int lock[2];
 	struct __locale_map *lm;
 	int i, j;
 
@@ -18,6 +39,8 @@ char *setlocale(int cat, const char *name)
 	}
 
 	if ((unsigned)cat > LC_ALL) return 0;
+
+	LOCK(lock);
 
 	/* For LC_ALL, setlocale is required to return a string which
 	 * encodes the current setting for all categories. The format of
@@ -37,12 +60,13 @@ char *setlocale(int cat, const char *name)
 					memcpy(part, name + 2 + (i-2)*(LOCALE_NAME_MAX+1), LOCALE_NAME_MAX);
 					for (j=LOCALE_NAME_MAX-1; j && part[j]==';'; j--)
 						part[j] = 0;
-					setlocale(i, part);
+					setlocale_one_unlocked(i, part);
 				}
-				setlocale(LC_MESSAGES, name + 2 + 3*(LOCALE_NAME_MAX+1));
+				setlocale_one_unlocked(LC_MESSAGES, name
+					+ 2 + 3*(LOCALE_NAME_MAX+1));
 			} else {
 				for (i=0; i<LC_ALL; i++)
-					setlocale(i, name);
+					setlocale_one_unlocked(i, name);
 			}
 		}
 		memset(buf, ';', 2 + 3*(LOCALE_NAME_MAX+1));
@@ -52,21 +76,13 @@ char *setlocale(int cat, const char *name)
 			if (lm) memcpy(buf + 2 + (i-2)*(LOCALE_NAME_MAX+1),
 				lm->name, strlen(lm->name));
 		}
+		UNLOCK(lock);
 		return buf;
 	}
 
-	if (name) __setlocalecat(&libc.global_locale, cat, name);
+	char *ret = setlocale_one_unlocked(cat, name);
 
-	switch (cat) {
-	case LC_CTYPE:
-		return libc.global_locale.ctype_utf8 ? "C.UTF-8" : "C";
-	case LC_NUMERIC:
-		return "C";
-	case LC_MESSAGES:
-		return libc.global_locale.messages_name[0]
-			? libc.global_locale.messages_name : "C";
-	default:
-		lm = libc.global_locale.cat[cat-2];
-		return lm ? lm->name : "C";
-	}
+	UNLOCK(lock);
+
+	return ret;
 }
