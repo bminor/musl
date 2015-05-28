@@ -80,7 +80,7 @@ fi
 tryflag () {
 printf "checking whether compiler accepts %s... " "$2"
 echo "typedef int x;" > "$tmpc"
-if $CC $2 -c -o /dev/null "$tmpc" >/dev/null 2>&1 ; then
+if $CC $CFLAGS_TRY $2 -c -o /dev/null "$tmpc" >/dev/null 2>&1 ; then
 printf "yes\n"
 eval "$1=\"\${$1} \$2\""
 eval "$1=\${$1# }"
@@ -94,7 +94,7 @@ fi
 tryldflag () {
 printf "checking whether linker accepts %s... " "$2"
 echo "typedef int x;" > "$tmpc"
-if $CC -nostdlib -shared "$2" -o /dev/null "$tmpc" >/dev/null 2>&1 ; then
+if $CC $LDFLAGS_TRY -nostdlib -shared "$2" -o /dev/null "$tmpc" >/dev/null 2>&1 ; then
 printf "yes\n"
 eval "$1=\"\${$1} \$2\""
 eval "$1=\${$1# }"
@@ -113,7 +113,9 @@ CFLAGS_C99FSE=
 CFLAGS_AUTO=
 CFLAGS_MEMOPS=
 CFLAGS_NOSSP=
+CFLAGS_TRY=
 LDFLAGS_AUTO=
+LDFLAGS_TRY=
 OPTIMIZE_GLOBS=
 prefix=/usr/local/musl
 exec_prefix='$(prefix)'
@@ -203,6 +205,14 @@ else
 printf "no; compiler output follows:\n%s\n" "$output"
 exit 1
 fi
+
+#
+# Figure out options to force errors on unknown flags.
+#
+tryflag   CFLAGS_TRY  -Werror=unknown-warning-option
+tryflag   CFLAGS_TRY  -Werror=unused-command-line-argument
+tryldflag LDFLAGS_TRY -Werror=unknown-warning-option
+tryldflag LDFLAGS_TRY -Werror=unused-command-line-argument
 
 #
 # Need to know if the compiler is gcc to decide whether to build the
