@@ -21,7 +21,6 @@ size_t __stdio_read(FILE *f, unsigned char *buf, size_t len)
 	pthread_cleanup_pop(0);
 	if (cnt <= 0) {
 		f->flags |= F_EOF ^ ((F_ERR^F_EOF) & cnt);
-		f->rpos = f->rend = 0;
 		return cnt;
 	}
 	if (cnt <= iov[0].iov_len) return cnt;
