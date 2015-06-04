@@ -270,6 +270,7 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 	for (; rel_size; rel+=stride, rel_size-=stride*sizeof(size_t)) {
 		if (skip_relative && IS_RELATIVE(rel[1])) continue;
 		type = R_TYPE(rel[1]);
+		if (type == REL_NONE) continue;
 		sym_index = R_SYM(rel[1]);
 		reloc_addr = (void *)(base + rel[0]);
 		if (sym_index) {
