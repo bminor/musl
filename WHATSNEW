@@ -1507,3 +1507,36 @@ arch-specific bugs fixed:
 - dynamic linker name for sh ignored fpu/nofpu and endianness
 - various minor aarch64 bugs
 - dangling pointers in x32 syscall timespec fixup code
+
+
+
+1.1.10 release notes
+
+new features:
+- fail-safe (allocation-free) C locale for newlocale to return
+- all locale categories track requested locale name
+- rcrt1.o start file for static PIE
+
+optimizations:
+- inline atomics for sh4a
+- removed heavy atomics from locale-related code paths
+- removed global data accesses from CURRENT_LOCALE macro & callers
+- dynamic linker stage 1 size reduction
+
+compatibility:
+- better configure detection of unsupported compiler options
+- support for more relocation types in libc.so, not currently used
+- iconv_open accepts "" and "CHAR" as aliases for native (UTF-8)
+- additional LFS64 macros in sys/resource.h
+
+regressions fixed:
+- dynamic linker crash on NONE-type relocations (only mips affected)
+- inability to build as thumb2 on arm
+- failure to run under qemu-i386 user-level emulation
+- inability to access globals from libc on powerpc
+- PIE link errors in Scrt1.o under unusual usage on some archs
+
+other bugs fixed:
+- failure of ungetc/ungetwc to work on FILE streams in EOF state
+- possible null pointer dereference in gettext
+- possible initial stack misalignment on mips with PIE
