@@ -11,18 +11,15 @@ wint_t ungetwc(wint_t c, FILE *f)
 
 	if (c == WEOF) return c;
 
-	/* Try conversion early so we can fail without locking if invalid */
-	if (!isascii(c) && (l = wctomb((void *)mbc, c)) < 0)
-		return WEOF;
-
 	FLOCK(f);
 
 	f->mode |= f->mode+1;
 
 	if (!f->rpos) __toread(f);
-	if (!f->rpos || f->rpos < f->buf - UNGET + l) {
+	if (!f->rpos || f->rpos < f->buf - UNGET + l ||
+	    (!isascii(c) && (l = wctomb((void *)mbc, c)) < 0)) {
 		FUNLOCK(f);
-		return EOF;
+		return WEOF;
 	}
 
 	if (isascii(c)) *--f->rpos = c;
