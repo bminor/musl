@@ -30,6 +30,3 @@ const char *__lctrans_cur(const char *);
 #define CURRENT_LOCALE (__pthread_self()->locale)
 
 #define CURRENT_UTF8 (!!__pthread_self()->locale->cat[LC_CTYPE])
-
-#undef MB_CUR_MAX
-#define MB_CUR_MAX (CURRENT_UTF8 ? 4 : 1)
