@@ -1192,6 +1192,17 @@ _Noreturn void __dls3(size_t *sp)
 	char **argv_orig = argv;
 	char **envp = argv+argc+1;
 
+	/* Find aux vector just past environ[] and use it to initialize
+	 * global data that may be needed before we can make syscalls. */
+	__environ = envp;
+	for (i=argc+1; argv[i]; i++);
+	libc.auxv = auxv = (void *)(argv+i+1);
+	decode_vec(auxv, aux, AUX_CNT);
+	__hwcap = aux[AT_HWCAP];
+	libc.page_size = aux[AT_PAGESZ];
+	libc.secure = ((aux[0]&0x7800)!=0x7800 || aux[AT_UID]!=aux[AT_EUID]
+		|| aux[AT_GID]!=aux[AT_EGID] || aux[AT_SECURE]);
+
 	/* Setup early thread pointer in builtin_tls for ldso/libc itself to
 	 * use during dynamic linking. If possible it will also serve as the
 	 * thread pointer at runtime. */
@@ -1200,25 +1211,11 @@ _Noreturn void __dls3(size_t *sp)
 		a_crash();
 	}
 
-	/* Find aux vector just past environ[] */
-	for (i=argc+1; argv[i]; i++)
-		if (!memcmp(argv[i], "LD_LIBRARY_PATH=", 16))
-			env_path = argv[i]+16;
-		else if (!memcmp(argv[i], "LD_PRELOAD=", 11))
-			env_preload = argv[i]+11;
-	auxv = (void *)(argv+i+1);
-
-	decode_vec(auxv, aux, AUX_CNT);
-
 	/* Only trust user/env if kernel says we're not suid/sgid */
-	if ((aux[0]&0x7800)!=0x7800 || aux[AT_UID]!=aux[AT_EUID]
-	  || aux[AT_GID]!=aux[AT_EGID] || aux[AT_SECURE]) {
-		env_path = 0;
-		env_preload = 0;
-		libc.secure = 1;
+	if (!libc.secure) {
+		env_path = getenv("LD_LIBRARY_PATH");
+		env_preload = getenv("LD_PRELOAD");
 	}
-	libc.page_size = aux[AT_PAGESZ];
-	libc.auxv = auxv;
 
 	/* If the main program was already loaded by the kernel,
 	 * AT_PHDR will point to some location other than the dynamic
