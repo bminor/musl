@@ -1,3 +1,6 @@
+#ifndef _LOCALE_IMPL_H
+#define _LOCALE_IMPL_H
+
 #include <locale.h>
 #include <stdlib.h>
 #include "libc.h"
@@ -30,3 +33,5 @@ const char *__lctrans_cur(const char *);
 #define CURRENT_LOCALE (__pthread_self()->locale)
 
 #define CURRENT_UTF8 (!!__pthread_self()->locale->cat[LC_CTYPE])
+
+#endif
