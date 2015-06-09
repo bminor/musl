@@ -152,6 +152,14 @@ void __dump_heap(int x)
 }
 #endif
 
+static int is_near_stack(uintptr_t b)
+{
+	const uintptr_t c = 8<<20;
+	uintptr_t a = (uintptr_t)libc.auxv;
+	uintptr_t d = (uintptr_t)&b;
+	return a-b<=c || d-b<=c;
+}
+
 static struct chunk *expand_heap(size_t n)
 {
 	static int init;
@@ -174,7 +182,7 @@ static struct chunk *expand_heap(size_t n)
 	new = mal.brk + n + SIZE_ALIGN + PAGE_SIZE - 1 & -PAGE_SIZE;
 	n = new - mal.brk;
 
-	if (__brk(new) != new) {
+	if (is_near_stack(mal.brk) || __brk(new) != new) {
 		size_t min = (size_t)PAGE_SIZE << mal.mmap_step/2;
 		n += -n & PAGE_SIZE-1;
 		if (n < min) n = min;
