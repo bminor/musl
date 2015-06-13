@@ -296,6 +296,7 @@ static int wprintf_core(FILE *f, const wchar_t *fmt, va_list *ap, union arg *nl_
 		case 'm':
 			arg.p = strerror(errno);
 		case 's':
+			if (!arg.p) arg.p = "(null)";
 			bs = arg.p;
 			if (p<0) p = INT_MAX;
 			for (i=l=0; l<p && (i=mbtowc(&wc, bs, MB_LEN_MAX))>0; bs+=i, l++);
