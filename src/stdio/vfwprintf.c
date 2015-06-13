@@ -293,6 +293,8 @@ static int wprintf_core(FILE *f, const wchar_t *fmt, va_list *ap, union arg *nl_
 			if ((fl&LEFT_ADJ)) fprintf(f, "%.*s", w-p, "");
 			l=w;
 			continue;
+		case 'm':
+			arg.p = strerror(errno);
 		case 's':
 			bs = arg.p;
 			if (p<0) p = INT_MAX;
