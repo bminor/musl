@@ -359,7 +359,7 @@ int vfwprintf(FILE *restrict f, const wchar_t *restrict fmt, va_list ap)
 	}
 
 	FLOCK(f);
-	f->mode |= f->mode+1;
+	fwide(f, 1);
 	olderr = f->flags & F_ERR;
 	f->flags &= ~F_ERR;
 	ret = wprintf_core(f, fmt, &ap2, nl_arg, nl_type);

@@ -11,7 +11,7 @@ wint_t ungetwc(wint_t c, FILE *f)
 
 	FLOCK(f);
 
-	f->mode |= f->mode+1;
+	if (f->mode <= 0) fwide(f, 1);
 
 	if (!f->rpos) __toread(f);
 	if (!f->rpos || f->rpos < f->buf - UNGET + l || c == WEOF ||

@@ -10,7 +10,7 @@ wint_t __fgetwc_unlocked(FILE *f)
 	unsigned char b;
 	size_t l;
 
-	f->mode |= f->mode+1;
+	if (f->mode <= 0) fwide(f, 1);
 
 	/* Convert character from buffer if possible */
 	if (f->rpos < f->rend) {

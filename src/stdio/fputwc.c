@@ -8,7 +8,7 @@ wint_t __fputwc_unlocked(wchar_t c, FILE *f)
 	char mbc[MB_LEN_MAX];
 	int l;
 
-	f->mode |= f->mode+1;
+	if (f->mode <= 0) fwide(f, 1);
 
 	if (isascii(c)) {
 		c = putc_unlocked(c, f);
