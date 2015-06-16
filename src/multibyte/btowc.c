@@ -3,5 +3,6 @@
 
 wint_t btowc(int c)
 {
+	c = (unsigned char)c;
 	return c<128U ? c : EOF;
 }
