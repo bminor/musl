@@ -76,7 +76,8 @@ size_t wcstombs (char *__restrict, const wchar_t *__restrict, size_t);
 #define EXIT_FAILURE 1
 #define EXIT_SUCCESS 0
 
-#define MB_CUR_MAX ((size_t)+4)
+size_t __ctype_get_mb_cur_max(void);
+#define MB_CUR_MAX (__ctype_get_mb_cur_max())
 
 #define RAND_MAX (0x7fffffff)
 
