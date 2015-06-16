@@ -1,7 +1,7 @@
 .text
-.global __unmapself
-.type   __unmapself, @function
-__unmapself:
+.global __unmapself_sh_mmu
+.type   __unmapself_sh_mmu, @function
+__unmapself_sh_mmu:
 	mov   #91, r3  ! SYS_munmap
 	trapa #18
 
