@@ -1,7 +1,25 @@
 #ifndef __SH4A__
 
+#include "sh_atomic.h"
 #include "atomic.h"
 #include "libc.h"
+
+static inline unsigned mask()
+{
+	unsigned sr;
+	__asm__ __volatile__ ( "\n"
+	"	stc sr,r0 \n"
+	"	mov r0,%0 \n"
+	"	or #0xf0,r0 \n"
+	"	ldc r0,sr \n"
+	: "=&r"(sr) : : "memory", "r0" );
+	return sr;
+}
+
+static inline void unmask(unsigned sr)
+{
+	__asm__ __volatile__ ( "ldc %0,sr" : : "r"(sr) : "memory" );
+}
 
 /* gusa is a hack in the kernel which lets you create a sequence of instructions
  * which will be restarted if the process is preempted in the middle of the
@@ -25,11 +43,17 @@
 	"	mov.l " new ", @" mem "\n" \
 	"1:	mov r1, r15\n"
 
-#define CPU_HAS_LLSC 0x0040
-
 int __sh_cas(volatile int *p, int t, int s)
 {
-	if (__hwcap & CPU_HAS_LLSC) return __sh_cas_llsc(p, t, s);
+	if (__sh_atomic_model == SH_A_LLSC) return __sh_cas_llsc(p, t, s);
+
+	if (__sh_atomic_model == SH_A_IMASK) {
+		unsigned sr = mask();
+		int old = *p;
+		if (old==t) *p = s;
+		unmask(sr);
+		return old;
+	}
 
 	int old;
 	__asm__ __volatile__(
@@ -43,7 +67,15 @@ int __sh_cas(volatile int *p, int t, int s)
 
 int __sh_swap(volatile int *x, int v)
 {
-	if (__hwcap & CPU_HAS_LLSC) return __sh_swap_llsc(x, v);
+	if (__sh_atomic_model == SH_A_LLSC) return __sh_swap_llsc(x, v);
+
+	if (__sh_atomic_model == SH_A_IMASK) {
+		unsigned sr = mask();
+		int old = *x;
+		*x = v;
+		unmask(sr);
+		return old;
+	}
 
 	int old;
 	__asm__ __volatile__(
@@ -55,7 +87,15 @@ int __sh_swap(volatile int *x, int v)
 
 int __sh_fetch_add(volatile int *x, int v)
 {
-	if (__hwcap & CPU_HAS_LLSC) return __sh_fetch_add_llsc(x, v);
+	if (__sh_atomic_model == SH_A_LLSC) return __sh_fetch_add_llsc(x, v);
+
+	if (__sh_atomic_model == SH_A_IMASK) {
+		unsigned sr = mask();
+		int old = *x;
+		*x = old + v;
+		unmask(sr);
+		return old;
+	}
 
 	int old, dummy;
 	__asm__ __volatile__(
@@ -69,7 +109,7 @@ int __sh_fetch_add(volatile int *x, int v)
 
 void __sh_store(volatile int *p, int x)
 {
-	if (__hwcap & CPU_HAS_LLSC) return __sh_store_llsc(p, x);
+	if (__sh_atomic_model == SH_A_LLSC) return __sh_store_llsc(p, x);
 	__asm__ __volatile__(
 		"	mov.l %1, @%0\n"
 		: : "r"(p), "r"(x) : "memory");
@@ -77,7 +117,15 @@ void __sh_store(volatile int *p, int x)
 
 void __sh_and(volatile int *x, int v)
 {
-	if (__hwcap & CPU_HAS_LLSC) return __sh_and_llsc(x, v);
+	if (__sh_atomic_model == SH_A_LLSC) return __sh_and_llsc(x, v);
+
+	if (__sh_atomic_model == SH_A_IMASK) {
+		unsigned sr = mask();
+		int old = *x;
+		*x = old & v;
+		unmask(sr);
+		return;
+	}
 
 	int dummy;
 	__asm__ __volatile__(
@@ -89,7 +137,15 @@ void __sh_and(volatile int *x, int v)
 
 void __sh_or(volatile int *x, int v)
 {
-	if (__hwcap & CPU_HAS_LLSC) return __sh_or_llsc(x, v);
+	if (__sh_atomic_model == SH_A_LLSC) return __sh_or_llsc(x, v);
+
+	if (__sh_atomic_model == SH_A_IMASK) {
+		unsigned sr = mask();
+		int old = *x;
+		*x = old | v;
+		unmask(sr);
+		return;
+	}
 
 	int dummy;
 	__asm__ __volatile__(
