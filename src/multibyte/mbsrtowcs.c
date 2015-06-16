@@ -7,6 +7,8 @@
 #include <stdint.h>
 #include <wchar.h>
 #include <errno.h>
+#include <string.h>
+#include <stdlib.h>
 #include "internal.h"
 
 size_t mbsrtowcs(wchar_t *restrict ws, const char **restrict src, size_t wn, mbstate_t *restrict st)
@@ -22,6 +24,23 @@ size_t mbsrtowcs(wchar_t *restrict ws, const char **restrict src, size_t wn, mbs
 		} else {
 			goto resume0;
 		}
+	}
+
+	if (MB_CUR_MAX==1) {
+		if (!ws) return strlen((const char *)s);
+		for (;;) {
+			if (!wn) {
+				*src = (const void *)s;
+				return wn0;
+			}
+			if (!*s) break;
+			c = *s++;
+			*ws++ = CODEUNIT(c);
+			wn--;
+		}
+		*ws = 0;
+		*src = 0;
+		return wn0-wn;
 	}
 
 	if (!ws) for (;;) {
