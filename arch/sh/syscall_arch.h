@@ -8,7 +8,7 @@
  */
 #define __asm_syscall(trapno, ...) do {   \
 	__asm__ __volatile__ (                \
-		"trapa #" #trapno "\n"            \
+		"trapa #31\n"            \
 		"or r0, r0\n"                     \
 		"or r0, r0\n"                     \
 		"or r0, r0\n"                     \

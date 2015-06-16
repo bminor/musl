@@ -7,7 +7,7 @@ vfork:
 	mov #95, r3
 	add r3, r3
 
-	trapa #16
+	trapa #31
 	or    r0, r0
 	or    r0, r0
 	or    r0, r0
