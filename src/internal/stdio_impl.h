@@ -76,8 +76,9 @@ int __putc_unlocked(int, FILE *);
 FILE *__fdopen(int, const char *);
 int __fmodeflags(const char *);
 
-#define OFLLOCK() LOCK(libc.ofl_lock)
-#define OFLUNLOCK() UNLOCK(libc.ofl_lock)
+FILE *__ofl_add(FILE *f);
+FILE **__ofl_lock(void);
+void __ofl_unlock(void);
 
 #define feof(f) ((f)->flags & F_EOF)
 #define ferror(f) ((f)->flags & F_ERR)

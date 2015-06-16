@@ -14,11 +14,11 @@ int fclose(FILE *f)
 	__unlist_locked_file(f);
 
 	if (!(perm = f->flags & F_PERM)) {
-		OFLLOCK();
+		FILE **head = __ofl_lock();
 		if (f->prev) f->prev->next = f->next;
 		if (f->next) f->next->prev = f->prev;
-		if (libc.ofl_head == f) libc.ofl_head = f->next;
-		OFLUNLOCK();
+		if (*head == f) *head = f->next;
+		__ofl_unlock();
 	}
 
 	r = fflush(f);

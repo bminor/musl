@@ -17,8 +17,6 @@ struct __libc {
 	int secure;
 	volatile int threads_minus_1;
 	size_t *auxv;
-	FILE *ofl_head;
-	volatile int ofl_lock[2];
 	size_t tls_size;
 	size_t page_size;
 	struct __locale_struct global_locale;

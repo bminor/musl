@@ -191,8 +191,9 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 	if (!libc.can_do_threads) return ENOSYS;
 	self = __pthread_self();
 	if (!libc.threaded) {
-		for (FILE *f=libc.ofl_head; f; f=f->next)
+		for (FILE *f=*__ofl_lock(); f; f=f->next)
 			init_file_lock(f);
+		__ofl_unlock();
 		init_file_lock(__stdin_used);
 		init_file_lock(__stdout_used);
 		init_file_lock(__stderr_used);
