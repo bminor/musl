@@ -232,7 +232,8 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 		if (guard) {
 			map = __mmap(0, size, PROT_NONE, MAP_PRIVATE|MAP_ANON, -1, 0);
 			if (map == MAP_FAILED) goto fail;
-			if (__mprotect(map+guard, size-guard, PROT_READ|PROT_WRITE)) {
+			if (__mprotect(map+guard, size-guard, PROT_READ|PROT_WRITE)
+			    && errno != ENOSYS) {
 				__munmap(map, size);
 				goto fail;
 			}

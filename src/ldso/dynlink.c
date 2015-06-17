@@ -536,7 +536,8 @@ static void *map_library(int fd, struct dso *dso)
 	}
 	for (i=0; ((size_t *)(base+dyn))[i]; i+=2)
 		if (((size_t *)(base+dyn))[i]==DT_TEXTREL) {
-			if (mprotect(map, map_len, PROT_READ|PROT_WRITE|PROT_EXEC) < 0)
+			if (mprotect(map, map_len, PROT_READ|PROT_WRITE|PROT_EXEC)
+			    && errno != ENOSYS)
 				goto error;
 			break;
 		}
@@ -927,7 +928,8 @@ static void reloc_all(struct dso *p)
 		do_relocs(p, (void *)(p->base+dyn[DT_RELA]), dyn[DT_RELASZ], 3);
 
 		if (head != &ldso && p->relro_start != p->relro_end &&
-		    mprotect(p->base+p->relro_start, p->relro_end-p->relro_start, PROT_READ) < 0) {
+		    mprotect(p->base+p->relro_start, p->relro_end-p->relro_start, PROT_READ)
+		    && errno != ENOSYS) {
 			error("Error relocating %s: RELRO protection failed: %m",
 				p->name);
 			if (runtime) longjmp(*rtld_fail, 1);
