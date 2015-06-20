@@ -25,4 +25,8 @@ void __stack_chk_fail_local(void)
 	a_crash();
 }
 
+#else
+
+weak_alias(__stack_chk_fail, __stack_chk_fail_local);
+
 #endif
