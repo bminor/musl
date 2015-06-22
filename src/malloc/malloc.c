@@ -356,6 +356,17 @@ void *malloc(size_t n)
 	return CHUNK_TO_MEM(c);
 }
 
+void *__malloc0(size_t n)
+{
+	void *p = malloc(n);
+	if (p && !IS_MMAPPED(MEM_TO_CHUNK(p))) {
+		size_t *z;
+		n = (n + sizeof *z - 1)/sizeof *z;
+		for (z=p; n; n--, z++) if (*z) *z=0;
+	}
+	return p;
+}
+
 void *realloc(void *p, size_t n)
 {
 	struct chunk *self, *next;
