@@ -423,6 +423,28 @@ static void reclaim_gaps(struct dso *dso)
 	}
 }
 
+static void *mmap_fixed(void *p, size_t n, int prot, int flags, int fd, off_t off)
+{
+	char *q = mmap(p, n, prot, flags, fd, off);
+	if (q != MAP_FAILED || errno != EINVAL) return q;
+	/* Fallbacks for MAP_FIXED failure on NOMMU kernels. */
+	if (flags & MAP_ANONYMOUS) {
+		memset(p, 0, n);
+		return p;
+	}
+	ssize_t r;
+	if (lseek(fd, off, SEEK_SET) < 0) return MAP_FAILED;
+	for (q=p; n; q+=r, off+=r, n-=r) {
+		r = read(fd, q, n);
+		if (r < 0 && errno != EINTR) return MAP_FAILED;
+		if (!r) {
+			memset(q, 0, n);
+			break;
+		}
+	}
+	return p;
+}
+
 static void *map_library(int fd, struct dso *dso)
 {
 	Ehdr buf[(896+sizeof(Ehdr))/sizeof(Ehdr)];
@@ -524,13 +546,13 @@ static void *map_library(int fd, struct dso *dso)
 		prot = (((ph->p_flags&PF_R) ? PROT_READ : 0) |
 			((ph->p_flags&PF_W) ? PROT_WRITE: 0) |
 			((ph->p_flags&PF_X) ? PROT_EXEC : 0));
-		if (mmap(base+this_min, this_max-this_min, prot, MAP_PRIVATE|MAP_FIXED, fd, off_start) == MAP_FAILED)
+		if (mmap_fixed(base+this_min, this_max-this_min, prot, MAP_PRIVATE|MAP_FIXED, fd, off_start) == MAP_FAILED)
 			goto error;
 		if (ph->p_memsz > ph->p_filesz) {
 			size_t brk = (size_t)base+ph->p_vaddr+ph->p_filesz;
 			size_t pgbrk = brk+PAGE_SIZE-1 & -PAGE_SIZE;
 			memset((void *)brk, 0, pgbrk-brk & PAGE_SIZE-1);
-			if (pgbrk-(size_t)base < this_max && mmap((void *)pgbrk, (size_t)base+this_max-pgbrk, prot, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) == MAP_FAILED)
+			if (pgbrk-(size_t)base < this_max && mmap_fixed((void *)pgbrk, (size_t)base+this_max-pgbrk, prot, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) == MAP_FAILED)
 				goto error;
 		}
 	}
