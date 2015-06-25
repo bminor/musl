@@ -94,6 +94,10 @@ struct __timer {
 #define CANARY canary
 #endif
 
+#ifndef DTP_OFFSET
+#define DTP_OFFSET 0
+#endif
+
 #define SIGTIMER 32
 #define SIGCANCEL 33
 #define SIGSYNCCALL 34

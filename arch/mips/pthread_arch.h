@@ -13,4 +13,6 @@ static inline struct pthread *__pthread_self()
 #define TLS_ABOVE_TP
 #define TP_ADJ(p) ((char *)(p) + sizeof(struct pthread) + 0x7000)
 
+#define DTP_OFFSET 0x8000
+
 #define CANCEL_REG_IP (3-(union {int __i; char __b;}){1}.__b)

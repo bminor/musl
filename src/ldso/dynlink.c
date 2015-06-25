@@ -337,7 +337,7 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 			*reloc_addr = def.dso->tls_id;
 			break;
 		case REL_DTPOFF:
-			*reloc_addr = tls_val + addend;
+			*reloc_addr = tls_val + addend - DTP_OFFSET;
 			break;
 #ifdef TLS_ABOVE_TP
 		case REL_TPOFF:
@@ -1102,7 +1102,7 @@ void *__tls_get_new(size_t *v)
 	__block_all_sigs(&set);
 	if (v[0]<=(size_t)self->dtv[0]) {
 		__restore_sigs(&set);
-		return (char *)self->dtv[v[0]]+v[1];
+		return (char *)self->dtv[v[0]]+v[1]+DTP_OFFSET;
 	}
 
 	/* This is safe without any locks held because, if the caller
@@ -1135,7 +1135,7 @@ void *__tls_get_new(size_t *v)
 		if (p->tls_id == v[0]) break;
 	}
 	__restore_sigs(&set);
-	return mem + v[1];
+	return mem + v[1] + DTP_OFFSET;
 }
 
 static void update_tls_size()
