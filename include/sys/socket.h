@@ -255,6 +255,7 @@ struct linger
 #define MSG_NOSIGNAL  0x4000
 #define MSG_MORE      0x8000
 #define MSG_WAITFORONE 0x10000
+#define MSG_FASTOPEN  0x20000000
 #define MSG_CMSG_CLOEXEC 0x40000000
 
 #define __CMSG_LEN(cmsg) (((cmsg)->cmsg_len + sizeof(long) - 1) & ~(long)(sizeof(long) - 1))
