@@ -174,9 +174,8 @@ static Sym *sysv_lookup(const char *s, uint32_t h, struct dso *dso)
 	return 0;
 }
 
-static Sym *gnu_lookup(const char *s, uint32_t h1, struct dso *dso)
+static Sym *gnu_lookup(uint32_t h1, uint32_t *hashtab, struct dso *dso, const char *s)
 {
-	uint32_t *hashtab = dso->ghashtab;
 	uint32_t nbuckets = hashtab[0];
 	uint32_t *buckets = hashtab + 4 + hashtab[2]*(sizeof(size_t)/4);
 	uint32_t i = buckets[h1 % nbuckets];
@@ -196,9 +195,8 @@ static Sym *gnu_lookup(const char *s, uint32_t h1, struct dso *dso)
 	return 0;
 }
 
-static Sym *gnu_lookup_filtered(const char *s, uint32_t h1, struct dso *dso, uint32_t fofs, size_t fmask)
+static Sym *gnu_lookup_filtered(uint32_t h1, uint32_t *hashtab, struct dso *dso, const char *s, uint32_t fofs, size_t fmask)
 {
-	uint32_t *hashtab = dso->ghashtab;
 	const size_t *bloomwords = (const void *)(hashtab+4);
 	size_t f = bloomwords[fofs & (hashtab[2]-1)];
 	if (!(f & fmask)) return 0;
@@ -206,7 +204,7 @@ static Sym *gnu_lookup_filtered(const char *s, uint32_t h1, struct dso *dso, uin
 	f >>= (h1 >> hashtab[3]) % (8 * sizeof f);
 	if (!(f & 1)) return 0;
 
-	return gnu_lookup(s, h1, dso);
+	return gnu_lookup(h1, hashtab, dso, s);
 }
 
 #define OK_TYPES (1<<STT_NOTYPE | 1<<STT_OBJECT | 1<<STT_FUNC | 1<<STT_COMMON | 1<<STT_TLS)
@@ -218,20 +216,20 @@ static Sym *gnu_lookup_filtered(const char *s, uint32_t h1, struct dso *dso, uin
 
 static struct symdef find_sym(struct dso *dso, const char *s, int need_def)
 {
-	uint32_t h = 0, gh, gho;
+	uint32_t h = 0, gh, gho, *ght;
 	size_t ghm = 0;
 	struct symdef def = {0};
 	for (; dso; dso=dso->next) {
 		Sym *sym;
 		if (!dso->global) continue;
-		if (dso->ghashtab) {
+		if ((ght = dso->ghashtab)) {
 			if (!ghm) {
 				gh = gnu_hash(s);
 				int maskbits = 8 * sizeof ghm;
 				gho = gh / maskbits;
 				ghm = 1ul << gh % maskbits;
 			}
-			sym = gnu_lookup_filtered(s, gh, dso, gho, ghm);
+			sym = gnu_lookup_filtered(gh, ght, dso, s, gho, ghm);
 		} else {
 			if (!h) h = sysv_hash(s);
 			sym = sysv_lookup(s, h, dso);
@@ -1559,7 +1557,7 @@ void *__tls_get_addr(size_t *);
 static void *do_dlsym(struct dso *p, const char *s, void *ra)
 {
 	size_t i;
-	uint32_t h = 0, gh = 0;
+	uint32_t h = 0, gh = 0, *ght;
 	Sym *sym;
 	if (p == head || p == RTLD_DEFAULT || p == RTLD_NEXT) {
 		if (p == RTLD_DEFAULT) {
@@ -1577,9 +1575,9 @@ static void *do_dlsym(struct dso *p, const char *s, void *ra)
 	}
 	if (invalid_dso_handle(p))
 		return 0;
-	if (p->ghashtab) {
+	if ((ght = p->ghashtab)) {
 		gh = gnu_hash(s);
-		sym = gnu_lookup(s, gh, p);
+		sym = gnu_lookup(gh, ght, p, s);
 	} else {
 		h = sysv_hash(s);
 		sym = sysv_lookup(s, h, p);
@@ -1589,9 +1587,9 @@ static void *do_dlsym(struct dso *p, const char *s, void *ra)
 	if (sym && sym->st_value && (1<<(sym->st_info&0xf) & OK_TYPES))
 		return p->base + sym->st_value;
 	if (p->deps) for (i=0; p->deps[i]; i++) {
-		if (p->deps[i]->ghashtab) {
+		if ((ght = p->deps[i]->ghashtab)) {
 			if (!gh) gh = gnu_hash(s);
-			sym = gnu_lookup(s, gh, p->deps[i]);
+			sym = gnu_lookup(gh, ght, p->deps[i], s);
 		} else {
 			if (!h) h = sysv_hash(s);
 			sym = sysv_lookup(s, h, p->deps[i]);
