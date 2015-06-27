@@ -200,6 +200,19 @@ static Sym *gnu_lookup(const char *s, uint32_t h1, struct dso *dso)
 	return 0;
 }
 
+static Sym *gnu_lookup_filtered(const char *s, uint32_t h1, struct dso *dso, uint32_t fofs, size_t fmask)
+{
+	uint32_t *hashtab = dso->ghashtab;
+	const size_t *bloomwords = (const void *)(hashtab+4);
+	size_t f = bloomwords[fofs & (hashtab[2]-1)];
+	if (!(f & fmask)) return 0;
+
+	f >>= (h1 >> hashtab[3]) % (8 * sizeof f);
+	if (!(f & 1)) return 0;
+
+	return gnu_lookup(s, h1, dso);
+}
+
 #define OK_TYPES (1<<STT_NOTYPE | 1<<STT_OBJECT | 1<<STT_FUNC | 1<<STT_COMMON | 1<<STT_TLS)
 #define OK_BINDS (1<<STB_GLOBAL | 1<<STB_WEAK | 1<<STB_GNU_UNIQUE)
 
@@ -209,14 +222,20 @@ static Sym *gnu_lookup(const char *s, uint32_t h1, struct dso *dso)
 
 static struct symdef find_sym(struct dso *dso, const char *s, int need_def)
 {
-	uint32_t h = 0, gh = 0;
+	uint32_t h = 0, gh, gho;
+	size_t ghm = 0;
 	struct symdef def = {0};
 	for (; dso; dso=dso->next) {
 		Sym *sym;
 		if (!dso->global) continue;
 		if (dso->ghashtab) {
-			if (!gh) gh = gnu_hash(s);
-			sym = gnu_lookup(s, gh, dso);
+			if (!ghm) {
+				gh = gnu_hash(s);
+				int maskbits = 8 * sizeof ghm;
+				gho = gh / maskbits;
+				ghm = 1ul << gh % maskbits;
+			}
+			sym = gnu_lookup_filtered(s, gh, dso, gho, ghm);
 		} else {
 			if (!h) h = sysv_hash(s);
 			sym = sysv_lookup(s, h, dso);
