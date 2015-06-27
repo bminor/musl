@@ -176,24 +176,20 @@ static Sym *sysv_lookup(const char *s, uint32_t h, struct dso *dso)
 
 static Sym *gnu_lookup(const char *s, uint32_t h1, struct dso *dso)
 {
-	Sym *syms = dso->syms;
-	char *strings = dso->strings;
 	uint32_t *hashtab = dso->ghashtab;
 	uint32_t nbuckets = hashtab[0];
 	uint32_t *buckets = hashtab + 4 + hashtab[2]*(sizeof(size_t)/4);
-	uint32_t h2;
-	uint32_t *hashval;
 	uint32_t i = buckets[h1 % nbuckets];
 
 	if (!i) return 0;
 
-	hashval = buckets + nbuckets + (i - hashtab[1]);
+	uint32_t *hashval = buckets + nbuckets + (i - hashtab[1]);
 
 	for (h1 |= 1; ; i++) {
-		h2 = *hashval++;
-		if ((!dso->versym || dso->versym[i] >= 0)
-		    && (h1 == (h2|1)) && !strcmp(s, strings + syms[i].st_name))
-			return syms+i;
+		uint32_t h2 = *hashval++;
+		if ((h1 == (h2|1)) && (!dso->versym || dso->versym[i] >= 0)
+		    && !strcmp(s, dso->strings + dso->syms[i].st_name))
+			return dso->syms+i;
 		if (h2 & 1) break;
 	}
 
