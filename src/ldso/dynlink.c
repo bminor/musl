@@ -156,7 +156,7 @@ static uint32_t gnu_hash(const char *s0)
 	const unsigned char *s = (void *)s0;
 	uint_fast32_t h = 5381;
 	for (; *s; s++)
-		h = h*33 + *s;
+		h += h*32 + *s;
 	return h;
 }
 
