@@ -28,7 +28,7 @@ Optional features:
   --enable-debug          build with debugging information [disabled]
   --enable-warnings       build with recommended warnings flags [disabled]
   --enable-visibility     use global visibility options to optimize PIC [auto]
-  --enable-gcc-wrapper    build musl-gcc toolchain wrapper [auto]
+  --enable-wrapper=...    build given musl toolchain wrapper [auto]
   --disable-shared        inhibit building shared library [enabled]
   --disable-static        inhibit building static library [enabled]
 
@@ -123,6 +123,8 @@ bindir='$(exec_prefix)/bin'
 libdir='$(prefix)/lib'
 includedir='$(prefix)/include'
 syslibdir='/lib'
+tools=
+tool_libs=
 target=
 optimize=auto
 debug=no
@@ -131,6 +133,7 @@ visibility=auto
 shared=auto
 static=yes
 wrapper=auto
+gcc_wrapper=no
 
 for arg ; do
 case "$arg" in
@@ -154,7 +157,11 @@ case "$arg" in
 --disable-warnings|--enable-warnings=no) warnings=no ;;
 --enable-visibility|--enable-visibility=yes) visibility=yes ;;
 --disable-visibility|--enable-visibility=no) visibility=no ;;
---enable-gcc-wrapper|--enable-gcc-wrapper=yes) wrapper=yes ;;
+--enable-wrapper|--enable-wrapper=yes) wrapper=detect ;;
+--enable-wrapper=all) wrapper=yes ; gcc_wrapper=yes ;;
+--enable-wrapper=gcc) wrapper=yes ; gcc_wrapper=yes ;;
+--disable-wrapper|--enable-wrapper=no) wrapper=no ;;
+--enable-gcc-wrapper|--enable-gcc-wrapper=yes) wrapper=yes ; gcc_wrapper=yes ;;
 --disable-gcc-wrapper|--enable-gcc-wrapper=no) wrapper=no ;;
 --enable-*|--disable-*|--with-*|--without-*|--*dir=*|--build=*) ;;
 --host=*|--target=*) target=${arg#*=} ;;
@@ -215,36 +222,44 @@ tryldflag LDFLAGS_TRY -Werror=unknown-warning-option
 tryldflag LDFLAGS_TRY -Werror=unused-command-line-argument
 
 #
-# Need to know if the compiler is gcc to decide whether to build the
-# musl-gcc wrapper, and for critical bug detection in some gcc versions.
+# Need to know if the compiler is gcc or clang to decide which toolchain
+# wrappers to build.
 #
-printf "checking whether compiler is gcc... "
-if fnmatch '*gcc\ version*' "$(LC_ALL=C $CC -v 2>&1)" ; then
-cc_is_gcc=yes
-else
-cc_is_gcc=no
+printf "checking for C compiler family... "
+cc_ver="$(LC_ALL=C $CC -v 2>&1)"
+cc_family=unknown
+if fnmatch '*gcc\ version*' "$cc_ver" ; then
+cc_family=gcc
 fi
-echo "$cc_is_gcc"
+echo "$cc_family"
 
 #
-# Only build musl-gcc wrapper if toolchain does not already target musl
+# Figure out toolchain wrapper to build
 #
+if test "$wrapper" = auto -o "$wrapper" = detect ; then
+printf "checking for toolchain wrapper to build... "
+if test "$cc_family" = gcc ; then
+gcc_wrapper=yes
 if test "$wrapper" = auto ; then
-printf "checking whether to build musl-gcc wrapper... "
-if test "$cc_is_gcc" = yes ; then
-wrapper=yes
 while read line ; do
-case "$line" in */ld-musl-*) wrapper=no ;; esac
+case "$line" in */ld-musl-*) gcc_wrapper=no ;; esac
 done <<EOF
 $($CC -dumpspecs)
 EOF
+fi
+test "$gcc_wrapper" = yes && echo "gcc"
 else
-wrapper=no
+echo "none"
+if test "$wrapper" = detect ; then
+fail "$0: could not find an appropriate toolchain wrapper"
 fi
-echo "$wrapper"
+fi
 fi
 
-
+if test "$gcc_wrapper" = yes ; then
+tools="$tools tools/musl-gcc"
+tool_libs="$tool_libs lib/musl-gcc.specs"
+fi
 
 #
 # Find the target architecture
@@ -580,11 +595,12 @@ LDFLAGS = $LDFLAGS_AUTO $LDFLAGS
 CROSS_COMPILE = $CROSS_COMPILE
 LIBCC = $LIBCC
 OPTIMIZE_GLOBS = $OPTIMIZE_GLOBS
+ALL_TOOLS = $tools
+TOOL_LIBS = $tool_libs
 EOF
 test "x$static" = xno && echo "STATIC_LIBS ="
 test "x$shared" = xno && echo "SHARED_LIBS ="
-test "x$wrapper" = xno && echo "ALL_TOOLS ="
-test "x$wrapper" = xno && echo "TOOL_LIBS ="
+test "x$cc_family" = xgcc && echo 'WRAPCC_GCC = $(CC)'
 exec 1>&3 3>&-
 
 printf "done\n"
