@@ -52,6 +52,7 @@ ALL_LIBS = $(CRT_LIBS) $(STATIC_LIBS) $(SHARED_LIBS) $(EMPTY_LIBS) $(TOOL_LIBS)
 ALL_TOOLS = tools/musl-gcc
 
 WRAPCC_GCC = gcc
+WRAPCC_CLANG = clang
 
 LDSO_PATHNAME = $(syslibdir)/ld-musl-$(ARCH)$(SUBARCH).so.1
 
@@ -158,6 +159,10 @@ lib/musl-gcc.specs: tools/musl-gcc.specs.sh config.mak
 
 tools/musl-gcc: config.mak
 	printf '#!/bin/sh\nexec "$${REALGCC:-$(WRAPCC_GCC)}" "$$@" -specs "%s/musl-gcc.specs"\n' "$(libdir)" > $@
+	chmod +x $@
+
+tools/%-clang: tools/%-clang.in config.mak
+	sed -e 's!@CC@!$(WRAPCC_CLANG)!g' -e 's!@PREFIX@!$(prefix)!g' -e 's!@INCDIR@!$(includedir)!g' -e 's!@LIBDIR@!$(libdir)!g' -e 's!@LDSO@!$(LDSO_PATHNAME)!g' $< > $@
 	chmod +x $@
 
 $(DESTDIR)$(bindir)/%: tools/%

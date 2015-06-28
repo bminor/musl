@@ -134,6 +134,7 @@ shared=auto
 static=yes
 wrapper=auto
 gcc_wrapper=no
+clang_wrapper=no
 
 for arg ; do
 case "$arg" in
@@ -158,8 +159,9 @@ case "$arg" in
 --enable-visibility|--enable-visibility=yes) visibility=yes ;;
 --disable-visibility|--enable-visibility=no) visibility=no ;;
 --enable-wrapper|--enable-wrapper=yes) wrapper=detect ;;
---enable-wrapper=all) wrapper=yes ; gcc_wrapper=yes ;;
+--enable-wrapper=all) wrapper=yes ; gcc_wrapper=yes ; clang_wrapper=yes ;;
 --enable-wrapper=gcc) wrapper=yes ; gcc_wrapper=yes ;;
+--enable-wrapper=clang) wrapper=yes ; clang_wrapper=yes ;;
 --disable-wrapper|--enable-wrapper=no) wrapper=no ;;
 --enable-gcc-wrapper|--enable-gcc-wrapper=yes) wrapper=yes ; gcc_wrapper=yes ;;
 --disable-gcc-wrapper|--enable-gcc-wrapper=no) wrapper=no ;;
@@ -230,6 +232,8 @@ cc_ver="$(LC_ALL=C $CC -v 2>&1)"
 cc_family=unknown
 if fnmatch '*gcc\ version*' "$cc_ver" ; then
 cc_family=gcc
+elif fnmatch '*clang\ version*' "$cc_ver" ; then
+cc_family=clang
 fi
 echo "$cc_family"
 
@@ -247,6 +251,9 @@ echo "none"
 elif test "$cc_family" = gcc ; then
 gcc_wrapper=yes
 echo "gcc"
+elif test "$cc_family" = clang ; then
+clang_wrapper=yes
+echo "clang"
 else
 echo "none"
 if test "$wrapper" = detect ; then
@@ -258,6 +265,9 @@ fi
 if test "$gcc_wrapper" = yes ; then
 tools="$tools tools/musl-gcc"
 tool_libs="$tool_libs lib/musl-gcc.specs"
+fi
+if test "$clang_wrapper" = yes ; then
+tools="$tools tools/musl-clang tools/ld.musl-clang"
 fi
 
 #
@@ -600,6 +610,7 @@ EOF
 test "x$static" = xno && echo "STATIC_LIBS ="
 test "x$shared" = xno && echo "SHARED_LIBS ="
 test "x$cc_family" = xgcc && echo 'WRAPCC_GCC = $(CC)'
+test "x$cc_family" = xclang && echo 'WRAPCC_CLANG = $(CC)'
 exec 1>&3 3>&-
 
 printf "done\n"
