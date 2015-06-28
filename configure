@@ -237,17 +237,16 @@ echo "$cc_family"
 # Figure out toolchain wrapper to build
 #
 if test "$wrapper" = auto -o "$wrapper" = detect ; then
+echo "#include <stdlib.h>" > "$tmpc"
+echo "#if ! __GLIBC__" >> "$tmpc"
+echo "#error no" >> "$tmpc"
+echo "#endif" >> "$tmpc"
 printf "checking for toolchain wrapper to build... "
-if test "$cc_family" = gcc ; then
+if test "$wrapper" = auto && ! $CC -c -o /dev/null "$tmpc" >/dev/null 2>&1 ; then
+echo "none"
+elif test "$cc_family" = gcc ; then
 gcc_wrapper=yes
-if test "$wrapper" = auto ; then
-while read line ; do
-case "$line" in */ld-musl-*) gcc_wrapper=no ;; esac
-done <<EOF
-$($CC -dumpspecs)
-EOF
-fi
-test "$gcc_wrapper" = yes && echo "gcc"
+echo "gcc"
 else
 echo "none"
 if test "$wrapper" = detect ; then
