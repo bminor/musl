@@ -39,4 +39,6 @@ struct cmsghdr
 #define SO_SNDTIMEO     19
 #define SO_PASSCRED     20
 #define SO_PEERCRED     21
- 
+#define SO_ACCEPTCONN   30
+#define SO_PROTOCOL     38
+#define SO_DOMAIN       39

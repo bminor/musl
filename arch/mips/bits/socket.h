@@ -44,6 +44,9 @@ struct cmsghdr
 #define SO_SNDTIMEO     0x1005
 #define SO_SNDBUFFORCE  31
 #define SO_RCVBUFFORCE  33
+#define SO_ACCEPTCONN   0x1009
+#define SO_PROTOCOL     0x1028
+#define SO_DOMAIN       0x1029
 
 #define SOCK_NONBLOCK     0200
 #define SOCK_CLOEXEC  02000000
