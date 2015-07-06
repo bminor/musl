@@ -125,7 +125,8 @@ static void do_tzset()
 		"/usr/share/zoneinfo/\0/share/zoneinfo/\0/etc/zoneinfo/\0";
 
 	s = getenv("TZ");
-	if (!s || !*s) s = "/etc/localtime";
+	if (!s) s = "/etc/localtime";
+	if (!*s) s = __gmt;
 
 	if (old_tz && !strcmp(s, old_tz)) return;
 
