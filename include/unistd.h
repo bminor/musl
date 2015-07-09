@@ -185,7 +185,7 @@ int setresgid(gid_t, gid_t, gid_t);
 int getresuid(uid_t *, uid_t *, uid_t *);
 int getresgid(gid_t *, gid_t *, gid_t *);
 char *get_current_dir_name(void);
-void syncfs(int);
+int syncfs(int);
 int euidaccess(const char *, int);
 int eaccess(const char *, int);
 #endif
