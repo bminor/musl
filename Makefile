@@ -119,11 +119,19 @@ $(dir $(patsubst %/,%,$(dir $(1))))$(notdir $(1:.s=.o)): $(1)
 endef
 $(foreach s,$(wildcard src/*/$(ARCH)*/*.s),$(eval $(call mkasmdep,$(s))))
 
+# Choose invocation of assembler to be used
+# $(1) is input file, $(2) is output file, $(3) is assembler flags
+ifeq ($(ADD_CFI),yes)
+	AS_CMD = LC_ALL=C awk -f tools/add-cfi.$(ARCH).awk $< | $(CC) -x assembler -c -o $@ -
+else
+	AS_CMD = $(CC) -c -o $@ $<
+endif
+
 %.o: $(ARCH)$(ASMSUBARCH)/%.sub
 	$(CC) $(CFLAGS_ALL_STATIC) -c -o $@ $(dir $<)$(shell cat $<)
 
 %.o: $(ARCH)/%.s
-	$(CC) $(CFLAGS_ALL_STATIC) -c -o $@ $<
+	$(AS_CMD) $(CFLAGS_ALL_STATIC)
 
 %.o: %.c $(GENH) $(IMPH)
 	$(CC) $(CFLAGS_ALL_STATIC) -c -o $@ $<
@@ -132,7 +140,7 @@ $(foreach s,$(wildcard src/*/$(ARCH)*/*.s),$(eval $(call mkasmdep,$(s))))
 	$(CC) $(CFLAGS_ALL_SHARED) -c -o $@ $(dir $<)$(shell cat $<)
 
 %.lo: $(ARCH)/%.s
-	$(CC) $(CFLAGS_ALL_SHARED) -c -o $@ $<
+	$(AS_CMD) $(CFLAGS_ALL_SHARED)
 
 %.lo: %.c $(GENH) $(IMPH)
 	$(CC) $(CFLAGS_ALL_SHARED) -c -o $@ $<

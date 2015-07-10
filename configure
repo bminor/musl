@@ -351,6 +351,22 @@ tryflag CFLAGS_MEMOPS -fno-tree-loop-distribute-patterns
 test "$debug" = yes && CFLAGS_AUTO=-g
 
 #
+# Preprocess asm files to add extra debugging information if debug is
+# enabled, our assembler supports the needed directives, and the
+# preprocessing script has been written for our architecture.
+#
+printf "checking whether we should preprocess assembly to add debugging information... "
+if fnmatch '-g*|*\ -g*' "$CFLAGS_AUTO $CFLAGS" &&
+   test -f "tools/add-cfi.$ARCH.awk" &&
+   printf ".file 1 \"srcfile.s\"\n.line 1\n.cfi_startproc\n.cfi_endproc" | $CC -g -x assembler -c -o /dev/null 2>/dev/null -
+then
+  ADD_CFI=yes
+else
+  ADD_CFI=no
+fi
+printf "%s\n" "$ADD_CFI"
+
+#
 # Possibly add a -O option to CFLAGS and select modules to optimize with
 # -O3 based on the status of --enable-optimize and provided CFLAGS.
 #
@@ -606,6 +622,7 @@ LIBCC = $LIBCC
 OPTIMIZE_GLOBS = $OPTIMIZE_GLOBS
 ALL_TOOLS = $tools
 TOOL_LIBS = $tool_libs
+ADD_CFI = $ADD_CFI
 EOF
 test "x$static" = xno && echo "STATIC_LIBS ="
 test "x$shared" = xno && echo "SHARED_LIBS ="
