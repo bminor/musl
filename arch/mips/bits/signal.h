@@ -28,7 +28,7 @@ struct sigcontext
 typedef struct
 {
 	unsigned regmask, status;
-	unsigned long long pc, regs[32], fpregs[32];
+	unsigned long long pc, gregs[32], fpregs[32];
 	unsigned ownedfp, fpc_csr, fpc_eir, used_math, dsp;
 	unsigned long long mdhi, mdlo;
 	unsigned long hi1, lo1, hi2, lo2, hi3, lo3;
