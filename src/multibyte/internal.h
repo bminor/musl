@@ -18,7 +18,7 @@ extern const uint32_t bittab[];
 #define OOB(c,b) (((((b)>>3)-0x10)|(((b)>>3)+((int32_t)(c)>>26))) & ~7)
 
 /* Interval [a,b). Either a must be 80 or b must be c0, lower 3 bits clear. */
-#define R(a,b) ((uint32_t)((a==0x80 ? 0x40-b : -a) << 23))
+#define R(a,b) ((uint32_t)((a==0x80 ? 0x40u-b : 0u-a) << 23))
 #define FAILSTATE R(0x80,0x80)
 
 #define SA 0xc2u
