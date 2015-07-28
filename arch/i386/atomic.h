@@ -88,7 +88,7 @@ static inline void a_dec(volatile int *x)
 
 static inline void a_store(volatile int *p, int x)
 {
-	__asm__( "movl %1, %0" : "=m"(*p) : "r"(x) : "memory" );
+	__asm__( "movl %1, %0 ; lock ; orl $0,(%%esp)" : "=m"(*p) : "r"(x) : "memory" );
 }
 
 static inline void a_spin()
