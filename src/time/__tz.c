@@ -354,9 +354,9 @@ void __secs_to_zone(long long t, int local, int *isdst, long *offset, long *oppo
 		size_t alt, i = scan_trans(t, local, &alt);
 		if (i != -1) {
 			*isdst = types[6*i+4];
-			*offset = -(int32_t)zi_read32(types+6*i);
+			*offset = (int32_t)zi_read32(types+6*i);
 			*zonename = (const char *)abbrevs + types[6*i+5];
-			if (oppoff) *oppoff = -(int32_t)zi_read32(types+6*alt);
+			if (oppoff) *oppoff = (int32_t)zi_read32(types+6*alt);
 			UNLOCK(lock);
 			return;
 		}
@@ -390,15 +390,15 @@ void __secs_to_zone(long long t, int local, int *isdst, long *offset, long *oppo
 	}
 std:
 	*isdst = 0;
-	*offset = __timezone;
-	if (oppoff) *oppoff = dst_off;
+	*offset = -__timezone;
+	if (oppoff) *oppoff = -dst_off;
 	*zonename = __tzname[0];
 	UNLOCK(lock);
 	return;
 dst:
 	*isdst = 1;
-	*offset = dst_off;
-	if (oppoff) *oppoff = __timezone;
+	*offset = -dst_off;
+	if (oppoff) *oppoff = -__timezone;
 	*zonename = __tzname[1];
 	UNLOCK(lock);
 }

@@ -126,7 +126,7 @@ const char *__strftime_fmt_1(char (*s)[100], size_t *l, int f, const struct tm *
 		fmt = "%H:%M";
 		goto recu_strftime;
 	case 's':
-		val = __tm_to_secs(tm) + tm->__tm_gmtoff;
+		val = __tm_to_secs(tm) - tm->__tm_gmtoff;
 		width = 1;
 		goto number;
 	case 'S':
@@ -178,7 +178,7 @@ const char *__strftime_fmt_1(char (*s)[100], size_t *l, int f, const struct tm *
 			return "";
 		}
 		*l = snprintf(*s, sizeof *s, "%+.2d%.2d",
-			(-tm->__tm_gmtoff)/3600,
+			(tm->__tm_gmtoff)/3600,
 			abs(tm->__tm_gmtoff%3600)/60);
 		return *s;
 	case 'Z':
