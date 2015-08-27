@@ -203,6 +203,6 @@ musl-git-%.tar.gz: .git
 musl-%.tar.gz: .git
 	 git archive --format=tar.gz --prefix=$(patsubst %.tar.gz,%,$@)/ -o $@ v$(patsubst musl-%.tar.gz,%,$@)
 
-.PRECIOUS: $(CRT_LIBS:lib/%=crt/%)
+.SECONDARY:
 
 .PHONY: all clean install install-libs install-headers install-tools
