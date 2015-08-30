@@ -1540,3 +1540,46 @@ other bugs fixed:
 - failure of ungetc/ungetwc to work on FILE streams in EOF state
 - possible null pointer dereference in gettext
 - possible initial stack misalignment on mips with PIE
+
+
+
+1.1.11 release notes
+
+new features:
+- byte-based C locale
+- vdso clock_gettime on arm
+- musl-clang wrapper
+- sh2 nommu target support
+
+performance:
+- major speed-up for dynamic linker symbol lookups with GNU hash
+
+compatibility:
+- strverscmp now matches GNU behavior in corner cases
+- empty TZ environment variable gives GMT rather than system default
+- reconnection on syslog server socket loss (syslogd restart)
+- mmap fallback in simple_malloc when brk fails
+- support for %m and %s with null pointers in wide printf variants
+- call frame information in i386 asm for improved debugger support
+
+bugs fixed:
+- spurious errors from pwd/grp functions when nscd backend is absent
+- possible invalid access on calloc with simple_malloc
+- null pointer dereferences after calling uselocale((locale_t)0)
+- erroneous support for cancellation in stdio caused data loss
+- inconsistent handling of atexit called from atexit handler
+- missing locking in error paths for ungetwc
+- btowc mishandling of out-of-range non-EOF inputs
+- negated return value of ns_skiprr, failure in related functions
+- incorrect void return type for syncfs, missing error status
+- possible failure of tempnam due to missing null termination
+- negated tm_gmtoff field in struct tm
+- off-by-one error in getsubopt leaving equals sign in value result
+
+arch-specific bugs fixed:
+- soft deadlocks on i386/x86_64 due to missing barrier in internal locks
+- regression in arm pre-v7 support for kernels with kuser helper removed
+- runaway PC on mips detached thread exit (due to kernel regression)
+- mismatched ABI for local-dynamic model TLS on mips and powerpc
+- incorrect value of some SO_* constants on mips
+- broken 64-bit syscall argument passing on aarch64
