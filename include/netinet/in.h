@@ -103,6 +103,7 @@ uint16_t ntohs(uint16_t);
 #define IPPROTO_SCTP     132
 #define IPPROTO_MH       135
 #define IPPROTO_UDPLITE  136
+#define IPPROTO_MPLS     137
 #define IPPROTO_RAW      255
 #define IPPROTO_MAX      256
 
@@ -200,6 +201,7 @@ uint16_t ntohs(uint16_t);
 #define IP_MINTTL          21
 #define IP_NODEFRAG        22
 #define IP_CHECKSUM        23
+#define IP_BIND_ADDRESS_NO_PORT 24
 #define IP_MULTICAST_IF    32
 #define IP_MULTICAST_TTL   33
 #define IP_MULTICAST_LOOP  34
