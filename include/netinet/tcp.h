@@ -27,6 +27,9 @@
 #define TCP_FASTOPEN     23
 #define TCP_TIMESTAMP    24
 #define TCP_NOTSENT_LOWAT 25
+#define TCP_CC_INFO      26
+#define TCP_SAVE_SYN     27
+#define TCP_SAVED_SYN    28
 
 #define TCP_ESTABLISHED  1
 #define TCP_SYN_SENT     2
@@ -177,6 +180,10 @@ struct tcp_info
 	uint32_t tcpi_total_retrans;
 	uint64_t tcpi_pacing_rate;
 	uint64_t tcpi_max_pacing_rate;
+	uint64_t tcpi_bytes_acked;
+	uint64_t tcpi_bytes_received;
+	uint32_t tcpi_segs_out;
+	uint32_t tcpi_segs_in;
 };
 
 #define TCP_MD5SIG_MAXKEYLEN    80
