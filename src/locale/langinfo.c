@@ -33,7 +33,7 @@ char *__nl_langinfo_l(nl_item item, locale_t loc)
 	int idx = item & 65535;
 	const char *str;
 
-	if (item == CODESET) "UTF-8";
+	if (item == CODESET) return "UTF-8";
 	
 	switch (cat) {
 	case LC_NUMERIC:
