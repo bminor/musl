@@ -9,7 +9,7 @@ int fclose(FILE *f)
 	int r;
 	int perm;
 	
-	FFINALLOCK(f);
+	FLOCK(f);
 
 	__unlist_locked_file(f);
 
@@ -26,6 +26,7 @@ int fclose(FILE *f)
 
 	if (f->getln_buf) free(f->getln_buf);
 	if (!perm) free(f);
-	
+	else FUNLOCK(f);
+
 	return r;
 }
