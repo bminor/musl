@@ -7,7 +7,7 @@ static inline int a_ctz_64(uint64_t x)
 {
 	int r;
 	__asm__( "bsf %1,%0 ; jnz 1f ; bsf %2,%0 ; addl $32,%0\n1:"
-		: "=r"(r) : "r"((unsigned)x), "r"((unsigned)(x>>32)) );
+		: "=&r"(r) : "r"((unsigned)x), "r"((unsigned)(x>>32)) );
 	return r;
 }
 
