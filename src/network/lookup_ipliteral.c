@@ -24,7 +24,7 @@ int __lookup_ipliteral(struct address buf[static 1], const char *name, int famil
 	if (family != AF_INET) {
 		char tmp[64];
 		char *p = strchr(name, '%'), *z;
-		unsigned long long scopeid;
+		unsigned long long scopeid = 0;
 		if (p && p-name < 64) {
 			memcpy(tmp, name, p-name);
 			tmp[p-name] = 0;
@@ -44,8 +44,8 @@ int __lookup_ipliteral(struct address buf[static 1], const char *name, int famil
 				if (!scopeid) return EAI_NONAME;
 			}
 			if (scopeid > UINT_MAX) return EAI_NONAME;
-			buf[0].scopeid = scopeid;
 		}
+		buf[0].scopeid = scopeid;
 		return 1;
 	}
 	return 0;
