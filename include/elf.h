@@ -2498,6 +2498,14 @@ typedef Elf32_Addr Elf32_Conflict;
 #define	R_SH_RELATIVE		165
 #define	R_SH_GOTOFF		166
 #define	R_SH_GOTPC		167
+#define	R_SH_GOT20		201
+#define	R_SH_GOTOFF20		202
+#define	R_SH_GOTFUNCDESC	203
+#define	R_SH_GOTFUNCDEST20	204
+#define	R_SH_GOTOFFFUNCDESC	205
+#define	R_SH_GOTOFFFUNCDEST20	206
+#define	R_SH_FUNCDESC		207
+#define	R_SH_FUNCDESC_VALUE	208
 
 #define	R_SH_NUM		256
 
