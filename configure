@@ -558,6 +558,10 @@ fi
 else
 SUBARCH=${SUBARCH}-nofpu
 fi
+if trycppif __SH_FDPIC__ "$t" ; then
+SUBARCH=${SUBARCH}-fdpic
+shared=no
+fi
 fi
 
 test "$SUBARCH" \

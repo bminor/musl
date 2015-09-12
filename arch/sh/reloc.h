@@ -12,7 +12,13 @@
 #define FP_SUFFIX "-nofpu"
 #endif
 
-#define LDSO_ARCH "sh" ENDIAN_SUFFIX FP_SUFFIX
+#if __SH_FDPIC__
+#define ABI_SUFFIX "-fdpic"
+#else
+#define ABI_SUFFIX ""
+#endif
+
+#define LDSO_ARCH "sh" ENDIAN_SUFFIX FP_SUFFIX ABI_SUFFIX
 
 #define TPOFF_K 8
 
@@ -26,5 +32,14 @@
 #define REL_DTPOFF      R_SH_TLS_DTPOFF32
 #define REL_TPOFF       R_SH_TLS_TPOFF32
 
+#if __SH_FDPIC__
+#define REL_FUNCDESC    R_SH_FUNCDESC
+#define REL_FUNCDESC_VAL R_SH_FUNCDESC_VALUE
+#undef  REL_RELATIVE
+#define CRTJMP(pc,sp) __asm__ __volatile__( \
+	"mov.l @%0+,r0 ; mov.l @%0,r12 ; jmp @r0 ; mov %1,r15" \
+	: : "r"(pc), "r"(sp) : "r0", "memory" )
+#else
 #define CRTJMP(pc,sp) __asm__ __volatile__( \
 	"jmp @%0 ; mov %1,r15" : : "r"(pc), "r"(sp) : "memory" )
+#endif
