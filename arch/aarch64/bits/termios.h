@@ -76,8 +76,6 @@ struct termios
 #define VT0    0000000
 #define VT1    0040000
 
-#define XTABS  0014000
-
 #define B0       0000000
 #define B50      0000001
 #define B75      0000002
@@ -125,8 +123,6 @@ struct termios
 #define HUPCL  0002000
 #define CLOCAL 0004000
 
-#define CRTSCTS  020000000000
-
 #define ISIG   0000001
 #define ICANON 0000002
 #define ECHO   0000010
@@ -137,14 +133,11 @@ struct termios
 #define TOSTOP 0000400
 #define IEXTEN 0100000
 
-/* Extensions? */
-#define CBAUDEX 0010000
 #define ECHOCTL 0001000
 #define ECHOPRT 0002000
 #define ECHOKE 0004000
 #define FLUSHO 0010000
 #define PENDIN 0040000
-#define EXTPROC 0200000
 
 #define TCOOFF 0
 #define TCOON  1
@@ -158,3 +151,10 @@ struct termios
 #define TCSANOW   0
 #define TCSADRAIN 1
 #define TCSAFLUSH 2
+
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+#define CBAUDEX 0010000
+#define CRTSCTS  020000000000
+#define EXTPROC 0200000
+#define XTABS  0014000
+#endif
