@@ -122,6 +122,9 @@ static int dl_strcmp(const char *l, const char *r)
 }
 #define strcmp(l,r) dl_strcmp(l,r)
 
+/* Compute load address for a virtual address in a given dso. */
+#define laddr(p, v) (void *)((p)->base + (v))
+
 static void decode_vec(size_t *v, size_t *a, size_t cnt)
 {
 	size_t i;
@@ -414,8 +417,8 @@ static void reclaim(struct dso *dso, size_t start, size_t end)
 	start = start + 6*sizeof(size_t)-1 & -4*sizeof(size_t);
 	end = (end & -4*sizeof(size_t)) - 2*sizeof(size_t);
 	if (start>end || end-start < 4*sizeof(size_t)) return;
-	a = (size_t *)(dso->base + start);
-	z = (size_t *)(dso->base + end);
+	a = laddr(dso, start);
+	z = laddr(dso, end);
 	a[-2] = 1;
 	a[-1] = z[0] = end-start + 2*sizeof(size_t) | 1;
 	z[1] = 1;
@@ -687,18 +690,18 @@ static void decode_dyn(struct dso *p)
 {
 	size_t dyn[DYN_CNT];
 	decode_vec(p->dynv, dyn, DYN_CNT);
-	p->syms = (void *)(p->base + dyn[DT_SYMTAB]);
-	p->strings = (void *)(p->base + dyn[DT_STRTAB]);
+	p->syms = laddr(p, dyn[DT_SYMTAB]);
+	p->strings = laddr(p, dyn[DT_STRTAB]);
 	if (dyn[0]&(1<<DT_HASH))
-		p->hashtab = (void *)(p->base + dyn[DT_HASH]);
+		p->hashtab = laddr(p, dyn[DT_HASH]);
 	if (dyn[0]&(1<<DT_RPATH))
 		p->rpath_orig = (void *)(p->strings + dyn[DT_RPATH]);
 	if (dyn[0]&(1<<DT_RUNPATH))
 		p->rpath_orig = (void *)(p->strings + dyn[DT_RUNPATH]);
 	if (search_vec(p->dynv, dyn, DT_GNU_HASH))
-		p->ghashtab = (void *)(p->base + *dyn);
+		p->ghashtab = laddr(p, *dyn);
 	if (search_vec(p->dynv, dyn, DT_VERSYM))
-		p->versym = (void *)(p->base + *dyn);
+		p->versym = laddr(p, *dyn);
 }
 
 static struct dso *load_library(const char *name, struct dso *needed_by)
@@ -980,7 +983,7 @@ static void kernel_mapped_dso(struct dso *p)
 	Phdr *ph = p->phdr;
 	for (cnt = p->phnum; cnt--; ph = (void *)((char *)ph + p->phentsize)) {
 		if (ph->p_type == PT_DYNAMIC) {
-			p->dynv = (void *)(p->base + ph->p_vaddr);
+			p->dynv = laddr(p, ph->p_vaddr);
 		} else if (ph->p_type == PT_GNU_RELRO) {
 			p->relro_start = ph->p_vaddr & -PAGE_SIZE;
 			p->relro_end = (ph->p_vaddr + ph->p_memsz) & -PAGE_SIZE;
@@ -1007,12 +1010,12 @@ static void do_fini()
 		decode_vec(p->dynv, dyn, DYN_CNT);
 		if (dyn[0] & (1<<DT_FINI_ARRAY)) {
 			size_t n = dyn[DT_FINI_ARRAYSZ]/sizeof(size_t);
-			size_t *fn = (size_t *)(p->base + dyn[DT_FINI_ARRAY])+n;
+			size_t *fn = (size_t *)laddr(p, dyn[DT_FINI_ARRAY])+n;
 			while (n--) ((void (*)(void))*--fn)();
 		}
 #ifndef NO_LEGACY_INITFINI
 		if ((dyn[0] & (1<<DT_FINI)) && dyn[DT_FINI])
-			((void (*)(void))(p->base + dyn[DT_FINI]))();
+			((void (*)(void))laddr(p, dyn[DT_FINI]))();
 #endif
 	}
 }
@@ -1035,11 +1038,11 @@ static void do_init_fini(struct dso *p)
 		}
 #ifndef NO_LEGACY_INITFINI
 		if ((dyn[0] & (1<<DT_INIT)) && dyn[DT_INIT])
-			((void (*)(void))(p->base + dyn[DT_INIT]))();
+			((void (*)(void))laddr(p, dyn[DT_INIT]))();
 #endif
 		if (dyn[0] & (1<<DT_INIT_ARRAY)) {
 			size_t n = dyn[DT_INIT_ARRAYSZ]/sizeof(size_t);
-			size_t *fn = (void *)(p->base + dyn[DT_INIT_ARRAY]);
+			size_t *fn = laddr(p, dyn[DT_INIT_ARRAY]);
 			while (n--) ((void (*)(void))*fn++)();
 		}
 		if (!need_locking && libc.threads_minus_1) {
@@ -1276,8 +1279,8 @@ _Noreturn void __dls3(size_t *sp)
 				app.tls_align = phdr->p_align;
 			}
 		}
-		if (app.tls_size) app.tls_image = (char *)app.base + tls_image;
-		if (interp_off) ldso.name = (char *)app.base + interp_off;
+		if (app.tls_size) app.tls_image = laddr(&app, tls_image);
+		if (interp_off) ldso.name = laddr(&app, interp_off);
 		if ((aux[0] & (1UL<<AT_EXECFN))
 		    && strncmp((char *)aux[AT_EXECFN], "/proc/", 6))
 			app.name = (char *)aux[AT_EXECFN];
@@ -1334,7 +1337,7 @@ _Noreturn void __dls3(size_t *sp)
 		close(fd);
 		ldso.name = ldname;
 		app.name = argv[0];
-		aux[AT_ENTRY] = (size_t)app.base + ehdr->e_entry;
+		aux[AT_ENTRY] = (size_t)laddr(&app, ehdr->e_entry);
 		/* Find the name that would have been used for the dynamic
 		 * linker had ldd not taken its place. */
 		if (ldd_mode) {
@@ -1571,7 +1574,7 @@ static void *do_dlsym(struct dso *p, const char *s, void *ra)
 		if (!def.sym) goto failed;
 		if ((def.sym->st_info&0xf) == STT_TLS)
 			return __tls_get_addr((size_t []){def.dso->tls_id, def.sym->st_value});
-		return def.dso->base + def.sym->st_value;
+		return laddr(def.dso, def.sym->st_value);
 	}
 	if (invalid_dso_handle(p))
 		return 0;
@@ -1585,7 +1588,7 @@ static void *do_dlsym(struct dso *p, const char *s, void *ra)
 	if (sym && (sym->st_info&0xf) == STT_TLS)
 		return __tls_get_addr((size_t []){p->tls_id, sym->st_value});
 	if (sym && sym->st_value && (1<<(sym->st_info&0xf) & OK_TYPES))
-		return p->base + sym->st_value;
+		return laddr(p, sym->st_value);
 	if (p->deps) for (i=0; p->deps[i]; i++) {
 		if ((ght = p->deps[i]->ghashtab)) {
 			if (!gh) gh = gnu_hash(s);
@@ -1597,7 +1600,7 @@ static void *do_dlsym(struct dso *p, const char *s, void *ra)
 		if (sym && (sym->st_info&0xf) == STT_TLS)
 			return __tls_get_addr((size_t []){p->deps[i]->tls_id, sym->st_value});
 		if (sym && sym->st_value && (1<<(sym->st_info&0xf) & OK_TYPES))
-			return p->deps[i]->base + sym->st_value;
+			return laddr(p->deps[i], sym->st_value);
 	}
 failed:
 	error("Symbol not found: %s", s);
@@ -1645,7 +1648,7 @@ int __dladdr(const void *addr, Dl_info *info)
 		if (sym->st_value
 		 && (1<<(sym->st_info&0xf) & OK_TYPES)
 		 && (1<<(sym->st_info>>4) & OK_BINDS)) {
-			void *symaddr = p->base + sym->st_value;
+			void *symaddr = laddr(p, sym->st_value);
 			if (symaddr > addr || symaddr < best)
 				continue;
 			best = symaddr;
