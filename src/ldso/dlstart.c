@@ -74,6 +74,7 @@ void _dlstart_c(size_t *sp, size_t *dynv)
 		*rel_addr = (size_t)base + rel[2];
 	}
 
+#ifndef GETFUNCSYM
 	const char *strings = (void *)(base + dyn[DT_STRTAB]);
 	const Sym *syms = (void *)(base + dyn[DT_SYMTAB]);
 
@@ -85,6 +86,11 @@ void _dlstart_c(size_t *sp, size_t *dynv)
 			break;
 	}
 	((stage2_func)(base + syms[i].st_value))(base, sp);
+#else
+	stage2_func dls2;
+	GETFUNCSYM(&dls2, __dls2, base+dyn[DT_PLTGOT]);
+	dls2(base, sp);
+#endif
 }
 
 #endif
