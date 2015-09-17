@@ -36,6 +36,17 @@ enum {
 	REL_TPOFF,
 	REL_TPOFF_NEG,
 	REL_TLSDESC,
+	REL_FUNCDESC,
+	REL_FUNCDESC_VAL,
+};
+
+struct fdpic_loadseg {
+	uintptr_t addr, p_vaddr, p_memsz;
+};
+
+struct fdpic_loadmap {
+	unsigned short version, nsegs;
+	struct fdpic_loadseg segs[];
 };
 
 #include "reloc.h"
@@ -43,6 +54,11 @@ enum {
 #define IS_RELATIVE(x) ( \
 	(R_TYPE(x) == REL_RELATIVE) || \
 	(R_TYPE(x) == REL_SYM_OR_REL && !R_SYM(x)) )
+
+#define IS_FDPIC_RELATIVE(x,s) ( ( \
+	(R_TYPE(x) == REL_FUNCDESC_VAL) || \
+	(R_TYPE(x) == REL_SYMBOLIC) ) \
+	&& (((s)[R_SYM(x)].st_info & 0xf) == STT_SECTION) )
 
 #ifndef NEED_MIPS_GOT_RELOCS
 #define NEED_MIPS_GOT_RELOCS 0
