@@ -959,14 +959,14 @@ static void reloc_all(struct dso *p)
 		if (p->relocated) continue;
 		decode_vec(p->dynv, dyn, DYN_CNT);
 		if (NEED_MIPS_GOT_RELOCS)
-			do_mips_relocs(p, (void *)(p->base+dyn[DT_PLTGOT]));
-		do_relocs(p, (void *)(p->base+dyn[DT_JMPREL]), dyn[DT_PLTRELSZ],
+			do_mips_relocs(p, laddr(p, dyn[DT_PLTGOT]));
+		do_relocs(p, laddr(p, dyn[DT_JMPREL]), dyn[DT_PLTRELSZ],
 			2+(dyn[DT_PLTREL]==DT_RELA));
-		do_relocs(p, (void *)(p->base+dyn[DT_REL]), dyn[DT_RELSZ], 2);
-		do_relocs(p, (void *)(p->base+dyn[DT_RELA]), dyn[DT_RELASZ], 3);
+		do_relocs(p, laddr(p, dyn[DT_REL]), dyn[DT_RELSZ], 2);
+		do_relocs(p, laddr(p, dyn[DT_RELA]), dyn[DT_RELASZ], 3);
 
 		if (head != &ldso && p->relro_start != p->relro_end &&
-		    mprotect(p->base+p->relro_start, p->relro_end-p->relro_start, PROT_READ)
+		    mprotect(laddr(p, p->relro_start), p->relro_end-p->relro_start, PROT_READ)
 		    && errno != ENOSYS) {
 			error("Error relocating %s: RELRO protection failed: %m",
 				p->name);
@@ -1193,7 +1193,7 @@ void __dls2(unsigned char *base, size_t *sp)
 	 * instead of risking stack overflow. */
 	size_t dyn[DYN_CNT];
 	decode_vec(ldso.dynv, dyn, DYN_CNT);
-	size_t *rel = (void *)(base+dyn[DT_REL]);
+	size_t *rel = laddr(&ldso, dyn[DT_REL]);
 	size_t rel_size = dyn[DT_RELSZ];
 	size_t symbolic_rel_cnt = 0;
 	apply_addends_to = rel;
@@ -1212,7 +1212,7 @@ void __dls2(unsigned char *base, size_t *sp)
 	 * symbolically as a barrier against moving the address
 	 * load across the above relocation processing. */
 	struct symdef dls3_def = find_sym(&ldso, "__dls3", 0);
-	((stage3_func)(ldso.base+dls3_def.sym->st_value))(sp);
+	((stage3_func)laddr(&ldso, dls3_def.sym->st_value))(sp);
 }
 
 /* Stage 3 of the dynamic linker is called with the dynamic linker/libc
