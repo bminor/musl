@@ -704,6 +704,25 @@ static void decode_dyn(struct dso *p)
 		p->versym = laddr(p, *dyn);
 }
 
+static size_t count_syms(struct dso *p)
+{
+	if (p->hashtab) return p->hashtab[1];
+
+	size_t nsym, i;
+	uint32_t *buckets = p->ghashtab + 4 + (p->ghashtab[2]*sizeof(size_t)/4);
+	uint32_t *hashval;
+	for (i = nsym = 0; i < p->ghashtab[0]; i++) {
+		if (buckets[i] > nsym)
+			nsym = buckets[i];
+	}
+	if (nsym) {
+		hashval = buckets + p->ghashtab[0] + (nsym - p->ghashtab[1]);
+		do nsym++;
+		while (!(*hashval++ & 1));
+	}
+	return nsym;
+}
+
 static struct dso *load_library(const char *name, struct dso *needed_by)
 {
 	char buf[2*NAME_MAX+2];
@@ -1613,7 +1632,6 @@ int __dladdr(const void *addr, Dl_info *info)
 	Sym *sym;
 	uint32_t nsym;
 	char *strings;
-	size_t i;
 	void *best = 0;
 	char *bestname;
 
@@ -1625,24 +1643,7 @@ int __dladdr(const void *addr, Dl_info *info)
 
 	sym = p->syms;
 	strings = p->strings;
-	if (p->hashtab) {
-		nsym = p->hashtab[1];
-	} else {
-		uint32_t *buckets;
-		uint32_t *hashval;
-		buckets = p->ghashtab + 4 + (p->ghashtab[2]*sizeof(size_t)/4);
-		sym += p->ghashtab[1];
-		for (i = nsym = 0; i < p->ghashtab[0]; i++) {
-			if (buckets[i] > nsym)
-				nsym = buckets[i];
-		}
-		if (nsym) {
-			nsym -= p->ghashtab[1];
-			hashval = buckets + p->ghashtab[0] + nsym;
-			do nsym++;
-			while (!(*hashval++ & 1));
-		}
-	}
+	nsym = count_syms(p);
 
 	for (; nsym; nsym--, sym++) {
 		if (sym->st_value
