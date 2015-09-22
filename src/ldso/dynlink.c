@@ -1512,8 +1512,7 @@ _Noreturn void __dls3(size_t *sp)
 		if (ldd_mode) {
 			for (i=0; i<app.phnum; i++) {
 				if (app.phdr[i].p_type == PT_INTERP)
-					ldso.name = (void *)(app.base
-						+ app.phdr[i].p_vaddr);
+					ldso.name = laddr(&app, app.phdr[i].p_vaddr);
 			}
 			dprintf(1, "\t%s (%p)\n", ldso.name, ldso.base);
 		}
