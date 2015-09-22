@@ -499,6 +499,12 @@ fi
 # Some patched GCC builds have these defaults messed up...
 tryldflag LDFLAGS_AUTO -Wl,--hash-style=both
 
+# Prevent linking if there are undefined symbols; if any exist,
+# libc.so will crash at runtime during relocation processing.
+# The common way this can happen is failure to link the compiler
+# runtime library; implementation error is also a possibility.
+tryldflag LDFLAGS_AUTO -Wl,--no-undefined
+
 test "$shared" = "no" || {
 # Disable dynamic linking if ld is broken and can't do -Bsymbolic-functions
 LDFLAGS_DUMMY=
