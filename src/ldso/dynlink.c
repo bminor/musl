@@ -139,7 +139,7 @@ static int dl_strcmp(const char *l, const char *r)
 #define strcmp(l,r) dl_strcmp(l,r)
 
 /* Compute load address for a virtual address in a given dso. */
-#ifdef DL_FDPIC
+#if DL_FDPIC
 static void *laddr(const struct dso *p, size_t v)
 {
 	size_t j=0;
