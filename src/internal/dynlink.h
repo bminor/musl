@@ -49,16 +49,27 @@ struct fdpic_loadmap {
 	struct fdpic_loadseg segs[];
 };
 
+struct fdpic_dummy_loadmap {
+	unsigned short version, nsegs;
+	struct fdpic_loadseg segs[1];
+};
+
 #include "reloc.h"
 
-#define IS_RELATIVE(x) ( \
+#ifndef DL_FDPIC
+#define DL_FDPIC 0
+#endif
+
+#if !DL_FDPIC
+#define IS_RELATIVE(x,s) ( \
 	(R_TYPE(x) == REL_RELATIVE) || \
 	(R_TYPE(x) == REL_SYM_OR_REL && !R_SYM(x)) )
-
-#define IS_FDPIC_RELATIVE(x,s) ( ( \
+#else
+#define IS_RELATIVE(x,s) ( ( \
 	(R_TYPE(x) == REL_FUNCDESC_VAL) || \
 	(R_TYPE(x) == REL_SYMBOLIC) ) \
 	&& (((s)[R_SYM(x)].st_info & 0xf) == STT_SECTION) )
+#endif
 
 #ifndef NEED_MIPS_GOT_RELOCS
 #define NEED_MIPS_GOT_RELOCS 0

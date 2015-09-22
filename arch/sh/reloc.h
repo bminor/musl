@@ -36,9 +36,15 @@
 #define REL_FUNCDESC    R_SH_FUNCDESC
 #define REL_FUNCDESC_VAL R_SH_FUNCDESC_VALUE
 #undef  REL_RELATIVE
-#define CRTJMP(pc,sp) __asm__ __volatile__( \
-	"mov.l @%0+,r0 ; mov.l @%0,r12 ; jmp @r0 ; mov %1,r15" \
-	: : "r"(pc), "r"(sp) : "r0", "memory" )
+#define DL_FDPIC 1
+#define CRTJMP(pc,sp) do { \
+	register size_t r8 __asm__("r8") = ((size_t *)(sp))[-2]; \
+	__asm__ __volatile__( "jmp @%0 ; mov %1,r15" \
+	: : "r"(pc), "r"(sp), "r"(r8) : "memory" ); } while(0)
+#define GETFUNCSYM(fp, sym, got) __asm__ ( \
+	"mov.l 1f,%0 ; add %1,%0 ; bra 2f ; nop ; .align 2 \n" \
+	"1:	.long " #sym "@GOTOFFFUNCDESC \n2:" \
+	: "=&r"(*fp) : "r"(got) : "memory" )
 #else
 #define CRTJMP(pc,sp) __asm__ __volatile__( \
 	"jmp @%0 ; mov %1,r15" : : "r"(pc), "r"(sp) : "memory" )
