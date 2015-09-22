@@ -1757,6 +1757,8 @@ static void *do_dlsym(struct dso *p, const char *s, void *ra)
 		if (!def.sym) goto failed;
 		if ((def.sym->st_info&0xf) == STT_TLS)
 			return __tls_get_addr((size_t []){def.dso->tls_id, def.sym->st_value});
+		if (DL_FDPIC && (def.sym->st_info&0xf) == STT_FUNC)
+			return def.dso->funcdescs + (def.sym - def.dso->syms);
 		return laddr(def.dso, def.sym->st_value);
 	}
 	if (invalid_dso_handle(p))
@@ -1770,6 +1772,8 @@ static void *do_dlsym(struct dso *p, const char *s, void *ra)
 	}
 	if (sym && (sym->st_info&0xf) == STT_TLS)
 		return __tls_get_addr((size_t []){p->tls_id, sym->st_value});
+	if (DL_FDPIC && sym && sym->st_shndx && (sym->st_info&0xf) == STT_FUNC)
+		return p->funcdescs + (sym - p->syms);
 	if (sym && sym->st_value && (1<<(sym->st_info&0xf) & OK_TYPES))
 		return laddr(p, sym->st_value);
 	if (p->deps) for (i=0; p->deps[i]; i++) {
@@ -1782,6 +1786,8 @@ static void *do_dlsym(struct dso *p, const char *s, void *ra)
 		}
 		if (sym && (sym->st_info&0xf) == STT_TLS)
 			return __tls_get_addr((size_t []){p->deps[i]->tls_id, sym->st_value});
+		if (DL_FDPIC && sym && sym->st_shndx && (sym->st_info&0xf) == STT_FUNC)
+			return p->deps[i]->funcdescs + (sym - p->deps[i]->syms);
 		if (sym && sym->st_value && (1<<(sym->st_info&0xf) & OK_TYPES))
 			return laddr(p->deps[i], sym->st_value);
 	}
