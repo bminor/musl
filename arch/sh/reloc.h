@@ -37,6 +37,7 @@
 #define REL_FUNCDESC_VAL R_SH_FUNCDESC_VALUE
 #undef  REL_RELATIVE
 #define DL_FDPIC 1
+#define FDPIC_CONSTDISP_FLAG 0x100
 #define CRTJMP(pc,sp) do { \
 	register size_t r8 __asm__("r8") = ((size_t *)(sp))[-2]; \
 	__asm__ __volatile__( "jmp @%0 ; mov %1,r15" \

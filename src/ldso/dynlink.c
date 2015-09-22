@@ -502,6 +502,22 @@ static void *mmap_fixed(void *p, size_t n, int prot, int flags, int fd, off_t of
 	return p;
 }
 
+static void unmap_library(struct dso *dso)
+{
+	if (dso->loadmap) {
+		size_t i;
+		for (i=0; i<dso->loadmap->nsegs; i++) {
+			if (!dso->loadmap->segs[i].p_memsz)
+				continue;
+			munmap((void *)dso->loadmap->segs[i].addr,
+				dso->loadmap->segs[i].p_memsz);
+		}
+		free(dso->loadmap);
+	} else if (dso->map && dso->map_len) {
+		munmap(dso->map, dso->map_len);
+	}
+}
+
 static void *map_library(int fd, struct dso *dso)
 {
 	Ehdr buf[(896+sizeof(Ehdr))/sizeof(Ehdr)];
@@ -509,6 +525,7 @@ static void *map_library(int fd, struct dso *dso)
 	size_t phsize;
 	size_t addr_min=SIZE_MAX, addr_max=0, map_len;
 	size_t this_min, this_max;
+	size_t nsegs = 0;
 	off_t off_start;
 	Ehdr *eh;
 	Phdr *ph, *ph0;
@@ -552,6 +569,7 @@ static void *map_library(int fd, struct dso *dso)
 			dso->relro_end = (ph->p_vaddr + ph->p_memsz) & -PAGE_SIZE;
 		}
 		if (ph->p_type != PT_LOAD) continue;
+		nsegs++;
 		if (ph->p_vaddr < addr_min) {
 			addr_min = ph->p_vaddr;
 			off_start = ph->p_offset;
@@ -564,6 +582,33 @@ static void *map_library(int fd, struct dso *dso)
 		}
 	}
 	if (!dyn) goto noexec;
+	if (DL_FDPIC && !(eh->e_flags & FDPIC_CONSTDISP_FLAG)) {
+		dso->loadmap = calloc(1, sizeof *dso->loadmap
+			+ nsegs * sizeof *dso->loadmap->segs);
+		if (!dso->loadmap) goto error;
+		dso->loadmap->nsegs = nsegs;
+		for (ph=ph0, i=0; i<nsegs; ph=(void *)((char *)ph+eh->e_phentsize)) {
+			if (ph->p_type != PT_LOAD) continue;
+			prot = (((ph->p_flags&PF_R) ? PROT_READ : 0) |
+				((ph->p_flags&PF_W) ? PROT_WRITE: 0) |
+				((ph->p_flags&PF_X) ? PROT_EXEC : 0));
+			map = mmap(0, ph->p_memsz + (ph->p_vaddr & PAGE_SIZE-1),
+				prot, (prot&PROT_WRITE) ? MAP_PRIVATE : MAP_SHARED,
+				fd, ph->p_offset & -PAGE_SIZE);
+			if (map == MAP_FAILED) {
+				unmap_library(dso);
+				goto error;
+			}
+			dso->loadmap->segs[i].addr = (size_t)map +
+				(ph->p_vaddr & PAGE_SIZE-1);
+			dso->loadmap->segs[i].p_vaddr = ph->p_vaddr;
+			dso->loadmap->segs[i].p_memsz = ph->p_memsz;
+			i++;
+		}
+		map = (void *)dso->loadmap->segs[0].addr;
+		map_len = 0;
+		goto done_mapping;
+	}
 	addr_max += PAGE_SIZE-1;
 	addr_max &= -PAGE_SIZE;
 	addr_min &= -PAGE_SIZE;
@@ -575,6 +620,8 @@ static void *map_library(int fd, struct dso *dso)
 	 * amount of virtual address space to map over later. */
 	map = mmap((void *)addr_min, map_len, prot, MAP_PRIVATE, fd, off_start);
 	if (map==MAP_FAILED) goto error;
+	dso->map = map;
+	dso->map_len = map_len;
 	/* If the loaded file is not relocatable and the requested address is
 	 * not available, then the load operation must fail. */
 	if (eh->e_type != ET_DYN && addr_min && map!=(void *)addr_min) {
@@ -620,18 +667,17 @@ static void *map_library(int fd, struct dso *dso)
 				goto error;
 			break;
 		}
-	dso->map = map;
-	dso->map_len = map_len;
+done_mapping:
 	dso->base = base;
-	dso->dynv = (void *)(base+dyn);
-	if (dso->tls_size) dso->tls_image = (void *)(base+tls_image);
+	dso->dynv = laddr(dso, dyn);
+	if (dso->tls_size) dso->tls_image = laddr(dso, tls_image);
 	if (!runtime) reclaim_gaps(dso);
 	free(allocated_buf);
 	return map;
 noexec:
 	errno = ENOEXEC;
 error:
-	if (map!=MAP_FAILED) munmap(map, map_len);
+	if (map!=MAP_FAILED) unmap_library(dso);
 	free(allocated_buf);
 	return 0;
 }
@@ -950,7 +996,7 @@ static struct dso *load_library(const char *name, struct dso *needed_by)
 	}
 	p = calloc(1, alloc_size);
 	if (!p) {
-		munmap(map, temp_dso.map_len);
+		unmap_library(&temp_dso);
 		return 0;
 	}
 	memcpy(p, &temp_dso, sizeof temp_dso);
@@ -1620,17 +1666,16 @@ void *dlopen(const char *file, int mode)
 				p->deps[i]->global = 0;
 		for (p=orig_tail->next; p; p=next) {
 			next = p->next;
-			munmap(p->map, p->map_len);
 			while (p->td_index) {
 				void *tmp = p->td_index->next;
 				free(p->td_index);
 				p->td_index = tmp;
 			}
-			if (p->funcdescs)
-				free(p->funcdescs);
+			free(p->funcdescs);
 			if (p->rpath != p->rpath_orig)
 				free(p->rpath);
 			free(p->deps);
+			unmap_library(p);
 			free(p);
 		}
 		tls_cnt = orig_tls_cnt;

@@ -56,6 +56,10 @@ struct fdpic_dummy_loadmap {
 
 #include "reloc.h"
 
+#ifndef FDPIC_CONSTDISP_FLAG
+#define FDPIC_CONSTDISP_FLAG 0
+#endif
+
 #ifndef DL_FDPIC
 #define DL_FDPIC 0
 #endif
