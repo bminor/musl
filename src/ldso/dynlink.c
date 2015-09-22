@@ -1203,6 +1203,11 @@ static void do_init_fini(struct dso *p)
 	if (need_locking) pthread_mutex_unlock(&init_fini_lock);
 }
 
+void __libc_start_init(void)
+{
+	do_init_fini(tail);
+}
+
 static void dl_debug_state(void)
 {
 }
@@ -1630,7 +1635,6 @@ _Noreturn void __dls3(size_t *sp)
 	__init_libc(envp, argv[0]);
 	atexit(do_fini);
 	errno = 0;
-	do_init_fini(tail);
 
 	CRTJMP((void *)aux[AT_ENTRY], argv-1);
 	for(;;);

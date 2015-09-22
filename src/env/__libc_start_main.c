@@ -67,6 +67,9 @@ int __libc_start_main(int (*main)(int,char **,char **), int argc, char **argv)
 	uintptr_t a = (uintptr_t)&__init_array_start;
 	for (; a<(uintptr_t)&__init_array_end; a+=sizeof(void(*)()))
 		(*(void (**)())a)();
+#else
+	void __libc_start_init(void);
+	__libc_start_init();
 #endif
 
 	/* Pass control to the application */
