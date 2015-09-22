@@ -1543,8 +1543,10 @@ _Noreturn void __dls3(size_t *sp)
 		if (!app.loadmap) {
 			app.loadmap = (void *)&app_dummy_loadmap;
 			app.loadmap->nsegs = 1;
-			app.loadmap->segs[0].addr = (size_t)app.base;
-			app.loadmap->segs[0].p_memsz = -1;
+			app.loadmap->segs[0].addr = (size_t)app.map;
+			app.loadmap->segs[0].p_vaddr = (size_t)app.map
+				- (size_t)app.base;
+			app.loadmap->segs[0].p_memsz = app.map_len;
 		}
 		argv[-3] = (void *)app.loadmap;
 	}
@@ -1738,6 +1740,28 @@ static int invalid_dso_handle(void *h)
 	return 1;
 }
 
+static void *addr2dso(size_t a)
+{
+	struct dso *p;
+	for (p=head; p; p=p->next) {
+		if (DL_FDPIC && p->loadmap) {
+			size_t i;
+			for (i=0; i<p->loadmap->nsegs; i++) {
+				if (a-p->loadmap->segs[i].p_vaddr
+				    < p->loadmap->segs[i].p_memsz)
+					return p;
+			}
+			i = count_syms(p);
+			if (a-(size_t)p->funcdescs < i*sizeof(*p->funcdescs))
+				return p;
+		} else {
+			if (a-(size_t)p->map < p->map_len)
+				return p;
+		}
+	}
+	return 0;
+}
+
 void *__tls_get_addr(size_t *);
 
 static void *do_dlsym(struct dso *p, const char *s, void *ra)
@@ -1749,7 +1773,7 @@ static void *do_dlsym(struct dso *p, const char *s, void *ra)
 		if (p == RTLD_DEFAULT) {
 			p = head;
 		} else if (p == RTLD_NEXT) {
-			for (p=head; p && (unsigned char *)ra-p->map>p->map_len; p=p->next);
+			p = addr2dso((size_t)ra);
 			if (!p) p=head;
 			p = p->next;
 		}
@@ -1806,7 +1830,7 @@ int __dladdr(const void *addr, Dl_info *info)
 	char *bestname;
 
 	pthread_rwlock_rdlock(&lock);
-	for (p=head; p && (unsigned char *)addr-p->map>p->map_len; p=p->next);
+	p = addr2dso((size_t)addr);
 	pthread_rwlock_unlock(&lock);
 
 	if (!p) return 0;
