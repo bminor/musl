@@ -4,6 +4,7 @@ __asm__(
 ".text \n"
 ".global " START " \n"
 START ": \n"
+#ifndef SHARED
 "	mov r8, r4 \n"
 "	mova 1f, r0 \n"
 "	mov.l 1f, r5 \n"
@@ -12,6 +13,7 @@ START ": \n"
 "	bsr __fdpic_fixup \n"
 "	 add r0, r6 \n"
 "	mov r0, r12 \n"
+#endif
 "	mov r10, r5 \n"
 "	mov r15, r4 \n"
 "	mov.l r9, @-r15 \n"
@@ -24,7 +26,9 @@ START ": \n"
 "	.long __ROFIXUP_END__@PCREL + 4 \n"
 );
 
+#ifndef SHARED
 #include "fdpic_crt.h"
+#endif
 
 #else
 
