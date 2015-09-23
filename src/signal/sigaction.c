@@ -6,8 +6,6 @@
 #include "libc.h"
 #include "ksigaction.h"
 
-void __restore(), __restore_rt();
-
 static int unmask_done;
 static unsigned long handler_set[_NSIG/(8*sizeof(long))];
 
