@@ -476,10 +476,18 @@ if test "x$visibility" = xauto ; then
 # - the -include option
 # - the attributes/pragmas used in vis.h
 # - linking code that takes the address of protected symbols
+# - gcc 3.x bug that wrongly claims declarations mismatch
 printf "checking whether global visibility preinclude works... "
-echo 'int (*fp)(void);' > "$tmpc"
-echo 'int foo(void) { }' >> "$tmpc"
-echo 'int bar(void) { fp = foo; return foo(); }' >> "$tmpc"
+cat > "$tmpc" <<EOF
+__attribute__((__visibility__("default")))
+extern struct a *const x;
+typedef struct a b;
+extern b *const x;
+b *const x;
+int (*fp)(void);
+int foo(void) { }
+int bar(void) { fp = foo; return foo(); }
+EOF
 if $CC $CFLAGS_C99FSE $CPPFLAGS $CFLAGS \
   -DSHARED -fPIC -I./src/internal -include vis.h \
   -nostdlib -shared -Wl,-Bsymbolic-functions \
