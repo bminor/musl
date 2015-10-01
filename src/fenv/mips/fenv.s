@@ -43,6 +43,7 @@ __fesetround:
 	li      $6, -4
 	and     $5, $5, $6
 	or      $5, $5, $4
+	ctc1    $5, $31
 	jr      $ra
 	li      $2, 0
 
