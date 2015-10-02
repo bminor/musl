@@ -188,9 +188,9 @@ function trashed(register) {
 /(add|addl|sub|subl|and|or|xor|lea|sal|sar|shl|shr) %e(ax|bx|cx|dx|si|di|bp),/ {
   trashed(get_reg1())
 }
-/i?mul [^,]*$/                    { trashed("eax"); trashed("edx") }
-/i?mul %e(ax|bx|cx|dx|si|di|bp),/ { trashed(get_reg1()) }
-/i?div/                           { trashed("eax"); trashed("edx") }
+/^i?mul [^,]*$/                    { trashed("eax"); trashed("edx") }
+/^i?mul %e(ax|bx|cx|dx|si|di|bp),/ { trashed(get_reg1()) }
+/^i?div/                           { trashed("eax"); trashed("edx") }
 /(dec|inc|not|neg|pop) %e(ax|bx|cx|dx|si|di|bp)/  { trashed(get_reg()) }
 /cpuid/ { trashed("eax"); trashed("ebx"); trashed("ecx"); trashed("edx") }
 
