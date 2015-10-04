@@ -13,6 +13,7 @@ int __pthread_join(pthread_t t, void **res)
 	if (cs == PTHREAD_CANCEL_ENABLE) __pthread_setcancelstate(cs, 0);
 	while ((tmp = t->tid)) __timedwait_cp(&t->tid, tmp, 0, 0, 0);
 	__pthread_setcancelstate(cs, 0);
+	a_barrier();
 	if (res) *res = t->result;
 	if (t->map_base) __munmap(t->map_base, t->map_size);
 	return 0;
