@@ -27,20 +27,29 @@ function get_const1() {
   match($0, /-?(0x[0-9a-fA-F]+|[0-9]+),/)
   return parse_const(substr($0, RSTART, RLENGTH-1))
 }
+
+function canonicalize_reg(register) {
+  if (match(register, /^e/))
+    return register
+  else if (match(register, /[hl]$/)) # AH, AL, BH, BL, etc
+    return "e" substr(register, 1, 1) "x"
+  else # AX, BX, CX, etc
+    return "e" register
+}
 function get_reg() {
   # only use if you already know there is 1 and only 1 register
-  match($0, /%e(ax|bx|cx|dx|si|di|bp)/)
-  return substr($0, RSTART+1, 3)
+  match($0, /%e?([abcd][hlx]|si|di|bp)/)
+  return canonicalize_reg(substr($0, RSTART+1, RLENGTH-1))
 }
 function get_reg1() {
   # for instructions with 2 operands, get 1st operand (assuming it is register)
-  match($0, /%e(ax|bx|cx|dx|si|di|bp),/)
-  return substr($0, RSTART+1, 3)
+  match($0, /%e?([abcd][hlx]|si|di|bp),/)
+  return canonicalize_reg(substr($0, RSTART+1, RLENGTH-2))
 }
 function get_reg2() {
   # for instructions with 2 operands, get 2nd operand (assuming it is register)
-  match($0, /,%e(ax|bx|cx|dx|si|di|bp)/)
-  return substr($0, RSTART+RLENGTH-3, 3)
+  match($0, /,%e?([abcd][hlx]|si|di|bp)/)
+  return canonicalize_reg(substr($0, RSTART+2, RLENGTH-2))
 }
 
 function adjust_sp_offset(delta) {
@@ -184,14 +193,14 @@ function trashed(register) {
 }
 # this does NOT exhaustively check for all possible instructions which could
 # overwrite a register value inherited from the caller (just the common ones)
-/mov.*,%e(ax|bx|cx|dx|si|di|bp)$/  { trashed(get_reg2()) }
-/(add|addl|sub|subl|and|or|xor|lea|sal|sar|shl|shr).*,%e(ax|bx|cx|dx|si|di|bp)$/ {
+/mov.*,%e?([abcd][hlx]|si|di|bp)$/  { trashed(get_reg2()) }
+/(add|addl|sub|subl|and|or|xor|lea|sal|sar|shl|shr).*,%e?([abcd][hlx]|si|di|bp)$/ {
   trashed(get_reg2())
 }
 /^i?mul [^,]*$/                      { trashed("eax"); trashed("edx") }
-/^i?mul.*,%e(ax|bx|cx|dx|si|di|bp)$/ { trashed(get_reg2()) }
+/^i?mul.*,%e?([abcd][hlx]|si|di|bp)$/ { trashed(get_reg2()) }
 /^i?div/                             { trashed("eax"); trashed("edx") }
-/(dec|inc|not|neg|pop) %e(ax|bx|cx|dx|si|di|bp)/  { trashed(get_reg()) }
+/(dec|inc|not|neg|pop) %e?([abcd][hlx]|si|di|bp)/  { trashed(get_reg()) }
 /cpuid/ { trashed("eax"); trashed("ebx"); trashed("ecx"); trashed("edx") }
 
 END {
