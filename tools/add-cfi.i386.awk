@@ -185,12 +185,12 @@ function trashed(register) {
 # this does NOT exhaustively check for all possible instructions which could
 # overwrite a register value inherited from the caller (just the common ones)
 /mov.*,%e(ax|bx|cx|dx|si|di|bp)/  { trashed(get_reg2()) }
-/(add|addl|sub|subl|and|or|xor|lea|sal|sar|shl|shr) %e(ax|bx|cx|dx|si|di|bp),/ {
-  trashed(get_reg1())
+/(add|addl|sub|subl|and|or|xor|lea|sal|sar|shl|shr).*,%e(ax|bx|cx|dx|si|di|bp)$/ {
+  trashed(get_reg2())
 }
-/^i?mul [^,]*$/                    { trashed("eax"); trashed("edx") }
-/^i?mul %e(ax|bx|cx|dx|si|di|bp),/ { trashed(get_reg1()) }
-/^i?div/                           { trashed("eax"); trashed("edx") }
+/^i?mul [^,]*$/                      { trashed("eax"); trashed("edx") }
+/^i?mul.*,%e(ax|bx|cx|dx|si|di|bp)$/ { trashed(get_reg2()) }
+/^i?div/                             { trashed("eax"); trashed("edx") }
 /(dec|inc|not|neg|pop) %e(ax|bx|cx|dx|si|di|bp)/  { trashed(get_reg()) }
 /cpuid/ { trashed("eax"); trashed("ebx"); trashed("ecx"); trashed("edx") }
 
