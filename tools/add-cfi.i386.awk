@@ -184,7 +184,7 @@ function trashed(register) {
 }
 # this does NOT exhaustively check for all possible instructions which could
 # overwrite a register value inherited from the caller (just the common ones)
-/mov.*,%e(ax|bx|cx|dx|si|di|bp)/  { trashed(get_reg2()) }
+/mov.*,%e(ax|bx|cx|dx|si|di|bp)$/  { trashed(get_reg2()) }
 /(add|addl|sub|subl|and|or|xor|lea|sal|sar|shl|shr).*,%e(ax|bx|cx|dx|si|di|bp)$/ {
   trashed(get_reg2())
 }
