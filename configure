@@ -556,6 +556,7 @@ test "$ARCH" = "microblaze" && trycppif __MICROBLAZEEL__ "$t" \
 && SUBARCH=${SUBARCH}el
 
 if test "$ARCH" = "sh" ; then
+tryflag CFLAGS_AUTO -Wa,--isa=any
 trycppif __BIG_ENDIAN__ "$t" && SUBARCH=${SUBARCH}eb
 if trycppif "__SH_FPU_ANY__ || __SH4__" "$t" ; then
 # Some sh configurations are broken and replace double with float
