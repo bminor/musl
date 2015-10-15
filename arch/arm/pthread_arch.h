@@ -4,7 +4,7 @@
 static inline pthread_t __pthread_self()
 {
 	char *p;
-	__asm__( "mrc p15,0,%0,c13,c0,3" : "=r"(p) );
+	__asm__ __volatile__ ( "mrc p15,0,%0,c13,c0,3" : "=r"(p) );
 	return (void *)(p+8-sizeof(struct pthread));
 }
 
@@ -14,10 +14,10 @@ static inline pthread_t __pthread_self()
 {
 #ifdef __clang__
 	char *p;
-	__asm__( "bl __a_gettp\n\tmov %0,r0" : "=r"(p) : : "cc", "r0", "lr" );
+	__asm__ __volatile__ ( "bl __a_gettp\n\tmov %0,r0" : "=r"(p) : : "cc", "r0", "lr" );
 #else
 	register char *p __asm__("r0");
-	__asm__( "bl __a_gettp" : "=r"(p) : : "cc", "lr" );
+	__asm__ __volatile__ ( "bl __a_gettp" : "=r"(p) : : "cc", "lr" );
 #endif
 	return (void *)(p+8-sizeof(struct pthread));
 }
