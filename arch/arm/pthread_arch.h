@@ -1,7 +1,7 @@
 #if ((__ARM_ARCH_6K__ || __ARM_ARCH_6ZK__) && !__thumb__) \
  || __ARM_ARCH_7A__ || __ARM_ARCH_7R__ || __ARM_ARCH >= 7
 
-static inline __attribute__((const)) pthread_t __pthread_self()
+static inline pthread_t __pthread_self()
 {
 	char *p;
 	__asm__( "mrc p15,0,%0,c13,c0,3" : "=r"(p) );
@@ -10,7 +10,7 @@ static inline __attribute__((const)) pthread_t __pthread_self()
 
 #else
 
-static inline __attribute__((const)) pthread_t __pthread_self()
+static inline pthread_t __pthread_self()
 {
 #ifdef __clang__
 	char *p;
