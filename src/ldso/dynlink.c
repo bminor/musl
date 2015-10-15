@@ -1330,6 +1330,7 @@ static void update_tls_size()
  * linker itself, but some of the relocations performed may need to be
  * replaced later due to copy relocations in the main program. */
 
+__attribute__((__visibility__("hidden")))
 void __dls2(unsigned char *base, size_t *sp)
 {
 	if (DL_FDPIC) {
