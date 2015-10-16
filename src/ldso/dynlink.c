@@ -1744,17 +1744,19 @@ static int invalid_dso_handle(void *h)
 static void *addr2dso(size_t a)
 {
 	struct dso *p;
+	size_t i;
+	if (DL_FDPIC) for (p=head; p; p=p->next) {
+		i = count_syms(p);
+		if (a-(size_t)p->funcdescs < i*sizeof(*p->funcdescs))
+			return p;
+	}
 	for (p=head; p; p=p->next) {
 		if (DL_FDPIC && p->loadmap) {
-			size_t i;
 			for (i=0; i<p->loadmap->nsegs; i++) {
 				if (a-p->loadmap->segs[i].p_vaddr
 				    < p->loadmap->segs[i].p_memsz)
 					return p;
 			}
-			i = count_syms(p);
-			if (a-(size_t)p->funcdescs < i*sizeof(*p->funcdescs))
-				return p;
 		} else {
 			if (a-(size_t)p->map < p->map_len)
 				return p;
@@ -1824,11 +1826,10 @@ failed:
 int __dladdr(const void *addr, Dl_info *info)
 {
 	struct dso *p;
-	Sym *sym;
+	Sym *sym, *bestsym;
 	uint32_t nsym;
 	char *strings;
 	void *best = 0;
-	char *bestname;
 
 	pthread_rwlock_rdlock(&lock);
 	p = addr2dso((size_t)addr);
@@ -1840,7 +1841,16 @@ int __dladdr(const void *addr, Dl_info *info)
 	strings = p->strings;
 	nsym = count_syms(p);
 
-	for (; nsym; nsym--, sym++) {
+	if (DL_FDPIC) {
+		size_t idx = ((size_t)addr-(size_t)p->funcdescs)
+			/ sizeof(*p->funcdescs);
+		if (idx < nsym && (sym[idx].st_info&0xf) == STT_FUNC) {
+			best = p->funcdescs + idx;
+			bestsym = sym + idx;
+		}
+	}
+
+	if (!best) for (; nsym; nsym--, sym++) {
 		if (sym->st_value
 		 && (1<<(sym->st_info&0xf) & OK_TYPES)
 		 && (1<<(sym->st_info>>4) & OK_BINDS)) {
@@ -1848,7 +1858,7 @@ int __dladdr(const void *addr, Dl_info *info)
 			if (symaddr > addr || symaddr < best)
 				continue;
 			best = symaddr;
-			bestname = strings + sym->st_name;
+			bestsym = sym;
 			if (addr == symaddr)
 				break;
 		}
@@ -1856,9 +1866,12 @@ int __dladdr(const void *addr, Dl_info *info)
 
 	if (!best) return 0;
 
+	if (DL_FDPIC && (bestsym->st_info&0xf) == STT_FUNC)
+		best = p->funcdescs + (bestsym - p->syms);
+
 	info->dli_fname = p->name;
 	info->dli_fbase = p->base;
-	info->dli_sname = bestname;
+	info->dli_sname = strings + bestsym->st_name;
 	info->dli_saddr = best;
 
 	return 1;
