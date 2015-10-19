@@ -1,3 +1,4 @@
+.fpu vfp
 .text
 .global sqrtf
 .type   sqrtf,%function

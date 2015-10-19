@@ -1,3 +1,4 @@
+.fpu vfp
 .text
 .global sqrt
 .type   sqrt,%function

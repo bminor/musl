@@ -1,3 +1,4 @@
+.fpu vfp
 .text
 .global fabsf
 .type   fabsf,%function

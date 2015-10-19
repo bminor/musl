@@ -1,3 +1,5 @@
+.fpu vfp
+
 .global fegetround
 .type fegetround,%function
 fegetround:
