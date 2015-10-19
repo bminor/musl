@@ -1583,3 +1583,38 @@ arch-specific bugs fixed:
 - mismatched ABI for local-dynamic model TLS on mips and powerpc
 - incorrect value of some SO_* constants on mips
 - broken 64-bit syscall argument passing on aarch64
+
+
+
+1.1.12 release notes
+
+new features:
+- fdpic abi on sh2 for shareable text segment without mmu
+- general fdpic elf support in dynamic linker
+- CFI generation for x86_64 asm source files
+- protection against silently building a libc.so with missing symbols
+
+compatibility:
+- nl_langinfo(CODESET) now returns "ASCII" in byte-based C locale
+- fixed build regression due to buggy .SECONDARY in some GNU make versions
+- additional arm eabi functions needed by llvm arm backend
+- added format argument attributes to gettext function prototypes
+- static PIE no longer requires linking with -E/-rdynamic
+- eliminated spurious protected-data warnings linking against libc.so
+- avoided spurious fpu asm errors with some armhf toolchains
+
+bugs fixed:
+- fclose of stdin/stdout caused deadlock at exit
+- missing memory barrier in pthread_join
+- open_[w]memstream produced no buffer when no writes took place
+- uninitialized scopeid in address lookups from hosts file and ip literals
+- ip literals for mismatching family (v4 vs v6) were queried as hostnames
+- possible crash on OOM in regcomp
+- incorrect contents in localeconv structure (-1 instead of CHAR_MAX)
+- strftime mishandling of out-of-range struct tm members
+- wrongful attribute((const)) on pthread_self and errno location function
+
+arch-specific bugs fixed:
+- arm crt1 entry point failed to align stack pointer in some cases
+- mips fesetround failed to actually set rounding mode
+- i386 asm source CFI generation had multiple bugs
