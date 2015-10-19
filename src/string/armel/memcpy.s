@@ -42,6 +42,8 @@
  * of prefetch code that is not compatible with older cpus.
  */
 
+.syntax unified
+
 .global memcpy
 .type memcpy,%function
 memcpy:
@@ -73,12 +75,12 @@ memcpy:
 	 */
 	movs    r12, r3, lsl #31
 	sub     r2, r2, r3              /* we know that r3 <= r2 because r2 >= 4 */
-	.word 0x44d13001 /* ldrbmi r3, [r1], #1 */
-	.word 0x24d14001 /* ldrbcs r4, [r1], #1 */
-	.word 0x24d1c001 /* ldrbcs r12,[r1], #1 */
-	.word 0x44c03001 /* strbmi r3, [r0], #1 */
-	.word 0x24c04001 /* strbcs r4, [r0], #1 */
-	.word 0x24c0c001 /* strbcs r12,[r0], #1 */
+	ldrbmi r3, [r1], #1
+	ldrbcs r4, [r1], #1
+	ldrbcs r12,[r1], #1
+	strbmi r3, [r0], #1
+	strbcs r4, [r0], #1
+	strbcs r12,[r0], #1
 
 src_aligned:
 
@@ -177,12 +179,12 @@ less_than_32_left:
 	stmmi   r0!, {r8, r9}
 	movs    r12, r2, lsl #30
 	ldrcs   r3, [r1], #4                    /*  4 bytes */
-	.word 0x40d140b2 /* ldrhmi r4, [r1], #2 */ /*  2 bytes */
+	ldrhmi r4, [r1], #2                     /*  2 bytes */
 	strcs   r3, [r0], #4
-	.word 0x40c040b2 /* strhmi r4, [r0], #2 */
+	strhmi r4, [r0], #2
 	tst     r2, #0x1
-	.word 0x15d13000 /* ldrbne r3, [r1] */  /*  last byte  */
-	.word 0x15c03000 /* strbne r3, [r0] */
+	ldrbne r3, [r1]                         /*  last byte  */
+	strbne r3, [r0]
 
 	/* we're done! restore everything and return */
 1:      ldmfd   sp!, {r5-r11}
@@ -224,11 +226,11 @@ non_congruent:
 	 * becomes aligned to 32 bits (r5 = nb of words to copy for alignment)
 	 */
 	movs    r5, r5, lsl #31
-	.word 0x44c03001 /* strbmi r3, [r0], #1 */
+	strbmi r3, [r0], #1
 	movmi   r3, r3, lsr #8
-	.word 0x24c03001 /* strbcs r3, [r0], #1 */
+	strbcs r3, [r0], #1
 	movcs   r3, r3, lsr #8
-	.word 0x24c03001 /* strbcs r3, [r0], #1 */
+	strbcs r3, [r0], #1
 	movcs   r3, r3, lsr #8
 
 	cmp     r2, #4
@@ -355,23 +357,23 @@ less_than_thirtytwo:
 partial_word_tail:
 	/* we have a partial word in the input buffer */
 	movs    r5, lr, lsl #(31-3)
-	.word 0x44c03001 /* strbmi r3, [r0], #1 */
+	strbmi r3, [r0], #1
 	movmi   r3, r3, lsr #8
-	.word 0x24c03001 /* strbcs r3, [r0], #1 */
+	strbcs r3, [r0], #1
 	movcs   r3, r3, lsr #8
-	.word 0x24c03001 /* strbcs r3, [r0], #1 */
+	strbcs r3, [r0], #1
 
 	/* Refill spilled registers from the stack. Don't update sp. */
 	ldmfd   sp, {r5-r11}
 
 copy_last_3_and_return:
 	movs    r2, r2, lsl #31 /* copy remaining 0, 1, 2 or 3 bytes */
-	.word 0x44d12001 /* ldrbmi r2, [r1], #1 */
-	.word 0x24d13001 /* ldrbcs r3, [r1], #1 */
-	.word 0x25d1c000 /* ldrbcs r12,[r1] */
-	.word 0x44c02001 /* strbmi r2, [r0], #1 */
-	.word 0x24c03001 /* strbcs r3, [r0], #1 */
-	.word 0x25c0c000 /* strbcs r12,[r0] */
+	ldrbmi r2, [r1], #1
+	ldrbcs r3, [r1], #1
+	ldrbcs r12,[r1]
+	strbmi r2, [r0], #1
+	strbcs r3, [r0], #1
+	strbcs r12,[r0]
 
 	/* we're done! restore sp and spilled registers and return */
 	add     sp,  sp, #28
