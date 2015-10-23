@@ -330,6 +330,13 @@ CFLAGS_C99FSE="$CFLAGS_C99FSE -D__may_alias__="
 fi
 
 #
+# The GNU toolchain defaults to assuming unmarked files need an
+# executable stack, potentially exposing vulnerabilities in programs
+# linked with such object files. Fix this.
+#
+tryflag CFLAGS_C99FSE -Wa,--noexecstack
+
+#
 # Check for options to disable stack protector, which needs to be
 # disabled for a few early-bootstrap translation units. If not found,
 # this is not an error; we assume the toolchain does not do ssp.
@@ -428,13 +435,6 @@ fi
 #
 tryflag CFLAGS_AUTO -fno-unwind-tables
 tryflag CFLAGS_AUTO -fno-asynchronous-unwind-tables
-
-#
-# The GNU toolchain defaults to assuming unmarked files need an
-# executable stack, potentially exposing vulnerabilities in programs
-# linked with such object files. Fix this.
-#
-tryflag CFLAGS_AUTO -Wa,--noexecstack
 
 #
 # On x86, make sure we don't have incompatible instruction set
