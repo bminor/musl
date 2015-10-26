@@ -54,7 +54,15 @@ int __res_msend(int nqueries, const unsigned char *const *queries,
 
 	/* Get nameservers from resolv.conf, fallback to localhost */
 	f = __fopen_rb_ca("/etc/resolv.conf", &_f, _buf, sizeof _buf);
-	if (f) for (nns=0; nns<3 && fgets(line, sizeof line, f); ) {
+	if (!f) switch (errno) {
+	case ENOENT:
+	case ENOTDIR:
+	case EACCES:
+		goto no_resolv_conf;
+	default:
+		return -1;
+	}
+	for (nns=0; nns<3 && fgets(line, sizeof line, f); ) {
 		if (!strncmp(line, "options", 7) && isspace(line[7])) {
 			unsigned long x;
 			char *p, *z;
@@ -92,7 +100,8 @@ int __res_msend(int nqueries, const unsigned char *const *queries,
 			}
 		}
 	}
-	if (f) __fclose_ca(f);
+	__fclose_ca(f);
+no_resolv_conf:
 	if (!nns) {
 		ns[0].sin.sin_family = AF_INET;
 		ns[0].sin.sin_port = htons(53);

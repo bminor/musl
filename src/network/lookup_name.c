@@ -9,6 +9,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <errno.h>
 #include "lookup.h"
 #include "stdio_impl.h"
 #include "syscall.h"
@@ -51,7 +52,14 @@ static int name_from_hosts(struct address buf[static MAXADDRS], char canon[stati
 	int cnt = 0;
 	unsigned char _buf[1032];
 	FILE _f, *f = __fopen_rb_ca("/etc/hosts", &_f, _buf, sizeof _buf);
-	if (!f) return 0;
+	if (!f) switch (errno) {
+	case ENOENT:
+	case ENOTDIR:
+	case EACCES:
+		return 0;
+	default:
+		return EAI_SYSTEM;
+	}
 	while (fgets(line, sizeof line, f) && cnt < MAXADDRS) {
 		char *p, *z;
 
