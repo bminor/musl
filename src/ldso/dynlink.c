@@ -604,6 +604,19 @@ static void *map_library(int fd, struct dso *dso)
 			dso->loadmap->segs[i].p_vaddr = ph->p_vaddr;
 			dso->loadmap->segs[i].p_memsz = ph->p_memsz;
 			i++;
+			if (prot & PROT_WRITE) {
+				size_t brk = (ph->p_vaddr & PAGE_SIZE-1)
+					+ ph->p_filesz;
+				size_t pgbrk = brk + PAGE_SIZE-1 & -PAGE_SIZE;
+				size_t pgend = brk + ph->p_memsz - ph->p_filesz
+					+ PAGE_SIZE-1 & -PAGE_SIZE;
+				if (pgend > pgbrk && mmap_fixed(map+pgbrk,
+					pgend-pgbrk, prot,
+					MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS,
+					-1, off_start) == MAP_FAILED)
+					goto error;
+				memset(map + brk, 0, pgbrk-brk);
+			}
 		}
 		map = (void *)dso->loadmap->segs[0].addr;
 		map_len = 0;
