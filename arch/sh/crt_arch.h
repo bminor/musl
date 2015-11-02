@@ -22,7 +22,8 @@ START ": \n"
 "	mov.l 1f, r5 \n"
 "	mov.l 1f+4, r6 \n"
 "	add r0, r5 \n"
-"	bsr __fdpic_fixup \n"
+"	mov.l 4f, r1 \n"
+"5:	bsrf r1 \n"
 "	 add r0, r6 \n"
 "	mov r0, r12 \n"
 #endif
@@ -31,11 +32,16 @@ START ": \n"
 "	mov.l r9, @-r15 \n"
 "	mov.l r8, @-r15 \n"
 "	mov #-16, r0 \n"
-"	bsr " START "_c \n"
+"	mov.l 2f, r1 \n"
+"3:	bsrf r1 \n"
 "	 and r0, r15 \n"
 ".align 2 \n"
 "1:	.long __ROFIXUP_LIST__@PCREL \n"
 "	.long __ROFIXUP_END__@PCREL + 4 \n"
+"2:	.long " START "_c@PCREL - (3b+4-.) \n"
+#ifndef SHARED
+"4:	.long __fdpic_fixup@PCREL - (5b+4-.) \n"
+#endif
 );
 
 #ifndef SHARED
@@ -53,13 +59,14 @@ START ": \n"
 "	add r0, r5 \n"
 "	mov r15, r4 \n"
 "	mov #-16, r0 \n"
-"	and r0, r15 \n"
-"	bsr " START "_c \n"
-"	nop \n"
+"	mov.l 2f, r1 \n"
+"3:	bsrf r1 \n"
+"	 and r0, r15 \n"
 ".align 2 \n"
 ".weak _DYNAMIC \n"
 ".hidden _DYNAMIC \n"
 "1:	.long _DYNAMIC-. \n"
+"2:	.long " START "_c@PCREL - (3b+4-.) \n"
 );
 
 #endif
