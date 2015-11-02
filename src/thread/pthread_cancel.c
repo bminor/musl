@@ -7,7 +7,7 @@
 #ifdef SHARED
 __attribute__((__visibility__("hidden")))
 #endif
-long __cancel(), __cp_cancel(), __syscall_cp_asm(), __syscall_cp_c();
+long __cancel(), __syscall_cp_asm(), __syscall_cp_c();
 
 long __cancel()
 {
@@ -17,12 +17,6 @@ long __cancel()
 	self->canceldisable = PTHREAD_CANCEL_DISABLE;
 	return -ECANCELED;
 }
-
-/* If __syscall_cp_asm has adjusted the stack pointer, it must provide a
- * definition of __cp_cancel to undo those adjustments and call __cancel.
- * Otherwise, __cancel provides a definition for __cp_cancel. */
-
-weak_alias(__cancel, __cp_cancel);
 
 long __syscall_cp_asm(volatile void *, syscall_arg_t,
                       syscall_arg_t, syscall_arg_t, syscall_arg_t,
@@ -56,7 +50,7 @@ static void _sigaddset(sigset_t *set, int sig)
 #ifdef SHARED
 __attribute__((__visibility__("hidden")))
 #endif
-extern const char __cp_begin[1], __cp_end[1];
+extern const char __cp_begin[1], __cp_end[1], __cp_cancel[1];
 
 static void cancel_handler(int sig, siginfo_t *si, void *ctx)
 {
