@@ -16,4 +16,4 @@ static inline struct pthread *__pthread_self()
 
 #define DTP_OFFSET 0x8000
 
-#define CANCEL_REG_IP (3-(union {int __i; char __b;}){1}.__b)
+#define MC_PC pc

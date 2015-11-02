@@ -27,4 +27,4 @@ static inline pthread_t __pthread_self()
 #define TLS_ABOVE_TP
 #define TP_ADJ(p) ((char *)(p) + sizeof(struct pthread) - 8)
 
-#define CANCEL_REG_IP 18
+#define MC_PC arm_pc

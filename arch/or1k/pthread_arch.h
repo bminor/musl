@@ -14,5 +14,4 @@ static inline struct pthread *__pthread_self()
 #define TLS_ABOVE_TP
 #define TP_ADJ(p) ((char *)(p) + sizeof(struct pthread))
 
-/* word-offset to 'pc' in mcontext_t */
-#define CANCEL_REG_IP 32
+#define MC_PC regs.pc
