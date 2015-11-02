@@ -23,17 +23,21 @@ GENH = include/bits/alltypes.h
 GENH_INT = src/internal/version.h
 IMPH = src/internal/stdio_impl.h src/internal/pthread_impl.h src/internal/libc.h
 
-LDFLAGS = 
+LDFLAGS =
+LDFLAGS_AUTO =
 LIBCC = -lgcc
 CPPFLAGS =
-CFLAGS = -Os -pipe
+CFLAGS =
+CFLAGS_AUTO = -Os -pipe
 CFLAGS_C99FSE = -std=c99 -ffreestanding -nostdinc 
 
 CFLAGS_ALL = $(CFLAGS_C99FSE)
 CFLAGS_ALL += -D_XOPEN_SOURCE=700 -I./arch/$(ARCH) -I./src/internal -I./include
-CFLAGS_ALL += $(CPPFLAGS) $(CFLAGS)
+CFLAGS_ALL += $(CPPFLAGS) $(CFLAGS_AUTO) $(CFLAGS)
 CFLAGS_ALL_STATIC = $(CFLAGS_ALL)
 CFLAGS_ALL_SHARED = $(CFLAGS_ALL) -fPIC -DSHARED
+
+LDFLAGS_ALL = $(LDFLAGS_AUTO) $(LDFLAGS)
 
 AR      = $(CROSS_COMPILE)ar
 RANLIB  = $(CROSS_COMPILE)ranlib
@@ -146,7 +150,7 @@ endif
 	$(CC) $(CFLAGS_ALL_SHARED) -c -o $@ $<
 
 lib/libc.so: $(LOBJS)
-	$(CC) $(CFLAGS_ALL_SHARED) $(LDFLAGS) -nostdlib -shared \
+	$(CC) $(CFLAGS_ALL_SHARED) $(LDFLAGS_ALL) -nostdlib -shared \
 	-Wl,-e,_dlstart -Wl,-Bsymbolic-functions \
 	-o $@ $(LOBJS) $(LIBCC)
 
