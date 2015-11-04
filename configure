@@ -437,6 +437,17 @@ tryflag CFLAGS_AUTO -fno-unwind-tables
 tryflag CFLAGS_AUTO -fno-asynchronous-unwind-tables
 
 #
+# Attempt to put each function and each data object in its own
+# section. This both allows additional size optimizations at link
+# time and works around a dangerous class of compiler/assembler bugs
+# whereby relative address expressions are constant-folded by the
+# assembler even when one or more of the symbols involved is
+# replaceable. See gas pr 18561 and gcc pr 66609, 68178, etc.
+#
+tryflag CFLAGS_AUTO -ffunction-sections
+tryflag CFLAGS_AUTO -fdata-sections
+
+#
 # On x86, make sure we don't have incompatible instruction set
 # extensions enabled by default. This is bad for making static binaries.
 # We cheat and use i486 rather than i386 because i386 really does not
