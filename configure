@@ -515,6 +515,12 @@ CFLAGS_AUTO="$CFLAGS_AUTO -include vis.h"
 CFLAGS_AUTO="${CFLAGS_AUTO# }"
 fi
 
+# Reduce space lost to padding for alignment purposes by sorting data
+# objects according to their alignment reqirements. This approximates
+# optimal packing.
+tryldflag LDFLAGS_AUTO -Wl,--sort-section,alignment
+tryldflag LDFLAGS_AUTO -Wl,--sort-common
+
 # Some patched GCC builds have these defaults messed up...
 tryldflag LDFLAGS_AUTO -Wl,--hash-style=both
 
