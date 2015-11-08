@@ -534,6 +534,11 @@ tryldflag LDFLAGS_AUTO -Wl,--hash-style=both
 # runtime library; implementation error is also a possibility.
 tryldflag LDFLAGS_AUTO -Wl,--no-undefined
 
+# Avoid exporting symbols from compiler runtime libraries. They
+# should be hidden anyway, but some toolchains including old gcc
+# versions built without shared library support and pcc are broken.
+tryldflag LDFLAGS_AUTO -Wl,--exclude-libs=ALL
+
 test "$shared" = "no" || {
 # Disable dynamic linking if ld is broken and can't do -Bsymbolic-functions
 LDFLAGS_DUMMY=
