@@ -22,7 +22,11 @@ setjmp:
 	stc p2, cr4, [ip], #48
 2:	tst r1,#0x40
 	beq 2f
-	.word 0xecac8b10 /* vstmia ip!, {d8-d15} */
+	.fpu vfp
+	vstmia ip!, {d8-d15}
+	.fpu softvfp
+	.eabi_attribute 10, 0
+	.eabi_attribute 27, 0
 2:	tst r1,#0x200
 	beq 3f
 	stcl p1, cr10, [ip], #8
