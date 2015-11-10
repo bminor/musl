@@ -1,3 +1,4 @@
+.syntax unified
 .global __cp_begin
 .hidden __cp_begin
 .global __cp_end

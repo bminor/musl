@@ -1,3 +1,4 @@
+.syntax unified
 .fpu vfp
 .text
 .global sqrt

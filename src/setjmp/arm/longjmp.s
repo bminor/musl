@@ -1,3 +1,4 @@
+.syntax unified
 .global _longjmp
 .global longjmp
 .type _longjmp,%function

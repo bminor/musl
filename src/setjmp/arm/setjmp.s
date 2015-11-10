@@ -1,3 +1,4 @@
+.syntax unified
 .global __setjmp
 .global _setjmp
 .global setjmp

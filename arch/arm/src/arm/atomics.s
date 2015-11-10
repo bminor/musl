@@ -1,3 +1,4 @@
+.syntax unified
 .text
 
 .global __a_barrier

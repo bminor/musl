@@ -1,3 +1,4 @@
+.syntax unified
 .text
 .global __clone
 .type   __clone,%function
