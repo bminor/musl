@@ -11,6 +11,4 @@ __syscall:
 	ldmfd ip,{r3,r4,r5,r6}
 	svc 0
 	ldmfd sp!,{r4,r5,r6,r7}
-	tst lr,#1
-	moveq pc,lr
 	bx lr

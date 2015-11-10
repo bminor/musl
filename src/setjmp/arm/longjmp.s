@@ -33,9 +33,7 @@ longjmp:
 	ldcl p1, cr13, [ip], #8
 	ldcl p1, cr14, [ip], #8
 	ldcl p1, cr15, [ip], #8
-3:	tst lr,#1
-	moveq pc,lr
-	bx lr
+3:	bx lr
 
 .hidden __hwcap
 1:	.word __hwcap-1b

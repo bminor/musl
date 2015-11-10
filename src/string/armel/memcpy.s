@@ -189,8 +189,6 @@ less_than_32_left:
 	/* we're done! restore everything and return */
 1:      ldmfd   sp!, {r5-r11}
 	ldmfd   sp!, {r0, r4, lr}
-	tst     lr, #1
-	moveq   pc, lr
 	bx      lr
 
 	/********************************************************************/
@@ -378,6 +376,4 @@ copy_last_3_and_return:
 	/* we're done! restore sp and spilled registers and return */
 	add     sp,  sp, #28
 	ldmfd   sp!, {r0, r4, lr}
-	tst     lr, #1
-	moveq   pc, lr
 	bx      lr

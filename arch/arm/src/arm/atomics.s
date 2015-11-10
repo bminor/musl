@@ -11,8 +11,6 @@ __a_barrier:
 .global __a_barrier_dummy
 .hidden __a_barrier_dummy
 __a_barrier_dummy:
-	tst lr,#1
-	moveq pc,lr
 	bx lr
 .global __a_barrier_oldkuser
 .hidden __a_barrier_oldkuser
@@ -24,8 +22,6 @@ __a_barrier_oldkuser:
 	mov lr,pc
 	mov pc,ip
 	pop {r0,r1,r2,r3,ip,lr}
-	tst lr,#1
-	moveq pc,lr
 	bx lr
 .global __a_barrier_v6
 .hidden __a_barrier_v6
@@ -53,8 +49,6 @@ __a_cas_dummy:
 	ldr r0,[r2]
 	subs r0,r3,r0
 	streq r1,[r2]
-	tst lr,#1
-	moveq pc,lr
 	bx lr
 .global __a_cas_v6
 .hidden __a_cas_v6

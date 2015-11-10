@@ -22,8 +22,6 @@ __cp_begin:
 	svc 0
 __cp_end:
 	ldmfd sp!,{r4,r5,r6,r7,lr}
-	tst lr,#1
-	moveq pc,lr
 	bx lr
 __cp_cancel:
 	ldmfd sp!,{r4,r5,r6,r7,lr}
