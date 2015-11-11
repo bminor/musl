@@ -37,23 +37,23 @@ char *__nl_langinfo_l(nl_item item, locale_t loc)
 	
 	switch (cat) {
 	case LC_NUMERIC:
-		if (idx > 1) return NULL;
+		if (idx > 1) return "";
 		str = c_numeric;
 		break;
 	case LC_TIME:
-		if (idx > 0x31) return NULL;
+		if (idx > 0x31) return "";
 		str = c_time;
 		break;
 	case LC_MONETARY:
-		if (idx > 0) return NULL;
+		if (idx > 0) return "";
 		str = "";
 		break;
 	case LC_MESSAGES:
-		if (idx > 3) return NULL;
+		if (idx > 3) return "";
 		str = c_messages;
 		break;
 	default:
-		return NULL;
+		return "";
 	}
 
 	for (; idx; idx--, str++) for (; *str; str++);
