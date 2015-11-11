@@ -482,8 +482,14 @@ static void reclaim_gaps(struct dso *dso)
 
 static void *mmap_fixed(void *p, size_t n, int prot, int flags, int fd, off_t off)
 {
-	char *q = mmap(p, n, prot, flags, fd, off);
-	if (q != MAP_FAILED || errno != EINVAL) return q;
+	static int no_map_fixed;
+	char *q;
+	if (!no_map_fixed) {
+		q = mmap(p, n, prot, flags|MAP_FIXED, fd, off);
+		if (!DL_NOMMU_SUPPORT || q != MAP_FAILED || errno != EINVAL)
+			return q;
+		no_map_fixed = 1;
+	}
 	/* Fallbacks for MAP_FIXED failure on NOMMU kernels. */
 	if (flags & MAP_ANONYMOUS) {
 		memset(p, 0, n);
@@ -631,7 +637,11 @@ static void *map_library(int fd, struct dso *dso)
 	 * the length of the file. This is okay because we will not
 	 * use the invalid part; we just need to reserve the right
 	 * amount of virtual address space to map over later. */
-	map = mmap((void *)addr_min, map_len, prot, MAP_PRIVATE, fd, off_start);
+	map = DL_NOMMU_SUPPORT
+		? mmap((void *)addr_min, map_len, PROT_READ|PROT_WRITE|PROT_EXEC,
+			MAP_PRIVATE|MAP_ANONYMOUS, -1, 0)
+		: mmap((void *)addr_min, map_len, prot,
+			MAP_PRIVATE, fd, off_start);
 	if (map==MAP_FAILED) goto error;
 	dso->map = map;
 	dso->map_len = map_len;
@@ -656,7 +666,8 @@ static void *map_library(int fd, struct dso *dso)
 			dso->phentsize = eh->e_phentsize;
 		}
 		/* Reuse the existing mapping for the lowest-address LOAD */
-		if ((ph->p_vaddr & -PAGE_SIZE) == addr_min) continue;
+		if ((ph->p_vaddr & -PAGE_SIZE) == addr_min && !DL_NOMMU_SUPPORT)
+			continue;
 		this_min = ph->p_vaddr & -PAGE_SIZE;
 		this_max = ph->p_vaddr+ph->p_memsz+PAGE_SIZE-1 & -PAGE_SIZE;
 		off_start = ph->p_offset & -PAGE_SIZE;
