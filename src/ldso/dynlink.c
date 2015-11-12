@@ -101,6 +101,7 @@ int __init_tp(void *);
 void __init_libc(char **, char *);
 void *__copy_tls(unsigned char *);
 
+__attribute__((__visibility__("hidden")))
 const char *__libc_get_version(void);
 
 static struct builtin_tls {
