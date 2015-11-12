@@ -17,9 +17,7 @@
 typedef long syscall_arg_t;
 #endif
 
-#ifdef SHARED
 __attribute__((visibility("hidden")))
-#endif
 long __syscall_ret(unsigned long), __syscall(syscall_arg_t, ...),
 	__syscall_cp(syscall_arg_t, syscall_arg_t, syscall_arg_t, syscall_arg_t,
 	             syscall_arg_t, syscall_arg_t, syscall_arg_t);
