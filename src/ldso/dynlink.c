@@ -70,8 +70,8 @@ struct dso {
 	char kernel_mapped;
 	struct dso **deps, *needed_by;
 	char *rpath_orig, *rpath;
-	void *tls_image;
-	size_t tls_len, tls_size, tls_align, tls_id, tls_offset;
+	struct tls_module tls;
+	size_t tls_id;
 	size_t relro_start, relro_end;
 	void **new_dtv;
 	unsigned char *new_tls;
@@ -99,6 +99,7 @@ struct symdef {
 
 int __init_tp(void *);
 void __init_libc(char **, char *);
+void *__copy_tls(unsigned char *);
 
 const char *__libc_get_version(void);
 
@@ -123,6 +124,7 @@ static int noload;
 static jmp_buf *rtld_fail;
 static pthread_rwlock_t lock;
 static struct debug debug;
+static struct tls_module *tls_tail;
 static size_t tls_cnt, tls_offset, tls_align = MIN_TLS_ALIGN;
 static size_t static_tls_cnt;
 static pthread_mutex_t init_fini_lock = { ._m_type = PTHREAD_MUTEX_RECURSIVE };
@@ -397,14 +399,14 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 			break;
 #ifdef TLS_ABOVE_TP
 		case REL_TPOFF:
-			*reloc_addr = tls_val + def.dso->tls_offset + TPOFF_K + addend;
+			*reloc_addr = tls_val + def.dso->tls.offset + TPOFF_K + addend;
 			break;
 #else
 		case REL_TPOFF:
-			*reloc_addr = tls_val - def.dso->tls_offset + addend;
+			*reloc_addr = tls_val - def.dso->tls.offset + addend;
 			break;
 		case REL_TPOFF_NEG:
-			*reloc_addr = def.dso->tls_offset - tls_val + addend;
+			*reloc_addr = def.dso->tls.offset - tls_val + addend;
 			break;
 #endif
 		case REL_TLSDESC:
@@ -426,10 +428,10 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 			} else {
 				reloc_addr[0] = (size_t)__tlsdesc_static;
 #ifdef TLS_ABOVE_TP
-				reloc_addr[1] = tls_val + def.dso->tls_offset
+				reloc_addr[1] = tls_val + def.dso->tls.offset
 					+ TPOFF_K + addend;
 #else
-				reloc_addr[1] = tls_val - def.dso->tls_offset
+				reloc_addr[1] = tls_val - def.dso->tls.offset
 					+ addend;
 #endif
 			}
@@ -567,9 +569,9 @@ static void *map_library(int fd, struct dso *dso)
 			dyn = ph->p_vaddr;
 		} else if (ph->p_type == PT_TLS) {
 			tls_image = ph->p_vaddr;
-			dso->tls_align = ph->p_align;
-			dso->tls_len = ph->p_filesz;
-			dso->tls_size = ph->p_memsz;
+			dso->tls.align = ph->p_align;
+			dso->tls.len = ph->p_filesz;
+			dso->tls.size = ph->p_memsz;
 		} else if (ph->p_type == PT_GNU_RELRO) {
 			dso->relro_start = ph->p_vaddr & -PAGE_SIZE;
 			dso->relro_end = (ph->p_vaddr + ph->p_memsz) & -PAGE_SIZE;
@@ -694,7 +696,7 @@ static void *map_library(int fd, struct dso *dso)
 done_mapping:
 	dso->base = base;
 	dso->dynv = laddr(dso, dyn);
-	if (dso->tls_size) dso->tls_image = laddr(dso, tls_image);
+	if (dso->tls.size) dso->tls.image = laddr(dso, tls_image);
 	if (!runtime) reclaim_gaps(dso);
 	free(allocated_buf);
 	return map;
@@ -1011,8 +1013,8 @@ static struct dso *load_library(const char *name, struct dso *needed_by)
 	 * extended DTV capable of storing an additional slot for
 	 * the newly-loaded DSO. */
 	alloc_size = sizeof *p + strlen(pathname) + 1;
-	if (runtime && temp_dso.tls_image) {
-		size_t per_th = temp_dso.tls_size + temp_dso.tls_align
+	if (runtime && temp_dso.tls.image) {
+		size_t per_th = temp_dso.tls.size + temp_dso.tls.align
 			+ sizeof(void *) * (tls_cnt+3);
 		n_th = libc.threads_minus_1 + 1;
 		if (n_th > SSIZE_MAX / per_th) alloc_size = SIZE_MAX;
@@ -1033,22 +1035,25 @@ static struct dso *load_library(const char *name, struct dso *needed_by)
 	strcpy(p->name, pathname);
 	/* Add a shortname only if name arg was not an explicit pathname. */
 	if (pathname != name) p->shortname = strrchr(p->name, '/')+1;
-	if (p->tls_image) {
+	if (p->tls.image) {
 		p->tls_id = ++tls_cnt;
-		tls_align = MAXP2(tls_align, p->tls_align);
+		tls_align = MAXP2(tls_align, p->tls.align);
 #ifdef TLS_ABOVE_TP
-		p->tls_offset = tls_offset + ( (tls_align-1) &
-			-(tls_offset + (uintptr_t)p->tls_image) );
-		tls_offset += p->tls_size;
+		p->tls.offset = tls_offset + ( (tls_align-1) &
+			-(tls_offset + (uintptr_t)p->tls.image) );
+		tls_offset += p->tls.size;
 #else
-		tls_offset += p->tls_size + p->tls_align - 1;
-		tls_offset -= (tls_offset + (uintptr_t)p->tls_image)
-			& (p->tls_align-1);
-		p->tls_offset = tls_offset;
+		tls_offset += p->tls.size + p->tls.align - 1;
+		tls_offset -= (tls_offset + (uintptr_t)p->tls.image)
+			& (p->tls.align-1);
+		p->tls.offset = tls_offset;
 #endif
 		p->new_dtv = (void *)(-sizeof(size_t) &
 			(uintptr_t)(p->name+strlen(p->name)+sizeof(size_t)));
 		p->new_tls = (void *)(p->new_dtv + n_th*(tls_cnt+1));
+		if (tls_tail) tls_tail->next = &p->tls;
+		else libc.tls_head = &p->tls;
+		tls_tail = &p->tls;
 	}
 
 	tail->next = p;
@@ -1238,53 +1243,8 @@ static void dl_debug_state(void)
 
 weak_alias(dl_debug_state, _dl_debug_state);
 
-void __reset_tls()
+void __init_tls(size_t *auxv)
 {
-	pthread_t self = __pthread_self();
-	struct dso *p;
-	for (p=head; p; p=p->next) {
-		if (!p->tls_id || !self->dtv[p->tls_id]) continue;
-		memcpy(self->dtv[p->tls_id], p->tls_image, p->tls_len);
-		memset((char *)self->dtv[p->tls_id]+p->tls_len, 0,
-			p->tls_size - p->tls_len);
-		if (p->tls_id == (size_t)self->dtv[0]) break;
-	}
-}
-
-void *__copy_tls(unsigned char *mem)
-{
-	pthread_t td;
-	struct dso *p;
-	void **dtv;
-
-#ifdef TLS_ABOVE_TP
-	dtv = (void **)(mem + libc.tls_size) - (tls_cnt + 1);
-
-	mem += -((uintptr_t)mem + sizeof(struct pthread)) & (tls_align-1);
-	td = (pthread_t)mem;
-	mem += sizeof(struct pthread);
-
-	for (p=head; p; p=p->next) {
-		if (!p->tls_id) continue;
-		dtv[p->tls_id] = mem + p->tls_offset;
-		memcpy(dtv[p->tls_id], p->tls_image, p->tls_len);
-	}
-#else
-	dtv = (void **)mem;
-
-	mem += libc.tls_size - sizeof(struct pthread);
-	mem -= (uintptr_t)mem & (tls_align-1);
-	td = (pthread_t)mem;
-
-	for (p=head; p; p=p->next) {
-		if (!p->tls_id) continue;
-		dtv[p->tls_id] = mem - p->tls_offset;
-		memcpy(dtv[p->tls_id], p->tls_image, p->tls_len);
-	}
-#endif
-	dtv[0] = (void *)tls_cnt;
-	td->dtv = td->dtv_copy = dtv;
-	return td;
 }
 
 __attribute__((__visibility__("hidden")))
@@ -1321,12 +1281,12 @@ void *__tls_get_new(size_t *v)
 	unsigned char *mem;
 	for (p=head; ; p=p->next) {
 		if (!p->tls_id || self->dtv[p->tls_id]) continue;
-		mem = p->new_tls + (p->tls_size + p->tls_align)
+		mem = p->new_tls + (p->tls.size + p->tls.align)
 			* a_fetch_add(&p->new_tls_idx,1);
-		mem += ((uintptr_t)p->tls_image - (uintptr_t)mem)
-			& (p->tls_align-1);
+		mem += ((uintptr_t)p->tls.image - (uintptr_t)mem)
+			& (p->tls.align-1);
 		self->dtv[p->tls_id] = mem;
-		memcpy(mem, p->tls_image, p->tls_len);
+		memcpy(mem, p->tls.image, p->tls.len);
 		if (p->tls_id == v[0]) break;
 	}
 	__restore_sigs(&set);
@@ -1335,6 +1295,8 @@ void *__tls_get_new(size_t *v)
 
 static void update_tls_size()
 {
+	libc.tls_cnt = tls_cnt;
+	libc.tls_align = tls_align;
 	libc.tls_size = ALIGN(
 		(1+tls_cnt) * sizeof(void *) +
 		tls_offset +
@@ -1445,6 +1407,7 @@ _Noreturn void __dls3(size_t *sp)
 	 * use during dynamic linking. If possible it will also serve as the
 	 * thread pointer at runtime. */
 	libc.tls_size = sizeof builtin_tls;
+	libc.tls_align = tls_align;
 	if (__init_tp(__copy_tls((void *)builtin_tls)) < 0) {
 		a_crash();
 	}
@@ -1472,13 +1435,13 @@ _Noreturn void __dls3(size_t *sp)
 				interp_off = (size_t)phdr->p_vaddr;
 			else if (phdr->p_type == PT_TLS) {
 				tls_image = phdr->p_vaddr;
-				app.tls_len = phdr->p_filesz;
-				app.tls_size = phdr->p_memsz;
-				app.tls_align = phdr->p_align;
+				app.tls.len = phdr->p_filesz;
+				app.tls.size = phdr->p_memsz;
+				app.tls.align = phdr->p_align;
 			}
 		}
 		if (DL_FDPIC) app.loadmap = app_loadmap;
-		if (app.tls_size) app.tls_image = laddr(&app, tls_image);
+		if (app.tls.size) app.tls.image = laddr(&app, tls_image);
 		if (interp_off) ldso.name = laddr(&app, interp_off);
 		if ((aux[0] & (1UL<<AT_EXECFN))
 		    && strncmp((char *)aux[AT_EXECFN], "/proc/", 6))
@@ -1547,19 +1510,20 @@ _Noreturn void __dls3(size_t *sp)
 			dprintf(1, "\t%s (%p)\n", ldso.name, ldso.base);
 		}
 	}
-	if (app.tls_size) {
+	if (app.tls.size) {
+		libc.tls_head = &app.tls;
 		app.tls_id = tls_cnt = 1;
 #ifdef TLS_ABOVE_TP
-		app.tls_offset = 0;
-		tls_offset = app.tls_size
-			+ ( -((uintptr_t)app.tls_image + app.tls_size)
-			& (app.tls_align-1) );
+		app.tls.offset = 0;
+		tls_offset = app.tls.size
+			+ ( -((uintptr_t)app.tls.image + app.tls.size)
+			& (app.tls.align-1) );
 #else
-		tls_offset = app.tls_offset = app.tls_size
-			+ ( -((uintptr_t)app.tls_image + app.tls_size)
-			& (app.tls_align-1) );
+		tls_offset = app.tls.offset = app.tls.size
+			+ ( -((uintptr_t)app.tls.image + app.tls.size)
+			& (app.tls.align-1) );
 #endif
-		tls_align = MAXP2(tls_align, app.tls_align);
+		tls_align = MAXP2(tls_align, app.tls.align);
 	}
 	app.global = 1;
 	decode_dyn(&app);
@@ -1668,6 +1632,7 @@ _Noreturn void __dls3(size_t *sp)
 void *dlopen(const char *file, int mode)
 {
 	struct dso *volatile p, *orig_tail, *next;
+	struct tls_module *orig_tls_tail;
 	size_t orig_tls_cnt, orig_tls_offset, orig_tls_align;
 	size_t i;
 	int cs;
@@ -1680,6 +1645,7 @@ void *dlopen(const char *file, int mode)
 	__inhibit_ptc();
 
 	p = 0;
+	orig_tls_tail = tls_tail;
 	orig_tls_cnt = tls_cnt;
 	orig_tls_offset = tls_offset;
 	orig_tls_align = tls_align;
@@ -1706,6 +1672,8 @@ void *dlopen(const char *file, int mode)
 			unmap_library(p);
 			free(p);
 		}
+		if (!orig_tls_tail) libc.tls_head = 0;
+		tls_tail = orig_tls_tail;
 		tls_cnt = orig_tls_cnt;
 		tls_offset = orig_tls_offset;
 		tls_align = orig_tls_align;
@@ -1922,7 +1890,7 @@ int dl_iterate_phdr(int(*callback)(struct dl_phdr_info *info, size_t size, void 
 		info.dlpi_adds      = gencnt;
 		info.dlpi_subs      = 0;
 		info.dlpi_tls_modid = current->tls_id;
-		info.dlpi_tls_data  = current->tls_image;
+		info.dlpi_tls_data  = current->tls.image;
 
 		ret = (callback)(&info, sizeof (info), data);
 
