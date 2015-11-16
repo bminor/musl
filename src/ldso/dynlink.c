@@ -602,7 +602,7 @@ static void *map_library(int fd, struct dso *dso)
 				((ph->p_flags&PF_W) ? PROT_WRITE: 0) |
 				((ph->p_flags&PF_X) ? PROT_EXEC : 0));
 			map = mmap(0, ph->p_memsz + (ph->p_vaddr & PAGE_SIZE-1),
-				prot, (prot&PROT_WRITE) ? MAP_PRIVATE : MAP_SHARED,
+				prot, MAP_PRIVATE,
 				fd, ph->p_offset & -PAGE_SIZE);
 			if (map == MAP_FAILED) {
 				unmap_library(dso);
