@@ -354,6 +354,8 @@
 #define __NR_memfd_create            4354
 #define __NR_bpf                     4355
 #define __NR_execveat                4356
+#define __NR_userfaultfd             4357
+#define __NR_membarrier              4358
 
 
 /* Repeated with SYS_ prefix */
@@ -713,3 +715,5 @@
 #define SYS_memfd_create            4354
 #define SYS_bpf                     4355
 #define SYS_execveat                4356
+#define SYS_userfaultfd             4357
+#define SYS_membarrier              4358

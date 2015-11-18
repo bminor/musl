@@ -372,6 +372,8 @@
 #define __NR_recvfrom		371
 #define __NR_recvmsg		372
 #define __NR_shutdown		373
+#define __NR_userfaultfd	374
+#define __NR_membarrier		375
 
 
 /* Repeated with SYS_ prefix */
@@ -750,3 +752,5 @@
 #define SYS_recvfrom		371
 #define SYS_recvmsg		372
 #define SYS_shutdown		373
+#define SYS_userfaultfd		374
+#define SYS_membarrier		375
