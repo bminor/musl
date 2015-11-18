@@ -357,6 +357,21 @@
 #define __NR_memfd_create	356
 #define __NR_bpf		357
 #define __NR_execveat		358
+#define __NR_socket		359
+#define __NR_socketpair		360
+#define __NR_bind		361
+#define __NR_connect		362
+#define __NR_listen		363
+#define __NR_accept4		364
+#define __NR_getsockopt		365
+#define __NR_setsockopt		366
+#define __NR_getsockname	367
+#define __NR_getpeername	368
+#define __NR_sendto		369
+#define __NR_sendmsg		370
+#define __NR_recvfrom		371
+#define __NR_recvmsg		372
+#define __NR_shutdown		373
 
 
 /* Repeated with SYS_ prefix */
@@ -720,3 +735,18 @@
 #define SYS_memfd_create	356
 #define SYS_bpf			357
 #define SYS_execveat		358
+#define SYS_socket		359
+#define SYS_socketpair		360
+#define SYS_bind		361
+#define SYS_connect		362
+#define SYS_listen		363
+#define SYS_accept4		364
+#define SYS_getsockopt		365
+#define SYS_setsockopt		366
+#define SYS_getsockname		367
+#define SYS_getpeername		368
+#define SYS_sendto		369
+#define SYS_sendmsg		370
+#define SYS_recvfrom		371
+#define SYS_recvmsg		372
+#define SYS_shutdown		373
