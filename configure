@@ -9,6 +9,9 @@ VAR=VALUE.  See below for descriptions of some of the useful variables.
 
 Defaults for the options are specified in brackets.
 
+Configuration:
+  --srcdir=DIR            source directory [detected]
+
 Installation directories:
   --prefix=PREFIX         main installation prefix [/usr/local/musl]
   --exec-prefix=EPREFIX   installation prefix for executable files [PREFIX]
@@ -117,6 +120,7 @@ CFLAGS_TRY=
 LDFLAGS_AUTO=
 LDFLAGS_TRY=
 OPTIMIZE_GLOBS=
+srcdir=
 prefix=/usr/local/musl
 exec_prefix='$(prefix)'
 bindir='$(exec_prefix)/bin'
@@ -139,6 +143,7 @@ clang_wrapper=no
 for arg ; do
 case "$arg" in
 --help) usage ;;
+--srcdir=*) srcdir=${arg#*=} ;;
 --prefix=*) prefix=${arg#*=} ;;
 --exec-prefix=*) exec_prefix=${arg#*=} ;;
 --bindir=*) bindir=${arg#*=} ;;
@@ -179,9 +184,21 @@ LIBCC=*) LIBCC=${arg#*=} ;;
 esac
 done
 
-for i in prefix exec_prefix bindir libdir includedir syslibdir ; do
+for i in srcdir prefix exec_prefix bindir libdir includedir syslibdir ; do
 stripdir $i
 done
+
+#
+# Get the source dir for out-of-tree builds
+#
+if test -z "$srcdir" ; then
+srcdir="${0%/configure}"
+stripdir srcdir
+fi
+abs_builddir="$(pwd)" || fail "$0: cannot determine working directory"
+abs_srcdir="$(cd $srcdir && pwd)" || fail "$0: invalid source directory $srcdir"
+test "$abs_srcdir" = "$abs_builddir" && srcdir=.
+test "$srcdir" != "." -a -f Makefile -a ! -h Makefile && fail "$0: Makefile already exists in the working directory"
 
 #
 # Get a temp filename we can use
@@ -263,11 +280,11 @@ fi
 fi
 
 if test "$gcc_wrapper" = yes ; then
-tools="$tools tools/musl-gcc"
+tools="$tools obj/musl-gcc"
 tool_libs="$tool_libs lib/musl-gcc.specs"
 fi
 if test "$clang_wrapper" = yes ; then
-tools="$tools tools/musl-clang tools/ld.musl-clang"
+tools="$tools obj/musl-clang obj/ld.musl-clang"
 fi
 
 #
@@ -321,7 +338,7 @@ __attribute__((__may_alias__))
 #endif
 x;
 EOF
-if $CC $CFLAGS_C99FSE -I./arch/$ARCH -I./include $CPPFLAGS $CFLAGS \
+if $CC $CFLAGS_C99FSE -I$srcdir/arch/$ARCH -I$srcdir/include $CPPFLAGS $CFLAGS \
   -c -o /dev/null "$tmpc" >/dev/null 2>&1 ; then
 printf "no\n"
 else
@@ -625,7 +642,7 @@ echo '#include <float.h>' > "$tmpc"
 echo '#if LDBL_MANT_DIG == 53' >> "$tmpc"
 echo 'typedef char ldcheck[9-(int)sizeof(long double)];' >> "$tmpc"
 echo '#endif' >> "$tmpc"
-if $CC $CFLAGS_C99FSE -I./arch/$ARCH -I./include $CPPFLAGS $CFLAGS \
+if $CC $CFLAGS_C99FSE -I$srcdir/arch/$ARCH -I$srcdir/include $CPPFLAGS $CFLAGS \
   -c -o /dev/null "$tmpc" >/dev/null 2>&1 ; then
 printf "yes\n"
 else
@@ -648,6 +665,7 @@ cat << EOF
 ARCH = $ARCH
 SUBARCH = $SUBARCH
 ASMSUBARCH = $ASMSUBARCH
+srcdir = $srcdir
 prefix = $prefix
 exec_prefix = $exec_prefix
 bindir = $bindir
@@ -675,5 +693,7 @@ test "x$shared" = xno && echo "SHARED_LIBS ="
 test "x$cc_family" = xgcc && echo 'WRAPCC_GCC = $(CC)'
 test "x$cc_family" = xclang && echo 'WRAPCC_CLANG = $(CC)'
 exec 1>&3 3>&-
+
+test "$srcdir" = "." || ln -sf $srcdir/Makefile .
 
 printf "done\n"

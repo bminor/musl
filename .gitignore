@@ -5,9 +5,6 @@
 *.so.1
 arch/*/bits/alltypes.h
 config.mak
-include/bits
-tools/musl-gcc
-tools/musl-clang
-tools/ld.musl-clang
 lib/musl-gcc.specs
 src/internal/version.h
+/obj/
