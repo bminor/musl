@@ -90,7 +90,7 @@ include/bits/alltypes.h: include/bits/alltypes.h.in include/alltypes.h.in tools/
 src/internal/version.h: $(wildcard VERSION .git)
 	printf '#define VERSION "%s"\n' "$$(sh tools/version.sh)" > $@
 
-src/internal/version.lo: src/internal/version.h
+src/internal/version.o src/internal/version.lo: src/internal/version.h
 
 crt/rcrt1.o src/ldso/dlstart.lo src/ldso/dynlink.lo: src/internal/dynlink.h arch/$(ARCH)/reloc.h
 
