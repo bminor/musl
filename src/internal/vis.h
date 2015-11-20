@@ -8,8 +8,7 @@
 
 /* Conceptually, all symbols should be protected, but some toolchains
  * fail to support copy relocations for protected data, so exclude all
- * exported data symbols. Also omit visibility for possibly-undefined
- * weak references. */
+ * exported data symbols. */
 
 __attribute__((__visibility__("default")))
 extern struct _IO_FILE *const stdin, *const stdout, *const stderr;
@@ -22,10 +21,6 @@ extern long timezone, __timezone;
 
 __attribute__((__visibility__("default")))
 extern char *optarg, **environ, **__environ, *tzname[2], *__tzname[2], *__progname, *__progname_full;
-
-__attribute__((__visibility__("default")))
-extern void (*const __init_array_start)(), (*const __init_array_end)(),
-	(*const __fini_array_start)(), (*const __fini_array_end)();
 
 #pragma GCC visibility push(protected)
 
