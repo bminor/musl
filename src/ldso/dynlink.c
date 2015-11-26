@@ -1280,7 +1280,7 @@ void *__tls_get_new(size_t *v)
 	/* Get new DTV space from new DSO if needed */
 	if (v[0] > (size_t)self->dtv[0]) {
 		void **newdtv = p->new_dtv +
-			(v[0]+1)*sizeof(void *)*a_fetch_add(&p->new_dtv_idx,1);
+			(v[0]+1)*a_fetch_add(&p->new_dtv_idx,1);
 		memcpy(newdtv, self->dtv,
 			((size_t)self->dtv[0]+1) * sizeof(void *));
 		newdtv[0] = (void *)v[0];
