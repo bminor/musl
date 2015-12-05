@@ -89,8 +89,8 @@ static struct node *insert(struct node **n, const void *k,
 			r->key = k;
 			r->left = r->right = 0;
 			r->height = 1;
+			*new = 1;
 		}
-		*new = 1;
 		return r;
 	}
 	c = cmp(k, r->key);
