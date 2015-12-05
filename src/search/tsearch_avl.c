@@ -151,6 +151,8 @@ static struct node *remove(struct node **n, const void *k,
 void *tdelete(const void *restrict key, void **restrict rootp,
 	int(*compar)(const void *, const void *))
 {
+	if (!rootp)
+		return 0;
 	struct node *n = *rootp;
 	struct node *ret;
 	/* last argument is arbitrary non-null pointer
@@ -163,6 +165,8 @@ void *tdelete(const void *restrict key, void **restrict rootp,
 void *tfind(const void *key, void *const *rootp,
 	int(*compar)(const void *, const void *))
 {
+	if (!rootp)
+		return 0;
 	return find(*rootp, key, compar);
 }
 
@@ -171,6 +175,8 @@ void *tsearch(const void *key, void **rootp,
 {
 	struct node *update;
 	struct node *ret;
+	if (!rootp)
+		return 0;
 	update = insert(*rootp, key, compar, &ret);
 	if (update)
 		*rootp = update;
