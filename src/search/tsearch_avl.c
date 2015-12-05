@@ -77,31 +77,35 @@ static struct node *find(struct node *n, const void *k,
 		return find(n->right, k, cmp);
 }
 
-static struct node *insert(struct node **n, const void *k,
-	int (*cmp)(const void *, const void *), int *new)
+static struct node *insert(struct node *n, const void *k,
+	int (*cmp)(const void *, const void *), struct node **found)
 {
-	struct node *r = *n;
+	struct node *r;
 	int c;
 
-	if (!r) {
-		*n = r = malloc(sizeof **n);
-		if (r) {
-			r->key = k;
-			r->left = r->right = 0;
-			r->height = 1;
-			*new = 1;
+	if (!n) {
+		n = malloc(sizeof *n);
+		if (n) {
+			n->key = k;
+			n->left = n->right = 0;
+			n->height = 1;
 		}
-		return r;
+		*found = n;
+		return n;
 	}
-	c = cmp(k, r->key);
-	if (c == 0)
-		return r;
-	if (c < 0)
-		r = insert(&r->left, k, cmp, new);
-	else
-		r = insert(&r->right, k, cmp, new);
-	if (*new)
-		*n = balance(*n);
+	c = cmp(k, n->key);
+	if (c == 0) {
+		*found = n;
+		return 0;
+	}
+	r = insert(c < 0 ? n->left : n->right, k, cmp, found);
+	if (r) {
+		if (c < 0)
+			n->left = r;
+		else
+			n->right = r;
+		r = balance(n);
+	}
 	return r;
 }
 
@@ -165,11 +169,11 @@ void *tfind(const void *key, void *const *rootp,
 void *tsearch(const void *key, void **rootp,
 	int (*compar)(const void *, const void *))
 {
-	int new = 0;
-	struct node *n = *rootp;
+	struct node *update;
 	struct node *ret;
-	ret = insert(&n, key, compar, &new);
-	*rootp = n;
+	update = insert(*rootp, key, compar, &ret);
+	if (update)
+		*rootp = update;
 	return ret;
 }
 
