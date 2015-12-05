@@ -105,10 +105,13 @@ static struct node *insert(struct node **n, const void *k,
 	return r;
 }
 
-static struct node *movr(struct node *n, struct node *r) {
-	if (!n)
-		return r;
-	n->right = movr(n->right, r);
+static struct node *remove_rightmost(struct node *n, struct node **rightmost)
+{
+	if (!n->right) {
+		*rightmost = n;
+		return n->left;
+	}
+	n->right = remove_rightmost(n->right, rightmost);
 	return balance(n);
 }
 
@@ -122,7 +125,13 @@ static struct node *remove(struct node **n, const void *k,
 	c = cmp(k, (*n)->key);
 	if (c == 0) {
 		struct node *r = *n;
-		*n = movr(r->left, r->right);
+		if (r->left) {
+			r->left = remove_rightmost(r->left, n);
+			(*n)->left = r->left;
+			(*n)->right = r->right;
+			*n = balance(*n);
+		} else
+			*n = r->right;
 		free(r);
 		return parent;
 	}
