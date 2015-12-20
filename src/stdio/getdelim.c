@@ -30,7 +30,7 @@ ssize_t getdelim(char **restrict s, size_t *restrict n, int delim, FILE *restric
 		if (i+k+1 >= *n) {
 			if (k >= SIZE_MAX/2-i) goto oom;
 			size_t m = i+k+2;
-			if (m < SIZE_MAX/4) m *= 2;
+			if (!z && m < SIZE_MAX/4) m += m/2;
 			tmp = realloc(*s, m);
 			if (!tmp) {
 				m = i+k+2;
