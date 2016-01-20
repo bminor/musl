@@ -82,13 +82,7 @@ $(OBJ_DIRS):
 install: install-libs install-headers install-tools
 
 clean:
-	rm -f obj/crt/*.o obj/crt/$(ARCH)/*.o
-	rm -f $(OBJS)
-	rm -f $(LOBJS)
-	rm -f $(ALL_LIBS) lib/*.[ao] lib/*.so
-	rm -f $(ALL_TOOLS)
-	rm -f $(GENH) $(GENH_INT)
-	rm -f obj/include/bits/alltypes.h
+	rm -rf obj lib
 
 distclean: clean
 	rm -f config.mak
