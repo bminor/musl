@@ -131,7 +131,6 @@ $(CRT_LIBS:lib/%=obj/crt/%): CFLAGS_ALL += -DCRT
 $(LOBJS): CFLAGS_ALL += -fPIC -DSHARED
 
 # Choose invocation of assembler to be used
-# $(1) is input file, $(2) is output file, $(3) is assembler flags
 ifeq ($(ADD_CFI),yes)
 	AS_CMD = LC_ALL=C awk -f $(srcdir)/tools/add-cfi.common.awk -f $(srcdir)/tools/add-cfi.$(ARCH).awk $< | $(CC) $(CFLAGS_ALL) -x assembler -c -o $@ -
 else
