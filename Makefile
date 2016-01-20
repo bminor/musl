@@ -39,8 +39,6 @@ CFLAGS_C99FSE = -std=c99 -ffreestanding -nostdinc
 CFLAGS_ALL = $(CFLAGS_C99FSE)
 CFLAGS_ALL += -D_XOPEN_SOURCE=700 -I$(srcdir)/arch/$(ARCH) -Iobj/src/internal -I$(srcdir)/src/internal -Iobj/include -I$(srcdir)/include
 CFLAGS_ALL += $(CPPFLAGS) $(CFLAGS_AUTO) $(CFLAGS)
-CFLAGS_ALL_STATIC = $(CFLAGS_ALL)
-CFLAGS_ALL_SHARED = $(CFLAGS_ALL) -fPIC -DSHARED
 
 LDFLAGS_ALL = $(LDFLAGS_AUTO) $(LDFLAGS)
 
@@ -138,40 +136,42 @@ $(patsubst $(srcdir)/%,obj/%,$(dir $(patsubst %/,%,$(dir $(1))))$(ARCH)$(ASMSUBA
 endef
 $(foreach s,$(wildcard $(srcdir)/src/*/$(ARCH)*/*.s),$(eval $(call mkasmdep,$(s))))
 
+$(LOBJS): CFLAGS_ALL += -fPIC -DSHARED
+
 # Choose invocation of assembler to be used
 # $(1) is input file, $(2) is output file, $(3) is assembler flags
 ifeq ($(ADD_CFI),yes)
-	AS_CMD = LC_ALL=C awk -f $(srcdir)/tools/add-cfi.common.awk -f $(srcdir)/tools/add-cfi.$(ARCH).awk $< | $(CC) -x assembler -c -o $@ -
+	AS_CMD = LC_ALL=C awk -f $(srcdir)/tools/add-cfi.common.awk -f $(srcdir)/tools/add-cfi.$(ARCH).awk $< | $(CC) $(CFLAGS_ALL) -x assembler -c -o $@ -
 else
-	AS_CMD = $(CC) -c -o $@ $<
+	AS_CMD = $(CC) $(CFLAGS_ALL) -c -o $@ $<
 endif
 
 obj/%.o: $(srcdir)/%.sub
-	$(CC) $(CFLAGS_ALL_STATIC) -c -o $@ $(dir $<)$$(cat $<)
+	$(CC) $(CFLAGS_ALL) -c -o $@ $(dir $<)$$(cat $<)
 
 obj/%.o: $(srcdir)/%.s
-	$(AS_CMD) $(CFLAGS_ALL_STATIC)
+	$(AS_CMD) $(CFLAGS_ALL)
 
 obj/%.o: $(srcdir)/%.S
-	$(CC) $(CFLAGS_ALL_STATIC) -c -o $@ $<
+	$(CC) $(CFLAGS_ALL) -c -o $@ $<
 
 obj/%.o: $(srcdir)/%.c $(GENH) $(IMPH)
-	$(CC) $(CFLAGS_ALL_STATIC) -c -o $@ $<
+	$(CC) $(CFLAGS_ALL) -c -o $@ $<
 
 obj/%.lo: $(srcdir)/%.sub
-	$(CC) $(CFLAGS_ALL_SHARED) -c -o $@ $(dir $<)$$(cat $<)
+	$(CC) $(CFLAGS_ALL) -c -o $@ $(dir $<)$$(cat $<)
 
 obj/%.lo: $(srcdir)/%.s
-	$(AS_CMD) $(CFLAGS_ALL_SHARED)
+	$(AS_CMD) $(CFLAGS_ALL)
 
 obj/%.lo: $(srcdir)/%.S
-	$(CC) $(CFLAGS_ALL_SHARED) -c -o $@ $<
+	$(CC) $(CFLAGS_ALL) -c -o $@ $<
 
 obj/%.lo: $(srcdir)/%.c $(GENH) $(IMPH)
-	$(CC) $(CFLAGS_ALL_SHARED) -c -o $@ $<
+	$(CC) $(CFLAGS_ALL) -c -o $@ $<
 
 lib/libc.so: $(LOBJS)
-	$(CC) $(CFLAGS_ALL_SHARED) $(LDFLAGS_ALL) -nostdlib -shared \
+	$(CC) $(CFLAGS_ALL) $(LDFLAGS_ALL) -nostdlib -shared \
 	-Wl,-e,_dlstart -Wl,-Bsymbolic-functions \
 	-o $@ $(LOBJS) $(LIBCC)
 
