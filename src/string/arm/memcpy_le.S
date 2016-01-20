@@ -1,3 +1,5 @@
+#ifndef __ARMEB__
+
 /*
  * Copyright (C) 2008 The Android Open Source Project
  * All rights reserved.
@@ -377,3 +379,5 @@ copy_last_3_and_return:
 	add     sp,  sp, #28
 	ldmfd   sp!, {r0, r4, lr}
 	bx      lr
+
+#endif
