@@ -4,7 +4,7 @@
  * override default visibilities to reduce the size and performance costs
  * of position-independent code. */
 
-#ifndef CRT
+#if !defined(CRT) && !defined(__ASSEMBLER__)
 
 /* Conceptually, all symbols should be protected, but some toolchains
  * fail to support copy relocations for protected data, so exclude all
