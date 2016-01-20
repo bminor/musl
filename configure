@@ -517,7 +517,7 @@ int foo(void) { }
 int bar(void) { fp = foo; return foo(); }
 EOF
 if $CC $CFLAGS_C99FSE $CPPFLAGS $CFLAGS \
-  -DSHARED -fPIC -I./src/internal -include vis.h \
+  -DSHARED -fPIC -I$srcdir/src/internal -include vis.h \
   -nostdlib -shared -Wl,-Bsymbolic-functions \
   -o /dev/null "$tmpc" >/dev/null 2>&1 ; then
 visibility=yes
