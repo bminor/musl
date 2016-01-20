@@ -1,3 +1,5 @@
+#if __SH_FPU_ANY__ || __SH4__
+
 .global fegetround
 .type   fegetround, @function
 fegetround:
@@ -72,3 +74,5 @@ fesetenv:
 2:	lds r0, fpscr
 	rts
 	 mov #0, r0
+
+#endif

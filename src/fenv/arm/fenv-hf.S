@@ -1,3 +1,5 @@
+#if __ARM_PCS_VFP
+
 .syntax unified
 .fpu vfp
 
@@ -63,3 +65,5 @@ fesetenv:
 	fmxr fpscr, r3
 	mov r0, #0
 	bx lr
+
+#endif

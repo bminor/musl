@@ -1,3 +1,5 @@
+#ifndef __mips_soft_float
+
 .set noreorder
 
 .global feclearexcept
@@ -65,3 +67,5 @@ fesetenv:
 1:	ctc1    $5, $31
 	jr      $ra
 	li      $2, 0
+
+#endif
