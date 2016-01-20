@@ -19,9 +19,9 @@ syslibdir = /lib
 
 BASE_SRCS = $(sort $(wildcard $(srcdir)/src/*/*.c $(srcdir)/arch/$(ARCH)/src/*.[csS]))
 BASE_OBJS = $(patsubst $(srcdir)/%,%.o,$(basename $(BASE_SRCS)))
-ARCH_SRCS = $(wildcard $(srcdir)/src/*/$(ARCH)/*.[csS] $(srcdir)/src/*/$(ARCH)$(ASMSUBARCH)/*.sub)
+ARCH_SRCS = $(wildcard $(srcdir)/src/*/$(ARCH)/*.[csS])
 ARCH_OBJS = $(patsubst $(srcdir)/%,%.o,$(basename $(ARCH_SRCS)))
-REPLACED_OBJS = $(sort $(subst /$(ARCH)$(ASMSUBARCH)/,/,$(subst /$(ARCH)/,/,$(ARCH_OBJS))) $(subst /$(ARCH)$(ASMSUBARCH)/,/$(ARCH)/,$(subst /$(ARCH)/,/,$(ARCH_OBJS))))
+REPLACED_OBJS = $(sort $(subst /$(ARCH)/,/,$(ARCH_OBJS)))
 OBJS = $(addprefix obj/, $(filter-out $(REPLACED_OBJS), $(sort $(BASE_OBJS) $(ARCH_OBJS))))
 LOBJS = $(OBJS:.o=.lo)
 GENH = obj/include/bits/alltypes.h
@@ -128,14 +128,6 @@ $(NOSSP_SRCS:%.c=obj/%.o) $(NOSSP_SRCS:%.c=obj/%.lo): CFLAGS_ALL += $(CFLAGS_NOS
 
 $(CRT_LIBS:lib/%=obj/crt/%): CFLAGS_ALL += -DCRT
 
-# This incantation ensures that changes to any subarch asm files will
-# force the corresponding object file to be rebuilt, even if the implicit
-# rule below goes indirectly through a .sub file.
-define mkasmdep
-$(patsubst $(srcdir)/%,obj/%,$(dir $(patsubst %/,%,$(dir $(1))))$(ARCH)$(ASMSUBARCH)/$(notdir $(1:.s=.o))): $(1)
-endef
-$(foreach s,$(wildcard $(srcdir)/src/*/$(ARCH)*/*.s),$(eval $(call mkasmdep,$(s))))
-
 $(LOBJS): CFLAGS_ALL += -fPIC -DSHARED
 
 # Choose invocation of assembler to be used
@@ -146,9 +138,6 @@ else
 	AS_CMD = $(CC) $(CFLAGS_ALL) -c -o $@ $<
 endif
 
-obj/%.o: $(srcdir)/%.sub
-	$(CC) $(CFLAGS_ALL) -c -o $@ $(dir $<)$$(cat $<)
-
 obj/%.o: $(srcdir)/%.s
 	$(AS_CMD) $(CFLAGS_ALL)
 
@@ -157,9 +146,6 @@ obj/%.o: $(srcdir)/%.S
 
 obj/%.o: $(srcdir)/%.c $(GENH) $(IMPH)
 	$(CC) $(CFLAGS_ALL) -c -o $@ $<
-
-obj/%.lo: $(srcdir)/%.sub
-	$(CC) $(CFLAGS_ALL) -c -o $@ $(dir $<)$$(cat $<)
 
 obj/%.lo: $(srcdir)/%.s
 	$(AS_CMD) $(CFLAGS_ALL)
