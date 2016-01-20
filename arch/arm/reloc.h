@@ -6,10 +6,10 @@
 #define ENDIAN_SUFFIX ""
 #endif
 
-#if __SOFTFP__
-#define FP_SUFFIX ""
-#else
+#if __ARM_PCS_VFP
 #define FP_SUFFIX "hf"
+#else
+#define FP_SUFFIX ""
 #endif
 
 #define LDSO_ARCH "arm" ENDIAN_SUFFIX FP_SUFFIX
