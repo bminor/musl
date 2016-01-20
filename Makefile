@@ -130,30 +130,32 @@ $(CRT_LIBS:lib/%=obj/crt/%): CFLAGS_ALL += -DCRT
 
 $(LOBJS): CFLAGS_ALL += -fPIC -DSHARED
 
+CC_CMD = $(CC) $(CFLAGS_ALL) -c -o $@ $<
+
 # Choose invocation of assembler to be used
 ifeq ($(ADD_CFI),yes)
 	AS_CMD = LC_ALL=C awk -f $(srcdir)/tools/add-cfi.common.awk -f $(srcdir)/tools/add-cfi.$(ARCH).awk $< | $(CC) $(CFLAGS_ALL) -x assembler -c -o $@ -
 else
-	AS_CMD = $(CC) $(CFLAGS_ALL) -c -o $@ $<
+	AS_CMD = $(CC_CMD)
 endif
 
 obj/%.o: $(srcdir)/%.s
-	$(AS_CMD) $(CFLAGS_ALL)
+	$(AS_CMD)
 
 obj/%.o: $(srcdir)/%.S
-	$(CC) $(CFLAGS_ALL) -c -o $@ $<
+	$(CC_CMD)
 
 obj/%.o: $(srcdir)/%.c $(GENH) $(IMPH)
-	$(CC) $(CFLAGS_ALL) -c -o $@ $<
+	$(CC_CMD)
 
 obj/%.lo: $(srcdir)/%.s
-	$(AS_CMD) $(CFLAGS_ALL)
+	$(AS_CMD)
 
 obj/%.lo: $(srcdir)/%.S
-	$(CC) $(CFLAGS_ALL) -c -o $@ $<
+	$(CC_CMD)
 
 obj/%.lo: $(srcdir)/%.c $(GENH) $(IMPH)
-	$(CC) $(CFLAGS_ALL) -c -o $@ $<
+	$(CC_CMD)
 
 lib/libc.so: $(LOBJS)
 	$(CC) $(CFLAGS_ALL) $(LDFLAGS_ALL) -nostdlib -shared \
