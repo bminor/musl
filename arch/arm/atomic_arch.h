@@ -1,34 +1,12 @@
-#ifndef _INTERNAL_ATOMIC_H
-#define _INTERNAL_ATOMIC_H
-
-#include <stdint.h>
-
-static inline int a_ctz_l(unsigned long x)
-{
-	static const char debruijn32[32] = {
-		0, 1, 23, 2, 29, 24, 19, 3, 30, 27, 25, 11, 20, 8, 4, 13,
-		31, 22, 28, 18, 26, 10, 7, 12, 21, 17, 9, 6, 16, 5, 15, 14
-	};
-	return debruijn32[(x&-x)*0x076be629 >> 27];
-}
-
-static inline int a_ctz_64(uint64_t x)
-{
-	uint32_t y = x;
-	if (!y) {
-		y = x>>32;
-		return 32 + a_ctz_l(y);
-	}
-	return a_ctz_l(y);
-}
-
 #if __ARM_ARCH_7A__ || __ARM_ARCH_7R__ ||  __ARM_ARCH >= 7
 
+#define a_barrier a_barrier
 static inline void a_barrier()
 {
 	__asm__ __volatile__("dmb ish");
 }
 
+#define a_cas a_cas
 static inline int a_cas(volatile int *p, int t, int s)
 {
 	int old;
@@ -48,6 +26,7 @@ static inline int a_cas(volatile int *p, int t, int s)
 	return old;
 }
 
+#define a_swap a_swap
 static inline int a_swap(volatile int *x, int v)
 {
 	int old, tmp;
@@ -64,6 +43,7 @@ static inline int a_swap(volatile int *x, int v)
 	return old;
 }
 
+#define a_fetch_add a_fetch_add
 static inline int a_fetch_add(volatile int *x, int v)
 {
 	int old, tmp;
@@ -81,6 +61,7 @@ static inline int a_fetch_add(volatile int *x, int v)
 	return old-v;
 }
 
+#define a_inc a_inc
 static inline void a_inc(volatile int *x)
 {
 	int tmp, tmp2;
@@ -97,6 +78,7 @@ static inline void a_inc(volatile int *x)
 		: "memory", "cc" );
 }
 
+#define a_dec a_dec
 static inline void a_dec(volatile int *x)
 {
 	int tmp, tmp2;
@@ -113,6 +95,7 @@ static inline void a_dec(volatile int *x)
 		: "memory", "cc" );
 }
 
+#define a_and a_and
 static inline void a_and(volatile int *x, int v)
 {
 	int tmp, tmp2;
@@ -129,6 +112,7 @@ static inline void a_and(volatile int *x, int v)
 		: "memory", "cc" );
 }
 
+#define a_or a_or
 static inline void a_or(volatile int *x, int v)
 {
 	int tmp, tmp2;
@@ -145,6 +129,7 @@ static inline void a_or(volatile int *x, int v)
 		: "memory", "cc" );
 }
 
+#define a_store a_store
 static inline void a_store(volatile int *p, int x)
 {
 	__asm__ __volatile__(
@@ -161,12 +146,14 @@ static inline void a_store(volatile int *p, int x)
 int __a_cas(int, int, volatile int *) __attribute__((__visibility__("hidden")));
 #define __k_cas __a_cas
 
+#define a_barrier a_barrier
 static inline void a_barrier()
 {
 	__asm__ __volatile__("bl __a_barrier"
 		: : : "memory", "cc", "ip", "lr" );
 }
 
+#define a_cas a_cas
 static inline int a_cas(volatile int *p, int t, int s)
 {
 	int old;
@@ -176,86 +163,6 @@ static inline int a_cas(volatile int *p, int t, int s)
 		if ((old=*p) != t)
 			return old;
 	}
-}
-
-static inline int a_swap(volatile int *x, int v)
-{
-	int old;
-	do old = *x;
-	while (__k_cas(old, v, x));
-	return old;
-}
-
-static inline int a_fetch_add(volatile int *x, int v)
-{
-	int old;
-	do old = *x;
-	while (__k_cas(old, old+v, x));
-	return old;
-}
-
-static inline void a_inc(volatile int *x)
-{
-	a_fetch_add(x, 1);
-}
-
-static inline void a_dec(volatile int *x)
-{
-	a_fetch_add(x, -1);
-}
-
-static inline void a_store(volatile int *p, int x)
-{
-	a_barrier();
-	*p = x;
-	a_barrier();
-}
-
-static inline void a_and(volatile int *p, int v)
-{
-	int old;
-	do old = *p;
-	while (__k_cas(old, old&v, p));
-}
-
-static inline void a_or(volatile int *p, int v)
-{
-	int old;
-	do old = *p;
-	while (__k_cas(old, old|v, p));
-}
-
-#endif
-
-static inline void *a_cas_p(volatile void *p, void *t, void *s)
-{
-	return (void *)a_cas(p, (int)t, (int)s);
-}
-
-#define a_spin a_barrier
-
-static inline void a_crash()
-{
-	*(volatile char *)0=0;
-}
-
-static inline void a_or_l(volatile void *p, long v)
-{
-	a_or(p, v);
-}
-
-static inline void a_and_64(volatile uint64_t *p, uint64_t v)
-{
-	union { uint64_t v; uint32_t r[2]; } u = { v };
-	a_and((int *)p, u.r[0]);
-	a_and((int *)p+1, u.r[1]);
-}
-
-static inline void a_or_64(volatile uint64_t *p, uint64_t v)
-{
-	union { uint64_t v; uint32_t r[2]; } u = { v };
-	a_or((int *)p, u.r[0]);
-	a_or((int *)p+1, u.r[1]);
 }
 
 #endif

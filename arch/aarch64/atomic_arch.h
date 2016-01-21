@@ -1,8 +1,4 @@
-#ifndef _INTERNAL_ATOMIC_H
-#define _INTERNAL_ATOMIC_H
-
-#include <stdint.h>
-
+#define a_ctz_64 a_ctz_64
 static inline int a_ctz_64(uint64_t x)
 {
 	__asm__(
@@ -12,16 +8,13 @@ static inline int a_ctz_64(uint64_t x)
 	return x;
 }
 
-static inline int a_ctz_l(unsigned long x)
-{
-	return a_ctz_64(x);
-}
-
+#define a_barrier a_barrier
 static inline void a_barrier()
 {
 	__asm__ __volatile__("dmb ish");
 }
 
+#define a_cas_p a_cas_p
 static inline void *a_cas_p(volatile void *p, void *t, void *s)
 {
 	void *old;
@@ -40,6 +33,7 @@ static inline void *a_cas_p(volatile void *p, void *t, void *s)
 	return old;
 }
 
+#define a_cas a_cas
 static inline int a_cas(volatile int *p, int t, int s)
 {
 	int old;
@@ -58,6 +52,7 @@ static inline int a_cas(volatile int *p, int t, int s)
 	return old;
 }
 
+#define a_swap a_swap
 static inline int a_swap(volatile int *x, int v)
 {
 	int old, tmp;
@@ -73,6 +68,7 @@ static inline int a_swap(volatile int *x, int v)
 	return old;
 }
 
+#define a_fetch_add a_fetch_add
 static inline int a_fetch_add(volatile int *x, int v)
 {
 	int old, tmp;
@@ -89,6 +85,7 @@ static inline int a_fetch_add(volatile int *x, int v)
 	return old-v;
 }
 
+#define a_inc a_inc
 static inline void a_inc(volatile int *x)
 {
 	int tmp, tmp2;
@@ -104,6 +101,7 @@ static inline void a_inc(volatile int *x)
 		: "memory", "cc" );
 }
 
+#define a_dec a_dec
 static inline void a_dec(volatile int *x)
 {
 	int tmp, tmp2;
@@ -119,6 +117,7 @@ static inline void a_dec(volatile int *x)
 		: "memory", "cc" );
 }
 
+#define a_and_64 a_and_64
 static inline void a_and_64(volatile uint64_t *p, uint64_t v)
 {
 	int tmp, tmp2;
@@ -134,6 +133,7 @@ static inline void a_and_64(volatile uint64_t *p, uint64_t v)
 		: "memory", "cc" );
 }
 
+#define a_and a_and
 static inline void a_and(volatile int *p, int v)
 {
 	int tmp, tmp2;
@@ -149,6 +149,7 @@ static inline void a_and(volatile int *p, int v)
 		: "memory", "cc" );
 }
 
+#define a_or_64 a_or_64
 static inline void a_or_64(volatile uint64_t *p, uint64_t v)
 {
 	int tmp, tmp2;
@@ -164,11 +165,13 @@ static inline void a_or_64(volatile uint64_t *p, uint64_t v)
 		: "memory", "cc" );
 }
 
+#define a_or_l a_or_l
 static inline void a_or_l(volatile void *p, long v)
 {
 	return a_or_64(p, v);
 }
 
+#define a_or a_or
 static inline void a_or(volatile int *p, int v)
 {
 	int tmp, tmp2;
@@ -184,6 +187,7 @@ static inline void a_or(volatile int *p, int v)
 		: "memory", "cc" );
 }
 
+#define a_store a_store
 static inline void a_store(volatile int *p, int x)
 {
 	__asm__ __volatile__(
@@ -196,11 +200,3 @@ static inline void a_store(volatile int *p, int x)
 }
 
 #define a_spin a_barrier
-
-static inline void a_crash()
-{
-	*(volatile char *)0=0;
-}
-
-
-#endif
