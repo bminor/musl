@@ -17,7 +17,7 @@ includedir = $(prefix)/include
 libdir = $(prefix)/lib
 syslibdir = /lib
 
-BASE_SRCS = $(sort $(wildcard $(srcdir)/src/*/*.c $(srcdir)/arch/$(ARCH)/src/*.[csS]))
+BASE_SRCS = $(sort $(wildcard $(srcdir)/src/*/*.c))
 BASE_OBJS = $(patsubst $(srcdir)/%,%.o,$(basename $(BASE_SRCS)))
 ARCH_SRCS = $(wildcard $(srcdir)/src/*/$(ARCH)/*.[csS])
 ARCH_OBJS = $(patsubst $(srcdir)/%,%.o,$(basename $(ARCH_SRCS)))
