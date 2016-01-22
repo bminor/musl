@@ -1,15 +1,39 @@
-#define a_cas a_cas
-static inline int a_cas(volatile int *p, int t, int s)
+#define a_ll a_ll
+static inline int a_ll(volatile int *p)
 {
-	__asm__("\n"
-		"	sync\n"
-		"1:	lwarx %0, 0, %4\n"
-		"	cmpw %0, %2\n"
-		"	bne 1f\n"
-		"	stwcx. %3, 0, %4\n"
-		"	bne- 1b\n"
-		"	isync\n"
-		"1:	\n"
-		: "=&r"(t), "+m"(*p) : "r"(t), "r"(s), "r"(p) : "cc", "memory" );
-        return t;
+	int v;
+	__asm__ __volatile__ ("lwarx %0, 0, %2" : "=r"(v) : "m"(*p), "r"(p));
+	return v;
+}
+
+#define a_sc a_sc
+static inline int a_sc(volatile int *p, int v)
+{
+	int r;
+	__asm__ __volatile__ (
+		"stwcx. %2, 0, %3 ; mfcr %0"
+		: "=r"(r), "=m"(*p) : "r"(v), "r"(p) : "memory", "cc");
+	return r & 0x20000000; /* "bit 2" of "cr0" (backwards bit order) */
+}
+
+#define a_barrier a_barrier
+static inline void a_barrier()
+{
+	__asm__ __volatile__ ("sync" : : : "memory");
+}
+
+#define a_pre_llsc a_barrier
+
+#define a_post_llsc a_post_llsc
+static inline void a_post_llsc()
+{
+	__asm__ __volatile__ ("isync" : : : "memory");
+}
+
+#define a_store a_store
+static inline void a_store(volatile int *p, int v)
+{
+	a_pre_llsc();
+	*p = v;
+	a_post_llsc();
 }
