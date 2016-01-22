@@ -1486,7 +1486,7 @@ _Noreturn void __dls3(size_t *sp)
 		}
 		argv[-1] = (void *)(argc - (argv-argv_orig));
 		if (!argv[0]) {
-			dprintf(2, "musl libc\n"
+			dprintf(2, "musl libc (" LDSO_ARCH ")\n"
 				"Version %s\n"
 				"Dynamic Program Loader\n"
 				"Usage: %s [options] [--] pathname%s\n",
