@@ -34,6 +34,11 @@ void updwtmpx(const char *f, const struct utmpx *u)
 {
 }
 
+int __utmpxname(const char *f)
+{
+	return -1;
+}
+
 weak_alias(endutxent, endutent);
 weak_alias(setutxent, setutent);
 weak_alias(getutxent, getutent);
@@ -41,3 +46,5 @@ weak_alias(getutxid, getutid);
 weak_alias(getutxline, getutline);
 weak_alias(pututxline, pututline);
 weak_alias(updwtmpx, updwtmp);
+weak_alias(__utmpxname, utmpname);
+weak_alias(__utmpxname, utmpxname);
