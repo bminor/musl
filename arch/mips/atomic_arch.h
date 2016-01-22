@@ -1,61 +1,39 @@
-#define a_cas a_cas
-static inline int a_cas(volatile int *p, int t, int s)
+#define a_ll a_ll
+static inline int a_ll(volatile int *p)
 {
-	int dummy;
-	__asm__ __volatile__(
-		".set push\n"
-		".set mips2\n"
-		".set noreorder\n"
-		"	sync\n"
-		"1:	ll %0, %2\n"
-		"	bne %0, %3, 1f\n"
-		"	addu %1, %4, $0\n"
-		"	sc %1, %2\n"
-		"	beq %1, $0, 1b\n"
-		"	nop\n"
-		"	sync\n"
-		"1:	\n"
-		".set pop\n"
-		: "=&r"(t), "=&r"(dummy), "+m"(*p) : "r"(t), "r"(s) : "memory" );
-        return t;
+	int v;
+	__asm__ __volatile__ (
+		".set push ; .set mips2\n\t"
+		"ll %0, %1"
+		"\n\t.set pop"
+		: "=r"(v) : "m"(*p));
+	return v;
 }
 
-#define a_swap a_swap
-static inline int a_swap(volatile int *x, int v)
+#define a_sc a_sc
+static inline int a_sc(volatile int *p, int v)
 {
-	int old, dummy;
-	__asm__ __volatile__(
-		".set push\n"
-		".set mips2\n"
-		".set noreorder\n"
-		"	sync\n"
-		"1:	ll %0, %2\n"
-		"	addu %1, %3, $0\n"
-		"	sc %1, %2\n"
-		"	beq %1, $0, 1b\n"
-		"	nop\n"
-		"	sync\n"
-		".set pop\n"
-		: "=&r"(old), "=&r"(dummy), "+m"(*x) : "r"(v) : "memory" );
-        return old;
+	int r;
+	__asm__ __volatile__ (
+		".set push ; .set mips2\n\t"
+		"sc %0, %1"
+		"\n\t.set pop"
+		: "=r"(r), "=m"(*p) : "0"(v) : "memory");
+	return r;
 }
 
-#define a_fetch_add a_fetch_add
-static inline int a_fetch_add(volatile int *x, int v)
+#define a_barrier a_barrier
+static inline void a_barrier()
 {
-	int old, dummy;
-	__asm__ __volatile__(
-		".set push\n"
-		".set mips2\n"
-		".set noreorder\n"
-		"	sync\n"
-		"1:	ll %0, %2\n"
-		"	addu %1, %0, %3\n"
-		"	sc %1, %2\n"
-		"	beq %1, $0, 1b\n"
-		"	nop\n"
-		"	sync\n"
-		".set pop\n"
-		: "=&r"(old), "=&r"(dummy), "+m"(*x) : "r"(v) : "memory" );
-        return old;
+	/* mips2 sync, but using too many directives causes
+	 * gcc not to inline it, so encode with .long instead. */
+	__asm__ __volatile__ (".long 0xf" : : : "memory");
+#if 0
+	__asm__ __volatile__ (
+		".set push ; .set mips2 ; sync ; .set pop"
+		: : : "memory");
+#endif
 }
+
+#define a_pre_llsc a_barrier
+#define a_post_llsc a_barrier
