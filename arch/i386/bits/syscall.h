@@ -374,6 +374,7 @@
 #define __NR_shutdown		373
 #define __NR_userfaultfd	374
 #define __NR_membarrier		375
+#define __NR_mlock2		376
 
 
 /* Repeated with SYS_ prefix */
@@ -754,3 +755,4 @@
 #define SYS_shutdown		373
 #define SYS_userfaultfd		374
 #define SYS_membarrier		375
+#define SYS_mlock2		376

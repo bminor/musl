@@ -343,6 +343,7 @@
 #define __NR_execveat	387
 #define __NR_userfaultfd	388
 #define __NR_membarrier		389
+#define __NR_mlock2		390
 
 #define __ARM_NR_breakpoint	0x0f0001
 #define __ARM_NR_cacheflush	0x0f0002
@@ -697,3 +698,4 @@
 #define SYS_execveat	387
 #define SYS_userfaultfd	388
 #define SYS_membarrier		389
+#define SYS_mlock2		390

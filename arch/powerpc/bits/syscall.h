@@ -367,6 +367,7 @@
 #define __NR_switch_endian         363
 #define __NR_userfaultfd           364
 #define __NR_membarrier            365
+#define __NR_mlock2                378
 
 /*
  * repeated with SYS prefix
@@ -740,3 +741,4 @@
 #define SYS_switch_endian         363
 #define SYS_userfaultfd           364
 #define SYS_membarrier            365
+#define SYS_mlock2                378

@@ -323,6 +323,7 @@
 #define __NR_execveat				322
 #define __NR_userfaultfd			323
 #define __NR_membarrier				324
+#define __NR_mlock2				325
 
 
 
@@ -653,3 +654,4 @@
 #define SYS_execveat				322
 #define SYS_userfaultfd				323
 #define SYS_membarrier				324
+#define SYS_mlock2				325

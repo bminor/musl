@@ -279,6 +279,7 @@
 #define __NR_bpf (__X32_SYSCALL_BIT + 321)
 #define __NR_userfaultfd (__X32_SYSCALL_BIT + 323)
 #define __NR_membarrier (__X32_SYSCALL_BIT + 324)
+#define __NR_mlock2 (__X32_SYSCALL_BIT + 325)
 
 #define __NR_rt_sigaction (__X32_SYSCALL_BIT + 512)
 #define __NR_rt_sigreturn (__X32_SYSCALL_BIT + 513)
@@ -611,6 +612,7 @@
 #define SYS_bpf __NR_bpf
 #define SYS_userfaultfd __NR_userfaultfd
 #define SYS_membarrier __NR_membarrier
+#define SYS_mlock2 __NR_mlock2
 
 
 #define SYS_rt_sigaction __NR_rt_sigaction
