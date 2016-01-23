@@ -2,7 +2,7 @@
 static inline int a_ll(volatile int *p)
 {
 	int v;
-	__asm__ __volatile__ ("ldxr %0, %1" : "=r"(v) : "Q"(*p));
+	__asm__ __volatile__ ("ldaxr %0, %1" : "=r"(v) : "Q"(*p));
 	return v;
 }
 
@@ -10,7 +10,7 @@ static inline int a_ll(volatile int *p)
 static inline int a_sc(volatile int *p, int v)
 {
 	int r;
-	__asm__ __volatile__ ("stxr %w0,%1,%2" : "=&r"(r) : "r"(v), "Q"(*p) : "memory");
+	__asm__ __volatile__ ("stlxr %w0,%1,%2" : "=&r"(r) : "r"(v), "Q"(*p) : "memory");
 	return !r;
 }
 
@@ -20,25 +20,45 @@ static inline void a_barrier()
 	__asm__ __volatile__ ("dmb ish" : : : "memory");
 }
 
-#define a_pre_llsc a_barrier
-#define a_post_llsc a_barrier
+#define a_cas a_cas
+static inline int a_cas(volatile int *p, int t, int s)
+{
+	int old;
+	do {
+		old = a_ll(p);
+		if (old != t) {
+			a_barrier();
+			break;
+		}
+	} while (!a_sc(p, s));
+	return old;
+}
+
+static inline void *a_ll_p(volatile void *p)
+{
+	void *v;
+	__asm__ __volatile__ ("ldaxr %0, %1" : "=r"(v) : "Q"(*(void *volatile *)p));
+	return v;
+}
+
+static inline int a_sc_p(volatile int *p, void *v)
+{
+	int r;
+	__asm__ __volatile__ ("stlxr %w0,%1,%2" : "=&r"(r) : "r"(v), "Q"(*(void *volatile *)p) : "memory");
+	return !r;
+}
 
 #define a_cas_p a_cas_p
 static inline void *a_cas_p(volatile void *p, void *t, void *s)
 {
 	void *old;
-	__asm__ __volatile__(
-		"	dmb ish\n"
-		"1:	ldxr %0,%3\n"
-		"	cmp %0,%1\n"
-		"	b.ne 1f\n"
-		"	stxr %w0,%2,%3\n"
-		"	cbnz %w0,1b\n"
-		"	mov %0,%1\n"
-		"1:	dmb ish\n"
-		: "=&r"(old)
-		: "r"(t), "r"(s), "Q"(*(void *volatile *)p)
-		: "memory", "cc");
+	do {
+		old = a_ll_p(p);
+		if (old != t) {
+			a_barrier();
+			break;
+		}
+	} while (!a_sc_p(p, s));
 	return old;
 }
 
