@@ -35,8 +35,8 @@
 #define MS_INVALIDATE   2
 #define MS_SYNC         4
 
-#define MCL_CURRENT     1
-#define MCL_FUTURE      2
+#define MCL_CURRENT     0x2000
+#define MCL_FUTURE      0x4000
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 #define MADV_NORMAL      0
