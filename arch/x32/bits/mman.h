@@ -38,6 +38,7 @@
 
 #define MCL_CURRENT     1
 #define MCL_FUTURE      2
+#define MCL_ONFAULT     4
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 #define MADV_NORMAL      0
