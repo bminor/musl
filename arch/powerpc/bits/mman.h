@@ -4,6 +4,7 @@
 #define	PROT_READ      1
 #define	PROT_WRITE     2
 #define	PROT_EXEC      4
+#define	PROT_SAO       0x10
 #define	PROT_GROWSDOWN 0x01000000
 #define	PROT_GROWSUP   0x02000000
 
