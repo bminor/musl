@@ -1733,7 +1733,8 @@ end:
 	return p;
 }
 
-static int invalid_dso_handle(void *h)
+__attribute__((__visibility__("hidden")))
+int __dl_invalid_handle(void *h)
 {
 	struct dso *p;
 	for (p=head; p; p=p->next) if (h==p) return 0;
@@ -1788,7 +1789,7 @@ static void *do_dlsym(struct dso *p, const char *s, void *ra)
 			return def.dso->funcdescs + (def.sym - def.dso->syms);
 		return laddr(def.dso, def.sym->st_value);
 	}
-	if (invalid_dso_handle(p))
+	if (__dl_invalid_handle(p))
 		return 0;
 	if ((ght = p->ghashtab)) {
 		gh = gnu_hash(s);
@@ -1913,11 +1914,6 @@ int dl_iterate_phdr(int(*callback)(struct dl_phdr_info *info, size_t size, void 
 	return ret;
 }
 #else
-static int invalid_dso_handle(void *h)
-{
-	error("Invalid library handle %p", (void *)h);
-	return 1;
-}
 void *dlopen(const char *file, int mode)
 {
 	error("Dynamic loading not supported");
@@ -1930,9 +1926,12 @@ void *__dlsym(void *restrict p, const char *restrict s, void *restrict ra)
 }
 #endif
 
+__attribute__((__visibility__("hidden")))
+int __dl_invalid_handle(void *);
+
 int __dlinfo(void *dso, int req, void *res)
 {
-	if (invalid_dso_handle(dso)) return -1;
+	if (__dl_invalid_handle(dso)) return -1;
 	if (req != RTLD_DI_LINKMAP) {
 		error("Unsupported request %d", req);
 		return -1;
@@ -1943,7 +1942,7 @@ int __dlinfo(void *dso, int req, void *res)
 
 int dlclose(void *p)
 {
-	return invalid_dso_handle(p);
+	return __dl_invalid_handle(p);
 }
 
 __attribute__((__visibility__("hidden")))

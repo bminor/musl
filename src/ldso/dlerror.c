@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include "pthread_impl.h"
+#include "libc.h"
 
 char *dlerror()
 {
@@ -50,3 +51,14 @@ void __dl_seterr(const char *fmt, ...)
 	__dl_vseterr(fmt, ap);
 	va_end(ap);
 }
+
+__attribute__((__visibility__("hidden")))
+int __dl_invalid_handle(void *);
+
+static int stub_invalid_handle(void *h)
+{
+	__dl_seterr("Invalid library handle %p", (void *)h);
+	return 1;
+}
+
+weak_alias(stub_invalid_handle, __dl_invalid_handle);
