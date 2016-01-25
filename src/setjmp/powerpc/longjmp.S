@@ -4,19 +4,21 @@
 	.type   longjmp,@function
 _longjmp:
 longjmp:
-# void longjmp(jmp_buf env, int val);
-# put val into return register and restore the env saved in setjmp
-# if val(r4) is 0, put 1 there.
-	# 0) move old return address into r0
+	/*
+	 * void longjmp(jmp_buf env, int val);
+	 * put val into return register and restore the env saved in setjmp
+	 * if val(r4) is 0, put 1 there.
+	 */
+	/* 0) move old return address into r0 */
 	lwz 0, 0(3)
-	# 1) put it into link reg
+	/* 1) put it into link reg */
 	mtlr 0
-	#2 ) restore stack ptr
+	/* 2 ) restore stack ptr */
 	lwz 1, 4(3)
-	#3) restore control reg
+	/* 3) restore control reg */
 	lwz 0, 8(3)
 	mtcr 0
-	#4) restore r14-r31
+	/* 4) restore r14-r31 */
 	lwz 14, 12(3)
 	lwz 15, 16(3)
 	lwz 16, 20(3)
@@ -35,6 +37,7 @@ longjmp:
 	lwz 29, 72(3)
 	lwz 30, 76(3)
 	lwz 31, 80(3)
+#ifndef _SOFT_FLOAT
 	lfd 14,88(3)
 	lfd 15,96(3)
 	lfd 16,104(3)
@@ -53,10 +56,11 @@ longjmp:
 	lfd 29,208(3)
 	lfd 30,216(3)
 	lfd 31,224(3)
-	#5) put val into return reg r3
+#endif
+	/* 5) put val into return reg r3 */
 	mr 3, 4
 
-	#6) check if return value is 0, make it 1 in that case
+	/* 6) check if return value is 0, make it 1 in that case */
 	cmpwi cr7, 4, 0
 	bne cr7, 1f
 	li 3, 1

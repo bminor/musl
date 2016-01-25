@@ -1,4 +1,10 @@
-#define LDSO_ARCH "powerpc"
+#ifdef _SOFT_FLOAT
+#define FP_SUFFIX "-sf"
+#else
+#define FP_SUFFIX ""
+#endif
+
+#define LDSO_ARCH "powerpc" FP_SUFFIX
 
 #define TPOFF_K (-0x7000)
 
