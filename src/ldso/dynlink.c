@@ -1940,11 +1940,6 @@ int __dlinfo(void *dso, int req, void *res)
 	return 0;
 }
 
-int dlclose(void *p)
-{
-	return __dl_invalid_handle(p);
-}
-
 __attribute__((__visibility__("hidden")))
 void __dl_vseterr(const char *, va_list);
 
