@@ -1914,11 +1914,6 @@ int dl_iterate_phdr(int(*callback)(struct dl_phdr_info *info, size_t size, void 
 	return ret;
 }
 #else
-void *dlopen(const char *file, int mode)
-{
-	error("Dynamic loading not supported");
-	return 0;
-}
 void *__dlsym(void *restrict p, const char *restrict s, void *restrict ra)
 {
 	error("Symbol not found: %s", s);
