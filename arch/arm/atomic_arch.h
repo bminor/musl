@@ -66,9 +66,11 @@ static inline void a_barrier()
 #define a_crash a_crash
 static inline void a_crash()
 {
-	__asm__ __volatile__(".byte 0xf1, 0xde"
+	__asm__ __volatile__(
 #ifndef __thumb__
-		", 0xfd, 0xe7"
+		".word 0xe7f000f0"
+#else
+		".short 0xdeff"
 #endif
 		: : : "memory");
 }
