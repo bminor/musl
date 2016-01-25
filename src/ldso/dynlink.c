@@ -1823,7 +1823,7 @@ failed:
 	return 0;
 }
 
-int __dladdr(const void *addr, Dl_info *info)
+int dladdr(const void *addr, Dl_info *info)
 {
 	struct dso *p;
 	Sym *sym, *bestsym;
@@ -1926,10 +1926,6 @@ void *dlopen(const char *file, int mode)
 void *__dlsym(void *restrict p, const char *restrict s, void *restrict ra)
 {
 	error("Symbol not found: %s", s);
-	return 0;
-}
-int __dladdr (const void *addr, Dl_info *info)
-{
 	return 0;
 }
 #endif
