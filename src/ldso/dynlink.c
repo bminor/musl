@@ -1945,29 +1945,13 @@ int __dlinfo(void *dso, int req, void *res)
 	return 0;
 }
 
-char *dlerror()
-{
-	pthread_t self = __pthread_self();
-	if (!self->dlerror_flag) return 0;
-	self->dlerror_flag = 0;
-	char *s = self->dlerror_buf;
-	if (s == (void *)-1)
-		return "Dynamic linker failed to allocate memory for error message";
-	else
-		return s;
-}
-
 int dlclose(void *p)
 {
 	return invalid_dso_handle(p);
 }
 
-void __dl_thread_cleanup(void)
-{
-	pthread_t self = __pthread_self();
-	if (self->dlerror_buf != (void *)-1)
-		free(self->dlerror_buf);
-}
+__attribute__((__visibility__("hidden")))
+void __dl_vseterr(const char *, va_list);
 
 static void error(const char *fmt, ...)
 {
@@ -1982,19 +1966,6 @@ static void error(const char *fmt, ...)
 		return;
 	}
 #endif
-	pthread_t self = __pthread_self();
-	if (self->dlerror_buf != (void *)-1)
-		free(self->dlerror_buf);
-	size_t len = vsnprintf(0, 0, fmt, ap);
+	__dl_vseterr(fmt, ap);
 	va_end(ap);
-	char *buf = malloc(len+1);
-	if (buf) {
-		va_start(ap, fmt);
-		vsnprintf(buf, len+1, fmt, ap);
-		va_end(ap);
-	} else {
-		buf = (void *)-1;	
-	}
-	self->dlerror_buf = buf;
-	self->dlerror_flag = 1;
 }
