@@ -1927,20 +1927,6 @@ void *__dlsym(void *restrict p, const char *restrict s, void *restrict ra)
 #endif
 
 __attribute__((__visibility__("hidden")))
-int __dl_invalid_handle(void *);
-
-int __dlinfo(void *dso, int req, void *res)
-{
-	if (__dl_invalid_handle(dso)) return -1;
-	if (req != RTLD_DI_LINKMAP) {
-		error("Unsupported request %d", req);
-		return -1;
-	}
-	*(struct link_map **)res = dso;
-	return 0;
-}
-
-__attribute__((__visibility__("hidden")))
 void __dl_vseterr(const char *, va_list);
 
 static void error(const char *fmt, ...)
