@@ -1,8 +1,6 @@
 #include <stddef.h>
 #include "dynlink.h"
 
-#ifdef SHARED
-
 #ifndef START
 #define START "_dlstart"
 #endif
@@ -146,5 +144,3 @@ void _dlstart_c(size_t *sp, size_t *dynv)
 	GETFUNCSYM(&dls2, __dls2, base+dyn[DT_PLTGOT]);
 	dls2((void *)base, sp);
 }
-
-#endif

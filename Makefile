@@ -22,6 +22,8 @@ BASE_OBJS = $(patsubst $(srcdir)/%,%.o,$(basename $(BASE_SRCS)))
 ARCH_SRCS = $(wildcard $(srcdir)/src/*/$(ARCH)/*.[csS])
 ARCH_OBJS = $(patsubst $(srcdir)/%,%.o,$(basename $(ARCH_SRCS)))
 REPLACED_OBJS = $(sort $(subst /$(ARCH)/,/,$(ARCH_OBJS)))
+LDSO_SRCS = $(sort $(wildcard $(srcdir)/ldso/*.c))
+LDSO_OBJS = $(patsubst $(srcdir)/%,obj/%.lo,$(basename $(LDSO_SRCS)))
 OBJS = $(addprefix obj/, $(filter-out $(REPLACED_OBJS), $(sort $(BASE_OBJS) $(ARCH_OBJS))))
 LOBJS = $(OBJS:.o=.lo)
 GENH = obj/include/bits/alltypes.h
@@ -72,7 +74,7 @@ endif
 
 all: $(ALL_LIBS) $(ALL_TOOLS)
 
-OBJ_DIRS = $(sort $(patsubst %/,%,$(dir $(ALL_LIBS) $(ALL_TOOLS) $(OBJS) $(GENH) $(GENH_INT))) $(addprefix obj/, crt crt/$(ARCH) include))
+OBJ_DIRS = $(sort $(patsubst %/,%,$(dir $(ALL_LIBS) $(ALL_TOOLS) $(OBJS) $(LDSO_OBJS) $(GENH) $(GENH_INT))) $(addprefix obj/, crt crt/$(ARCH) include))
 
 $(ALL_LIBS) $(ALL_TOOLS) $(CRT_LIBS:lib/%=obj/crt/%) $(OBJS) $(LOBJS) $(GENH) $(GENH_INT): | $(OBJ_DIRS)
 
@@ -95,11 +97,11 @@ obj/src/internal/version.h: $(wildcard $(srcdir)/VERSION $(srcdir)/.git)
 
 obj/src/internal/version.o obj/src/internal/version.lo: obj/src/internal/version.h
 
-obj/crt/rcrt1.o obj/src/ldso/dlstart.lo obj/src/ldso/dynlink.lo: $(srcdir)/src/internal/dynlink.h $(srcdir)/arch/$(ARCH)/reloc.h
+obj/crt/rcrt1.o obj/ldso/dlstart.lo obj/ldso/dynlink.lo: $(srcdir)/src/internal/dynlink.h $(srcdir)/arch/$(ARCH)/reloc.h
 
-obj/crt/crt1.o obj/crt/scrt1.o obj/crt/rcrt1.o obj/src/ldso/dlstart.lo: $(srcdir)/arch/$(ARCH)/crt_arch.h
+obj/crt/crt1.o obj/crt/scrt1.o obj/crt/rcrt1.o obj/ldso/dlstart.lo: $(srcdir)/arch/$(ARCH)/crt_arch.h
 
-obj/crt/rcrt1.o: $(srcdir)/src/ldso/dlstart.c
+obj/crt/rcrt1.o: $(srcdir)/ldso/dlstart.c
 
 obj/crt/Scrt1.o obj/crt/rcrt1.o: CFLAGS_ALL += -fPIC
 
@@ -117,12 +119,12 @@ NOSSP_SRCS = $(wildcard crt/*.c) \
 	src/env/__libc_start_main.c src/env/__init_tls.c \
 	src/thread/__set_thread_area.c src/env/__stack_chk_fail.c \
 	src/string/memset.c src/string/memcpy.c \
-	src/ldso/dlstart.c src/ldso/dynlink.c
+	ldso/dlstart.c ldso/dynlink.c
 $(NOSSP_SRCS:%.c=obj/%.o) $(NOSSP_SRCS:%.c=obj/%.lo): CFLAGS_ALL += $(CFLAGS_NOSSP)
 
 $(CRT_LIBS:lib/%=obj/crt/%): CFLAGS_ALL += -DCRT
 
-$(LOBJS): CFLAGS_ALL += -fPIC -DSHARED
+$(LOBJS) $(LDSO_OBJS): CFLAGS_ALL += -fPIC
 
 CC_CMD = $(CC) $(CFLAGS_ALL) -c -o $@ $<
 
@@ -151,10 +153,10 @@ obj/%.lo: $(srcdir)/%.S
 obj/%.lo: $(srcdir)/%.c $(GENH) $(IMPH)
 	$(CC_CMD)
 
-lib/libc.so: $(LOBJS)
+lib/libc.so: $(LOBJS) $(LDSO_OBJS)
 	$(CC) $(CFLAGS_ALL) $(LDFLAGS_ALL) -nostdlib -shared \
 	-Wl,-e,_dlstart -Wl,-Bsymbolic-functions \
-	-o $@ $(LOBJS) $(LIBCC)
+	-o $@ $(LOBJS) $(LDSO_OBJS) $(LIBCC)
 
 lib/libc.a: $(OBJS)
 	rm -f $@

@@ -1,7 +1,7 @@
 #define SHARED
 #define START "_start"
 #define _dlstart_c _start_c
-#include "../src/ldso/dlstart.c"
+#include "../ldso/dlstart.c"
 
 int main();
 void _init() __attribute__((weak));

@@ -1,4 +1,3 @@
-#ifdef SHARED
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
@@ -1930,4 +1929,3 @@ static void error(const char *fmt, ...)
 	__dl_vseterr(fmt, ap);
 	va_end(ap);
 }
-#endif
