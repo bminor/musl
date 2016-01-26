@@ -1,3 +1,4 @@
+#ifdef SHARED
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,8 +23,6 @@
 #include "dynlink.h"
 
 static void error(const char *, ...);
-
-#ifdef SHARED
 
 #define MAXP2(a,b) (-(-(a)&-(b)))
 #define ALIGN(x,y) ((x)+(y)-1 & -(y))
@@ -1913,13 +1912,6 @@ int dl_iterate_phdr(int(*callback)(struct dl_phdr_info *info, size_t size, void 
 	}
 	return ret;
 }
-#else
-void *__dlsym(void *restrict p, const char *restrict s, void *restrict ra)
-{
-	error("Symbol not found: %s", s);
-	return 0;
-}
-#endif
 
 __attribute__((__visibility__("hidden")))
 void __dl_vseterr(const char *, va_list);
@@ -1928,7 +1920,6 @@ static void error(const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
-#ifdef SHARED
 	if (!runtime) {
 		vdprintf(2, fmt, ap);
 		dprintf(2, "\n");
@@ -1936,7 +1927,7 @@ static void error(const char *fmt, ...)
 		va_end(ap);
 		return;
 	}
-#endif
 	__dl_vseterr(fmt, ap);
 	va_end(ap);
 }
+#endif
