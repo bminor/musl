@@ -118,8 +118,10 @@ $(MEMOPS_SRCS:%.c=obj/%.o) $(MEMOPS_SRCS:%.c=obj/%.lo): CFLAGS_ALL += $(CFLAGS_M
 
 NOSSP_SRCS = $(wildcard crt/*.c) \
 	src/env/__libc_start_main.c src/env/__init_tls.c \
-	src/thread/__set_thread_area.c src/env/__stack_chk_fail.c \
-	src/string/memset.c src/string/memcpy.c \
+	src/env/__stack_chk_fail.c \
+	src/thread/__set_thread_area.c src/thread/$(ARCH)/__set_thread_area.c \
+	src/string/memset.c src/string/$(ARCH)/memset.c \
+	src/string/memcpy.c src/string/$(ARCH)/memcpy.c \
 	ldso/dlstart.c ldso/dynlink.c
 $(NOSSP_SRCS:%.c=obj/%.o) $(NOSSP_SRCS:%.c=obj/%.lo): CFLAGS_ALL += $(CFLAGS_NOSSP)
 
