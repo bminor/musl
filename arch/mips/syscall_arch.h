@@ -161,3 +161,7 @@ static inline long __syscall6(long n, long a, long b, long c, long d, long e, lo
 	if (n == SYS_fstatat) __stat_fix(c);
 	return r2;
 }
+
+#define VDSO_USEFUL
+#define VDSO_CGT_SYM "__vdso_clock_gettime"
+#define VDSO_CGT_VER "LINUX_2.6"
