@@ -25,6 +25,7 @@ REPLACED_OBJS = $(sort $(subst /$(ARCH)/,/,$(ARCH_OBJS)))
 LDSO_SRCS = $(sort $(wildcard $(srcdir)/ldso/*.c))
 LDSO_OBJS = $(patsubst $(srcdir)/%,obj/%.lo,$(basename $(LDSO_SRCS)))
 OBJS = $(addprefix obj/, $(filter-out $(REPLACED_OBJS), $(sort $(BASE_OBJS) $(ARCH_OBJS))))
+AOBJS = $(OBJS)
 LOBJS = $(OBJS:.o=.lo)
 GENH = obj/include/bits/alltypes.h
 GENH_INT = obj/src/internal/version.h
@@ -158,9 +159,9 @@ lib/libc.so: $(LOBJS) $(LDSO_OBJS)
 	-Wl,-e,_dlstart -Wl,-Bsymbolic-functions \
 	-o $@ $(LOBJS) $(LDSO_OBJS) $(LIBCC)
 
-lib/libc.a: $(OBJS)
+lib/libc.a: $(AOBJS)
 	rm -f $@
-	$(AR) rc $@ $(OBJS)
+	$(AR) rc $@ $(AOBJS)
 	$(RANLIB) $@
 
 $(EMPTY_LIBS):

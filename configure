@@ -532,6 +532,15 @@ CFLAGS_AUTO="$CFLAGS_AUTO -include vis.h"
 CFLAGS_AUTO="${CFLAGS_AUTO# }"
 fi
 
+# Determine if the compiler produces position-independent code (PIC)
+# by default. If so, we don't need to compile separate object files
+# for libc.a and libc.so.
+if trycppif __PIC__ "$CFLAGS_C99FSE $CPPFLAGS $CFLAGS" ; then
+pic_default=yes
+else
+pic_default=no
+fi
+
 # Reduce space lost to padding for alignment purposes by sorting data
 # objects according to their alignment reqirements. This approximates
 # optimal packing.
@@ -692,6 +701,7 @@ test "x$static" = xno && echo "STATIC_LIBS ="
 test "x$shared" = xno && echo "SHARED_LIBS ="
 test "x$cc_family" = xgcc && echo 'WRAPCC_GCC = $(CC)'
 test "x$cc_family" = xclang && echo 'WRAPCC_CLANG = $(CC)'
+test "x$pic_default" = xyes && echo 'AOBJS = $(LOBJS)'
 exec 1>&3 3>&-
 
 test "$srcdir" = "." || ln -sf $srcdir/Makefile .
