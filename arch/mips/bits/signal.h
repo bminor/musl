@@ -73,6 +73,15 @@ typedef struct __ucontext {
 #define SIG_UNBLOCK   2
 #define SIG_SETMASK   3
 
+#undef SI_ASYNCIO
+#undef SI_MESGQ
+#undef SI_TIMER
+#define SI_ASYNCIO (-2)
+#define SI_MESGQ (-4)
+#define SI_TIMER (-3)
+
+#define __SI_SWAP_ERRNO_CODE
+
 #endif
 
 #define SIGHUP    1

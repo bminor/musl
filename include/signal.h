@@ -94,7 +94,11 @@ union sigval {
 };
 
 typedef struct {
+#ifdef __SI_SWAP_ERRNO_CODE
+	int si_signo, si_code, si_errno;
+#else
 	int si_signo, si_errno, si_code;
+#endif
 	union {
 		char __pad[128 - 2*sizeof(int) - sizeof(long)];
 		struct {
