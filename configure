@@ -338,7 +338,7 @@ __attribute__((__may_alias__))
 #endif
 x;
 EOF
-if $CC $CFLAGS_C99FSE -I$srcdir/arch/$ARCH -I$srcdir/include $CPPFLAGS $CFLAGS \
+if $CC $CFLAGS_C99FSE $CPPFLAGS $CFLAGS \
   -c -o /dev/null "$tmpc" >/dev/null 2>&1 ; then
 printf "no\n"
 else
