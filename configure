@@ -651,8 +651,9 @@ echo '#include <float.h>' > "$tmpc"
 echo '#if LDBL_MANT_DIG == 53' >> "$tmpc"
 echo 'typedef char ldcheck[9-(int)sizeof(long double)];' >> "$tmpc"
 echo '#endif' >> "$tmpc"
-if $CC $CFLAGS_C99FSE -I$srcdir/arch/$ARCH -I$srcdir/include $CPPFLAGS $CFLAGS \
-  -c -o /dev/null "$tmpc" >/dev/null 2>&1 ; then
+if $CC $CFLAGS_C99FSE \
+  -I$srcdir/arch/$ARCH -I$srcdir/arch/generic -I$srcdir/include \
+  $CPPFLAGS $CFLAGS -c -o /dev/null "$tmpc" >/dev/null 2>&1 ; then
 printf "yes\n"
 else
 printf "no\n"
