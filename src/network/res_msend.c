@@ -27,8 +27,9 @@ static unsigned long mtime()
 		+ ts.tv_nsec / 1000000;
 }
 
-int __res_msend(int nqueries, const unsigned char *const *queries,
-	const int *qlens, unsigned char *const *answers, int *alens, int asize)
+int __res_msend_rc(int nqueries, const unsigned char *const *queries,
+	const int *qlens, unsigned char *const *answers, int *alens, int asize,
+	const struct resolvconf *conf)
 {
 	int fd;
 	int timeout, attempts, retry_interval, servfail_retry;
@@ -45,19 +46,15 @@ int __res_msend(int nqueries, const unsigned char *const *queries,
 	int cs;
 	struct pollfd pfd;
 	unsigned long t0, t1, t2;
-	struct resolvconf conf;
 
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
 
-	/* Get nameservers & timeout/retry settings from resolv.conf */
-	if (__get_resolv_conf(&conf, 0, 0) < 0) return -1;
+	timeout = 1000*conf->timeout;
+	attempts = conf->attempts;
 
-	timeout = 1000*conf.timeout;
-	attempts = conf.attempts;
-
-	nns = conf.nns;
-	for (nns=0; nns<conf.nns; nns++) {
-		struct address *iplit = &conf.ns[nns];
+	nns = conf->nns;
+	for (nns=0; nns<conf->nns; nns++) {
+		const struct address *iplit = &conf->ns[nns];
 		if (iplit->family == AF_INET) {
 			memcpy(&ns[nns].sin.sin_addr, iplit->addr, 4);
 			ns[nns].sin.sin_port = htons(53);
@@ -177,4 +174,12 @@ out:
 	pthread_cleanup_pop(1);
 
 	return 0;
+}
+
+int __res_msend(int nqueries, const unsigned char *const *queries,
+	const int *qlens, unsigned char *const *answers, int *alens, int asize)
+{
+	struct resolvconf conf;
+	if (__get_resolv_conf(&conf, 0, 0) < 0) return -1;
+	return __res_msend_rc(nqueries, queries, qlens, answers, alens, asize, &conf);
 }

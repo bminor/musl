@@ -93,7 +93,7 @@ struct dpc_ctx {
 int __dns_parse(const unsigned char *, int, int (*)(void *, int, const void *, int, const void *), void *);
 int __dn_expand(const unsigned char *, const unsigned char *, const unsigned char *, char *, int);
 int __res_mkquery(int, const char *, int, int, const unsigned char *, int, const unsigned char*, unsigned char *, int);
-int __res_msend(int, const unsigned char *const *, const int *, unsigned char *const *, int *, int);
+int __res_msend_rc(int, const unsigned char *const *, const int *, unsigned char *const *, int *, int, const struct resolvconf *);
 
 #define RR_A 1
 #define RR_CNAME 5
@@ -125,7 +125,7 @@ static int dns_parse_callback(void *c, int rr, const void *data, int len, const 
 	return 0;
 }
 
-static int name_from_dns(struct address buf[static MAXADDRS], char canon[static 256], const char *name, int family)
+static int name_from_dns(struct address buf[static MAXADDRS], char canon[static 256], const char *name, int family, const struct resolvconf *conf)
 {
 	unsigned char qbuf[2][280], abuf[2][512];
 	const unsigned char *qp[2] = { qbuf[0], qbuf[1] };
@@ -145,7 +145,8 @@ static int name_from_dns(struct address buf[static MAXADDRS], char canon[static 
 		nq++;
 	}
 
-	if (__res_msend(nq, qp, qlens, ap, alens, sizeof *abuf) < 0) return EAI_SYSTEM;
+	if (__res_msend_rc(nq, qp, qlens, ap, alens, sizeof *abuf, conf) < 0)
+		return EAI_SYSTEM;
 
 	for (i=0; i<nq; i++)
 		__dns_parse(abuf[i], alens[i], dns_parse_callback, &ctx);
@@ -188,13 +189,13 @@ static int name_from_dns_search(struct address buf[static MAXADDRS], char canon[
 		if (z-p < 256 - l - 1) {
 			memcpy(canon+l+1, p, z-p);
 			canon[z-p+1+l] = 0;
-			int cnt = name_from_dns(buf, canon, canon, family);
+			int cnt = name_from_dns(buf, canon, canon, family, &conf);
 			if (cnt) return cnt;
 		}
 	}
 
 	canon[l] = 0;
-	return name_from_dns(buf, canon, name, family);
+	return name_from_dns(buf, canon, name, family, &conf);
 }
 
 static const struct policy {
