@@ -69,7 +69,7 @@ int __get_resolv_conf(struct resolvconf *conf, char *search, size_t search_sz)
 		}
 
 		if (!search) continue;
-		if (strncmp(line, "domain", 6) || strncmp(line, "search", 6)
+		if ((strncmp(line, "domain", 6) && strncmp(line, "search", 6))
 		    || !isspace(line[6]))
 			continue;
 		for (p=line+7; isspace(*p); p++);
