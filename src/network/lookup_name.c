@@ -152,7 +152,8 @@ static int name_from_dns(struct address buf[static MAXADDRS], char canon[static 
 
 	if (ctx.cnt) return ctx.cnt;
 	if (alens[0] < 4 || (abuf[0][3] & 15) == 2) return EAI_AGAIN;
-	if ((abuf[0][3] & 15) == 3) return EAI_NONAME;
+	if ((abuf[0][3] & 15) == 0) return EAI_NONAME;
+	if ((abuf[0][3] & 15) == 3) return 0;
 	return EAI_FAIL;
 }
 
