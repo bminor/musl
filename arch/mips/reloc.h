@@ -24,7 +24,7 @@
 #define REL_TPOFF       R_MIPS_TLS_TPREL32
 
 #define NEED_MIPS_GOT_RELOCS 1
-#define DYNAMIC_IS_RO 1
+#define DT_DEBUG_INDIRECT DT_MIPS_RLD_MAP
 #define ARCH_SYM_REJECT_UND(s) (!((s)->st_other & STO_MIPS_PLT))
 
 #define CRTJMP(pc,sp) __asm__ __volatile__( \

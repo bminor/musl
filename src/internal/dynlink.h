@@ -83,6 +83,10 @@ struct fdpic_dummy_loadmap {
 #define NEED_MIPS_GOT_RELOCS 0
 #endif
 
+#ifndef DT_DEBUG_INDIRECT
+#define DT_DEBUG_INDIRECT 0
+#endif
+
 #define AUX_CNT 32
 #define DYN_CNT 32
 

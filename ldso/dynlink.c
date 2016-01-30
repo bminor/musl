@@ -1582,11 +1582,14 @@ _Noreturn void __dls3(size_t *sp)
 	load_deps(&app);
 	make_global(&app);
 
-#ifndef DYNAMIC_IS_RO
-	for (i=0; app.dynv[i]; i+=2)
-		if (app.dynv[i]==DT_DEBUG)
+	for (i=0; app.dynv[i]; i+=2) {
+		if (!DT_DEBUG_INDIRECT && app.dynv[i]==DT_DEBUG)
 			app.dynv[i+1] = (size_t)&debug;
-#endif
+		if (DT_DEBUG_INDIRECT && app.dynv[i]==DT_DEBUG_INDIRECT) {
+			size_t *ptr = (size_t *) app.dynv[i+1];
+			*ptr = (size_t)&debug;
+		}
+	}
 
 	/* The main program must be relocated LAST since it may contin
 	 * copy relocations which depend on libraries' relocations. */
