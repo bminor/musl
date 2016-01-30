@@ -1519,7 +1519,7 @@ _Noreturn void __dls3(size_t *sp)
 		}
 	}
 	if (app.tls.size) {
-		libc.tls_head = &app.tls;
+		libc.tls_head = tls_tail = &app.tls;
 		app.tls_id = tls_cnt = 1;
 #ifdef TLS_ABOVE_TP
 		app.tls.offset = 0;
