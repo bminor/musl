@@ -2688,7 +2688,7 @@ regcomp(regex_t *restrict preg, const char *restrict regex, int cflags)
 
   /* Allocate a stack used throughout the compilation process for various
      purposes. */
-  stack = tre_stack_new(512, 10240, 128);
+  stack = tre_stack_new(512, 1024000, 128);
   if (!stack)
     return REG_ESPACE;
   /* Allocate a fast memory allocator. */
