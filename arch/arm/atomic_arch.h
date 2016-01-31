@@ -16,7 +16,7 @@ static inline int a_ll(volatile int *p)
 static inline int a_sc(volatile int *p, int v)
 {
 	int r;
-	__asm__ __volatile__ ("strex %0,%1,%2" : "=&r"(r) : "r"(v), "Q"(*p) : "memory");
+	__asm__ __volatile__ ("strex %0,%2,%1" : "=&r"(r), "=Q"(*p) : "r"(v) : "memory");
 	return !r;
 }
 
