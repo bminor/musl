@@ -95,6 +95,8 @@ __a_gettp_dummy:
 	bx lr
 
 .data
+.align 2
+
 .global __a_barrier_ptr
 .hidden __a_barrier_ptr
 __a_barrier_ptr:
