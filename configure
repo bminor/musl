@@ -142,7 +142,7 @@ clang_wrapper=no
 
 for arg ; do
 case "$arg" in
---help) usage ;;
+--help|-h) usage ;;
 --srcdir=*) srcdir=${arg#*=} ;;
 --prefix=*) prefix=${arg#*=} ;;
 --exec-prefix=*) exec_prefix=${arg#*=} ;;
