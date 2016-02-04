@@ -9,6 +9,9 @@
 .global __cp_cancel
 .hidden __cp_cancel
 .type   __cp_cancel,@function
+.global __cp_cancel_data
+.hidden __cp_cancel_data
+.type   __cp_cancel_data,@function
 .hidden __cancel
 .global __syscall_cp_asm
 .hidden __syscall_cp_asm
@@ -40,7 +43,15 @@ __cp_end:
 	nop
 
 __cp_cancel:
+	move    $2, $ra
+	bal     1f
 	addu    $sp, $sp, 32
-	lw      $25, %call16(__cancel)($gp)
+__cp_cancel_data:
+	.gpword __cp_cancel_data
+	.gpword __cancel
+1:	lw      $3, ($ra)
+	subu    $3, $ra, $3
+	lw      $25, 4($ra)
+	addu    $25, $25, $3
 	jr      $25
-	nop
+	move    $ra, $2
