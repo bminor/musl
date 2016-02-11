@@ -86,7 +86,8 @@ void __ofl_unlock(void);
 #define getc_unlocked(f) \
 	( ((f)->rpos < (f)->rend) ? *(f)->rpos++ : __uflow((f)) )
 
-#define putc_unlocked(c, f) ( ((c)!=(f)->lbf && (f)->wpos<(f)->wend) \
+#define putc_unlocked(c, f) \
+	( ((unsigned char)(c)!=(f)->lbf && (f)->wpos<(f)->wend) \
 	? *(f)->wpos++ = (c) : __overflow((f),(c)) )
 
 /* Caller-allocated FILE * operations */
