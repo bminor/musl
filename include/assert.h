@@ -8,7 +8,7 @@
 #define assert(x) ((void)((x) || (__assert_fail(#x, __FILE__, __LINE__, __func__),0)))
 #endif
 
-#ifndef __cplusplus
+#if __STDC_VERSION__ >= 201112L && !defined(__cplusplus)
 #define static_assert _Static_assert
 #endif
 
