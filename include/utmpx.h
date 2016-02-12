@@ -43,6 +43,7 @@ void          setutxent(void);
 #define e_exit __e_exit
 #define e_termination __e_termination
 void updwtmpx(const char *, const struct utmpx *);
+int utmpxname(const char *);
 #endif
 
 #define EMPTY           0
