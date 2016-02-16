@@ -1618,3 +1618,63 @@ arch-specific bugs fixed:
 - arm crt1 entry point failed to align stack pointer in some cases
 - mips fesetround failed to actually set rounding mode
 - i386 asm source CFI generation had multiple bugs
+
+
+
+1.1.13 release notes
+
+new features:
+- out-of-tree builds
+- search domains in resolv.conf
+- sh arch supports j-core (j2) cas.l atomics
+- dynamic linker includes arch/abi in output when run as a command
+- header support for new kernel features through linux 4.4
+- mips vdso clock_gettime support
+- regex BRE extensions: \|, \+, \?
+
+performance:
+- improved atomics performance on all archs with ll/sc model
+- atomic instructions are now inlined on armv6
+- use fpu sqrt for arm softfp abi on targets with vfp
+
+compatibility:
+- getnameinfo now accepts sockaddr sizes larger than needed
+- new default CFLAGS/LDFLAGS avoid entire classes of toolchain bugs
+- explicit use of float_t/double_t avoids compiler float spill bugs
+- i386 max_align_t definition now works with g++ 4.7's pseudo-c++11
+- all known protocols are added to protoent functions
+- stub utmpname, utmpxname functions
+- linker support for -Bsymbolic-functions is no longer mandatory
+- regex parsing size limits increased
+- malloc_usable_size now accepts null pointer input
+
+bugs fixed:
+- potential single-byte heap overflow in getdelim
+- mishandling of transient failure opening hosts, services, resolv.conf
+- mremap was sometimes able to allocate objects larger than PTRDIFF_MAX
+- nl_langinfo wrongly returned NULL instead of "" for invalid items
+- out-of-bounds dynamic tls allocation due to pointer/index scaling error
+- getifaddrs misreported point-to-point interface addresses
+- tdelete left tsearch trees misbalanced
+- tsearch crashed on allocation failure
+- tsearch, tfind, and tdelete failed to handle null pointer input
+- passing signal number 0 to sigaction resulted in a crash
+- getdelim updated caller's size wrongly when realloc failed
+- getdelim realloc strategy was wasteful
+- if_nametoindex returned wrong value on failure
+- missing ssp-suppression for some source files called from early-init
+- various minor resolv.conf parsing bugs
+- fwrite wrongly reported success on write errors in line-buffered flush
+- fwrite and fread wrongly returned nmemb (not 0) when size was 0
+
+nommu-specific bugs fix:
+- failure to zero bss in FDPIC shared library loader
+- unsafe writes to read-only file mapping in non-FDPIC library loader
+
+arch-specific bugs fixed:
+- sh[eb]-nofpu-fdpic was using fpu-dependent setjmp/longjmp variants
+- dynamic linker path file name was wrong for arm "softfp" targets
+- mips siginfo_t and related macros were defined incorrectly
+- possibly misaligned pointer globals on arm (from an asm source file)
+- mips dynamic linker failed to provide info needed by debugger
+- mips cancellation asm wrongly assumed validity of $gp register value
