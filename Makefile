@@ -77,8 +77,12 @@ LDSO_PATHNAME = $(syslibdir)/ld-musl-$(ARCH)$(SUBARCH).so.1
 -include config.mak
 
 ifeq ($(ARCH),)
-$(error Please set ARCH in config.mak before running make.)
-endif
+
+all:
+	@echo "Please set ARCH in config.mak before running make."
+	@exit 1
+
+else
 
 all: $(ALL_LIBS) $(ALL_TOOLS)
 
@@ -88,14 +92,6 @@ $(ALL_LIBS) $(ALL_TOOLS) $(ALL_OBJS) $(ALL_OBJS:%.o=%.lo) $(GENH) $(GENH_INT): |
 
 $(OBJ_DIRS):
 	mkdir -p $@
-
-install: install-libs install-headers install-tools
-
-clean:
-	rm -rf obj lib
-
-distclean: clean
-	rm -f config.mak
 
 obj/include/bits/alltypes.h: $(srcdir)/arch/$(ARCH)/bits/alltypes.h.in $(srcdir)/include/alltypes.h.in $(srcdir)/tools/mkalltypes.sed
 	sed -f $(srcdir)/tools/mkalltypes.sed $(srcdir)/arch/$(ARCH)/bits/alltypes.h.in $(srcdir)/include/alltypes.h.in > $@
@@ -223,10 +219,20 @@ install-headers: $(ALL_INCLUDES:include/%=$(DESTDIR)$(includedir)/%)
 
 install-tools: $(ALL_TOOLS:obj/%=$(DESTDIR)$(bindir)/%)
 
+install: install-libs install-headers install-tools
+
 musl-git-%.tar.gz: .git
 	 git --git-dir=$(srcdir)/.git archive --format=tar.gz --prefix=$(patsubst %.tar.gz,%,$@)/ -o $@ $(patsubst musl-git-%.tar.gz,%,$@)
 
 musl-%.tar.gz: .git
 	 git --git-dir=$(srcdir)/.git archive --format=tar.gz --prefix=$(patsubst %.tar.gz,%,$@)/ -o $@ v$(patsubst musl-%.tar.gz,%,$@)
+
+endif
+
+clean:
+	rm -rf obj lib
+
+distclean: clean
+	rm -f config.mak
 
 .PHONY: all clean install install-libs install-headers install-tools
