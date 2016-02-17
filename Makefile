@@ -17,16 +17,22 @@ includedir = $(prefix)/include
 libdir = $(prefix)/lib
 syslibdir = /lib
 
-BASE_SRCS = $(sort $(wildcard $(srcdir)/src/*/*.c))
+SRC_DIRS = $(addprefix $(srcdir)/,src/* crt ldso)
+BASE_GLOBS = $(addsuffix /*.c,$(SRC_DIRS))
+ARCH_GLOBS = $(addsuffix /$(ARCH)/*.[csS],$(SRC_DIRS))
+BASE_SRCS = $(sort $(wildcard $(BASE_GLOBS)))
+ARCH_SRCS = $(sort $(wildcard $(ARCH_GLOBS)))
 BASE_OBJS = $(patsubst $(srcdir)/%,%.o,$(basename $(BASE_SRCS)))
-ARCH_SRCS = $(wildcard $(srcdir)/src/*/$(ARCH)/*.[csS])
 ARCH_OBJS = $(patsubst $(srcdir)/%,%.o,$(basename $(ARCH_SRCS)))
 REPLACED_OBJS = $(sort $(subst /$(ARCH)/,/,$(ARCH_OBJS)))
-LDSO_SRCS = $(sort $(wildcard $(srcdir)/ldso/*.c))
-LDSO_OBJS = $(patsubst $(srcdir)/%,obj/%.lo,$(basename $(LDSO_SRCS)))
-OBJS = $(addprefix obj/, $(filter-out $(REPLACED_OBJS), $(sort $(BASE_OBJS) $(ARCH_OBJS))))
-AOBJS = $(OBJS)
-LOBJS = $(OBJS:.o=.lo)
+ALL_OBJS = $(addprefix obj/, $(filter-out $(REPLACED_OBJS), $(sort $(BASE_OBJS) $(ARCH_OBJS))))
+
+LIBC_OBJS = $(filter obj/src/%,$(ALL_OBJS))
+LDSO_OBJS = $(filter obj/ldso/%,$(ALL_OBJS:%.o=%.lo))
+CRT_OBJS = $(filter obj/crt/%,$(ALL_OBJS))
+
+AOBJS = $(LIBC_OBJS)
+LOBJS = $(LIBC_OBJS:.o=.lo)
 GENH = obj/include/bits/alltypes.h
 GENH_INT = obj/src/internal/version.h
 IMPH = $(addprefix $(srcdir)/, src/internal/stdio_impl.h src/internal/pthread_impl.h src/internal/libc.h)
@@ -76,9 +82,9 @@ endif
 
 all: $(ALL_LIBS) $(ALL_TOOLS)
 
-OBJ_DIRS = $(sort $(patsubst %/,%,$(dir $(ALL_LIBS) $(ALL_TOOLS) $(OBJS) $(LDSO_OBJS) $(GENH) $(GENH_INT))) $(addprefix obj/, crt crt/$(ARCH) include))
+OBJ_DIRS = $(sort $(patsubst %/,%,$(dir $(ALL_LIBS) $(ALL_TOOLS) $(ALL_OBJS) $(GENH) $(GENH_INT))) obj/include)
 
-$(ALL_LIBS) $(ALL_TOOLS) $(CRT_LIBS:lib/%=obj/crt/%) $(OBJS) $(LOBJS) $(GENH) $(GENH_INT): | $(OBJ_DIRS)
+$(ALL_LIBS) $(ALL_TOOLS) $(ALL_OBJS) $(ALL_OBJS:%.o=%.lo) $(GENH) $(GENH_INT): | $(OBJ_DIRS)
 
 $(OBJ_DIRS):
 	mkdir -p $@
@@ -126,7 +132,7 @@ NOSSP_SRCS = $(wildcard crt/*.c) \
 	ldso/dlstart.c ldso/dynlink.c
 $(NOSSP_SRCS:%.c=obj/%.o) $(NOSSP_SRCS:%.c=obj/%.lo): CFLAGS_ALL += $(CFLAGS_NOSSP)
 
-$(CRT_LIBS:lib/%=obj/crt/%): CFLAGS_ALL += -DCRT
+$(CRT_OBJS): CFLAGS_ALL += -DCRT
 
 $(LOBJS) $(LDSO_OBJS): CFLAGS_ALL += -fPIC
 
@@ -170,13 +176,10 @@ $(EMPTY_LIBS):
 	rm -f $@
 	$(AR) rc $@
 
+lib/%.o: obj/crt/$(ARCH)/%.o
+	cp $< $@
+
 lib/%.o: obj/crt/%.o
-	cp $< $@
-
-lib/crti.o: obj/crt/$(ARCH)/crti.o
-	cp $< $@
-
-lib/crtn.o: obj/crt/$(ARCH)/crtn.o
 	cp $< $@
 
 lib/musl-gcc.specs: $(srcdir)/tools/musl-gcc.specs.sh config.mak
