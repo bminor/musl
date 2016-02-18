@@ -5,6 +5,8 @@
 #define START "_dlstart"
 #endif
 
+#define SHARED
+
 #include "crt_arch.h"
 
 #ifndef GETFUNCSYM
