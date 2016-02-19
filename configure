@@ -588,6 +588,20 @@ fi
 if test "$ARCH" = "arm" ; then
 trycppif __ARMEB__ "$t" && SUBARCH=${SUBARCH}eb
 trycppif __ARM_PCS_VFP "$t" && SUBARCH=${SUBARCH}hf
+# Versions of clang up until at least 3.8 have the wrong constraint codes
+# for floating point operands to inline asm. Detect this so the affected
+# source files can just disable the asm.
+if test "$cc_family" = clang ; then
+printf "checking whether clang's vfp asm constraints work... "
+echo 'float f(float x) { __asm__("":"+t"(x)); return x; }' > "$tmpc"
+if $CC $CFLAGS_C99FSE $CPPFLAGS $CFLAGS -c -o /dev/null "$tmpc" >/dev/null 2>&1 ; then
+printf "yes\n"
+else
+printf "no\n"
+CFLAGS_AUTO="$CFLAGS_AUTO -DBROKEN_VFP_ASM"
+CFLAGS_AUTO="${CFLAGS_AUTO# }"
+fi
+fi
 fi
 
 if test "$ARCH" = "aarch64" ; then
