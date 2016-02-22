@@ -1678,3 +1678,16 @@ arch-specific bugs fixed:
 - possibly misaligned pointer globals on arm (from an asm source file)
 - mips dynamic linker failed to provide info needed by debugger
 - mips cancellation asm wrongly assumed validity of $gp register value
+
+
+
+1.1.14 release notes
+
+regressions fixed:
+- treatment of empty string argument as error by puts and fputs
+- make clean and distclean failure in unconfigured trees
+- sh/fdpic dynamic linker entry point hang due to wrong code
+- armhf (and arm softfp model) build failure with clang
+
+other bugs fixed:
+- wrongly clamping (rather than failing) excessive rounds in crypt-sha*
