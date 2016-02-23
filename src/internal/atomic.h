@@ -82,6 +82,23 @@ static inline int a_fetch_or(volatile int *p, int v)
 
 #endif
 
+#ifdef a_ll_p
+
+#ifndef a_cas_p
+#define a_cas_p a_cas_p
+static inline void *a_cas_p(volatile void *p, void *t, void *s)
+{
+	void *old;
+	a_pre_llsc();
+	do old = a_ll_p(p);
+	while (old==t && !a_sc_p(p, s));
+	a_post_llsc();
+	return old;
+}
+#endif
+
+#endif
+
 #ifndef a_cas
 #error missing definition of a_cas
 #endif
@@ -209,6 +226,7 @@ static inline void a_or_64(volatile uint64_t *p, uint64_t v)
 #endif
 
 #ifndef a_cas_p
+typedef char a_cas_p_undefined_but_pointer_not_32bit[-sizeof(char) == 0xffffffff ? 1 : -1];
 #define a_cas_p a_cas_p
 static inline void *a_cas_p(volatile void *p, void *t, void *s)
 {
