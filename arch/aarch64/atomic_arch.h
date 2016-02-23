@@ -34,6 +34,7 @@ static inline int a_cas(volatile int *p, int t, int s)
 	return old;
 }
 
+#define a_ll_p a_ll_p
 static inline void *a_ll_p(volatile void *p)
 {
 	void *v;
@@ -41,6 +42,7 @@ static inline void *a_ll_p(volatile void *p)
 	return v;
 }
 
+#define a_sc_p a_sc_p
 static inline int a_sc_p(volatile int *p, void *v)
 {
 	int r;
