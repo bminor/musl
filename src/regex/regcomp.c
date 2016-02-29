@@ -994,6 +994,10 @@ static reg_errcode_t tre_parse(tre_parse_ctx_t *ctx)
 			if (*s=='\\')
 				s++;
 
+			/* handle ^* at the start of a complete BRE. */
+			if (!ere && s==ctx->re+1 && s[-1]=='^')
+				break;
+
 			/* extension: multiple consecutive *+?{,} is unspecified,
 			   but (a+)+ has to be supported so accepting a++ makes
 			   sense, note however that the RE_DUP_MAX limit can be
