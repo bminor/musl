@@ -889,7 +889,6 @@ static reg_errcode_t parse_atom(tre_parse_ctx_t *ctx, const char *s)
 		s++;
 		break;
 	case '*':
-		return REG_BADPAT;
 	case '{':
 	case '+':
 	case '?':
@@ -978,9 +977,6 @@ static reg_errcode_t tre_parse(tre_parse_ctx_t *ctx)
 		}
 
 	parse_iter:
-		/* extension: repetitions are rejected after an empty node
-		   eg. (+), |*, {2}, but assertions are not treated as empty
-		   so ^* or $? are accepted currently. */
 		for (;;) {
 			int min, max;
 
