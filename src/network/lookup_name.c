@@ -49,7 +49,7 @@ static int name_from_hosts(struct address buf[static MAXADDRS], char canon[stati
 {
 	char line[512];
 	size_t l = strlen(name);
-	int cnt = 0;
+	int cnt = 0, badfam = 0;
 	unsigned char _buf[1032];
 	FILE _f, *f = __fopen_rb_ca("/etc/hosts", &_f, _buf, sizeof _buf);
 	if (!f) switch (errno) {
@@ -71,8 +71,16 @@ static int name_from_hosts(struct address buf[static MAXADDRS], char canon[stati
 		/* Isolate IP address to parse */
 		for (p=line; *p && !isspace(*p); p++);
 		*p++ = 0;
-		if (name_from_numeric(buf+cnt, line, family))
+		switch (name_from_numeric(buf+cnt, line, family)) {
+		case 1:
 			cnt++;
+			break;
+		case 0:
+			continue;
+		default:
+			badfam = EAI_NONAME;
+			continue;
+		}
 
 		/* Extract first name as canonical name */
 		for (; *p && isspace(*p); p++);
@@ -81,7 +89,7 @@ static int name_from_hosts(struct address buf[static MAXADDRS], char canon[stati
 		if (is_valid_hostname(p)) memcpy(canon, p, z-p+1);
 	}
 	__fclose_ca(f);
-	return cnt;
+	return cnt ? cnt : badfam;
 }
 
 struct dpc_ctx {
