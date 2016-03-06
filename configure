@@ -622,6 +622,8 @@ trycppif __mips_soft_float "$t" && SUBARCH=${SUBARCH}-sf
 fi
 
 if test "$ARCH" = "powerpc" ; then
+trycppif "__NO_FPRS__ && !_SOFT_FLOAT" "$t" && fail \
+  "$0: error: compiler's floating point configuration is unsupported"
 trycppif _SOFT_FLOAT "$t" && SUBARCH=${SUBARCH}-sf
 fi
 
