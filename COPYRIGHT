@@ -43,6 +43,7 @@ Gianluca Anzolin
 Hauke Mehrtens
 Hiltjo Posthuma
 Isaac Dunham
+Jaydeep Patil
 Jens Gustedt
 Jeremy Huntwork
 Jo-Philipp Wich
@@ -55,6 +56,7 @@ Kylie McClain
 Luca Barbato
 Luka Perkov
 M Farkas-Dyck (Strake)
+Mahesh Bodapati
 Michael Forney
 Natanael Copa
 Nicholas J. Kain
@@ -122,6 +124,9 @@ The mips and microblaze ports were originally written by Richard
 Pennington for use in the ellcc project. The original code was adapted
 by Rich Felker for build system and code conventions during upstream
 integration. It is licensed under the standard MIT terms.
+
+The mips64 port was contributed by Imagination Technologies and is
+licensed under the standard MIT terms.
 
 The powerpc port was also originally written by Richard Pennington,
 and later supplemented and integrated by John Spencer. It is licensed

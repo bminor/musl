@@ -62,6 +62,12 @@ and ABI combinations:
     * MIPS2 or later, or kernel emulation of ll/sc (standard in Linux)
       is required
 
+* MIPS64
+    * ABI is n64 (LP64)
+    * Big-endian default; little-endian variants also supported
+    * Default ABI variant uses FPU registers; alternate soft-float ABI
+      that does not use FPU registers or instructions is available
+
 * PowerPC
     * Only 32-bit is supported
     * Compiler toolchain must provide 64-bit long double, not IBM
