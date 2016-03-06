@@ -1134,7 +1134,7 @@ static void do_mips_relocs(struct dso *p, size_t *got)
 	Sym *sym = p->syms + j;
 	rel[0] = (unsigned char *)got - base;
 	for (i-=j; i; i--, sym++, rel[0]+=sizeof(size_t)) {
-		rel[1] = sym-p->syms << 8 | R_MIPS_JUMP_SLOT;
+		rel[1] = R_INFO(sym-p->syms, R_MIPS_JUMP_SLOT);
 		do_relocs(p, rel, sizeof rel, 2);
 	}
 }
