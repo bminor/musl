@@ -299,7 +299,7 @@ printf "%s\n" "$target"
 #
 case "$target" in
 # Catch these early to simplify matching for 32-bit archs
-mips64*|powerpc64*) fail "$0: unsupported target \"$target\"" ;;
+powerpc64*) fail "$0: unsupported target \"$target\"" ;;
 arm*) ARCH=arm ;;
 aarch64*) ARCH=aarch64 ;;
 i?86-nt32*) ARCH=nt32 ;;
@@ -307,6 +307,7 @@ i?86*) ARCH=i386 ;;
 x86_64-x32*|x32*|x86_64*x32) ARCH=x32 ;;
 x86_64-nt64*) ARCH=nt64 ;;
 x86_64*) ARCH=x86_64 ;;
+mips64*) ARCH=mips64 ;;
 mips*) ARCH=mips ;;
 microblaze*) ARCH=microblaze ;;
 or1k*) ARCH=or1k ;;
@@ -611,6 +612,11 @@ trycppif __AARCH64EB__ "$t" && SUBARCH=${SUBARCH}_be
 fi
 
 if test "$ARCH" = "mips" ; then
+trycppif "_MIPSEL || __MIPSEL || __MIPSEL__" "$t" && SUBARCH=${SUBARCH}el
+trycppif __mips_soft_float "$t" && SUBARCH=${SUBARCH}-sf
+fi
+
+if test "$ARCH" = "mips64" ; then
 trycppif "_MIPSEL || __MIPSEL || __MIPSEL__" "$t" && SUBARCH=${SUBARCH}el
 trycppif __mips_soft_float "$t" && SUBARCH=${SUBARCH}-sf
 fi
