@@ -19,22 +19,22 @@ static inline int a_sc(volatile int *p, int v)
 }
 
 #define a_ll_p a_ll_p
-static inline void *a_ll_p(volatile long *p)
+static inline void *a_ll_p(volatile void *p)
 {
 	void *v;
 	__asm__ __volatile__ (
 		"lld %0, %1"
-		: "=r"(v) : "m"(*p));
+		: "=r"(v) : "m"(*(void *volatile *)p));
 	return v;
 }
 
 #define a_sc_p a_sc_p
-static inline int a_sc_p(volatile long *p, void *v)
+static inline int a_sc_p(volatile void *p, void *v)
 {
 	long r;
 	__asm__ __volatile__ (
 		"scd %0, %1"
-		: "=r"(r), "=m"(*p) : "0"(v) : "memory");
+		: "=r"(r), "=m"(*(void *volatile *)p) : "0"(v) : "memory");
 	return r;
 }
 
