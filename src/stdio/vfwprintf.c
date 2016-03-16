@@ -288,9 +288,9 @@ static int wprintf_core(FILE *f, const wchar_t *fmt, va_list *ap, union arg *nl_
 			z = wmemchr(a, 0, p);
 			if (z) p=z-a;
 			if (w<p) w=p;
-			if (!(fl&LEFT_ADJ)) fprintf(f, "%.*s", w-p, "");
+			if (!(fl&LEFT_ADJ)) fprintf(f, "%*s", w-p, "");
 			out(f, a, p);
-			if ((fl&LEFT_ADJ)) fprintf(f, "%.*s", w-p, "");
+			if ((fl&LEFT_ADJ)) fprintf(f, "%*s", w-p, "");
 			l=w;
 			continue;
 		case 'm':
@@ -303,14 +303,14 @@ static int wprintf_core(FILE *f, const wchar_t *fmt, va_list *ap, union arg *nl_
 			if (i<0) return -1;
 			p=l;
 			if (w<p) w=p;
-			if (!(fl&LEFT_ADJ)) fprintf(f, "%.*s", w-p, "");
+			if (!(fl&LEFT_ADJ)) fprintf(f, "%*s", w-p, "");
 			bs = arg.p;
 			while (l--) {
 				i=mbtowc(&wc, bs, MB_LEN_MAX);
 				bs+=i;
 				fputwc(wc, f);
 			}
-			if ((fl&LEFT_ADJ)) fprintf(f, "%.*s", w-p, "");
+			if ((fl&LEFT_ADJ)) fprintf(f, "%*s", w-p, "");
 			l=w;
 			continue;
 		}
