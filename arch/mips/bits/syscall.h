@@ -357,6 +357,7 @@
 #define __NR_userfaultfd             4357
 #define __NR_membarrier              4358
 #define __NR_mlock2                  4359
+#define __NR_copy_file_range         4360
 
 
 /* Repeated with SYS_ prefix */
@@ -719,3 +720,4 @@
 #define SYS_userfaultfd             4357
 #define SYS_membarrier              4358
 #define SYS_mlock2                  4359
+#define SYS_copy_file_range         4360

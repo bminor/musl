@@ -324,6 +324,7 @@
 #define __NR_userfaultfd			323
 #define __NR_membarrier				324
 #define __NR_mlock2				325
+#define __NR_copy_file_range			326
 
 
 
@@ -655,3 +656,4 @@
 #define SYS_userfaultfd				323
 #define SYS_membarrier				324
 #define SYS_mlock2				325
+#define SYS_copy_file_range			326

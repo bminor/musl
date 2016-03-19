@@ -317,6 +317,7 @@
 #define __NR_userfaultfd		5317
 #define __NR_membarrier			5318
 #define __NR_mlock2			5319
+#define __NR_copy_file_range		5320
 
 #define SYS_read			5000
 #define SYS_write			5001
@@ -637,3 +638,4 @@
 #define SYS_userfaultfd			5317
 #define SYS_membarrier			5318
 #define SYS_mlock2			5319
+#define SYS_copy_file_range		5320

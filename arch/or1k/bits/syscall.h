@@ -268,6 +268,7 @@
 #define __NR_userfaultfd 282
 #define __NR_membarrier 283
 #define __NR_mlock2 284
+#define __NR_copy_file_range 285
 
 #define SYS_io_setup __NR_io_setup
 #define SYS_io_destroy __NR_io_destroy
@@ -539,3 +540,4 @@
 #define SYS_userfaultfd __NR_userfaultfd
 #define SYS_membarrier __NR_membarrier
 #define SYS_mlock2 __NR_mlock2
+#define SYS_copy_file_range __NR_copy_file_range
