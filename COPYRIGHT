@@ -94,14 +94,14 @@ Copyright © 2008 Stephen L. Moshier
 and labelled as such in comments in the individual source files. All
 have been licensed under extremely permissive terms.
 
-The ARM memcpy code (src/string/armel/memcpy.s) is Copyright © 2008
+The ARM memcpy code (src/string/arm/memcpy_el.S) is Copyright © 2008
 The Android Open Source Project and is licensed under a two-clause BSD
 license. It was taken from Bionic libc, used on Android.
 
-The implementation of DES for crypt (src/misc/crypt_des.c) is
+The implementation of DES for crypt (src/crypt/crypt_des.c) is
 Copyright © 1994 David Burren. It is licensed under a BSD license.
 
-The implementation of blowfish crypt (src/misc/crypt_blowfish.c) was
+The implementation of blowfish crypt (src/crypt/crypt_blowfish.c) was
 originally written by Solar Designer and placed into the public
 domain. The code also comes with a fallback permissive license for use
 in jurisdictions that may not recognize the public domain.
