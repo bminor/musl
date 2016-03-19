@@ -344,6 +344,7 @@ struct ip6_mtuinfo
 #define IPV6_LEAVE_ANYCAST      28
 #define IPV6_IPSEC_POLICY       34
 #define IPV6_XFRM_POLICY        35
+#define IPV6_HDRINCL            36
 
 #define IPV6_RECVPKTINFO        49
 #define IPV6_PKTINFO            50
