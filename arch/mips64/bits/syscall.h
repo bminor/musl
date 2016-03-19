@@ -314,6 +314,9 @@
 #define __NR_memfd_create		5314
 #define __NR_bpf			5315
 #define __NR_execveat			5316
+#define __NR_userfaultfd		5317
+#define __NR_membarrier			5318
+#define __NR_mlock2			5319
 
 #define SYS_read			5000
 #define SYS_write			5001
@@ -631,3 +634,6 @@
 #define SYS_memfd_create		5314
 #define SYS_bpf				5315
 #define SYS_execveat			5316
+#define SYS_userfaultfd			5317
+#define SYS_membarrier			5318
+#define SYS_mlock2			5319
