@@ -62,6 +62,7 @@ extern "C" {
 #define MADV_SEQUENTIAL  2
 #define MADV_WILLNEED    3
 #define MADV_DONTNEED    4
+#define MADV_FREE        8
 #define MADV_REMOVE      9
 #define MADV_DONTFORK    10
 #define MADV_DOFORK      11
