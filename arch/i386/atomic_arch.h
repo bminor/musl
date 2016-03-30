@@ -71,7 +71,7 @@ static inline void a_barrier()
 	__asm__ __volatile__( "" : : : "memory" );
 }
 
-#define a_pause a_pause
+#define a_spin a_spin
 static inline void a_spin()
 {
 	__asm__ __volatile__( "pause" : : : "memory" );
