@@ -612,11 +612,13 @@ trycppif __AARCH64EB__ "$t" && SUBARCH=${SUBARCH}_be
 fi
 
 if test "$ARCH" = "mips" ; then
+trycppif "__mips_isa_rev >= 6" "$t" && SUBARCH=${SUBARCH}r6
 trycppif "_MIPSEL || __MIPSEL || __MIPSEL__" "$t" && SUBARCH=${SUBARCH}el
 trycppif __mips_soft_float "$t" && SUBARCH=${SUBARCH}-sf
 fi
 
 if test "$ARCH" = "mips64" ; then
+trycppif "__mips_isa_rev >= 6" "$t" && SUBARCH=${SUBARCH}r6
 trycppif "_MIPSEL || __MIPSEL || __MIPSEL__" "$t" && SUBARCH=${SUBARCH}el
 trycppif __mips_soft_float "$t" && SUBARCH=${SUBARCH}-sf
 fi
