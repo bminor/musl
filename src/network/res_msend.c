@@ -52,7 +52,6 @@ int __res_msend_rc(int nqueries, const unsigned char *const *queries,
 	timeout = 1000*conf->timeout;
 	attempts = conf->attempts;
 
-	nns = conf->nns;
 	for (nns=0; nns<conf->nns; nns++) {
 		const struct address *iplit = &conf->ns[nns];
 		if (iplit->family == AF_INET) {
