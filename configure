@@ -618,6 +618,7 @@ trycppif __mips_soft_float "$t" && SUBARCH=${SUBARCH}-sf
 fi
 
 if test "$ARCH" = "mips64" ; then
+trycppif "_MIPS_SIM != _ABI64" "$t" && ARCH=mipsn32
 trycppif "__mips_isa_rev >= 6" "$t" && SUBARCH=${SUBARCH}r6
 trycppif "_MIPSEL || __MIPSEL || __MIPSEL__" "$t" && SUBARCH=${SUBARCH}el
 trycppif __mips_soft_float "$t" && SUBARCH=${SUBARCH}-sf
