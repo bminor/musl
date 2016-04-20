@@ -2032,14 +2032,20 @@ typedef Elf32_Addr Elf32_Conflict;
 #define R_PPC64_REL16_HI	251
 #define R_PPC64_REL16_HA	252
 
+#define EF_PPC64_ABI	3
 
 #define DT_PPC64_GLINK  (DT_LOPROC + 0)
 #define DT_PPC64_OPD	(DT_LOPROC + 1)
 #define DT_PPC64_OPDSZ	(DT_LOPROC + 2)
-#define DT_PPC64_NUM    3
+#define DT_PPC64_OPT	(DT_LOPROC + 3)
+#define DT_PPC64_NUM	4
 
+#define PPC64_OPT_TLS		1
+#define PPC64_OPT_MULTI_TOC	2
 
-
+#define STO_PPC64_LOCAL_BIT	5
+#define STO_PPC64_LOCAL_MASK	0xe0
+#define PPC64_LOCAL_ENTRY_OFFSET(x) (1 << (((x)&0xe0)>>5) & 0xfc)
 
 
 #define EF_ARM_RELEXEC		0x01
