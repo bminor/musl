@@ -1487,7 +1487,8 @@ typedef struct {
 #define DT_MIPS_PLTGOT	     0x70000032
 
 #define DT_MIPS_RWPLT        0x70000034
-#define DT_MIPS_NUM	     0x35
+#define DT_MIPS_RLD_MAP_REL  0x70000035
+#define DT_MIPS_NUM	     0x36
 
 
 
