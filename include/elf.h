@@ -1928,7 +1928,8 @@ enum
 #define R_PPC_GOT_DTPREL16_LO	92
 #define R_PPC_GOT_DTPREL16_HI	93
 #define R_PPC_GOT_DTPREL16_HA	94
-
+#define R_PPC_TLSGD		95
+#define R_PPC_TLSLD		96
 
 
 #define R_PPC_EMB_NADDR32	101
@@ -1971,7 +1972,10 @@ enum
 
 
 #define DT_PPC_GOT		(DT_LOPROC + 0)
-#define DT_PPC_NUM		1
+#define DT_PPC_OPT		(DT_LOPROC + 1)
+#define DT_PPC_NUM		2
+
+#define PPC_OPT_TLS		1
 
 
 #define R_PPC64_NONE		R_PPC_NONE
