@@ -1154,6 +1154,7 @@ typedef struct {
 #define EF_MIPS_64BIT_WHIRL 16
 #define EF_MIPS_ABI2	    32
 #define EF_MIPS_ABI_ON32    64
+#define EF_MIPS_FP64	    512
 #define EF_MIPS_NAN2008     1024
 #define EF_MIPS_ARCH	    0xf0000000
 
@@ -1398,6 +1399,7 @@ typedef struct {
 #define PT_MIPS_REGINFO	0x70000000
 #define PT_MIPS_RTPROC  0x70000001
 #define PT_MIPS_OPTIONS 0x70000002
+#define PT_MIPS_ABIFLAGS 0x70000003
 
 
 
@@ -1517,7 +1519,74 @@ typedef struct
 
 typedef Elf32_Addr Elf32_Conflict;
 
+typedef struct
+{
+  Elf32_Half version;
+  unsigned char isa_level;
+  unsigned char isa_rev;
+  unsigned char gpr_size;
+  unsigned char cpr1_size;
+  unsigned char cpr2_size;
+  unsigned char fp_abi;
+  Elf32_Word isa_ext;
+  Elf32_Word ases;
+  Elf32_Word flags1;
+  Elf32_Word flags2;
+} Elf_MIPS_ABIFlags_v0;
 
+#define MIPS_AFL_REG_NONE	0x00
+#define MIPS_AFL_REG_32		0x01
+#define MIPS_AFL_REG_64		0x02
+#define MIPS_AFL_REG_128	0x03
+
+#define MIPS_AFL_ASE_DSP	0x00000001
+#define MIPS_AFL_ASE_DSPR2	0x00000002
+#define MIPS_AFL_ASE_EVA	0x00000004
+#define MIPS_AFL_ASE_MCU	0x00000008
+#define MIPS_AFL_ASE_MDMX	0x00000010
+#define MIPS_AFL_ASE_MIPS3D	0x00000020
+#define MIPS_AFL_ASE_MT		0x00000040
+#define MIPS_AFL_ASE_SMARTMIPS	0x00000080
+#define MIPS_AFL_ASE_VIRT	0x00000100
+#define MIPS_AFL_ASE_MSA	0x00000200
+#define MIPS_AFL_ASE_MIPS16	0x00000400
+#define MIPS_AFL_ASE_MICROMIPS	0x00000800
+#define MIPS_AFL_ASE_XPA	0x00001000
+#define MIPS_AFL_ASE_MASK	0x00001fff
+
+#define MIPS_AFL_EXT_XLR	  1
+#define MIPS_AFL_EXT_OCTEON2	  2
+#define MIPS_AFL_EXT_OCTEONP	  3
+#define MIPS_AFL_EXT_LOONGSON_3A  4
+#define MIPS_AFL_EXT_OCTEON	  5
+#define MIPS_AFL_EXT_5900	  6
+#define MIPS_AFL_EXT_4650	  7
+#define MIPS_AFL_EXT_4010	  8
+#define MIPS_AFL_EXT_4100	  9
+#define MIPS_AFL_EXT_3900	  10
+#define MIPS_AFL_EXT_10000	  11
+#define MIPS_AFL_EXT_SB1	  12
+#define MIPS_AFL_EXT_4111	  13
+#define MIPS_AFL_EXT_4120	  14
+#define MIPS_AFL_EXT_5400	  15
+#define MIPS_AFL_EXT_5500	  16
+#define MIPS_AFL_EXT_LOONGSON_2E  17
+#define MIPS_AFL_EXT_LOONGSON_2F  18
+
+#define MIPS_AFL_FLAGS1_ODDSPREG  1
+
+enum
+{
+  Val_GNU_MIPS_ABI_FP_ANY = 0,
+  Val_GNU_MIPS_ABI_FP_DOUBLE = 1,
+  Val_GNU_MIPS_ABI_FP_SINGLE = 2,
+  Val_GNU_MIPS_ABI_FP_SOFT = 3,
+  Val_GNU_MIPS_ABI_FP_OLD_64 = 4,
+  Val_GNU_MIPS_ABI_FP_XX = 5,
+  Val_GNU_MIPS_ABI_FP_64 = 6,
+  Val_GNU_MIPS_ABI_FP_64A = 7,
+  Val_GNU_MIPS_ABI_FP_MAX = 7
+};
 
 
 
