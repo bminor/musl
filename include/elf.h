@@ -210,6 +210,7 @@ typedef struct {
 #define EM_MN10200	90
 #define EM_PJ		91
 #define EM_OR1K		92
+#define EM_OPENRISC	92
 #define EM_ARC_A5	93
 #define EM_XTENSA	94
 #define EM_AARCH64	183
