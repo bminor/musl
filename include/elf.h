@@ -1045,7 +1045,8 @@ typedef struct {
 #define R_386_TLS_DESC_CALL 40
 #define R_386_TLS_DESC     41
 #define R_386_IRELATIVE	   42
-#define R_386_NUM	   43
+#define R_386_GOT32X	   43
+#define R_386_NUM	   44
 
 
 
@@ -2791,7 +2792,9 @@ enum
 #define R_X86_64_TLSDESC        36
 #define R_X86_64_IRELATIVE	37
 #define R_X86_64_RELATIVE64	38
-#define R_X86_64_NUM		39
+#define R_X86_64_GOTPCRELX	41
+#define R_X86_64_REX_GOTPCRELX	42
+#define R_X86_64_NUM		43
 
 
 
