@@ -318,10 +318,33 @@ typedef struct {
 
 #define SHF_GROUP	     (1 << 9)
 #define SHF_TLS		     (1 << 10)
+#define SHF_COMPRESSED	     (1 << 11)
 #define SHF_MASKOS	     0x0ff00000
 #define SHF_MASKPROC	     0xf0000000
 #define SHF_ORDERED	     (1 << 30)
 #define SHF_EXCLUDE	     (1U << 31)
+
+typedef struct
+{
+  Elf32_Word	ch_type;
+  Elf32_Word	ch_size;
+  Elf32_Word	ch_addralign;
+} Elf32_Chdr;
+
+typedef struct
+{
+  Elf64_Word	ch_type;
+  Elf64_Word	ch_reserved;
+  Elf64_Xword	ch_size;
+  Elf64_Xword	ch_addralign;
+} Elf64_Chdr;
+
+#define ELFCOMPRESS_ZLIB	1
+#define ELFCOMPRESS_LOOS	0x60000000
+#define ELFCOMPRESS_HIOS	0x6fffffff
+#define ELFCOMPRESS_LOPROC	0x70000000
+#define ELFCOMPRESS_HIPROC	0x7fffffff
+
 
 #define GRP_COMDAT	0x1
 
