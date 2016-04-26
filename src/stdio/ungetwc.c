@@ -8,7 +8,7 @@
 wint_t ungetwc(wint_t c, FILE *f)
 {
 	unsigned char mbc[MB_LEN_MAX];
-	int l=1;
+	int l;
 	locale_t *ploc = &CURRENT_LOCALE, loc = *ploc;
 
 	FLOCK(f);
@@ -17,8 +17,8 @@ wint_t ungetwc(wint_t c, FILE *f)
 	*ploc = f->locale;
 
 	if (!f->rpos) __toread(f);
-	if (!f->rpos || f->rpos < f->buf - UNGET + l || c == WEOF ||
-	    (!isascii(c) && (l = wctomb((void *)mbc, c)) < 0)) {
+	if (!f->rpos || c == WEOF || (l = wcrtomb((void *)mbc, c, 0)) < 0 ||
+	    f->rpos < f->buf - UNGET + l) {
 		FUNLOCK(f);
 		*ploc = loc;
 		return WEOF;
