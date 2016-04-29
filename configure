@@ -25,6 +25,7 @@ Fine tuning of the installation directories:
 System types:
   --target=TARGET         configure to run on target TARGET [detected]
   --host=HOST             same as --target
+  --build=BUILD           build system type; used only to infer cross-compiling
 
 Optional features:
   --enable-optimize=...   optimize listed components for speed over size [auto]
@@ -129,6 +130,7 @@ includedir='$(prefix)/include'
 syslibdir='/lib'
 tools=
 tool_libs=
+build=
 target=
 optimize=auto
 debug=no
@@ -172,6 +174,7 @@ case "$arg" in
 --disable-gcc-wrapper|--enable-gcc-wrapper=no) wrapper=no ;;
 --enable-*|--disable-*|--with-*|--without-*|--*dir=*|--build=*) ;;
 --host=*|--target=*) target=${arg#*=} ;;
+--build=*) build=${arg#*=} ;;
 -* ) echo "$0: unknown option $arg" ;;
 CC=*) CC=${arg#*=} ;;
 CFLAGS=*) CFLAGS=${arg#*=} ;;
@@ -180,7 +183,7 @@ LDFLAGS=*) LDFLAGS=${arg#*=} ;;
 CROSS_COMPILE=*) CROSS_COMPILE=${arg#*=} ;;
 LIBCC=*) LIBCC=${arg#*=} ;;
 *=*) ;;
-*) target=$arg ;;
+*) build=$arg ; target=$arg ;;
 esac
 done
 
@@ -212,6 +215,15 @@ test "$i" -gt 50 && fail "$0: cannot create temporary file $tmpc"
 done
 set +C
 trap 'rm "$tmpc"' EXIT INT QUIT TERM HUP
+
+#
+# Check whether we are cross-compiling, and set a default
+# CROSS_COMPILE prefix if none was provided.
+#
+test "$target" && \
+test "$target" != "$build" && \
+test -z "$CROSS_COMPILE" && \
+CROSS_COMPILE="$target-"
 
 #
 # Find a C compiler to use
