@@ -115,10 +115,8 @@ licensed under following terms: "Permission to use, copy, modify,
 and/or distribute this code for any purpose with or without fee is
 hereby granted. There is no warranty."
 
-The x86_64 port was written by Nicholas J. Kain. Several files (crt)
-were released into the public domain; others are licensed under the
-standard MIT license terms at the top of this file. See individual
-files for their copyright status.
+The x86_64 port was written by Nicholas J. Kain and is licensed under
+the standard MIT terms.
 
 The mips and microblaze ports were originally written by Richard
 Pennington for use in the ellcc project. The original code was adapted
@@ -140,15 +138,26 @@ can be found in the git version control history of the project. The
 omission of copyright and license comments in each file is in the
 interest of source tree size.
 
-All public header files (include/* and arch/*/bits/*) should be
-treated as Public Domain as they intentionally contain no content
-which can be covered by copyright. Some source modules may fall in
-this category as well. If you believe that a file is so trivial that
-it should be in the Public Domain, please contact the authors and
-request an explicit statement releasing it from copyright.
+In addition, permission is hereby granted for all public header files
+(include/* and arch/*/bits/*) and crt files intended to be linked into
+applications (crt/*, ldso/dlstart.c, and arch/*/crt_arch.h) to omit
+the copyright notice and permission notice otherwise required by the
+license, and to use these files without any requirement of
+attribution. These files include substantial contributions from:
 
-The following files are trivial, believed not to be copyrightable in
-the first place, and hereby explicitly released to the Public Domain:
+Bobby Bingham
+John Spencer
+Nicholas J. Kain
+Rich Felker
+Richard Pennington
+Stefan Kristiansson
+Szabolcs Nagy
 
-All public headers: include/*, arch/*/bits/*
-Startup files: crt/*
+all of whom have explicitly granted such permission.
+
+This file previously contained text expressing a belief that most of
+the files covered by the above exception were sufficiently trivial not
+to be subject to copyright, resulting in confusion over whether it
+negated the permissions granted in the license. In the spirit of
+permissive licensing, and of not having licensing issues being an
+obstacle to adoption, that text has been removed.
