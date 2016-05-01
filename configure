@@ -311,7 +311,6 @@ printf "%s\n" "$target"
 #
 case "$target" in
 # Catch these early to simplify matching for 32-bit archs
-powerpc64*) fail "$0: unsupported target \"$target\"" ;;
 arm*) ARCH=arm ;;
 aarch64*) ARCH=aarch64 ;;
 i?86-nt32*) ARCH=nt32 ;;
@@ -323,6 +322,7 @@ mips64*) ARCH=mips64 ;;
 mips*) ARCH=mips ;;
 microblaze*) ARCH=microblaze ;;
 or1k*) ARCH=or1k ;;
+powerpc64*) ARCH=powerpc64 ;;
 powerpc*) ARCH=powerpc ;;
 sh[1-9bel-]*|sh|superh*) ARCH=sh ;;
 unknown) fail "$0: unable to detect target arch; try $0 --target=..." ;;
@@ -644,6 +644,12 @@ fi
 
 test "$ARCH" = "microblaze" && trycppif __MICROBLAZEEL__ "$t" \
 && SUBARCH=${SUBARCH}el
+
+if test "$ARCH" = "powerpc64" ; then
+trycppif "_CALL_ELF == 2" "$t" || fail "$0: error: unsupported powerpc64 ABI"
+trycppif __LITTLE_ENDIAN__ "$t" && SUBARCH=${SUBARCH}le
+trycppif _SOFT_FLOAT "$t" && fail "$0: error: soft-float not supported on powerpc64"
+fi
 
 if test "$ARCH" = "sh" ; then
 tryflag CFLAGS_AUTO -Wa,--isa=any
