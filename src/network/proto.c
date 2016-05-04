@@ -12,7 +12,7 @@ static const unsigned char protos[] = {
 	"\004ipencap\0"
 	"\005st\0"
 	"\006tcp\0"
-	"\008egp\0"
+	"\010egp\0"
 	"\014pup\0"
 	"\021udp\0"
 	"\024hmp\0"
