@@ -172,7 +172,7 @@ case "$arg" in
 --disable-wrapper|--enable-wrapper=no) wrapper=no ;;
 --enable-gcc-wrapper|--enable-gcc-wrapper=yes) wrapper=yes ; gcc_wrapper=yes ;;
 --disable-gcc-wrapper|--enable-gcc-wrapper=no) wrapper=no ;;
---enable-*|--disable-*|--with-*|--without-*|--*dir=*|--build=*) ;;
+--enable-*|--disable-*|--with-*|--without-*|--*dir=*) ;;
 --host=*|--target=*) target=${arg#*=} ;;
 --build=*) build=${arg#*=} ;;
 -* ) echo "$0: unknown option $arg" ;;
