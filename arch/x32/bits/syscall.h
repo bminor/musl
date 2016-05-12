@@ -317,16 +317,6 @@
 #define __NR_io_submit (__X32_SYSCALL_BIT + 544)
 #define __NR_execveat (__X32_SYSCALL_BIT + 545)
 
-#undef __NR_fstatat
-#undef __NR_pread
-#undef __NR_pwrite
-#undef __NR_getdents
-#define __NR_fstatat __NR_newfstatat
-#define __NR_pread __NR_pread64
-#define __NR_pwrite __NR_pwrite64
-#define __NR_getdents __NR_getdents64
-#define __NR_fadvise __NR_fadvise64
-
 
 
 /* Repeat with SYS_ prefix */
@@ -651,13 +641,3 @@
 #define SYS_io_setup __NR_io_setup
 #define SYS_io_submit __NR_io_submit
 #define SYS_execveat __NR_execveat
-
-#undef SYS_fstatat
-#undef SYS_pread
-#undef SYS_pwrite
-#undef SYS_getdents
-#define SYS_fstatat SYS_newfstatat
-#define SYS_pread SYS_pread64
-#define SYS_pwrite SYS_pwrite64
-#define SYS_getdents SYS_getdents64
-#define SYS_fadvise SYS_fadvise64
