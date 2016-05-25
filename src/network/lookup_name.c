@@ -145,11 +145,15 @@ static int name_from_dns(struct address buf[static MAXADDRS], char canon[static 
 	if (family != AF_INET6) {
 		qlens[nq] = __res_mkquery(0, name, 1, RR_A, 0, 0, 0,
 			qbuf[nq], sizeof *qbuf);
+		if (qlens[nq] == -1)
+			return EAI_NONAME;
 		nq++;
 	}
 	if (family != AF_INET) {
 		qlens[nq] = __res_mkquery(0, name, 1, RR_AAAA, 0, 0, 0,
 			qbuf[nq], sizeof *qbuf);
+		if (qlens[nq] == -1)
+			return EAI_NONAME;
 		nq++;
 	}
 
