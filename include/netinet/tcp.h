@@ -184,6 +184,10 @@ struct tcp_info
 	uint64_t tcpi_bytes_received;
 	uint32_t tcpi_segs_out;
 	uint32_t tcpi_segs_in;
+	uint32_t tcpi_notsent_bytes;
+	uint32_t tcpi_min_rtt;
+	uint32_t tcpi_data_segs_in;
+	uint32_t tcpi_data_segs_out;
 };
 
 #define TCP_MD5SIG_MAXKEYLEN    80
