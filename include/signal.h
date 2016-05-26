@@ -74,6 +74,7 @@ typedef struct sigaltstack stack_t;
 #define SEGV_MAPERR 1
 #define SEGV_ACCERR 2
 #define SEGV_BNDERR 3
+#define SEGV_PKUERR 4
 
 #define BUS_ADRALN 1
 #define BUS_ADRERR 2
@@ -123,10 +124,13 @@ typedef struct {
 		struct {
 			void *si_addr;
 			short si_addr_lsb;
-			struct {
-				void *si_lower;
-				void *si_upper;
-			} __addr_bnd;
+			union {
+				struct {
+					void *si_lower;
+					void *si_upper;
+				} __addr_bnd;
+				unsigned si_pkey;
+			} __first;
 		} __sigfault;
 		struct {
 			long si_band;
@@ -147,8 +151,9 @@ typedef struct {
 #define si_value   __si_fields.__si_common.__second.si_value
 #define si_addr    __si_fields.__sigfault.si_addr
 #define si_addr_lsb __si_fields.__sigfault.si_addr_lsb
-#define si_lower   __si_fields.__sigfault.__addr_bnd.si_lower
-#define si_upper   __si_fields.__sigfault.__addr_bnd.si_upper
+#define si_lower   __si_fields.__sigfault.__first.__addr_bnd.si_lower
+#define si_upper   __si_fields.__sigfault.__first.__addr_bnd.si_upper
+#define si_pkey    __si_fields.__sigfault.__first.si_pkey
 #define si_band    __si_fields.__sigpoll.si_band
 #define si_fd      __si_fields.__sigpoll.si_fd
 #define si_timerid __si_fields.__si_common.__first.__timer.si_timerid
