@@ -109,7 +109,8 @@ struct linger
 #define PF_ALG          38
 #define PF_NFC          39
 #define PF_VSOCK        40
-#define PF_MAX          41
+#define PF_KCM          41
+#define PF_MAX          42
 
 #define AF_UNSPEC       PF_UNSPEC
 #define AF_LOCAL        PF_LOCAL
@@ -155,6 +156,7 @@ struct linger
 #define AF_ALG          PF_ALG
 #define AF_NFC          PF_NFC
 #define AF_VSOCK        PF_VSOCK
+#define AF_KCM          PF_KCM
 #define AF_MAX          PF_MAX
 
 #ifndef SO_DEBUG
@@ -239,6 +241,21 @@ struct linger
 #define SOL_ATM         264
 #define SOL_AAL         265
 #define SOL_IRDA        266
+#define SOL_NETBEUI     267
+#define SOL_LLC         268
+#define SOL_DCCP        269
+#define SOL_NETLINK     270
+#define SOL_TIPC        271
+#define SOL_RXRPC       272
+#define SOL_PPPOL2TP    273
+#define SOL_BLUETOOTH   274
+#define SOL_PNPIPE      275
+#define SOL_RDS         276
+#define SOL_IUCV        277
+#define SOL_CAIF        278
+#define SOL_ALG         279
+#define SOL_NFC         280
+#define SOL_KCM         281
 
 #define SOMAXCONN       128
 
@@ -259,6 +276,7 @@ struct linger
 #define MSG_NOSIGNAL  0x4000
 #define MSG_MORE      0x8000
 #define MSG_WAITFORONE 0x10000
+#define MSG_BATCH     0x40000
 #define MSG_FASTOPEN  0x20000000
 #define MSG_CMSG_CLOEXEC 0x40000000
 
