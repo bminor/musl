@@ -141,20 +141,19 @@ static int name_from_dns(struct address buf[static MAXADDRS], char canon[static 
 	int qlens[2], alens[2];
 	int i, nq = 0;
 	struct dpc_ctx ctx = { .addrs = buf, .canon = canon };
+	static const struct { int af; int rr; } afrr[2] = {
+		{ .af = AF_INET6, .rr = RR_A },
+		{ .af = AF_INET, .rr = RR_AAAA },
+	};
 
-	if (family != AF_INET6) {
-		qlens[nq] = __res_mkquery(0, name, 1, RR_A, 0, 0, 0,
-			qbuf[nq], sizeof *qbuf);
-		if (qlens[nq] == -1)
-			return EAI_NONAME;
-		nq++;
-	}
-	if (family != AF_INET) {
-		qlens[nq] = __res_mkquery(0, name, 1, RR_AAAA, 0, 0, 0,
-			qbuf[nq], sizeof *qbuf);
-		if (qlens[nq] == -1)
-			return EAI_NONAME;
-		nq++;
+	for (i=0; i<2; i++) {
+		if (family != afrr[i].af) {
+			qlens[nq] = __res_mkquery(0, name, 1, afrr[i].rr,
+				0, 0, 0, qbuf[nq], sizeof *qbuf);
+			if (qlens[nq] == -1)
+				return EAI_NONAME;
+			nq++;
+		}
 	}
 
 	if (__res_msend_rc(nq, qp, qlens, ap, alens, sizeof *abuf, conf) < 0)
