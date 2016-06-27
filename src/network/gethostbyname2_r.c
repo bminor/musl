@@ -58,6 +58,13 @@ int gethostbyname2_r(const char *name, int af,
 	h->h_addr_list = (void *)buf;
 	buf += (cnt+1)*sizeof(char *);
 
+	for (i=0; i<cnt; i++) {
+		h->h_addr_list[i] = (void *)buf;
+		buf += h->h_length;
+		memcpy(h->h_addr_list[i], addrs[i].addr, h->h_length);
+	}
+	h->h_addr_list[i] = 0;
+
 	h->h_name = h->h_aliases[0] = buf;
 	strcpy(h->h_name, canon);
 	buf += strlen(h->h_name)+1;
@@ -69,13 +76,6 @@ int gethostbyname2_r(const char *name, int af,
 	} else h->h_aliases[1] = 0;
 
 	h->h_aliases[2] = 0;
-
-	for (i=0; i<cnt; i++) {
-		h->h_addr_list[i] = (void *)buf;
-		buf += h->h_length;
-		memcpy(h->h_addr_list[i], addrs[i].addr, h->h_length);
-	}
-	h->h_addr_list[i] = 0;
 
 	*res = h;
 	return 0;
