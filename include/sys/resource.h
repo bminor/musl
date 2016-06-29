@@ -69,6 +69,7 @@ int prlimit(pid_t, int, const struct rlimit *, struct rlimit *);
 
 #define RUSAGE_SELF     0
 #define RUSAGE_CHILDREN (-1)
+#define RUSAGE_THREAD   1
 
 #define RLIM_INFINITY (~0ULL)
 #define RLIM_SAVED_CUR RLIM_INFINITY
