@@ -120,15 +120,10 @@
 /* end kernel header ioctls.h */
 
 
-#define TIOCTTYGSTRUCT	0x5426
-
 #define TCGETX		0x5432
 #define TCSETX		0x5433
 #define TCSETXF		0x5434
 #define TCSETXW		0x5435
-
-#define TIOCGHAYESESP   0x545E
-#define TIOCSHAYESESP   0x545F
 
 struct winsize {
 	unsigned short ws_row;
@@ -136,8 +131,6 @@ struct winsize {
 	unsigned short ws_xpixel;
 	unsigned short ws_ypixel;
 };
-
-#define TIOCM_MODEM_BITS TIOCM_OUT2
 
 #define N_TTY           0
 #define N_SLIP          1

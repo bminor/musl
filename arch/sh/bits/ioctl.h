@@ -119,8 +119,6 @@ struct winsize {
     unsigned short ws_ypixel;
 };
 
-#define TIOCM_MODEM_BITS TIOCM_OUT2
-
 #define N_TTY           0
 #define N_SLIP          1
 #define N_MOUSE         2

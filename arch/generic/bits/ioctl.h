@@ -46,7 +46,6 @@
 #define TIOCSETD	0x5423
 #define TIOCGETD	0x5424
 #define TCSBRKP		0x5425
-#define TIOCTTYGSTRUCT	0x5426
 #define TIOCSBRK	0x5427
 #define TIOCCBRK	0x5428
 #define TIOCGSID	0x5429
@@ -72,8 +71,6 @@
 
 #define TIOCMIWAIT	0x545C
 #define TIOCGICOUNT	0x545D
-#define TIOCGHAYESESP   0x545E
-#define TIOCSHAYESESP   0x545F
 #define FIOQSIZE	0x5460
 
 #define TIOCPKT_DATA		 0
@@ -108,7 +105,6 @@ struct winsize {
 #define TIOCM_OUT1      0x2000
 #define TIOCM_OUT2      0x4000
 #define TIOCM_LOOP      0x8000
-#define TIOCM_MODEM_BITS TIOCM_OUT2
 
 #define N_TTY           0
 #define N_SLIP          1

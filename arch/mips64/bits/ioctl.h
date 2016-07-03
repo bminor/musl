@@ -80,10 +80,7 @@
 #define TIOCSERSETMULTI 0x5490
 #define TIOCMIWAIT	0x5491
 #define TIOCGICOUNT	0x5492
-#define TIOCGHAYESESP   0x5493
-#define TIOCSHAYESESP   0x5494
 
-#define TIOCTTYGSTRUCT	0x5426
 #define TCGETX		0x5432
 #define TCSETX		0x5433
 #define TCSETXF		0x5434
@@ -121,7 +118,6 @@ struct winsize {
 #define TIOCM_OUT1      0x2000
 #define TIOCM_OUT2      0x4000
 #define TIOCM_LOOP      0x8000
-#define TIOCM_MODEM_BITS TIOCM_OUT2
 
 #define N_TTY           0
 #define N_SLIP          1
