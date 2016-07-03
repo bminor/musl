@@ -34,7 +34,7 @@ struct elf_prstatus {
 #define ELF_PRARGSZ 80
 
 struct elf_prpsinfo
-	{
+{
 	char pr_state;
 	char pr_sname;
 	char pr_zomb;
