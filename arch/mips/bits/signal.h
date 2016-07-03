@@ -24,8 +24,7 @@ struct sigcontext {
 	unsigned long long sc_mdhi, sc_mdlo;
 	unsigned long sc_hi1, sc_lo1, sc_hi2, sc_lo2, sc_hi3, sc_lo3;
 };
-typedef struct
-{
+typedef struct {
 	unsigned regmask, status;
 	unsigned long long pc, gregs[32], fpregs[32];
 	unsigned ownedfp, fpc_csr, fpc_eir, used_math, dsp;

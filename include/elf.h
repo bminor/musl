@@ -324,15 +324,13 @@ typedef struct {
 #define SHF_ORDERED	     (1 << 30)
 #define SHF_EXCLUDE	     (1U << 31)
 
-typedef struct
-{
+typedef struct {
   Elf32_Word	ch_type;
   Elf32_Word	ch_size;
   Elf32_Word	ch_addralign;
 } Elf32_Chdr;
 
-typedef struct
-{
+typedef struct {
   Elf64_Word	ch_type;
   Elf64_Word	ch_reserved;
   Elf64_Xword	ch_size;
@@ -434,8 +432,7 @@ typedef struct {
 
 
 
-typedef struct
-{
+typedef struct {
   Elf32_Addr	r_offset;
   Elf32_Word	r_info;
 } Elf32_Rel;
@@ -1513,8 +1510,7 @@ typedef struct {
 
 
 
-typedef struct
-{
+typedef struct {
   Elf32_Word l_name;
   Elf32_Word l_time_stamp;
   Elf32_Word l_checksum;
@@ -1522,8 +1518,7 @@ typedef struct
   Elf32_Word l_flags;
 } Elf32_Lib;
 
-typedef struct
-{
+typedef struct {
   Elf64_Word l_name;
   Elf64_Word l_time_stamp;
   Elf64_Word l_checksum;
@@ -1546,8 +1541,7 @@ typedef struct
 
 typedef Elf32_Addr Elf32_Conflict;
 
-typedef struct
-{
+typedef struct {
   Elf32_Half version;
   unsigned char isa_level;
   unsigned char isa_rev;

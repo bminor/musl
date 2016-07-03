@@ -23,8 +23,7 @@ typedef struct {
 	unsigned _pad2[3];
 } vrregset_t;
 
-typedef struct sigcontext
-{
+typedef struct sigcontext {
 	unsigned long _unused[4];
 	int signal;
 	int _pad0;

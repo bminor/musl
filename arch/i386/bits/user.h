@@ -1,13 +1,11 @@
 #undef __WORDSIZE
 #define __WORDSIZE 32
 
-typedef struct user_fpregs_struct
-{
+typedef struct user_fpregs_struct {
 	long cwd, swd, twd, fip, fcs, foo, fos, st_space[20];
 } elf_fpregset_t;
 
-typedef struct user_fpxregs_struct
-{
+typedef struct user_fpxregs_struct {
 	unsigned short cwd, swd, twd, fop;
 	long fip, fcs, foo, fos, mxcsr, reserved;
 	long st_space[32], xmm_space[32], padding[56];
