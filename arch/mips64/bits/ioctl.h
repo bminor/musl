@@ -27,7 +27,7 @@
 #define TIOCMGET	0x741D
 #define TIOCMBIS	0x741B
 #define TIOCMBIC	0x741C
-#define TIOCMSET	0x741D
+#define TIOCMSET	0x741A
 
 #define TIOCPKT		0x5470
 #define TIOCSWINSZ	_IOW('t', 103, struct winsize)
