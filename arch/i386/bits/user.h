@@ -13,8 +13,7 @@ typedef struct user_fpxregs_struct
 	long st_space[32], xmm_space[32], padding[56];
 } elf_fpxregset_t;
 
-struct user_regs_struct
-{
+struct user_regs_struct {
 	long ebx, ecx, edx, esi, edi, ebp, eax, xds, xes, xfs, xgs;
 	long orig_eax, eip, xcs, eflags, esp, xss;
 };
@@ -22,8 +21,7 @@ struct user_regs_struct
 #define ELF_NGREG 17
 typedef unsigned long elf_greg_t, elf_gregset_t[ELF_NGREG];
 
-struct user
-{
+struct user {
 	struct user_regs_struct		regs;
 	int				u_fpvalid;
 	struct user_fpregs_struct	i387;

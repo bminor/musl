@@ -35,8 +35,7 @@ extern "C" {
 #define __tm_zone tm_zone
 #endif
 
-struct tm
-{
+struct tm {
 	int tm_sec;
 	int tm_min;
 	int tm_hour;
@@ -78,8 +77,7 @@ char *ctime_r (const time_t *, char *);
 
 void tzset (void);
 
-struct itimerspec
-{
+struct itimerspec {
 	struct timespec it_interval;
 	struct timespec it_value;
 };

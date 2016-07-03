@@ -19,14 +19,12 @@ extern "C" {
 
 typedef unsigned long long rlim_t;
 
-struct rlimit
-{
+struct rlimit {
 	rlim_t rlim_cur;
 	rlim_t rlim_max;
 };
 
-struct rusage
-{
+struct rusage {
 	struct timeval ru_utime;
 	struct timeval ru_stime;
 	/* linux extentions, but useful */

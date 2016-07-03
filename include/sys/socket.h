@@ -20,15 +20,13 @@ extern "C" {
 #include <bits/socket.h>
 
 #ifdef _GNU_SOURCE
-struct ucred
-{
+struct ucred {
 	pid_t pid;
 	uid_t uid;
 	gid_t gid;
 };
 
-struct mmsghdr
-{
+struct mmsghdr {
 	struct msghdr msg_hdr;
 	unsigned int  msg_len;
 };
@@ -39,8 +37,7 @@ int sendmmsg (int, struct mmsghdr *, unsigned int, unsigned int);
 int recvmmsg (int, struct mmsghdr *, unsigned int, unsigned int, struct timespec *);
 #endif
 
-struct linger
-{
+struct linger {
 	int l_onoff;
 	int l_linger;
 };
@@ -297,14 +294,12 @@ struct linger
 #define SCM_RIGHTS      0x01
 #define SCM_CREDENTIALS 0x02
 
-struct sockaddr
-{
+struct sockaddr {
 	sa_family_t sa_family;
 	char sa_data[14];
 };
 
-struct sockaddr_storage
-{
+struct sockaddr_storage {
 	sa_family_t ss_family;
 	char __ss_padding[128-sizeof(long)-sizeof(sa_family_t)];
 	unsigned long __ss_align;

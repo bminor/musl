@@ -145,8 +145,7 @@ struct tcphdr {
 #define TCP_CA_Recovery		3
 #define TCP_CA_Loss		4
 
-struct tcp_info
-{
+struct tcp_info {
 	uint8_t tcpi_state;
 	uint8_t tcpi_ca_state;
 	uint8_t tcpi_retransmits;
@@ -192,8 +191,7 @@ struct tcp_info
 
 #define TCP_MD5SIG_MAXKEYLEN    80
 
-struct tcp_md5sig
-{
+struct tcp_md5sig {
 	struct sockaddr_storage tcpm_addr;
 	uint16_t __tcpm_pad1;
 	uint16_t tcpm_keylen;

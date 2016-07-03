@@ -21,8 +21,7 @@ extern "C" {
 
 #include <bits/fcntl.h>
 
-struct flock
-{
+struct flock {
 	short l_type;
 	short l_whence;
 	off_t l_start;

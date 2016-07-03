@@ -1,7 +1,6 @@
 #define SHMLBA 4096
 
-struct shmid_ds
-{
+struct shmid_ds {
 	struct ipc_perm shm_perm;
 	time_t shm_atime;
 	time_t shm_dtime;

@@ -14,8 +14,7 @@ extern "C" {
 
 #include <bits/alltypes.h>
 
-struct utmpx
-{
+struct utmpx {
 	short ut_type;
 	pid_t ut_pid;
 	char ut_line[32];
