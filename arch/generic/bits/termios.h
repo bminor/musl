@@ -109,8 +109,6 @@ struct termios
 #define B3500000 0010016
 #define B4000000 0010017
 
-#define CBAUD    0010017
-
 #define CSIZE  0000060
 #define CS5    0000000
 #define CS6    0000020
@@ -133,12 +131,6 @@ struct termios
 #define TOSTOP 0000400
 #define IEXTEN 0100000
 
-#define ECHOCTL 0001000
-#define ECHOPRT 0002000
-#define ECHOKE 0004000
-#define FLUSHO 0010000
-#define PENDIN 0040000
-
 #define TCOOFF 0
 #define TCOON  1
 #define TCIOFF 2
@@ -153,8 +145,21 @@ struct termios
 #define TCSAFLUSH 2
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+#define EXTA    0000016
+#define EXTB    0000017
+#define CBAUD   0010017
 #define CBAUDEX 0010000
-#define CRTSCTS  020000000000
+#define CIBAUD  002003600000
+#define CMSPAR  010000000000
+#define CRTSCTS 020000000000
+
+#define XCASE   0000004
+#define ECHOCTL 0001000
+#define ECHOPRT 0002000
+#define ECHOKE  0004000
+#define FLUSHO  0010000
+#define PENDIN  0040000
 #define EXTPROC 0200000
+
 #define XTABS  0014000
 #endif
