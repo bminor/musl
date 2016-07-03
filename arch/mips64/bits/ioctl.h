@@ -89,11 +89,6 @@
 #define TIOCMIWAIT	0x5491
 #define TIOCGICOUNT	0x5492
 
-#define TCGETX		0x5432
-#define TCSETX		0x5433
-#define TCSETXF		0x5434
-#define TCSETXW		0x5435
-
 #define TIOCPKT_DATA		 0
 #define TIOCPKT_FLUSHREAD	 1
 #define TIOCPKT_FLUSHWRITE	 2

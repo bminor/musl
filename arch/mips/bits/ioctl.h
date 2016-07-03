@@ -89,11 +89,6 @@
 #define TIOCMIWAIT	0x5491
 #define TIOCGICOUNT	0x5492
 
-#define TCGETX		0x5432          // RICH: Not sure about these.
-#define TCSETX		0x5433          // RICH: Not sure about these.
-#define TCSETXF		0x5434          // RICH: Not sure about these.
-#define TCSETXW		0x5435          // RICH: Not sure about these.
-
 #define TIOCPKT_DATA		 0
 #define TIOCPKT_FLUSHREAD	 1
 #define TIOCPKT_FLUSHWRITE	 2

@@ -120,14 +120,6 @@
 #define TIOCGICOUNT	0x545D
 
 
-/* end kernel header ioctls.h */
-
-
-#define TCGETX		0x5432
-#define TCSETX		0x5433
-#define TCSETXF		0x5434
-#define TCSETXW		0x5435
-
 struct winsize {
 	unsigned short ws_row;
 	unsigned short ws_col;
