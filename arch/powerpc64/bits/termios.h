@@ -152,7 +152,7 @@ struct termios
 #define EXTA    0000016
 #define EXTB    0000017
 #define CBAUD   00377
-#define CBAUDEX 0000000
+#define CBAUDEX 0000020
 #define CIBAUD  077600000
 #define CMSPAR  010000000000
 #define CRTSCTS 020000000000
