@@ -89,6 +89,8 @@
 #define TCSETS2             _IOW('T', 43, char[44])
 #define TCSETSW2            _IOW('T', 44, char[44])
 #define TCSETSF2            _IOW('T', 45, char[44])
+#define TIOCGRS485          _IOR('T', 46, char[32])
+#define TIOCSRS485          _IOWR('T', 47, char[32])
 #define TIOCGPTN            _IOR('T', 48, unsigned int)
 #define TIOCSPTLCK          _IOW('T', 49, int)
 #define TIOCGDEV            _IOR('T', 50, unsigned int)

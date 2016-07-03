@@ -101,9 +101,9 @@
 #define TIOCGDEV	_IOR('T',0x32, unsigned int)
 #define TIOCSIG		_IOW('T',0x36, int)
 #define TIOCVHANGUP	0x5437
-#define TIOCGPKT	_IOR('T',0x38, int)
-#define TIOCGPTLCK	_IOR('T',0x39, int)
-#define TIOCGEXCL	_IOR('T',0x40, int)
+#define TIOCGPKT	_IOR('T', 0x38, int)
+#define TIOCGPTLCK	_IOR('T', 0x39, int)
+#define TIOCGEXCL	_IOR('T', 0x40, int)
 
 #define TIOCSERCONFIG	0x5453
 #define TIOCSERGWILD	0x5454

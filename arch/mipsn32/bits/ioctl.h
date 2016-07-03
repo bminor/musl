@@ -58,8 +58,16 @@
 #define TIOCSBRK	0x5427
 #define TIOCCBRK	0x5428
 #define TIOCGSID	0x7416
+#define TIOCGRS485	_IOR('T', 0x2E, char[32])
+#define TIOCSRS485	_IOWR('T', 0x2F, char[32])
 #define TIOCGPTN	_IOR('T', 0x30, unsigned int)
 #define TIOCSPTLCK	_IOW('T', 0x31, int)
+#define TIOCGDEV	_IOR('T', 0x32, unsigned int)
+#define TIOCSIG		_IOW('T', 0x36, int)
+#define TIOCVHANGUP	0x5437
+#define TIOCGPKT	_IOR('T', 0x38, int)
+#define TIOCGPTLCK	_IOR('T', 0x39, int)
+#define TIOCGEXCL	_IOR('T', 0x40, int)
 
 #define TIOCSCTTY	0x5480
 #define TIOCGSOFTCAR	0x5481
