@@ -1691,3 +1691,42 @@ regressions fixed:
 
 other bugs fixed:
 - wrongly clamping (rather than failing) excessive rounds in crypt-sha*
+
+
+
+1.1.15 release notes
+
+new features:
+- mips64 (full 64-bit and n32) port
+- mips r6 isa support (subarch for mips, mips64, and mipsn32 archs)
+- powerpc64 port
+- powerpc (32-bit) soft-float ABI support (subarch)
+- pthread_tryjoin_np and pthread_timedjoin_np (nonstandard extensions)
+- header-level support for linux 4.5 and 4.6 features
+- sched_getcpu (nonstandard extension) support, including vdso version
+- __STDC_ISO_10646__, __STDC_IEC_559__ macros predefined via stdc-predef.h
+- support for new elf/arch features in elf.h
+
+compatibility:
+- configure now correctly chooses cross-prefix based on build/host/target
+- abort now successfully terminates pid 1 in a container (or top-level)
+
+bugs fixed:
+- memmem read past end of haystack, possible false positives or crashes
+- buffer underflow (reverse-overflow) in ungetwc
+- double-free under certain usage of putenv
+- incorrect treatment by regcomp of * at start of BRE subexpression
+- gethostbyname[2][_r] produced ip addresses in misaligned buffers
+- looking up some invalid hostnames caused malformed dns queries
+- lookups from hosts file were inconsistent with non-matching family
+- missing h_length value in gethostbyaddr results
+- a64l function produced wrong-signed results on 64-bit archs
+- broken padding of string formats to width in wide printf variants
+- wrong results for expf(-NAN) and exp2f(-NAN)
+- wrong value for RUSAGE_CHILDREN prevented it from working
+- abort failed to provide abnormal termination with SIGABRT blocked
+
+arch-specific bugs fixed:
+- broken posix_fadvise on arm and powerpc (32-bit)
+- thread structure/dtv corruption on powerpc at thread startup
+- various wrong mips and powerpc ioctl and termios constant values
