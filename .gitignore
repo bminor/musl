@@ -3,8 +3,6 @@
 *.a
 *.so
 *.so.1
-arch/*/bits/alltypes.h
 config.mak
 lib/musl-gcc.specs
-src/internal/version.h
 /obj/
