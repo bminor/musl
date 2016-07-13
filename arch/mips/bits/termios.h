@@ -141,9 +141,9 @@ struct termios {
 #define TCOFLUSH  1
 #define TCIOFLUSH 2
 
-#define TCSANOW 0x540e
-#define TCSADRAIN 0x540f
-#define TCSAFLUSH 0x5410
+#define TCSANOW   0
+#define TCSADRAIN 1
+#define TCSAFLUSH 2
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 #define EXTA    0000016
