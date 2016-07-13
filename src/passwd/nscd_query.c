@@ -40,7 +40,7 @@ retry:
 	buf[0] = NSCDVERSION;
 
 	fd = socket(PF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
-	if (fd < 0 && errno != EAFNOSUPPORT) return NULL;
+	if (fd < 0) return NULL;
 
 	if(!(f = fdopen(fd, "r"))) {
 		close(fd);
