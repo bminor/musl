@@ -45,6 +45,7 @@ void *__vdsosym(const char *vername, const char *name)
 	size_t i;
 	for (i=0; libc.auxv[i] != AT_SYSINFO_EHDR; i+=2)
 		if (!libc.auxv[i]) return 0;
+	if (!libc.auxv[i+1]) return 0;
 	Ehdr *eh = (void *)libc.auxv[i+1];
 	Phdr *ph = (void *)((char *)eh + eh->e_phoff);
 	size_t *dynv=0, base=-1;

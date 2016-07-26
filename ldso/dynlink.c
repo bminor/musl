@@ -1550,7 +1550,7 @@ _Noreturn void __dls3(size_t *sp)
 	}
 
 	/* Attach to vdso, if provided by the kernel */
-	if (search_vec(auxv, &vdso_base, AT_SYSINFO_EHDR)) {
+	if (search_vec(auxv, &vdso_base, AT_SYSINFO_EHDR) && vdso_base) {
 		Ehdr *ehdr = (void *)vdso_base;
 		Phdr *phdr = vdso.phdr = (void *)(vdso_base + ehdr->e_phoff);
 		vdso.phnum = ehdr->e_phnum;
