@@ -12,6 +12,10 @@
 #define SYSCALL_MMAP2_UNIT 4096ULL
 #endif
 
+#ifndef __SYSCALL_LL_PRW
+#define __SYSCALL_LL_PRW(x) __SYSCALL_LL_O(x)
+#endif
+
 #ifndef __scc
 #define __scc(X) ((long) (X))
 typedef long syscall_arg_t;
