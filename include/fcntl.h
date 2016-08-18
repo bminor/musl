@@ -99,7 +99,7 @@ int posix_fallocate(int, off_t, off_t);
 #define AT_EMPTY_PATH 0x1000
 
 #define FAPPEND O_APPEND
-#define FFSYNC O_FSYNC
+#define FFSYNC O_SYNC
 #define FASYNC O_ASYNC
 #define FNONBLOCK O_NONBLOCK
 #define FNDELAY O_NDELAY
