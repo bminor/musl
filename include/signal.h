@@ -239,6 +239,8 @@ void (*sigset(int, void (*)(int)))(int);
 #define POLL_HUP 6
 #define SS_ONSTACK    1
 #define SS_DISABLE    2
+#define SS_AUTODISARM (1U << 31)
+#define SS_FLAG_BITS SS_AUTODISARM
 #endif
 
 #if defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
