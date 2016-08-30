@@ -16,7 +16,7 @@
 extern "C" {
 #endif
 
-void __assert_fail (const char *, const char *, int, const char *);
+_Noreturn void __assert_fail (const char *, const char *, int, const char *);
 
 #ifdef __cplusplus
 }
