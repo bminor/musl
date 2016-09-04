@@ -172,6 +172,9 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 			return sign * (long double)x[0] * p10s[rp-10];
 	}
 
+	/* Drop trailing zeros */
+	for (; !x[z-1]; z--);
+
 	/* Align radix point to B1B digit boundary */
 	if (rp % 9) {
 		int rpm9 = rp>=0 ? rp%9 : rp%9+9;
