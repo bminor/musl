@@ -110,7 +110,10 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 			gotdig=1;
 		} else {
 			dc++;
-			if (c!='0') x[KMAX-4] |= 1;
+			if (c!='0') {
+				lnz = dc;
+				x[KMAX-4] |= 1;
+			}
 		}
 	}
 	if (!gotrad) lrp=dc;
