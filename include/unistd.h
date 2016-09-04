@@ -457,6 +457,8 @@ int eaccess(const char *, int);
 #define _CS_POSIX_V7_LPBIG_OFFBIG_LDFLAGS	1145
 #define _CS_POSIX_V7_LPBIG_OFFBIG_LIBS	1146
 #define _CS_POSIX_V7_LPBIG_OFFBIG_LINTFLAGS	1147
+#define _CS_V6_ENV	1148
+#define _CS_V7_ENV	1149
 
 #ifdef __cplusplus
 }
