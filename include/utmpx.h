@@ -38,7 +38,7 @@ struct utmpx *getutxline(const struct utmpx *);
 struct utmpx *pututxline(const struct utmpx *);
 void          setutxent(void);
 
-#if defined(_BSD_SOURCE) | defined(_GNU_SOURCE)
+#if defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
 #define e_exit __e_exit
 #define e_termination __e_termination
 void updwtmpx(const char *, const struct utmpx *);
