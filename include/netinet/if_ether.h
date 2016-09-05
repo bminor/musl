@@ -14,6 +14,7 @@
 #define ETH_P_LOOP	0x0060
 #define ETH_P_PUP	0x0200
 #define ETH_P_PUPAT	0x0201
+#define ETH_P_TSN	0x22F0
 #define ETH_P_IP	0x0800
 #define ETH_P_X25	0x0805
 #define ETH_P_ARP	0x0806
@@ -61,6 +62,7 @@
 #define ETH_P_TDLS	0x890D
 #define ETH_P_FIP	0x8914
 #define ETH_P_80221	0x8917
+#define ETH_P_HSR	0x892F
 #define ETH_P_LOOPBACK	0x9000
 #define ETH_P_QINQ1	0x9100
 #define ETH_P_QINQ2	0x9200
@@ -94,6 +96,7 @@
 #define ETH_P_PHONET	0x00F5
 #define ETH_P_IEEE802154 0x00F6
 #define ETH_P_CAIF	0x00F7
+#define ETH_P_XDSA	0x00F8
 
 struct ethhdr {
 	uint8_t h_dest[ETH_ALEN];
