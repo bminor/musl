@@ -570,7 +570,7 @@ static int printf_core(FILE *f, const char *fmt, va_list *ap, union arg *nl_arg,
 			if (0) {
 		case 'o':
 			a = fmt_o(arg.i, z);
-			if ((fl&ALT_FORM) && p<z-a+1) p=z-a+1;
+			if ((fl&ALT_FORM) && p<z-a+1) prefix+=5, pl=1;
 			} if (0) {
 		case 'd': case 'i':
 			pl=1;
