@@ -89,7 +89,7 @@ struct ifreq {
 		struct ifmap ifru_map;
 		char ifru_slave[IFNAMSIZ];
 		char ifru_newname[IFNAMSIZ];
-		void *ifru_data;
+		char *ifru_data;
 	} ifr_ifru;
 };
 
@@ -116,7 +116,7 @@ struct ifreq {
 struct ifconf {
 	int ifc_len;		
 	union {
-		void *ifcu_buf;
+		char *ifcu_buf;
 		struct ifreq *ifcu_req;
 	} ifc_ifcu;
 };
