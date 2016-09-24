@@ -15,6 +15,8 @@ int getservbyname_r(const char *name, const char *prots,
 	struct service servs[MAXSERVS];
 	int cnt, proto, align;
 
+	*res = 0;
+
 	/* Align buffer */
 	align = -(uintptr_t)buf & ALIGN-1;
 	if (buflen < 2*sizeof(char *)+align)
