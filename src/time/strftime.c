@@ -167,6 +167,7 @@ const char *__strftime_fmt_1(char (*s)[100], size_t *l, int f, const struct tm *
 		goto nl_strftime;
 	case 'y':
 		val = tm->tm_year % 100;
+		if (val<0) val += 100;
 		goto number;
 	case 'Y':
 		val = tm->tm_year + 1900LL;
