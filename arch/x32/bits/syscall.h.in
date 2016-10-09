@@ -280,8 +280,6 @@
 #define __NR_membarrier (0x40000000 + 324)
 #define __NR_mlock2 (0x40000000 + 325)
 #define __NR_copy_file_range (0x40000000 + 326)
-#define __NR_preadv2 (0x40000000 + 327)
-#define __NR_pwritev2 (0x40000000 + 328)
 
 #define __NR_rt_sigaction (0x40000000 + 512)
 #define __NR_rt_sigreturn (0x40000000 + 513)
@@ -317,4 +315,6 @@
 #define __NR_io_setup (0x40000000 + 543)
 #define __NR_io_submit (0x40000000 + 544)
 #define __NR_execveat (0x40000000 + 545)
+#define __NR_preadv2 (0x40000000 + 546)
+#define __NR_pwritev2 (0x40000000 + 547)
 
