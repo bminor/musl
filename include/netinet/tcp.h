@@ -30,6 +30,7 @@
 #define TCP_CC_INFO      26
 #define TCP_SAVE_SYN     27
 #define TCP_SAVED_SYN    28
+#define TCP_REPAIR_WINDOW 29
 
 #define TCP_ESTABLISHED  1
 #define TCP_SYN_SENT     2
@@ -197,6 +198,14 @@ struct tcp_md5sig {
 	uint16_t tcpm_keylen;
 	uint32_t __tcpm_pad2;
 	uint8_t tcpm_key[TCP_MD5SIG_MAXKEYLEN];
+};
+
+struct tcp_repair_window {
+	uint32_t snd_wl1;
+	uint32_t snd_wnd;
+	uint32_t max_window;
+	uint32_t rcv_wnd;
+	uint32_t rcv_wup;
 };
 
 #endif
