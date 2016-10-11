@@ -345,7 +345,8 @@ static int fmt_fp(FILE *f, long double y, int w, int p, int fl, int t)
 		if (x || d+1!=z) {
 			long double round = 2/LDBL_EPSILON;
 			long double small;
-			if (*d/i & 1) round += 2;
+			if ((*d/i & 1) || (i==1000000000 && d>a && (d[-1]&1)))
+				round += 2;
 			if (x<i/2) small=0x0.8p0;
 			else if (x==i/2 && d+1==z) small=0x1.0p0;
 			else small=0x1.8p0;
