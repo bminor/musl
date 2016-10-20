@@ -154,8 +154,10 @@ static void out(FILE *f, const wchar_t *s, size_t l)
 
 static int getint(wchar_t **s) {
 	int i;
-	for (i=0; iswdigit(**s); (*s)++)
-		i = 10*i + (**s-'0');
+	for (i=0; iswdigit(**s); (*s)++) {
+		if (i > INT_MAX/10U || **s-'0' > INT_MAX-10*i) i = -1;
+		else i = 10*i + (**s-'0');
+	}
 	return i;
 }
 
@@ -168,8 +170,8 @@ static const char sizeprefix['y'-'a'] = {
 static int wprintf_core(FILE *f, const wchar_t *fmt, va_list *ap, union arg *nl_arg, int *nl_type)
 {
 	wchar_t *a, *z, *s=(wchar_t *)fmt;
-	unsigned l10n=0, litpct, fl;
-	int w, p;
+	unsigned l10n=0, fl;
+	int w, p, xp;
 	union arg arg;
 	int argpos;
 	unsigned st, ps;
@@ -181,20 +183,19 @@ static int wprintf_core(FILE *f, const wchar_t *fmt, va_list *ap, union arg *nl_
 	wchar_t wc;
 
 	for (;;) {
+		/* This error is only specified for snprintf, but since it's
+		 * unspecified for other forms, do the same. Stop immediately
+		 * on overflow; otherwise %n could produce wrong results. */
+		if (l > INT_MAX - cnt) goto overflow;
+
 		/* Update output count, end loop when fmt is exhausted */
-		if (cnt >= 0) {
-			if (l > INT_MAX - cnt) {
-				if (!ferror(f)) errno = EOVERFLOW;
-				cnt = -1;
-			} else cnt += l;
-		}
+		cnt += l;
 		if (!*s) break;
 
 		/* Handle literal text and %% format specifiers */
 		for (a=s; *s && *s!='%'; s++);
-		litpct = wcsspn(s, L"%")/2; /* Optimize %%%% runs */
-		z = s+litpct;
-		s += 2*litpct;
+		for (z=s; s[0]=='%' && s[1]=='%'; z++, s+=2);
+		if (z-a > INT_MAX-cnt) goto overflow;
 		l = z-a;
 		if (f) out(f, a, l);
 		if (l) continue;
@@ -222,9 +223,9 @@ static int wprintf_core(FILE *f, const wchar_t *fmt, va_list *ap, union arg *nl_
 			} else if (!l10n) {
 				w = f ? va_arg(*ap, int) : 0;
 				s++;
-			} else return -1;
+			} else goto inval;
 			if (w<0) fl|=LEFT_ADJ, w=-w;
-		} else if ((w=getint(&s))<0) return -1;
+		} else if ((w=getint(&s))<0) goto overflow;
 
 		/* Read precision */
 		if (*s=='.' && s[1]=='*') {
@@ -235,24 +236,29 @@ static int wprintf_core(FILE *f, const wchar_t *fmt, va_list *ap, union arg *nl_
 			} else if (!l10n) {
 				p = f ? va_arg(*ap, int) : 0;
 				s+=2;
-			} else return -1;
+			} else goto inval;
+			xp = (p>=0);
 		} else if (*s=='.') {
 			s++;
 			p = getint(&s);
-		} else p = -1;
+			xp = 1;
+		} else {
+			p = -1;
+			xp = 0;
+		}
 
 		/* Format specifier state machine */
 		st=0;
 		do {
-			if (OOB(*s)) return -1;
+			if (OOB(*s)) goto inval;
 			ps=st;
 			st=states[st]S(*s++);
 		} while (st-1<STOP);
-		if (!st) return -1;
+		if (!st) goto inval;
 
 		/* Check validity of argument type (nl/normal) */
 		if (st==NOARG) {
-			if (argpos>=0) return -1;
+			if (argpos>=0) goto inval;
 		} else {
 			if (argpos>=0) nl_type[argpos]=st, arg=nl_arg[argpos];
 			else if (f) pop_arg(&arg, st, ap);
@@ -285,8 +291,9 @@ static int wprintf_core(FILE *f, const wchar_t *fmt, va_list *ap, union arg *nl_
 			continue;
 		case 'S':
 			a = arg.p;
-			z = wmemchr(a, 0, p);
-			if (z) p=z-a;
+			z = a + wcsnlen(a, p<0 ? INT_MAX : p);
+			if (p<0 && *z) goto overflow;
+			p = z-a;
 			if (w<p) w=p;
 			if (!(fl&LEFT_ADJ)) fprintf(f, "%*s", w-p, "");
 			out(f, a, p);
@@ -298,9 +305,9 @@ static int wprintf_core(FILE *f, const wchar_t *fmt, va_list *ap, union arg *nl_
 		case 's':
 			if (!arg.p) arg.p = "(null)";
 			bs = arg.p;
-			if (p<0) p = INT_MAX;
-			for (i=l=0; l<p && (i=mbtowc(&wc, bs, MB_LEN_MAX))>0; bs+=i, l++);
+			for (i=l=0; l<(p<0?INT_MAX:p) && (i=mbtowc(&wc, bs, MB_LEN_MAX))>0; bs+=i, l++);
 			if (i<0) return -1;
+			if (p<0 && *bs) goto overflow;
 			p=l;
 			if (w<p) w=p;
 			if (!(fl&LEFT_ADJ)) fprintf(f, "%*s", w-p, "");
@@ -315,6 +322,7 @@ static int wprintf_core(FILE *f, const wchar_t *fmt, va_list *ap, union arg *nl_
 			continue;
 		}
 
+		if (xp && p<0) goto overflow;
 		snprintf(charfmt, sizeof charfmt, "%%%s%s%s%s%s*.*%c%c",
 			"#"+!(fl & ALT_FORM),
 			"+"+!(fl & MARK_POS),
@@ -341,6 +349,13 @@ static int wprintf_core(FILE *f, const wchar_t *fmt, va_list *ap, union arg *nl_
 	for (; i<=NL_ARGMAX && !nl_type[i]; i++);
 	if (i<=NL_ARGMAX) return -1;
 	return 1;
+
+inval:
+	errno = EINVAL;
+	return -1;
+overflow:
+	errno = EOVERFLOW;
+	return -1;
 }
 
 int vfwprintf(FILE *restrict f, const wchar_t *restrict fmt, va_list ap)
