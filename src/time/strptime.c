@@ -22,8 +22,13 @@ char *strptime(const char *restrict s, const char *restrict f, struct tm *restri
 		}
 		f++;
 		if (*f == '+') f++;
-		if (isdigit(*f)) w=strtoul(f, (void *)&f, 10);
-		else w=-1;
+		if (isdigit(*f)) {
+			char *new_f;
+			w=strtoul(f, &new_f, 10);
+			f = new_f;
+		} else {
+			w=-1;
+		}
 		adj=0;
 		switch (*f++) {
 		case 'a': case 'A':
