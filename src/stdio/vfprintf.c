@@ -312,7 +312,7 @@ static int fmt_fp(FILE *f, long double y, int w, int p, int fl, int t)
 	}
 	while (e2<0) {
 		uint32_t carry=0, *b;
-		int sh=MIN(9,-e2), need=1+(p+LDBL_MANT_DIG/3+8)/9;
+		int sh=MIN(9,-e2), need=1+(p+LDBL_MANT_DIG/3U+8)/9;
 		for (d=a; d<z; d++) {
 			uint32_t rm = *d & (1<<sh)-1;
 			*d = (*d>>sh) + carry;
