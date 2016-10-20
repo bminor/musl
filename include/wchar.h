@@ -53,7 +53,7 @@ int wcscmp (const wchar_t *, const wchar_t *);
 int wcsncmp (const wchar_t *, const wchar_t *, size_t);
 
 int wcscoll(const wchar_t *, const wchar_t *);
-size_t wcsxfrm (wchar_t *__restrict, const wchar_t *__restrict, size_t n);
+size_t wcsxfrm (wchar_t *__restrict, const wchar_t *__restrict, size_t);
 
 wchar_t *wcschr (const wchar_t *, wchar_t);
 wchar_t *wcsrchr (const wchar_t *, wchar_t);
@@ -165,7 +165,7 @@ int wcscasecmp_l(const wchar_t *, const wchar_t *, locale_t);
 int wcsncasecmp(const wchar_t *, const wchar_t *, size_t);
 int wcsncasecmp_l(const wchar_t *, const wchar_t *, size_t, locale_t);
 int wcscoll_l(const wchar_t *, const wchar_t *, locale_t);
-size_t wcsxfrm_l(wchar_t *__restrict, const wchar_t *__restrict, size_t n, locale_t);
+size_t wcsxfrm_l(wchar_t *__restrict, const wchar_t *__restrict, size_t, locale_t);
 #endif
 
 #if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)

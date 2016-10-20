@@ -34,7 +34,7 @@ void           endgrent(void);
 void           setgrent(void);
 
 #ifdef _GNU_SOURCE
-struct group  *fgetgrent(FILE *stream);
+struct group  *fgetgrent(FILE *);
 int putgrent(const struct group *, FILE *);
 #endif
 
