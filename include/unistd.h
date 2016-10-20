@@ -110,10 +110,8 @@ gid_t getgid(void);
 gid_t getegid(void);
 int getgroups(int, gid_t []);
 int setuid(uid_t);
-int setreuid(uid_t, uid_t);
 int seteuid(uid_t);
 int setgid(gid_t);
-int setregid(gid_t, gid_t);
 int setegid(gid_t);
 
 char *getlogin(void);
@@ -136,6 +134,8 @@ size_t confstr(int, char *, size_t);
 #define F_TEST  3
 
 #if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+int setreuid(uid_t, uid_t);
+int setregid(gid_t, gid_t);
 int lockf(int, int, off_t);
 long gethostid(void);
 int nice(int);

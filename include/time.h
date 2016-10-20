@@ -111,6 +111,8 @@ int timer_settime (timer_t, int, const struct itimerspec *__restrict, struct iti
 int timer_gettime (timer_t, struct itimerspec *);
 int timer_getoverrun (timer_t);
 
+extern char *tzname[2];
+
 #endif
 
 
@@ -118,7 +120,6 @@ int timer_getoverrun (timer_t);
 char *strptime (const char *__restrict, const char *__restrict, struct tm *__restrict);
 extern int daylight;
 extern long timezone;
-extern char *tzname[2];
 extern int getdate_err;
 struct tm *getdate (const char *);
 #endif
