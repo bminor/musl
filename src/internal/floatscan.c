@@ -111,7 +111,7 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 		} else {
 			dc++;
 			if (c!='0') {
-				lnz = dc;
+				lnz = (KMAX-4)*9;
 				x[KMAX-4] |= 1;
 			}
 		}
