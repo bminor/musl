@@ -84,7 +84,7 @@ static void getname(char *d, const char **p)
 	int i;
 	if (**p == '<') {
 		++*p;
-		for (i=0; **p!='>' && i<TZNAME_MAX; i++)
+		for (i=0; (*p)[i]!='>' && i<TZNAME_MAX; i++)
 			d[i] = (*p)[i];
 		++*p;
 	} else {
