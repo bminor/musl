@@ -905,8 +905,9 @@ static struct dso *load_library(const char *name, struct dso *needed_by)
 
 	/* Catch and block attempts to reload the implementation itself */
 	if (name[0]=='l' && name[1]=='i' && name[2]=='b') {
-		static const char *rp, reserved[] =
+		static const char reserved[] =
 			"c\0pthread\0rt\0m\0dl\0util\0xnet\0";
+		const char *rp;
 		char *z = strchr(name, '.');
 		if (z) {
 			size_t l = z-name;
