@@ -906,27 +906,27 @@ static struct dso *load_library(const char *name, struct dso *needed_by)
 	/* Catch and block attempts to reload the implementation itself */
 	if (name[0]=='l' && name[1]=='i' && name[2]=='b') {
 		static const char reserved[] =
-			"c\0pthread\0rt\0m\0dl\0util\0xnet\0";
-		const char *rp;
-		char *z = strchr(name, '.');
-		if (z) {
-			size_t l = z-name;
-			for (rp=reserved; *rp && strncmp(name+3, rp, l-3); rp+=strlen(rp)+1);
-			if (*rp) {
-				if (ldd_mode) {
-					/* Track which names have been resolved
-					 * and only report each one once. */
-					static unsigned reported;
-					unsigned mask = 1U<<(rp-reserved);
-					if (!(reported & mask)) {
-						reported |= mask;
-						dprintf(1, "\t%s => %s (%p)\n",
-							name, ldso.name,
-							ldso.base);
-					}
+			"c.pthread.rt.m.dl.util.xnet.";
+		const char *rp, *next;
+		for (rp=reserved; *rp; rp=next) {
+			next = strchr(rp, '.') + 1;
+			if (strncmp(name+3, rp, next-rp) == 0)
+				break;
+		}
+		if (*rp) {
+			if (ldd_mode) {
+				/* Track which names have been resolved
+				 * and only report each one once. */
+				static unsigned reported;
+				unsigned mask = 1U<<(rp-reserved);
+				if (!(reported & mask)) {
+					reported |= mask;
+					dprintf(1, "\t%s => %s (%p)\n",
+						name, ldso.name,
+						ldso.base);
 				}
-				is_self = 1;
 			}
+			is_self = 1;
 		}
 	}
 	if (!strcmp(name, ldso.name)) is_self = 1;
