@@ -186,7 +186,10 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 		| CLONE_THREAD | CLONE_SYSVSEM | CLONE_SETTLS
 		| CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID | CLONE_DETACHED;
 	int do_sched = 0;
-	pthread_attr_t attr = {0};
+	pthread_attr_t attr = {
+		._a_stacksize = DEFAULT_STACK_SIZE,
+		._a_guardsize = DEFAULT_GUARD_SIZE,
+	};
 
 	if (!libc.can_do_threads) return ENOSYS;
 	self = __pthread_self();
