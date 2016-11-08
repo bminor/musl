@@ -208,7 +208,7 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 
 	if (attr._a_stackaddr) {
 		size_t need = libc.tls_size + __pthread_tsd_size;
-		size = attr._a_stacksize + DEFAULT_STACK_SIZE;
+		size = attr._a_stacksize;
 		stack = (void *)(attr._a_stackaddr & -16);
 		stack_limit = (void *)(attr._a_stackaddr - size);
 		/* Use application-provided stack for TLS only when
@@ -223,8 +223,8 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 			guard = 0;
 		}
 	} else {
-		guard = ROUND(DEFAULT_GUARD_SIZE + attr._a_guardsize);
-		size = guard + ROUND(DEFAULT_STACK_SIZE + attr._a_stacksize
+		guard = ROUND(attr._a_guardsize);
+		size = guard + ROUND(attr._a_stacksize
 			+ libc.tls_size +  __pthread_tsd_size);
 	}
 

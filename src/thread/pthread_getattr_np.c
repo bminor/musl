@@ -9,7 +9,7 @@ int pthread_getattr_np(pthread_t t, pthread_attr_t *a)
 	a->_a_detach = !!t->detached;
 	if (t->stack) {
 		a->_a_stackaddr = (uintptr_t)t->stack;
-		a->_a_stacksize = t->stack_size - DEFAULT_STACK_SIZE;
+		a->_a_stacksize = t->stack_size;
 	} else {
 		char *p = (void *)libc.auxv;
 		size_t l = PAGE_SIZE;
@@ -17,7 +17,7 @@ int pthread_getattr_np(pthread_t t, pthread_attr_t *a)
 		a->_a_stackaddr = (uintptr_t)p;
 		while (mremap(p-l-PAGE_SIZE, PAGE_SIZE, 2*PAGE_SIZE, 0)==MAP_FAILED && errno==ENOMEM)
 			l += PAGE_SIZE;
-		a->_a_stacksize = l - DEFAULT_STACK_SIZE;
+		a->_a_stacksize = l;
 	}
 	return 0;
 }
