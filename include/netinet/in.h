@@ -385,6 +385,21 @@ struct ip6_mtuinfo {
 
 #define IPV6_RTHDR_TYPE_0       0
 
+#define __UAPI_DEF_IN_ADDR      0
+#define __UAPI_DEF_IN_IPPROTO   0
+#define __UAPI_DEF_IN_PKTINFO   0
+#define __UAPI_DEF_IP_MREQ      0
+#define __UAPI_DEF_SOCKADDR_IN  0
+#define __UAPI_DEF_IN_CLASS     0
+#define __UAPI_DEF_IN6_ADDR     0
+#define __UAPI_DEF_IN6_ADDR_ALT 0
+#define __UAPI_DEF_SOCKADDR_IN6 0
+#define __UAPI_DEF_IPV6_MREQ    0
+#define __UAPI_DEF_IPPROTO_V6   0
+#define __UAPI_DEF_IPV6_OPTIONS 0
+#define __UAPI_DEF_IN6_PKTINFO  0
+#define __UAPI_DEF_IP6_MTUINFO  0
+
 #ifdef __cplusplus
 }
 #endif
