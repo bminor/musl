@@ -163,6 +163,8 @@ static void *dummy_tsd[1] = { 0 };
 weak_alias(dummy_tsd, __pthread_tsd_main);
 
 volatile int __block_new_threads = 0;
+size_t __default_stacksize = DEFAULT_STACK_SIZE;
+size_t __default_guardsize = DEFAULT_GUARD_SIZE;
 
 static FILE *volatile dummy_file = 0;
 weak_alias(dummy_file, __stdin_used);
@@ -186,10 +188,7 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 		| CLONE_THREAD | CLONE_SYSVSEM | CLONE_SETTLS
 		| CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID | CLONE_DETACHED;
 	int do_sched = 0;
-	pthread_attr_t attr = {
-		._a_stacksize = DEFAULT_STACK_SIZE,
-		._a_guardsize = DEFAULT_GUARD_SIZE,
-	};
+	pthread_attr_t attr = { 0 };
 
 	if (!libc.can_do_threads) return ENOSYS;
 	self = __pthread_self();
@@ -207,6 +206,11 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 	if (attrp && !c11) attr = *attrp;
 
 	__acquire_ptc();
+	if (!attrp || c11) {
+		attr._a_stacksize = __default_stacksize;
+		attr._a_guardsize = __default_guardsize;
+	}
+
 	if (__block_new_threads) __wait(&__block_new_threads, 0, 1, 1);
 
 	if (attr._a_stackaddr) {
