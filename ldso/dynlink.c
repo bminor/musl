@@ -54,7 +54,7 @@ struct dso {
 	size_t phentsize;
 	int refcnt;
 	Sym *syms;
-	uint32_t *hashtab;
+	Elf_Symndx *hashtab;
 	uint32_t *ghashtab;
 	int16_t *versym;
 	char *strings;
@@ -206,7 +206,7 @@ static Sym *sysv_lookup(const char *s, uint32_t h, struct dso *dso)
 {
 	size_t i;
 	Sym *syms = dso->syms;
-	uint32_t *hashtab = dso->hashtab;
+	Elf_Symndx *hashtab = dso->hashtab;
 	char *strings = dso->strings;
 	for (i=hashtab[2+h%hashtab[0]]; i; i=hashtab[2+hashtab[0]+i]) {
 		if ((!dso->versym || dso->versym[i] >= 0)

@@ -1,4 +1,5 @@
 #include <elf.h>
+#include <link.h>
 #include <limits.h>
 #include <stdint.h>
 #include <string.h>
@@ -57,7 +58,7 @@ void *__vdsosym(const char *vername, const char *name)
 
 	char *strings = 0;
 	Sym *syms = 0;
-	uint32_t *hashtab = 0;
+	Elf_Symndx *hashtab = 0;
 	uint16_t *versym = 0;
 	Verdef *verdef = 0;
 	
