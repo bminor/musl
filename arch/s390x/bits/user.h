@@ -12,7 +12,7 @@ typedef struct {
 } elf_fpregset_t;
 
 #define ELF_NGREG 27
-typedef unsigned long elf_greg_t, elf_gregset_t[ELG_NGREG];
+typedef unsigned long elf_greg_t, elf_gregset_t[ELF_NGREG];
 
 struct _user_psw_struct {
 	unsigned long mask, addr;
