@@ -23,16 +23,6 @@ struct _user_fpregs_struct {
 	double fprs[16];
 };
 
-struct _user_regs_struct {
-	struct _user_psw_struct psw;
-	unsigned long gprs[16];
-	unsigned acrs[16];
-	unsigned long orig_gpr2;
-	struct _user_fpregs_struct fp_regs;
-	struct _user_per_struct per_info;
-	unsigned long ieee_instruction_pointer;
-};
-
 struct _user_per_struct {
 	unsigned long control_regs[3];
 	unsigned single_step       : 1;
@@ -43,6 +33,16 @@ struct _user_per_struct {
 	unsigned long address;
 	unsigned char access_id;
 } per_struct;
+
+struct _user_regs_struct {
+	struct _user_psw_struct psw;
+	unsigned long gprs[16];
+	unsigned acrs[16];
+	unsigned long orig_gpr2;
+	struct _user_fpregs_struct fp_regs;
+	struct _user_per_struct per_info;
+	unsigned long ieee_instruction_pointer;
+};
 
 struct user {
 	struct _user_regs_struct regs;
