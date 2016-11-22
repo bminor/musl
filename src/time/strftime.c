@@ -48,12 +48,12 @@ static int week_num(const struct tm *tm)
 const char *__tm_to_tzname(const struct tm *);
 size_t __strftime_l(char *restrict, size_t, const char *restrict, const struct tm *restrict, locale_t);
 
-const char *__strftime_fmt_1(char (*s)[100], size_t *l, int f, const struct tm *tm, locale_t loc)
+const char *__strftime_fmt_1(char (*s)[100], size_t *l, int f, const struct tm *tm, locale_t loc, int pad)
 {
 	nl_item item;
 	long long val;
 	const char *fmt = "-";
-	int width = 2;
+	int width = 2, def_pad = '0';
 
 	switch (f) {
 	case 'a':
@@ -79,15 +79,14 @@ const char *__strftime_fmt_1(char (*s)[100], size_t *l, int f, const struct tm *
 	case 'C':
 		val = (1900LL+tm->tm_year) / 100;
 		goto number;
+	case 'e':
+		def_pad = '_';
 	case 'd':
 		val = tm->tm_mday;
 		goto number;
 	case 'D':
 		fmt = "%m/%d/%y";
 		goto recu_strftime;
-	case 'e':
-		*l = snprintf(*s, sizeof *s, "%2d", tm->tm_mday);
-		return *s;
 	case 'F':
 		fmt = "%Y-%m-%d";
 		goto recu_strftime;
@@ -200,7 +199,12 @@ const char *__strftime_fmt_1(char (*s)[100], size_t *l, int f, const struct tm *
 		return 0;
 	}
 number:
-	*l = snprintf(*s, sizeof *s, "%0*lld", width, val);
+	switch (pad ? pad : def_pad) {
+	case '-': *l = snprintf(*s, sizeof *s, "%lld", val); break;
+	case '_': *l = snprintf(*s, sizeof *s, "%*lld", width, val); break;
+	case '0':
+	default:  *l = snprintf(*s, sizeof *s, "%0*lld", width, val); break;
+	}
 	return *s;
 nl_strcat:
 	fmt = __nl_langinfo_l(item, loc);
@@ -221,7 +225,7 @@ size_t __strftime_l(char *restrict s, size_t n, const char *restrict f, const st
 	char buf[100];
 	char *p;
 	const char *t;
-	int plus;
+	int pad, plus;
 	unsigned long width;
 	for (l=0; l<n; f++) {
 		if (!*f) {
@@ -233,6 +237,8 @@ size_t __strftime_l(char *restrict s, size_t n, const char *restrict f, const st
 			continue;
 		}
 		f++;
+		pad = 0;
+		if (*f == '-' || *f == '_' || *f == '0') pad = *f++;
 		if ((plus = (*f == '+'))) f++;
 		width = strtoul(f, &p, 10);
 		if (*p == 'C' || *p == 'F' || *p == 'G' || *p == 'Y') {
@@ -242,7 +248,7 @@ size_t __strftime_l(char *restrict s, size_t n, const char *restrict f, const st
 		}
 		f = p;
 		if (*f == 'E' || *f == 'O') f++;
-		t = __strftime_fmt_1(&buf, &k, *f, tm, loc);
+		t = __strftime_fmt_1(&buf, &k, *f, tm, loc, pad);
 		if (!t) break;
 		if (width) {
 			for (; *t=='+' || *t=='-' || (*t=='0'&&t[1]); t++, k--);
