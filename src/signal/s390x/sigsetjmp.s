@@ -6,7 +6,7 @@
 sigsetjmp:
 __sigsetjmp:
 	ltgr  %r3, %r3
-	bz    ___setjmp
+	jz    ___setjmp
 
 	stg   %r14, 18*8(%r2)
 	stg   %r6,  20*8(%r2)
