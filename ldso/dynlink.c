@@ -286,11 +286,9 @@ static struct symdef find_sym(struct dso *dso, const char *s, int need_def)
 				continue;
 		if (!(1<<(sym->st_info&0xf) & OK_TYPES)) continue;
 		if (!(1<<(sym->st_info>>4) & OK_BINDS)) continue;
-
-		if (def.sym && sym->st_info>>4 == STB_WEAK) continue;
 		def.sym = sym;
 		def.dso = dso;
-		if (sym->st_info>>4 == STB_GLOBAL) break;
+		break;
 	}
 	return def;
 }
