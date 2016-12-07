@@ -30,7 +30,6 @@ struct pthread {
 	void *result;
 	struct __ptcb *cancelbuf;
 	void **tsd;
-	pthread_attr_t attr;
 	volatile int dead;
 	struct {
 		volatile void *volatile head;
