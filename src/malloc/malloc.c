@@ -111,19 +111,29 @@ static int first_set(uint64_t x)
 #endif
 }
 
+static const unsigned char bin_tab[60] = {
+	            32,33,34,35,36,36,37,37,38,38,39,39,
+	40,40,40,40,41,41,41,41,42,42,42,42,43,43,43,43,
+	44,44,44,44,44,44,44,44,45,45,45,45,45,45,45,45,
+	46,46,46,46,46,46,46,46,47,47,47,47,47,47,47,47,
+};
+
 static int bin_index(size_t x)
 {
 	x = x / SIZE_ALIGN - 1;
 	if (x <= 32) return x;
+	if (x < 512) return bin_tab[x/8-4];
 	if (x > 0x1c00) return 63;
-	return ((union { float v; uint32_t r; }){(int)x}.r>>21) - 496;
+	return bin_tab[x/128-4] + 16;
 }
 
 static int bin_index_up(size_t x)
 {
 	x = x / SIZE_ALIGN - 1;
 	if (x <= 32) return x;
-	return ((union { float v; uint32_t r; }){(int)x}.r+0x1fffff>>21) - 496;
+	x--;
+	if (x < 512) return bin_tab[x/8-4] + 1;
+	return bin_tab[x/128-4] + 17;
 }
 
 #if 0
