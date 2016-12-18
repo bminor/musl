@@ -1,4 +1,4 @@
-#ifndef __ARMEB__
+#if !__ARMEB__ && !__thumb__
 
 /*
  * Copyright (C) 2008 The Android Open Source Project
