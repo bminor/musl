@@ -9,7 +9,9 @@ __setjmp:
 _setjmp:
 setjmp:
 	mov ip,r0
-	stmia ip!,{v1,v2,v3,v4,v5,v6,sl,fp,sp,lr}
+	stmia ip!,{v1,v2,v3,v4,v5,v6,sl,fp}
+	mov r2,sp
+	stmia ip!,{r2,lr}
 	mov r0,#0
 
 	adr r1,1f
