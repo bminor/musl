@@ -10,15 +10,17 @@ static inline pthread_t __pthread_self()
 
 #else
 
+#if __ARM_ARCH_4__ || __ARM_ARCH_4T__ || __ARM_ARCH == 4
+#define BLX "mov lr,pc\n\tbx"
+#else
+#define BLX "blx"
+#endif
+
 static inline pthread_t __pthread_self()
 {
-#ifdef __clang__
-	char *p;
-	__asm__ __volatile__ ( "bl __a_gettp\n\tmov %0,r0" : "=r"(p) : : "cc", "r0", "lr" );
-#else
-	register char *p __asm__("r0");
-	__asm__ __volatile__ ( "bl __a_gettp" : "=r"(p) : : "cc", "lr" );
-#endif
+	extern uintptr_t __attribute__((__visibility__("hidden"))) __a_gettp_ptr;
+	register uintptr_t p __asm__("r0");
+	__asm__ __volatile__ ( BLX " %1" : "=r"(p) : "r"(__a_gettp_ptr) : "cc", "lr" );
 	return (void *)(p+8-sizeof(struct pthread));
 }
 
