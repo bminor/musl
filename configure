@@ -602,6 +602,10 @@ trycppif __ILP32__ "$t" && ARCH=x32
 fi
 
 if test "$ARCH" = "arm" ; then
+if trycppif __thumb2__ "$t" ; then
+tryflag CFLAGS_AUTO -Wa,-mimplicit-it=always
+tryflag CFLAGS_AUTO -Wa,-mthumb
+fi
 trycppif __ARMEB__ "$t" && SUBARCH=${SUBARCH}eb
 trycppif __ARM_PCS_VFP "$t" && SUBARCH=${SUBARCH}hf
 # Versions of clang up until at least 3.8 have the wrong constraint codes
