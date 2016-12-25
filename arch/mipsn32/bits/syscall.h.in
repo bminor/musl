@@ -324,4 +324,7 @@
 #define __NR_copy_file_range		6324
 #define __NR_preadv2			6325
 #define __NR_pwritev2			6326
+#define __NR_pkey_mprotect		6327
+#define __NR_pkey_alloc			6328
+#define __NR_pkey_free			6329
 

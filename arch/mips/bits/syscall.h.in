@@ -360,4 +360,7 @@
 #define __NR_copy_file_range         4360
 #define __NR_preadv2                 4361
 #define __NR_pwritev2                4362
+#define __NR_pkey_mprotect           4363
+#define __NR_pkey_alloc              4364
+#define __NR_pkey_free               4365
 
