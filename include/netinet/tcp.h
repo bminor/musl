@@ -154,6 +154,7 @@ struct tcp_info {
 	uint8_t tcpi_backoff;
 	uint8_t tcpi_options;
 	uint8_t tcpi_snd_wscale : 4, tcpi_rcv_wscale : 4;
+	uint8_t tcpi_delivery_rate_app_limited : 1;
 	uint32_t tcpi_rto;
 	uint32_t tcpi_ato;
 	uint32_t tcpi_snd_mss;
@@ -188,6 +189,7 @@ struct tcp_info {
 	uint32_t tcpi_min_rtt;
 	uint32_t tcpi_data_segs_in;
 	uint32_t tcpi_data_segs_out;
+	uint64_t tcpi_delivery_rate;
 };
 
 #define TCP_MD5SIG_MAXKEYLEN    80
