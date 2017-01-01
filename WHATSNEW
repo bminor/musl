@@ -1730,3 +1730,49 @@ arch-specific bugs fixed:
 - broken posix_fadvise on arm and powerpc (32-bit)
 - thread structure/dtv corruption on powerpc at thread startup
 - various wrong mips and powerpc ioctl and termios constant values
+
+
+
+1.1.16 release notes
+
+new features:
+- s390x (64-bit S/390) port
+- pthread_setname_np extension function
+- limited pthread_setattr_default_np function to set stack size defaults
+- header-level support for linux 4.7, 4.8, and 4.9 features
+- confstr _CS_V6_ENV and _CS_V7_ENV items
+
+compatibility:
+- public prototypes for abi-compat *_unlocked symbols, etc.
+- fflush_unlocked(NULL) now works
+- resolv.h __RES version macro now matches supported APIs
+- workaround for gdb bugs backtracing across signals on x86_64
+- anchors ^ and $ are now accepted in BRE subexpressions
+- building for thumb2-only arm isa levels is now possible
+
+bugs fixed:
+- integer overflows in regexec buffer allocation (CVE-2016-8859)
+- failure of regexec to report matches at offsets past INT_MAX
+- static-pie executables with initialized thread-local storage crashed
+- printf failed to catch EOVERFLOW in some cases, wrongly produced it in others
+- printf produced wrong output, result for float with precision near INT_MAX
+- printf produced wrong results with alt-form octal, zero flag, & field width
+- printf float rounding was wrong for some midpoint cases
+- swprintf printed junk after internal (256-byte) buffer filled up
+- strtod family rounded incorrectly in several corner cases
+- getmntent failed to handle long records
+- getopt_long_only wrongly treated "--" as an option
+- asctime output wrongly varied by locale
+- strftime %y specifier produced wrong output for negative tm_year
+- time zone names quoted with <> were misparsed
+- corner case integer overflow in tm_year for some date conversions
+- failure to load shared libs whose names were prefixes of standard lib names
+- wrong error codes for several failure cases in various functions
+- various asymptomatic undefined behavior
+- various minor namespace issues in headers
+
+arch-specific bugs fixed:
+- tcsetattr regression on mips (completely non-working)
+- wrong pread/pwrite syscall calling convention on sh
+- wrong preadv2/pwritev2 syscall numbers on x32
+- mrand48/jrand48 produced wrong-signedness results on 64-bit archs
