@@ -169,8 +169,6 @@ int glob(const char *restrict pat, int flags, int (*errfunc)(const char *path, i
 		d = "";
 	}
 
-	if (strlen(p) > PATH_MAX) return GLOB_NOSPACE;
-
 	if (!errfunc) errfunc = ignore_err;
 
 	if (!(flags & GLOB_APPEND)) {
@@ -178,6 +176,8 @@ int glob(const char *restrict pat, int flags, int (*errfunc)(const char *path, i
 		g->gl_pathc = 0;
 		g->gl_pathv = NULL;
 	}
+
+	if (strnlen(p, PATH_MAX+1) > PATH_MAX) return GLOB_NOSPACE;
 
 	if (*p) error = match_in_dir(d, p, flags, errfunc, &tail);
 	if (error == GLOB_NOSPACE) {
