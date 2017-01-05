@@ -60,7 +60,6 @@ int getopt(int argc, char * const argv[], const char *optstring)
 		c = 0xfffd; /* replacement char */
 	}
 	optchar = argv[optind]+optpos;
-	optopt = c;
 	optpos += k;
 
 	if (!argv[optind][optpos]) {
@@ -79,6 +78,7 @@ int getopt(int argc, char * const argv[], const char *optstring)
 	} while (l && d != c);
 
 	if (d != c) {
+		optopt = c;
 		if (optstring[0] != ':' && opterr)
 			__getopt_msg(argv[0], ": unrecognized option: ", optchar, k);
 		return '?';
@@ -86,6 +86,7 @@ int getopt(int argc, char * const argv[], const char *optstring)
 	if (optstring[i] == ':') {
 		if (optstring[i+1] == ':') optarg = 0;
 		else if (optind >= argc) {
+			optopt = c;
 			if (optstring[0] == ':') return ':';
 			if (opterr) __getopt_msg(argv[0],
 				": option requires an argument: ",

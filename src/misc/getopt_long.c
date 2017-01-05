@@ -75,9 +75,9 @@ static int __getopt_long_core(int argc, char *const *argv, const char *optstring
 		if (cnt==1) {
 			i = match;
 			optind++;
-			optopt = longopts[i].val;
 			if (*opt == '=') {
 				if (!longopts[i].has_arg) {
+					optopt = longopts[i].val;
 					if (colon || !opterr)
 						return '?';
 					__getopt_msg(argv[0],
@@ -89,6 +89,7 @@ static int __getopt_long_core(int argc, char *const *argv, const char *optstring
 				optarg = opt+1;
 			} else if (longopts[i].has_arg == required_argument) {
 				if (!(optarg = argv[optind])) {
+					optopt = longopts[i].val;
 					if (colon) return ':';
 					if (!opterr) return '?';
 					__getopt_msg(argv[0],
@@ -107,6 +108,7 @@ static int __getopt_long_core(int argc, char *const *argv, const char *optstring
 			return longopts[i].val;
 		}
 		if (argv[optind][1] == '-') {
+			optopt = 0;
 			if (!colon && opterr)
 				__getopt_msg(argv[0], cnt ?
 					": option is ambiguous: " :
