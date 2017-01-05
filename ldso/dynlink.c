@@ -1686,6 +1686,7 @@ void *dlopen(const char *file, int mode)
 		}
 		if (!orig_tls_tail) libc.tls_head = 0;
 		tls_tail = orig_tls_tail;
+		if (tls_tail) tls_tail->next = 0;
 		tls_cnt = orig_tls_cnt;
 		tls_offset = orig_tls_offset;
 		tls_align = orig_tls_align;
