@@ -3,9 +3,9 @@
 #include "libc.h"
 
 __attribute__((__visibility__("hidden")))
-void *__tls_get_new(size_t *);
+void *__tls_get_new(tls_mod_off_t *);
 
-void *__tls_get_addr(size_t *v)
+void *__tls_get_addr(tls_mod_off_t *v)
 {
 	pthread_t self = __pthread_self();
 	if (v[0]<=(size_t)self->dtv[0])

@@ -97,6 +97,10 @@ struct __timer {
 #define DTP_OFFSET 0
 #endif
 
+#ifndef tls_mod_off_t
+#define tls_mod_off_t size_t
+#endif
+
 #define SIGTIMER 32
 #define SIGCANCEL 33
 #define SIGSYNCCALL 34
