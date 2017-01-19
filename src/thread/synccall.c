@@ -50,7 +50,7 @@ void __synccall(void (*func)(void *), void *ctx)
 	int cs, i, r, pid, self;;
 	DIR dir = {0};
 	struct dirent *de;
-	struct sigaction sa = { .sa_flags = 0, .sa_handler = handler };
+	struct sigaction sa = { .sa_flags = SA_RESTART, .sa_handler = handler };
 	struct chain *cp, *next;
 	struct timespec ts;
 
