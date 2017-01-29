@@ -57,7 +57,7 @@ char *bindtextdomain(const char *domainname, const char *dirname)
 	}
 
 	if (!p) {
-		p = malloc(sizeof *p + domlen + dirlen + 2);
+		p = calloc(sizeof *p + domlen + dirlen + 2, 1);
 		if (!p) {
 			UNLOCK(lock);
 			return 0;
@@ -171,7 +171,7 @@ notrans:
 		size_t map_size;
 		const void *map = __map_file(name, &map_size);
 		if (!map) goto notrans;
-		p = malloc(sizeof *p + namelen + 1);
+		p = calloc(sizeof *p + namelen + 1, 1);
 		if (!p) {
 			__munmap((void *)map, map_size);
 			goto notrans;
