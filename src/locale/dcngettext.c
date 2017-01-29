@@ -74,7 +74,7 @@ char *bindtextdomain(const char *domainname, const char *dirname)
 	a_store(&p->active, 1);
 
 	for (q=bindings; q; q=q->next) {
-		if (!strcmp(p->domainname, domainname) && q != p)
+		if (!strcmp(q->domainname, domainname) && q != p)
 			a_store(&q->active, 0);
 	}
 
