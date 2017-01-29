@@ -40,8 +40,8 @@ char *bindtextdomain(const char *domainname, const char *dirname)
 	if (!domainname) return 0;
 	if (!dirname) return gettextdir(domainname, &(size_t){0});
 
-	size_t domlen = strlen(domainname);
-	size_t dirlen = strlen(dirname);
+	size_t domlen = strnlen(domainname, NAME_MAX+1);
+	size_t dirlen = strnlen(dirname, PATH_MAX);
 	if (domlen > NAME_MAX || dirlen >= PATH_MAX) {
 		errno = EINVAL;
 		return 0;
@@ -127,7 +127,7 @@ char *dcngettext(const char *domainname, const char *msgid1, const char *msgid2,
 
 	if (!domainname) domainname = __gettextdomain();
 
-	domlen = strlen(domainname);
+	domlen = strnlen(domainname, NAME_MAX+1);
 	if (domlen > NAME_MAX) goto notrans;
 
 	dirname = gettextdir(domainname, &dirlen);
