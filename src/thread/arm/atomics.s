@@ -84,7 +84,7 @@ __a_gettp_cp15:
 	bx lr
 
 /* Tag this file with minimum ISA level so as not to affect linking. */
-.arch armv4t
+.object_arch armv4t
 .eabi_attribute 6,2
 
 .data
