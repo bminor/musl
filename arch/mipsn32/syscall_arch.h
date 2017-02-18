@@ -97,7 +97,7 @@ static inline long __syscall4(long n, long a, long b, long c, long d)
 	if (r7) return -r2;
 	long ret = r2;
 	if (n == SYS_stat || n == SYS_fstat || n == SYS_lstat) __stat_fix(b);
-	if (n == SYS_fstatat) __stat_fix(c);
+	if (n == SYS_newfstatat) __stat_fix(c);
 	return ret;
 }
 
@@ -106,7 +106,7 @@ static inline long __syscall5(long n, long a, long b, long c, long d, long e)
 	long r2 = (__syscall)(n, a, b, c, d, e);
 	if (r2 > -4096UL) return r2;
 	if (n == SYS_stat || n == SYS_fstat || n == SYS_lstat) __stat_fix(b);
-	if (n == SYS_fstatat) __stat_fix(c);
+	if (n == SYS_newfstatat) __stat_fix(c);
 	return r2;
 }
 
@@ -115,7 +115,7 @@ static inline long __syscall6(long n, long a, long b, long c, long d, long e, lo
 	long r2 = (__syscall)(n, a, b, c, d, e, f);
 	if (r2 > -4096UL) return r2;
 	if (n == SYS_stat || n == SYS_fstat || n == SYS_lstat) __stat_fix(b);
-	if (n == SYS_fstatat) __stat_fix(c);
+	if (n == SYS_newfstatat) __stat_fix(c);
 	return r2;
 }
 

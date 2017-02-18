@@ -77,7 +77,7 @@
 #define __NR_splice 76
 #define __NR_tee 77
 #define __NR_readlinkat 78
-#define __NR_fstatat 79
+#define __NR_newfstatat 79
 #define __NR_fstat 80
 #define __NR_sync 81
 #define __NR_fsync 82
@@ -242,7 +242,6 @@
 #define __NR_perf_event_open 241
 #define __NR_accept4 242
 #define __NR_recvmmsg 243
-#define __NR_or1k_atomic 244
 #define __NR_wait4 260
 #define __NR_prlimit64 261
 #define __NR_fanotify_init 262

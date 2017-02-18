@@ -178,8 +178,8 @@
 #define __NR_rt_sigtimedwait 177
 #define __NR_rt_sigqueueinfo 178
 #define __NR_rt_sigsuspend 179
-#define __NR_pread 180
-#define __NR_pwrite 181
+#define __NR_pread64 180
+#define __NR_pwrite64 181
 #define __NR_chown 182
 #define __NR_getcwd 183
 #define __NR_capget 184
@@ -246,7 +246,7 @@
 #define __NR_io_getevents 247
 #define __NR_io_submit 248
 #define __NR_io_cancel 249
-#define __NR_fadvise 250
+#define __NR_fadvise64 250
 #define __NR_exit_group 252
 #define __NR_lookup_dcookie 253
 #define __NR_epoll_create 254
@@ -294,7 +294,7 @@
 #define __NR_mknodat 297
 #define __NR_fchownat 298
 #define __NR_futimesat 299
-#define __NR_fstatat 300
+#define __NR_fstatat64 300
 #define __NR_unlinkat 301
 #define __NR_renameat 302
 #define __NR_linkat 303

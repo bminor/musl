@@ -140,7 +140,7 @@
 #define __NR_setfsgid                4139
 #define __NR__llseek                 4140
 #define __NR_getdents                4141
-#define __NR_select                  4142
+#define __NR__newselect              4142
 #define __NR_flock                   4143
 #define __NR_msync                   4144
 #define __NR_readv                   4145
@@ -198,8 +198,8 @@
 #define __NR_rt_sigtimedwait         4197
 #define __NR_rt_sigqueueinfo         4198
 #define __NR_rt_sigsuspend           4199
-#define __NR_pread                   4200
-#define __NR_pwrite                  4201
+#define __NR_pread64                 4200
+#define __NR_pwrite64                4201
 #define __NR_chown                   4202
 #define __NR_getcwd                  4203
 #define __NR_capget                  4204
@@ -252,7 +252,7 @@
 #define __NR_remap_file_pages        4251
 #define __NR_set_tid_address         4252
 #define __NR_restart_syscall         4253
-#define __NR_fadvise                 4254
+#define __NR_fadvise64               4254
 #define __NR_statfs64                4255
 #define __NR_fstatfs64               4256
 #define __NR_timer_create            4257
@@ -290,7 +290,7 @@
 #define __NR_mknodat                 4290
 #define __NR_fchownat                4291
 #define __NR_futimesat               4292
-#define __NR_fstatat                 4293
+#define __NR_fstatat64               4293
 #define __NR_unlinkat                4294
 #define __NR_renameat                4295
 #define __NR_linkat                  4296

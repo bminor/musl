@@ -162,16 +162,12 @@
 #define __NR_sched_rr_get_interval  161
 #define __NR_nanosleep              162
 #define __NR_mremap                 163
-#define __NR_setresuid32            164
 #define __NR_setresuid              164
-#define __NR_getresuid32            165
 #define __NR_getresuid              165
 #define __NR_query_module           166
 #define __NR_poll                   167
 #define __NR_nfsservctl             168
-#define __NR_setresgid32            169
 #define __NR_setresgid              169
-#define __NR_getresgid32            170
 #define __NR_getresgid              170
 #define __NR_prctl                  171
 #define __NR_rt_sigreturn           172
@@ -306,7 +302,6 @@
 #define __NR_epoll_pwait	303
 #define __NR_utimensat		304
 #define __NR_signalfd		305
-#define __NR_timerfd		306
 #define __NR_timerfd_create     306
 #define __NR_eventfd		307
 #define __NR_sync_file_range2	308

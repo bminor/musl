@@ -253,7 +253,7 @@
 #define __NR_mknodat			6253
 #define __NR_fchownat			6254
 #define __NR_futimesat			6255
-#define __NR_fstatat			6256
+#define __NR_newfstatat			6256
 #define __NR_unlinkat			6257
 #define __NR_renameat			6258
 #define __NR_linkat			6259
