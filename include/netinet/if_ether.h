@@ -10,6 +10,8 @@
 #define ETH_DATA_LEN	1500
 #define ETH_FRAME_LEN	1514
 #define ETH_FCS_LEN	4
+#define ETH_MIN_MTU	68
+#define ETH_MAX_MTU	0xFFFFU
 
 #define ETH_P_LOOP	0x0060
 #define ETH_P_PUP	0x0200
