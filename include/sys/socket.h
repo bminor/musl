@@ -224,6 +224,7 @@ struct linger {
 #define SO_ATTACH_REUSEPORT_CBPF 51
 #define SO_ATTACH_REUSEPORT_EBPF 52
 #define SO_CNX_ADVICE           53
+#define SCM_TIMESTAMPING_OPT_STATS 54
 
 #ifndef SOL_SOCKET
 #define SOL_SOCKET      1

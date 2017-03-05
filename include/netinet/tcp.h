@@ -44,6 +44,13 @@
 #define TCP_LISTEN       10
 #define TCP_CLOSING      11
 
+enum {
+	TCP_NLA_PAD,
+	TCP_NLA_BUSY,
+	TCP_NLA_RWND_LIMITED,
+	TCP_NLA_SNDBUF_LIMITED,
+};
+
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 #define TCPOPT_EOL              0
 #define TCPOPT_NOP              1
@@ -190,6 +197,9 @@ struct tcp_info {
 	uint32_t tcpi_data_segs_in;
 	uint32_t tcpi_data_segs_out;
 	uint64_t tcpi_delivery_rate;
+	uint64_t tcpi_busy_time;
+	uint64_t tcpi_rwnd_limited;
+	uint64_t tcpi_sndbuf_limited;
 };
 
 #define TCP_MD5SIG_MAXKEYLEN    80
