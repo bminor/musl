@@ -27,6 +27,6 @@
 	"	bl 1f \n" \
 	"	.long " #sym "-. \n" \
 	"1:	mflr %1 \n" \
-	"	lwz %0, 0(%1) \n" \
+	"	lwa %0, 0(%1) \n" \
 	"	add %0, %0, %1 \n" \
 	: "=r"(*(fp)), "=r"((long){0}) : : "memory", "lr" )
