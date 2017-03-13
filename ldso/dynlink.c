@@ -58,7 +58,8 @@ struct dso {
 	uint32_t *ghashtab;
 	int16_t *versym;
 	char *strings;
-	struct dso *syms_next;
+	struct dso *syms_next, *lazy_next;
+	size_t *lazy, lazy_cnt;
 	unsigned char *map;
 	size_t map_len;
 	dev_t dev;
@@ -113,7 +114,7 @@ static struct builtin_tls {
 static size_t *saved_addends, *apply_addends_to;
 
 static struct dso ldso;
-static struct dso *head, *tail, *fini_head, *syms_tail;
+static struct dso *head, *tail, *fini_head, *syms_tail, *lazy_head;
 static char *env_path, *sys_path;
 static unsigned long long gencnt;
 static int runtime;
@@ -350,6 +351,13 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 				: find_sym(ctx, name, type==REL_PLT);
 			if (!def.sym && (sym->st_shndx != SHN_UNDEF
 			    || sym->st_info>>4 != STB_WEAK)) {
+				if (dso->lazy && (type==REL_PLT || type==REL_GOT)) {
+					dso->lazy[3*dso->lazy_cnt+0] = rel[0];
+					dso->lazy[3*dso->lazy_cnt+1] = rel[1];
+					dso->lazy[3*dso->lazy_cnt+2] = addend;
+					dso->lazy_cnt++;
+					continue;
+				}
 				error("Error relocating %s: %s: symbol not found",
 					dso->name, name);
 				if (runtime) longjmp(*rtld_fail, 1);
@@ -447,6 +455,26 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 				dso->name, type);
 			if (runtime) longjmp(*rtld_fail, 1);
 			continue;
+		}
+	}
+}
+
+static void redo_lazy_relocs()
+{
+	struct dso *p = lazy_head, *next;
+	lazy_head = 0;
+	for (; p; p=next) {
+		next = p->lazy_next;
+		size_t size = p->lazy_cnt*3*sizeof(size_t);
+		p->lazy_cnt = 0;
+		do_relocs(p, p->lazy, size, 3);
+		if (p->lazy_cnt) {
+			p->lazy_next = lazy_head;
+			lazy_head = p;
+		} else {
+			free(p->lazy);
+			p->lazy = 0;
+			p->lazy_next = 0;
 		}
 	}
 }
@@ -1653,9 +1681,31 @@ _Noreturn void __dls3(size_t *sp)
 	for(;;);
 }
 
+static void prepare_lazy(struct dso *p)
+{
+	size_t dyn[DYN_CNT], n, flags1=0;
+	decode_vec(p->dynv, dyn, DYN_CNT);
+	search_vec(p->dynv, &flags1, DT_FLAGS_1);
+	if (dyn[DT_BIND_NOW] || (dyn[DT_FLAGS] & DF_BIND_NOW) || (flags1 & DF_1_NOW))
+		return;
+	n = dyn[DT_RELSZ]/2 + dyn[DT_RELASZ]/3 + dyn[DT_PLTRELSZ]/2 + 1;
+	if (NEED_MIPS_GOT_RELOCS) {
+		size_t j=0; search_vec(p->dynv, &j, DT_MIPS_GOTSYM);
+		size_t i=0; search_vec(p->dynv, &i, DT_MIPS_SYMTABNO);
+		n += i-j;
+	}
+	p->lazy = calloc(n, 3*sizeof(size_t));
+	if (!p->lazy) {
+		error("Error preparing lazy relocation for %s: %m", p->name);
+		longjmp(*rtld_fail, 1);
+	}
+	p->lazy_next = lazy_head;
+	lazy_head = p;
+}
+
 void *dlopen(const char *file, int mode)
 {
-	struct dso *volatile p, *orig_tail, *orig_syms_tail, *next;
+	struct dso *volatile p, *orig_tail, *orig_syms_tail, *orig_lazy_head, *next;
 	struct tls_module *orig_tls_tail;
 	size_t orig_tls_cnt, orig_tls_offset, orig_tls_align;
 	size_t i;
@@ -1673,6 +1723,7 @@ void *dlopen(const char *file, int mode)
 	orig_tls_cnt = tls_cnt;
 	orig_tls_offset = tls_offset;
 	orig_tls_align = tls_align;
+	orig_lazy_head = lazy_head;
 	orig_syms_tail = syms_tail;
 	orig_tail = tail;
 	noload = mode & RTLD_NOLOAD;
@@ -1701,6 +1752,7 @@ void *dlopen(const char *file, int mode)
 		tls_cnt = orig_tls_cnt;
 		tls_offset = orig_tls_offset;
 		tls_align = orig_tls_align;
+		lazy_head = orig_lazy_head;
 		tail = orig_tail;
 		tail->next = 0;
 		p = 0;
@@ -1718,6 +1770,12 @@ void *dlopen(const char *file, int mode)
 	/* First load handling */
 	if (!p->relocated) {
 		load_deps(p);
+		if ((mode & RTLD_LAZY)) {
+			prepare_lazy(p);
+			if (p->deps) for (i=0; p->deps[i]; i++)
+				if (!p->deps[i]->relocated)
+					prepare_lazy(p->deps[i]);
+		}
 		/* Make new symbols global, at least temporarily, so we can do
 		 * relocations. If not RTLD_GLOBAL, this is reverted below. */
 		add_syms(p);
@@ -1731,6 +1789,11 @@ void *dlopen(const char *file, int mode)
 	 * previously loaded and already global. */
 	if (!(mode & RTLD_GLOBAL))
 		revert_syms(orig_syms_tail);
+
+	/* Processing of deferred lazy relocations must not happen until
+	 * the new libraries are committed; otherwise we could end up with
+	 * relocations resolved to symbol definitions that get removed. */
+	redo_lazy_relocs();
 
 	update_tls_size();
 	_dl_debug_state();
