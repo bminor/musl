@@ -323,8 +323,24 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 		if (skip_relative && IS_RELATIVE(rel[1], dso->syms)) continue;
 		type = R_TYPE(rel[1]);
 		if (type == REL_NONE) continue;
-		sym_index = R_SYM(rel[1]);
 		reloc_addr = laddr(dso, rel[0]);
+
+		if (stride > 2) {
+			addend = rel[2];
+		} else if (type==REL_GOT || type==REL_PLT|| type==REL_COPY) {
+			addend = 0;
+		} else if (reuse_addends) {
+			/* Save original addend in stage 2 where the dso
+			 * chain consists of just ldso; otherwise read back
+			 * saved addend since the inline one was clobbered. */
+			if (head==&ldso)
+				saved_addends[save_slot] = *reloc_addr;
+			addend = saved_addends[save_slot++];
+		} else {
+			addend = *reloc_addr;
+		}
+
+		sym_index = R_SYM(rel[1]);
 		if (sym_index) {
 			sym = syms + sym_index;
 			name = strings + sym->st_name;
@@ -343,21 +359,6 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 			sym = 0;
 			def.sym = 0;
 			def.dso = dso;
-		}
-
-		if (stride > 2) {
-			addend = rel[2];
-		} else if (type==REL_GOT || type==REL_PLT|| type==REL_COPY) {
-			addend = 0;
-		} else if (reuse_addends) {
-			/* Save original addend in stage 2 where the dso
-			 * chain consists of just ldso; otherwise read back
-			 * saved addend since the inline one was clobbered. */
-			if (head==&ldso)
-				saved_addends[save_slot] = *reloc_addr;
-			addend = saved_addends[save_slot++];
-		} else {
-			addend = *reloc_addr;
 		}
 
 		sym_val = def.sym ? (size_t)laddr(def.dso, def.sym->st_value) : 0;
