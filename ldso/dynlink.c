@@ -58,11 +58,11 @@ struct dso {
 	uint32_t *ghashtab;
 	int16_t *versym;
 	char *strings;
+	struct dso *syms_next;
 	unsigned char *map;
 	size_t map_len;
 	dev_t dev;
 	ino_t ino;
-	signed char global;
 	char relocated;
 	char constructed;
 	char kernel_mapped;
@@ -113,7 +113,7 @@ static struct builtin_tls {
 static size_t *saved_addends, *apply_addends_to;
 
 static struct dso ldso;
-static struct dso *head, *tail, *fini_head;
+static struct dso *head, *tail, *fini_head, *syms_tail;
 static char *env_path, *sys_path;
 static unsigned long long gencnt;
 static int runtime;
@@ -261,9 +261,8 @@ static struct symdef find_sym(struct dso *dso, const char *s, int need_def)
 	uint32_t h = 0, gh, gho, *ght;
 	size_t ghm = 0;
 	struct symdef def = {0};
-	for (; dso; dso=dso->next) {
+	for (; dso; dso=dso->syms_next) {
 		Sym *sym;
-		if (!dso->global) continue;
 		if ((ght = dso->ghashtab)) {
 			if (!ghm) {
 				gh = gnu_hash(s);
@@ -329,7 +328,7 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 		if (sym_index) {
 			sym = syms + sym_index;
 			name = strings + sym->st_name;
-			ctx = type==REL_COPY ? head->next : head;
+			ctx = type==REL_COPY ? head->syms_next : head;
 			def = (sym->st_info&0xf) == STT_SECTION
 				? (struct symdef){ .dso = dso, .sym = sym }
 				: find_sym(ctx, name, type==REL_PLT);
@@ -932,7 +931,7 @@ static struct dso *load_library(const char *name, struct dso *needed_by)
 		if (!ldso.prev) {
 			tail->next = &ldso;
 			ldso.prev = tail;
-			tail = ldso.next ? ldso.next : &ldso;
+			tail = &ldso;
 		}
 		return &ldso;
 	}
@@ -1113,9 +1112,24 @@ static void load_preload(char *s)
 	}
 }
 
-static void make_global(struct dso *p)
+static void add_syms(struct dso *p)
 {
-	for (; p; p=p->next) p->global = 1;
+	if (!p->syms_next && syms_tail != p) {
+		syms_tail->syms_next = p;
+		syms_tail = p;
+	}
+}
+
+static void revert_syms(struct dso *old_tail)
+{
+	struct dso *p, *next;
+	/* Chop off the tail of the list of dsos that participate in
+	 * the global symbol table, reverting them to RTLD_LOCAL. */
+	for (p=old_tail; p; p=next) {
+		next = p->syms_next;
+		p->syms_next = 0;
+	}
+	syms_tail = old_tail;
 }
 
 static void do_mips_relocs(struct dso *p, size_t *got)
@@ -1344,7 +1358,6 @@ void __dls2(unsigned char *base, size_t *sp)
 	}
 	Ehdr *ehdr = (void *)ldso.base;
 	ldso.name = ldso.shortname = "libc.so";
-	ldso.global = 1;
 	ldso.phnum = ehdr->e_phnum;
 	ldso.phdr = laddr(&ldso, ehdr->e_phoff);
 	ldso.phentsize = ehdr->e_phentsize;
@@ -1532,7 +1545,6 @@ _Noreturn void __dls3(size_t *sp)
 #endif
 		tls_align = MAXP2(tls_align, app.tls.align);
 	}
-	app.global = 1;
 	decode_dyn(&app);
 	if (DL_FDPIC) {
 		makefuncdescs(&app);
@@ -1547,7 +1559,21 @@ _Noreturn void __dls3(size_t *sp)
 		argv[-3] = (void *)app.loadmap;
 	}
 
-	/* Attach to vdso, if provided by the kernel */
+	/* Initial dso chain consists only of the app. */
+	head = tail = syms_tail = &app;
+
+	/* Donate unused parts of app and library mapping to malloc */
+	reclaim_gaps(&app);
+	reclaim_gaps(&ldso);
+
+	/* Load preload/needed libraries, add symbols to global namespace. */
+	if (env_preload) load_preload(env_preload);
+ 	load_deps(&app);
+	for (struct dso *p=head; p; p=p->next)
+		add_syms(p);
+
+	/* Attach to vdso, if provided by the kernel, last so that it does
+	 * not become part of the global namespace.  */
 	if (search_vec(auxv, &vdso_base, AT_SYSINFO_EHDR) && vdso_base) {
 		Ehdr *ehdr = (void *)vdso_base;
 		Phdr *phdr = vdso.phdr = (void *)(vdso_base + ehdr->e_phoff);
@@ -1561,25 +1587,12 @@ _Noreturn void __dls3(size_t *sp)
 		}
 		vdso.name = "";
 		vdso.shortname = "linux-gate.so.1";
-		vdso.global = 1;
 		vdso.relocated = 1;
 		decode_dyn(&vdso);
-		vdso.prev = &ldso;
-		ldso.next = &vdso;
+		vdso.prev = tail;
+		tail->next = &vdso;
+		tail = &vdso;
 	}
-
-	/* Initial dso chain consists only of the app. */
-	head = tail = &app;
-
-	/* Donate unused parts of app and library mapping to malloc */
-	reclaim_gaps(&app);
-	reclaim_gaps(&ldso);
-
-	/* Load preload/needed libraries, add their symbols to the global
-	 * namespace, and perform all remaining relocations. */
-	if (env_preload) load_preload(env_preload);
-	load_deps(&app);
-	make_global(&app);
 
 	for (i=0; app.dynv[i]; i+=2) {
 		if (!DT_DEBUG_INDIRECT && app.dynv[i]==DT_DEBUG)
@@ -1641,7 +1654,7 @@ _Noreturn void __dls3(size_t *sp)
 
 void *dlopen(const char *file, int mode)
 {
-	struct dso *volatile p, *orig_tail, *next;
+	struct dso *volatile p, *orig_tail, *orig_syms_tail, *next;
 	struct tls_module *orig_tls_tail;
 	size_t orig_tls_cnt, orig_tls_offset, orig_tls_align;
 	size_t i;
@@ -1659,15 +1672,14 @@ void *dlopen(const char *file, int mode)
 	orig_tls_cnt = tls_cnt;
 	orig_tls_offset = tls_offset;
 	orig_tls_align = tls_align;
+	orig_syms_tail = syms_tail;
 	orig_tail = tail;
 	noload = mode & RTLD_NOLOAD;
 
 	rtld_fail = &jb;
 	if (setjmp(*rtld_fail)) {
 		/* Clean up anything new that was (partially) loaded */
-		if (p && p->deps) for (i=0; p->deps[i]; i++)
-			if (p->deps[i]->global < 0)
-				p->deps[i]->global = 0;
+		revert_syms(orig_syms_tail);
 		for (p=orig_tail->next; p; p=next) {
 			next = p->next;
 			while (p->td_index) {
@@ -1703,24 +1715,21 @@ void *dlopen(const char *file, int mode)
 	}
 
 	/* First load handling */
-	if (!p->deps) {
+	if (!p->relocated) {
 		load_deps(p);
+		/* Make new symbols global, at least temporarily, so we can do
+		 * relocations. If not RTLD_GLOBAL, this is reverted below. */
+		add_syms(p);
 		if (p->deps) for (i=0; p->deps[i]; i++)
-			if (!p->deps[i]->global)
-				p->deps[i]->global = -1;
-		if (!p->global) p->global = -1;
+			add_syms(p->deps[i]);
 		reloc_all(p);
-		if (p->deps) for (i=0; p->deps[i]; i++)
-			if (p->deps[i]->global < 0)
-				p->deps[i]->global = 0;
-		if (p->global < 0) p->global = 0;
 	}
 
-	if (mode & RTLD_GLOBAL) {
-		if (p->deps) for (i=0; p->deps[i]; i++)
-			p->deps[i]->global = 1;
-		p->global = 1;
-	}
+	/* If RTLD_GLOBAL was not specified, undo any new additions
+	 * to the global symbol table. This is a nop if the library was
+	 * previously loaded and already global. */
+	if (!(mode & RTLD_GLOBAL))
+		revert_syms(orig_syms_tail);
 
 	update_tls_size();
 	_dl_debug_state();
