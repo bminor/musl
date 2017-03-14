@@ -52,7 +52,6 @@ struct dso {
 	Phdr *phdr;
 	int phnum;
 	size_t phentsize;
-	int refcnt;
 	Sym *syms;
 	Elf_Symndx *hashtab;
 	uint32_t *ghashtab;
@@ -971,7 +970,6 @@ static struct dso *load_library(const char *name, struct dso *needed_by)
 		/* Search for the name to see if it's already loaded */
 		for (p=head->next; p; p=p->next) {
 			if (p->shortname && !strcmp(p->shortname, name)) {
-				p->refcnt++;
 				return p;
 			}
 		}
@@ -1034,7 +1032,6 @@ static struct dso *load_library(const char *name, struct dso *needed_by)
 			if (!p->shortname && pathname != name)
 				p->shortname = strrchr(p->name, '/')+1;
 			close(fd);
-			p->refcnt++;
 			return p;
 		}
 	}
@@ -1074,7 +1071,6 @@ static struct dso *load_library(const char *name, struct dso *needed_by)
 	memcpy(p, &temp_dso, sizeof temp_dso);
 	p->dev = st.st_dev;
 	p->ino = st.st_ino;
-	p->refcnt = 1;
 	p->needed_by = needed_by;
 	p->name = p->buf;
 	strcpy(p->name, pathname);
