@@ -8,7 +8,7 @@ typedef union {
 
 typedef struct {
 	unsigned fpc;
-	fpreg_t fprs[16];
+	elf_fpreg_t fprs[16];
 } elf_fpregset_t;
 
 #define ELF_NGREG 27
@@ -32,7 +32,7 @@ struct _user_per_struct {
 	unsigned short perc_atmid;
 	unsigned long address;
 	unsigned char access_id;
-} per_struct;
+};
 
 struct _user_regs_struct {
 	struct _user_psw_struct psw;
