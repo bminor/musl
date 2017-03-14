@@ -1042,6 +1042,17 @@ static struct dso *load_library(const char *name, struct dso *needed_by)
 	close(fd);
 	if (!map) return 0;
 
+	/* Avoid the danger of getting two versions of libc mapped into the
+	 * same process when an absolute pathname was used. The symbols
+	 * checked are chosen to catch both musl and glibc, and to avoid
+	 * false positives from interposition-hack libraries. */
+	decode_dyn(&temp_dso);
+	if (find_sym(&temp_dso, "__libc_start_main", 1).sym &&
+	    find_sym(&temp_dso, "stdin", 1).sym) {
+		unmap_library(&temp_dso);
+		return load_library("libc.so", needed_by);
+	}
+
 	/* Allocate storage for the new DSO. When there is TLS, this
 	 * storage must include a reservation for all pre-existing
 	 * threads to obtain copies of both the new TLS, and an
@@ -1061,7 +1072,6 @@ static struct dso *load_library(const char *name, struct dso *needed_by)
 		return 0;
 	}
 	memcpy(p, &temp_dso, sizeof temp_dso);
-	decode_dyn(p);
 	p->dev = st.st_dev;
 	p->ino = st.st_ino;
 	p->refcnt = 1;
