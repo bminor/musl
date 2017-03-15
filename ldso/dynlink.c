@@ -258,18 +258,12 @@ static Sym *gnu_lookup_filtered(uint32_t h1, uint32_t *hashtab, struct dso *dso,
 
 static struct symdef find_sym(struct dso *dso, const char *s, int need_def)
 {
-	uint32_t h = 0, gh, gho, *ght;
-	size_t ghm = 0;
+	uint32_t h = 0, gh = gnu_hash(s), gho = gh / (8*sizeof(size_t)), *ght;
+	size_t ghm = 1ul << gh % (8*sizeof(size_t));
 	struct symdef def = {0};
 	for (; dso; dso=dso->syms_next) {
 		Sym *sym;
 		if ((ght = dso->ghashtab)) {
-			if (!ghm) {
-				gh = gnu_hash(s);
-				int maskbits = 8 * sizeof ghm;
-				gho = gh / maskbits;
-				ghm = 1ul << gh % maskbits;
-			}
 			sym = gnu_lookup_filtered(gh, ght, dso, s, gho, ghm);
 		} else {
 			if (!h) h = sysv_hash(s);
