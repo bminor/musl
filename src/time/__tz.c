@@ -373,18 +373,14 @@ void __secs_to_zone(long long t, int local, int *isdst, long *offset, long *oppo
 	long long t0 = rule_to_secs(r0, y);
 	long long t1 = rule_to_secs(r1, y);
 
+	if (!local) {
+		t0 += __timezone;
+		t1 += dst_off;
+	}
 	if (t0 < t1) {
-		if (!local) {
-			t0 += __timezone;
-			t1 += dst_off;
-		}
 		if (t >= t0 && t < t1) goto dst;
 		goto std;
 	} else {
-		if (!local) {
-			t1 += __timezone;
-			t0 += dst_off;
-		}
 		if (t >= t1 && t < t0) goto std;
 		goto dst;
 	}
