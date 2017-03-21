@@ -1768,9 +1768,9 @@ void *dlopen(const char *file, int mode)
 	}
 
 	/* First load handling */
-	if (!p->relocated) {
+	if (!p->deps) {
 		load_deps(p);
-		if ((mode & RTLD_LAZY)) {
+		if (!p->relocated && (mode & RTLD_LAZY)) {
 			prepare_lazy(p);
 			if (p->deps) for (i=0; p->deps[i]; i++)
 				if (!p->deps[i]->relocated)
