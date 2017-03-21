@@ -6,7 +6,7 @@
 #include "libc.h"
 #include "pthread_impl.h"
 
-#define LOCALE_NAME_MAX 15
+#define LOCALE_NAME_MAX 23
 
 struct __locale_map {
 	const void *map;
