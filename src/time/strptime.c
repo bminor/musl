@@ -73,6 +73,7 @@ char *strptime(const char *restrict s, const char *restrict f, struct tm *restri
 			dest = &tm->tm_yday;
 			min = 1;
 			range = 366;
+			adj = 1;
 			goto numeric_range;
 		case 'm':
 			dest = &tm->tm_mon;
