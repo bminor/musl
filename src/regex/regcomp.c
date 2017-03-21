@@ -636,6 +636,20 @@ static reg_errcode_t parse_bracket(tre_parse_ctx_t *ctx, const char *s)
 		goto parse_bracket_done;
 
 	if (neg.negate) {
+		/*
+		 * With REG_NEWLINE, POSIX requires that newlines are not matched by
+		 * any form of a non-matching list.
+		 */
+		if (ctx->cflags & REG_NEWLINE) {
+			lit = tre_new_lit(&ls);
+			if (!lit) {
+				err = REG_ESPACE;
+				goto parse_bracket_done;
+			}
+			lit->code_min = '\n';
+			lit->code_max = '\n';
+			lit->position = -1;
+		}
 		/* Sort the array if we need to negate it. */
 		qsort(ls.a, ls.len, sizeof *ls.a, tre_compare_lit);
 		/* extra lit for the last negated range */
