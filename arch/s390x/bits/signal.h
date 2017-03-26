@@ -33,6 +33,21 @@ typedef struct
 	fpregset_t fpregs;
 } mcontext_t;
 
+struct sigcontext {
+	unsigned long oldmask[1];
+	struct {
+		struct {
+			__psw_t psw;
+			unsigned long gprs[16];
+			unsigned acrs[16];
+		} regs;
+		struct {
+			unsigned fpc;
+			double fprs[16];
+		} fpregs;
+	} *sregs;
+};
+
 #else
 
 typedef struct {
