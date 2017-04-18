@@ -73,3 +73,10 @@ static inline int a_ctz_64(uint64_t x)
 		: "=r"(x) : "r"(x));
 	return x;
 }
+
+#define a_clz_64 a_clz_64
+static inline int a_clz_64(uint64_t x)
+{
+	__asm__("clz %0, %1" : "=r"(x) : "r"(x));
+	return x;
+}

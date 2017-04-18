@@ -37,3 +37,10 @@ static inline void a_store(volatile int *p, int v)
 	*p = v;
 	a_post_llsc();
 }
+
+#define a_clz_32 a_clz_32
+static inline int a_clz_32(uint32_t x)
+{
+	__asm__ ("cntlzw %0, %1" : "=r"(x) : "r"(x));
+	return x;
+}

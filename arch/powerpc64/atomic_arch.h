@@ -61,3 +61,10 @@ static inline void a_crash()
 {
 	__asm__ __volatile__ (".long 0");
 }
+
+#define a_clz_64 a_clz_64
+static inline int a_clz_64(uint64_t x)
+{
+	__asm__ ("cntlzd %0, %1" : "=r"(x) : "r"(x));
+	return x;
+}

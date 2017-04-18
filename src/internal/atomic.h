@@ -277,6 +277,27 @@ static inline int a_ctz_64(uint64_t x)
 }
 #endif
 
+#ifndef a_clz_64
+#define a_clz_64 a_clz_64
+static inline int a_clz_64(uint64_t x)
+{
+#ifdef a_clz_32
+	if (x>>32)
+		return a_clz_32(x>>32);
+	return a_clz_32(x) + 32;
+#else
+	uint32_t y;
+	int r;
+	if (x>>32) y=x>>32, r=0; else y=x, r=32;
+	if (y>>16) y>>=16; else r |= 16;
+	if (y>>8) y>>=8; else r |= 8;
+	if (y>>4) y>>=4; else r |= 4;
+	if (y>>2) y>>=2; else r |= 2;
+	return r | !(y>>1);
+#endif
+}
+#endif
+
 #ifndef a_ctz_l
 #define a_ctz_l a_ctz_l
 static inline int a_ctz_l(unsigned long x)

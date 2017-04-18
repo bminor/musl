@@ -99,3 +99,10 @@ static inline int a_ctz_l(unsigned long x)
 	__asm__( "bsf %1,%0" : "=r"(r) : "r"(x) );
 	return r;
 }
+
+#define a_clz_32 a_clz_32
+static inline int a_clz_32(uint32_t x)
+{
+	__asm__( "bsr %1,%0 ; xor $31,%0" : "=r"(x) : "r"(x) );
+	return x;
+}
