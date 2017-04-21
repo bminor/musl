@@ -23,7 +23,7 @@ int ttyname_r(int fd, char *name, size_t size)
 	if (stat(name, &st1) || fstat(fd, &st2))
 		return errno;
 	if (st1.st_dev != st2.st_dev || st1.st_ino != st2.st_ino)
-		return ENOENT;
+		return ENODEV;
 
 	return 0;
 }
