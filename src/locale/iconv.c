@@ -151,6 +151,14 @@ static void put_32(unsigned char *s, unsigned c, int e)
 #define mbrtowc_utf8 mbrtowc
 #define wctomb_utf8 wctomb
 
+static unsigned legacy_map(const unsigned char *map, unsigned c)
+{
+	unsigned x = c - 128 + map[-1];
+	x = legacy_chars[ map[x*5/4]>>2*x%8 |
+		map[x*5/4+1]<<8-2*x%8 & 1023 ];
+	return x ? x : c;
+}
+
 size_t iconv(iconv_t cd0, char **restrict in, size_t *restrict inb, char **restrict out, size_t *restrict outb)
 {
 	size_t x=0;
@@ -364,10 +372,7 @@ size_t iconv(iconv_t cd0, char **restrict in, size_t *restrict inb, char **restr
 			break;
 		default:
 			if (c < 128+type) break;
-			c -= 128+type;
-			c = legacy_chars[ map[c*5/4]>>2*c%8 |
-				map[c*5/4+1]<<8-2*c%8 & 1023 ];
-			if (!c) c = *(unsigned char *)*in;
+			c = legacy_map(map, c);
 			if (c==1) goto ilseq;
 		}
 
@@ -392,17 +397,15 @@ size_t iconv(iconv_t cd0, char **restrict in, size_t *restrict inb, char **restr
 			if (c > 0x7f) subst: x++, c='*';
 		default:
 			if (*outb < 1) goto toobig;
-			if (c < 128+totype) {
+			if (c < 128+totype || (c<256 && c==legacy_map(tomap, c))) {
 			revout:
 				*(*out)++ = c;
 				*outb -= 1;
 				break;
 			}
 			d = c;
-			for (c=0; c<128-totype; c++) {
-				if (d == legacy_chars[ tomap[c*5/4]>>2*c%8 |
-					tomap[c*5/4+1]<<8-2*c%8 & 1023 ]) {
-					c += 128;
+			for (c=128+totype; c<256; c++) {
+				if (d == legacy_map(tomap, c)) {
 					goto revout;
 				}
 			}
