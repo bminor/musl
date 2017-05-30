@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <wctype.h>
 #include "libc.h"
 
@@ -9,7 +10,6 @@ static const struct {
 	signed char lower;
 	unsigned char len;
 } casemaps[] = {
-	CASEMAP('A','Z','a'),
 	CASEMAP(0xc0,0xde,0xe0),
 
 	CASELACE(0x0100,0x012e),
@@ -257,12 +257,12 @@ static wchar_t __towcase(wchar_t wc, int lower)
 
 wint_t towupper(wint_t wc)
 {
-	return __towcase(wc, 0);
+	return (unsigned)wc < 128 ? toupper(wc) : __towcase(wc, 0);
 }
 
 wint_t towlower(wint_t wc)
 {
-	return __towcase(wc, 1);
+	return (unsigned)wc < 128 ? tolower(wc) : __towcase(wc, 1);
 }
 
 wint_t __towupper_l(wint_t c, locale_t l)
