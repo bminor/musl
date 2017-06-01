@@ -149,13 +149,15 @@ static inline long __syscall4(long n, long a, long b, long c, long d)
 	register long r7 __asm__("$7");
 	register long r2 __asm__("$2");
 
-	r5 = b;
-	if (n == SYS_stat || n == SYS_fstat || n == SYS_lstat)
-		r5 = (long) &kst;
-
 	r4 = a;
+	r5 = b;
 	r6 = c;
 	r7 = d;
+	if (n == SYS_stat || n == SYS_fstat || n == SYS_lstat)
+		r5 = (long) &kst;
+	if (n == SYS_newfstatat)
+		r6 = (long) &kst;
+
 	__asm__ __volatile__ (
 		"daddu $2,$0,%2 ; syscall"
 		: "=&r"(r2), "=r"(r7) : "ir"(n), "0"(r2), "1"(r7),
@@ -168,6 +170,8 @@ static inline long __syscall4(long n, long a, long b, long c, long d)
 
 	if (n == SYS_stat || n == SYS_fstat || n == SYS_lstat)
 		__stat_fix(&kst, (struct stat *)b);
+	if (n == SYS_newfstatat)
+		__stat_fix(&kst, (struct stat *)c);
 
 	return ret;
 }
@@ -224,16 +228,21 @@ static inline long __syscall4(long n, long a, long b, long c, long d)
 {
 	long r2;
 	long old_b = b;
+	long old_c = c;
 	struct kernel_stat kst;
 
 	if (n == SYS_stat || n == SYS_fstat || n == SYS_lstat)
 		b = (long) &kst;
+	if (n == SYS_newfstatat)
+		c = (long) &kst;
 
 	r2 = (__syscall)(n, a, b, c, d);
 	if (r2 > -4096UL) return r2;
 
 	if (n == SYS_stat || n == SYS_fstat || n == SYS_lstat)
 		__stat_fix(&kst, (struct stat *)old_b);
+	if (n == SYS_newfstatat)
+		__stat_fix(&kst, (struct stat *)old_c);
 
 	return r2;
 }
@@ -244,16 +253,21 @@ static inline long __syscall5(long n, long a, long b, long c, long d, long e)
 {
 	long r2;
 	long old_b = b;
+	long old_c = c;
 	struct kernel_stat kst;
 
 	if (n == SYS_stat || n == SYS_fstat || n == SYS_lstat)
 		b = (long) &kst;
+	if (n == SYS_newfstatat)
+		c = (long) &kst;
 
 	r2 = (__syscall)(n, a, b, c, d, e);
 	if (r2 > -4096UL) return r2;
 
 	if (n == SYS_stat || n == SYS_fstat || n == SYS_lstat)
 		__stat_fix(&kst, (struct stat *)old_b);
+	if (n == SYS_newfstatat)
+		__stat_fix(&kst, (struct stat *)old_c);
 
 	return r2;
 }
@@ -262,16 +276,21 @@ static inline long __syscall6(long n, long a, long b, long c, long d, long e, lo
 {
 	long r2;
 	long old_b = b;
+	long old_c = c;
 	struct kernel_stat kst;
 
 	if (n == SYS_stat || n == SYS_fstat || n == SYS_lstat)
 		b = (long) &kst;
+	if (n == SYS_newfstatat)
+		c = (long) &kst;
 
 	r2 = (__syscall)(n, a, b, c, d, e, f);
 	if (r2 > -4096UL) return r2;
 
 	if (n == SYS_stat || n == SYS_fstat || n == SYS_lstat)
 		__stat_fix(&kst, (struct stat *)old_b);
+	if (n == SYS_newfstatat)
+		__stat_fix(&kst, (struct stat *)old_c);
 
 	return r2;
 }
