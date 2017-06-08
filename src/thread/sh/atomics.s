@@ -28,15 +28,15 @@ __sh_cas_gusa:
 .hidden __sh_cas_llsc
 __sh_cas_llsc:
 	mov r0,r1
-	synco
-0:	movli.l @r1,r0
+	.word 0x00ab /* synco */
+0:	.word 0x0163 /* movli.l @r1,r0 */
 	cmp/eq r0,r2
 	bf 1f
 	mov r3,r0
-	movco.l r0,@r1
+	.word 0x0173 /* movco.l r0,@r1 */
 	bf 0b
 	mov r2,r0
-1:	synco
+1:	.word 0x00ab /* synco */
 	mov r0,r3
 	rts
 	 mov r1,r0
