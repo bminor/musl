@@ -179,7 +179,7 @@ int glob(const char *restrict pat, int flags, int (*errfunc)(const char *path, i
 
 	if (strnlen(p, PATH_MAX+1) > PATH_MAX) return GLOB_NOSPACE;
 
-	if (*p) error = match_in_dir(d, p, flags, errfunc, &tail);
+	if (*pat) error = match_in_dir(d, p, flags, errfunc, &tail);
 	if (error == GLOB_NOSPACE) {
 		freelist(&head);
 		return error;
