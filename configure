@@ -249,6 +249,7 @@ fi
 #
 tryflag   CFLAGS_TRY  -Werror=unknown-warning-option
 tryflag   CFLAGS_TRY  -Werror=unused-command-line-argument
+tryflag   CFLAGS_TRY  -Werror=ignored-optimization-argument
 tryldflag LDFLAGS_TRY -Werror=unknown-warning-option
 tryldflag LDFLAGS_TRY -Werror=unused-command-line-argument
 
@@ -503,6 +504,13 @@ tryflag CFLAGS_AUTO -Werror=implicit-function-declaration
 tryflag CFLAGS_AUTO -Werror=implicit-int
 tryflag CFLAGS_AUTO -Werror=pointer-sign
 tryflag CFLAGS_AUTO -Werror=pointer-arith
+
+#
+# GCC ignores unused arguements by default, but Clang needs this extra
+# parameter to stop printing warnings about LDFLAGS passed during
+# compiling stage and CFLAGS passed during linking stage.
+#
+tryflag CFLAGS_AUTO -Qunused-arguments
 
 if test "x$warnings" = xyes ; then
 tryflag CFLAGS_AUTO -Wall
