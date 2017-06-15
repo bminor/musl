@@ -153,7 +153,7 @@ static void put_32(unsigned char *s, unsigned c, int e)
 
 static unsigned legacy_map(const unsigned char *map, unsigned c)
 {
-	unsigned x = c - 128 + map[-1];
+	unsigned x = c - 128 - map[-1];
 	x = legacy_chars[ map[x*5/4]>>2*x%8 |
 		map[x*5/4+1]<<8-2*x%8 & 1023 ];
 	return x ? x : c;
