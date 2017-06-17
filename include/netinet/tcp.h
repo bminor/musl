@@ -31,6 +31,7 @@
 #define TCP_SAVE_SYN     27
 #define TCP_SAVED_SYN    28
 #define TCP_REPAIR_WINDOW 29
+#define TCP_FASTOPEN_CONNECT 30
 
 #define TCP_ESTABLISHED  1
 #define TCP_SYN_SENT     2
