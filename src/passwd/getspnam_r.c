@@ -76,7 +76,7 @@ int getspnam_r(const char *name, struct spwd *sp, char *buf, size_t size, struct
 
 	/* Buffer size must at least be able to hold name, plus some.. */
 	if (size < l+100)
-		return errno = EINVAL;
+		return errno = ERANGE;
 
 	/* Protect against truncation */
 	if (snprintf(path, sizeof path, "/etc/tcb/%s/shadow", name) >= sizeof path)
