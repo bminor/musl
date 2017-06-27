@@ -450,13 +450,14 @@ copy_realloc:
 
 void free(void *p)
 {
-	struct chunk *self = MEM_TO_CHUNK(p);
-	struct chunk *next;
+	struct chunk *self, *next;
 	size_t final_size, new_size, size;
 	int reclaim=0;
 	int i;
 
 	if (!p) return;
+
+	self = MEM_TO_CHUNK(p);
 
 	if (IS_MMAPPED(self)) {
 		size_t extra = self->psize;
