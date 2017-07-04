@@ -1771,7 +1771,8 @@ void *dlopen(const char *file, int mode)
 	}
 
 	/* First load handling */
-	if (!p->deps) {
+	int first_load = !p->deps;
+	if (first_load) {
 		load_deps(p);
 		if (!p->relocated && (mode & RTLD_LAZY)) {
 			prepare_lazy(p);
@@ -1779,11 +1780,15 @@ void *dlopen(const char *file, int mode)
 				if (!p->deps[i]->relocated)
 					prepare_lazy(p->deps[i]);
 		}
+	}
+	if (first_load || (mode & RTLD_GLOBAL)) {
 		/* Make new symbols global, at least temporarily, so we can do
 		 * relocations. If not RTLD_GLOBAL, this is reverted below. */
 		add_syms(p);
 		for (i=0; p->deps[i]; i++)
 			add_syms(p->deps[i]);
+	}
+	if (first_load) {
 		reloc_all(p);
 	}
 
