@@ -129,6 +129,7 @@ static size_t static_tls_cnt;
 static pthread_mutex_t init_fini_lock = { ._m_type = PTHREAD_MUTEX_RECURSIVE };
 static struct fdpic_loadmap *app_loadmap;
 static struct fdpic_dummy_loadmap app_dummy_loadmap;
+static struct dso *const nodeps_dummy;
 
 struct debug *_dl_debug_addr = &debug;
 
@@ -1125,6 +1126,7 @@ static void load_deps(struct dso *p)
 			}
 		}
 	}
+	if (!*deps) *deps = (struct dso **)&nodeps_dummy;
 }
 
 static void load_preload(char *s)
@@ -1742,7 +1744,8 @@ void *dlopen(const char *file, int mode)
 			free(p->funcdescs);
 			if (p->rpath != p->rpath_orig)
 				free(p->rpath);
-			free(p->deps);
+			if (p->deps != &nodeps_dummy)
+				free(p->deps);
 			unmap_library(p);
 			free(p);
 		}
@@ -1772,14 +1775,14 @@ void *dlopen(const char *file, int mode)
 		load_deps(p);
 		if (!p->relocated && (mode & RTLD_LAZY)) {
 			prepare_lazy(p);
-			if (p->deps) for (i=0; p->deps[i]; i++)
+			for (i=0; p->deps[i]; i++)
 				if (!p->deps[i]->relocated)
 					prepare_lazy(p->deps[i]);
 		}
 		/* Make new symbols global, at least temporarily, so we can do
 		 * relocations. If not RTLD_GLOBAL, this is reverted below. */
 		add_syms(p);
-		if (p->deps) for (i=0; p->deps[i]; i++)
+		for (i=0; p->deps[i]; i++)
 			add_syms(p->deps[i]);
 		reloc_all(p);
 	}
@@ -1878,7 +1881,7 @@ static void *do_dlsym(struct dso *p, const char *s, void *ra)
 		return p->funcdescs + (sym - p->syms);
 	if (sym && sym->st_value && (1<<(sym->st_info&0xf) & OK_TYPES))
 		return laddr(p, sym->st_value);
-	if (p->deps) for (i=0; p->deps[i]; i++) {
+	for (i=0; p->deps[i]; i++) {
 		if ((ght = p->deps[i]->ghashtab)) {
 			if (!gh) gh = gnu_hash(s);
 			sym = gnu_lookup(gh, ght, p->deps[i], s);
