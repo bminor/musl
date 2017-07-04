@@ -1437,6 +1437,7 @@ _Noreturn void __dls3(size_t *sp)
 	size_t aux[AUX_CNT], *auxv;
 	size_t i;
 	char *env_preload=0;
+	char *replace_argv0=0;
 	size_t vdso_base;
 	int argc = *sp;
 	char **argv = (void *)(sp+1);
@@ -1521,6 +1522,10 @@ _Noreturn void __dls3(size_t *sp)
 				if (opt[7]=='=') env_preload = opt+8;
 				else if (opt[7]) *argv = 0;
 				else if (*argv) env_preload = *argv++;
+			} else if (!memcmp(opt, "argv0", 5)) {
+				if (opt[5]=='=') replace_argv0 = opt+6;
+				else if (opt[5]) *argv = 0;
+				else if (*argv) replace_argv0 = *argv++;
 			} else {
 				argv[0] = 0;
 			}
@@ -1676,6 +1681,8 @@ _Noreturn void __dls3(size_t *sp)
 	debug.base = ldso.base;
 	debug.state = 0;
 	_dl_debug_state();
+
+	if (replace_argv0) argv[0] = replace_argv0;
 
 	errno = 0;
 
