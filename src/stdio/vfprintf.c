@@ -107,8 +107,6 @@ union arg
 
 static void pop_arg(union arg *arg, int type, va_list *ap)
 {
-	/* Give the compiler a hint for optimizing the switch. */
-	if ((unsigned)type > MAXSTATE) return;
 	switch (type) {
 	       case PTR:	arg->p = va_arg(*ap, void *);
 	break; case INT:	arg->i = va_arg(*ap, int);
