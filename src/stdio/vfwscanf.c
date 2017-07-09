@@ -117,8 +117,12 @@ int vfwscanf(FILE *restrict f, const wchar_t *restrict fmt, va_list ap)
 			continue;
 		}
 		if (*p != '%' || p[1] == '%') {
-			p += *p=='%';
-			c = getwc(f);
+			if (*p == '%') {
+				p++;
+				while (iswspace((c=getwc(f)))) pos++;
+			} else {
+				c = getwc(f);
+			}
 			if (c!=*p) {
 				ungetwc(c, f);
 				if (c<0) goto input_fail;
