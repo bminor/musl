@@ -283,6 +283,7 @@
 #define __NR_pkey_mprotect (0x40000000 + 329)
 #define __NR_pkey_alloc (0x40000000 + 330)
 #define __NR_pkey_free (0x40000000 + 331)
+#define __NR_statx (0x40000000 + 332)
 
 #define __NR_rt_sigaction (0x40000000 + 512)
 #define __NR_rt_sigreturn (0x40000000 + 513)

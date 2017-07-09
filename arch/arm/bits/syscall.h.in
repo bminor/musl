@@ -352,6 +352,7 @@
 #define __NR_pkey_mprotect	394
 #define __NR_pkey_alloc	395
 #define __NR_pkey_free	396
+#define __NR_statx	397
 
 #define __ARM_NR_breakpoint	0x0f0001
 #define __ARM_NR_cacheflush	0x0f0002

@@ -327,4 +327,5 @@
 #define __NR_pkey_mprotect		6327
 #define __NR_pkey_alloc			6328
 #define __NR_pkey_free			6329
+#define __NR_statx			6330
 
