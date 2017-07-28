@@ -21,7 +21,7 @@ static inline int a_sc(volatile int *p, int v)
 #define a_barrier a_barrier
 static inline void a_barrier()
 {
-	__asm__ __volatile__ ("synco" : : "memory");
+	__asm__ __volatile__ ("synco" ::: "memory");
 }
 
 #define a_pre_llsc a_barrier
