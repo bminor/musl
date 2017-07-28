@@ -30,10 +30,10 @@ void __init_libc(char **envp, char *pn)
 	__sysinfo = aux[AT_SYSINFO];
 	libc.page_size = aux[AT_PAGESZ];
 
-	if (pn) {
-		__progname = __progname_full = pn;
-		for (i=0; pn[i]; i++) if (pn[i]=='/') __progname = pn+i+1;
-	}
+	if (!pn) pn = (void*)aux[AT_EXECFN];
+	if (!pn) pn = "";
+	__progname = __progname_full = pn;
+	for (i=0; pn[i]; i++) if (pn[i]=='/') __progname = pn+i+1;
 
 	__init_tls(aux);
 	__init_ssp((void *)aux[AT_RANDOM]);
