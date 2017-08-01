@@ -34,6 +34,10 @@ char *__nl_langinfo_l(nl_item item, locale_t loc)
 	const char *str;
 
 	if (item == CODESET) return MB_CUR_MAX==1 ? "ASCII" : "UTF-8";
+
+	/* _NL_LOCALE_NAME extension */
+	if (idx == 65535 && cat < LC_ALL)
+		return loc->cat[cat] ? (char *)loc->cat[cat]->name : "C";
 	
 	switch (cat) {
 	case LC_NUMERIC:
