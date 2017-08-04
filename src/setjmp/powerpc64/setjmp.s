@@ -1,24 +1,35 @@
-	.global ___setjmp
-	.hidden ___setjmp
 	.global __setjmp
 	.global _setjmp
 	.global setjmp
 	.type   __setjmp,@function
 	.type   _setjmp,@function
 	.type   setjmp,@function
-___setjmp:
 __setjmp:
 _setjmp:
 setjmp:
+	ld 5, 24(1)   # load from the TOC slot in the caller's stack frame
+	b __setjmp_toc
+
+	.localentry __setjmp,.-__setjmp
+	.localentry _setjmp,.-_setjmp
+	.localentry setjmp,.-setjmp
+	mr 5, 2
+
+	.global __setjmp_toc
+	.hidden __setjmp_toc
+	# same as normal setjmp, except TOC pointer to save is provided in r5.
+	# r4 would normally be the 2nd parameter, but we're using r5 to simplify calling from sigsetjmp.
+	# solves the problem of knowing whether to save the TOC pointer from r2 or the caller's stack frame.
+__setjmp_toc:
 	# 0) store IP into 0, then into the jmpbuf pointed to by r3 (first arg)
 	mflr  0
 	std   0,  0*8(3)
 	# 1) store cr
 	mfcr  0
 	std   0,  1*8(3)
-	# 2) store r1-r2 (SP and TOC)
+	# 2) store SP and TOC
 	std   1,  2*8(3)
-	std   2,  3*8(3)
+	std   5,  3*8(3)
 	# 3) store r14-31
 	std  14,  4*8(3)
 	std  15,  5*8(3)

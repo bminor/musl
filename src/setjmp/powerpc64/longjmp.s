@@ -10,10 +10,14 @@ longjmp:
 	# 1) restore cr
 	ld   0,  1*8(3)
 	mtcr 0
-	# 2) restore r1-r2 (SP and TOC)
+	# 2) restore SP
 	ld   1,  2*8(3)
+	# 3) restore TOC into both r2 and the caller's stack.
+	#    Which location is required depends on whether setjmp was called
+	#    locally or non-locally, but it's always safe to restore to both.
 	ld   2,  3*8(3)
-	# 3) restore r14-r31
+	std  2,   24(1)
+	# 4) restore r14-r31
 	ld  14,  4*8(3)
 	ld  15,  5*8(3)
 	ld  16,  6*8(3)
@@ -32,7 +36,7 @@ longjmp:
 	ld  29, 19*8(3)
 	ld  30, 20*8(3)
 	ld  31, 21*8(3)
-	# 4) restore floating point registers f14-f31
+	# 5) restore floating point registers f14-f31
 	lfd 14, 22*8(3)
 	lfd 15, 23*8(3)
 	lfd 16, 24*8(3)
@@ -52,7 +56,7 @@ longjmp:
 	lfd 30, 38*8(3)
 	lfd 31, 39*8(3)
 
-	# 5) restore vector registers v20-v31
+	# 6) restore vector registers v20-v31
 	addi 3, 3, 40*8
 	lvx 20, 0, 3 ; addi 3, 3, 16
 	lvx 21, 0, 3 ; addi 3, 3, 16
@@ -67,7 +71,7 @@ longjmp:
 	lvx 30, 0, 3 ; addi 3, 3, 16
 	lvx 31, 0, 3
 
-	# 6) return r4 ? r4 : 1
+	# 7) return r4 ? r4 : 1
 	mr    3,   4
 	cmpwi cr7, 4, 0
 	bne   cr7, 1f
