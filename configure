@@ -31,7 +31,7 @@ Optional features:
   --enable-optimize=...   optimize listed components for speed over size [auto]
   --enable-debug          build with debugging information [disabled]
   --enable-warnings       build with recommended warnings flags [disabled]
-  --enable-visibility     use global visibility options to optimize PIC [auto]
+  --enable-visibility     use global visibility options to optimize PIC [no]
   --enable-wrapper=...    build given musl toolchain wrapper [auto]
   --disable-shared        inhibit building shared library [enabled]
   --disable-static        inhibit building static library [enabled]
@@ -135,7 +135,7 @@ target=
 optimize=auto
 debug=no
 warnings=no
-visibility=auto
+visibility=no
 shared=auto
 static=yes
 wrapper=auto
@@ -163,6 +163,7 @@ case "$arg" in
 --disable-debug|--enable-debug=no) debug=no ;;
 --enable-warnings|--enable-warnings=yes) warnings=yes ;;
 --disable-warnings|--enable-warnings=no) warnings=no ;;
+--enable-visibility=auto) visibility=auto ;;
 --enable-visibility|--enable-visibility=yes) visibility=yes ;;
 --disable-visibility|--enable-visibility=no) visibility=no ;;
 --enable-wrapper|--enable-wrapper=yes) wrapper=detect ;;
