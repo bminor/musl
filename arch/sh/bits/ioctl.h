@@ -141,6 +141,7 @@ struct winsize {
 #define SIOCSPGRP       _IOW('s', 8, int)
 #define SIOCGPGRP       _IOW('s', 9, int)
 #define SIOCGSTAMP      _IOR('s', 100, char[8])
+#define SIOCGSTAMPNS    _IOR('s', 101, char[8])
 
 #define SIOCADDRT       0x890B
 #define SIOCDELRT       0x890C

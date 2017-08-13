@@ -137,6 +137,7 @@ struct winsize {
 #define SIOCGPGRP       0x8904
 #define SIOCATMARK      0x8905
 #define SIOCGSTAMP      0x8906
+#define SIOCGSTAMPNS    0x8907
 
 #define SIOCADDRT       0x890B
 #define SIOCDELRT       0x890C
