@@ -9,8 +9,11 @@ int fflush(FILE *f)
 	if (!f) {
 		int r = __stdout_used ? fflush(__stdout_used) : 0;
 
-		for (f=*__ofl_lock(); f; f=f->next)
+		for (f=*__ofl_lock(); f; f=f->next) {
+			FLOCK(f);
 			if (f->wpos > f->wbase) r |= fflush(f);
+			FUNLOCK(f);
+		}
 		__ofl_unlock();
 
 		return r;
