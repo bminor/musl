@@ -69,11 +69,19 @@ and ABI combinations:
       that does not use FPU registers or instructions is available
 
 * PowerPC
-    * Only 32-bit is supported
     * Compiler toolchain must provide 64-bit long double, not IBM
       double-double or IEEE quad
     * For dynamic linking, compiler toolchain must be configured for
       "secure PLT" variant
+
+* PowerPC64
+    * Both little and big endian variants are supported
+    * Compiler toolchain must provide 64-bit long double, not IBM
+      double-double or IEEE quad
+    * Compiler toolchain must use the new (ELFv2) ABI regardless of
+      whether it is for little or big endian
+
+* S390X (64-bit S390)
 
 * SuperH (SH)
     * Standard ELF ABI or FDPIC ABI (shared-text without MMU)
