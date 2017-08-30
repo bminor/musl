@@ -69,6 +69,8 @@ uint16_t htons(uint16_t);
 uint32_t ntohl(uint32_t);
 uint16_t ntohs(uint16_t);
 
+#define IPPORT_RESERVED 1024
+
 #define IPPROTO_IP       0
 #define IPPROTO_HOPOPTS  0
 #define IPPROTO_ICMP     1

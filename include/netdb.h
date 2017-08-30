@@ -24,8 +24,6 @@ struct addrinfo {
 	struct addrinfo *ai_next;
 };
 
-#define IPPORT_RESERVED 1024
-
 #define AI_PASSIVE      0x01
 #define AI_CANONNAME    0x02
 #define AI_NUMERICHOST  0x04
