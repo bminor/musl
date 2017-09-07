@@ -5,6 +5,7 @@
 #include <inttypes.h>
 #include <errno.h>
 #include <string.h>
+#include <stdlib.h>
 #include "lookup.h"
 
 #define ALIGN (sizeof(struct { char a; char *b; }) - sizeof(char *))
@@ -16,6 +17,11 @@ int getservbyname_r(const char *name, const char *prots,
 	int cnt, proto, align;
 
 	*res = 0;
+
+	/* Don't treat numeric port number strings as service records. */
+	char *end = "";
+	strtoul(name, &end, 10);
+	if (!*end) return ENOENT;
 
 	/* Align buffer */
 	align = -(uintptr_t)buf & ALIGN-1;
