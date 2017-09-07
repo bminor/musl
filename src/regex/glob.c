@@ -100,6 +100,10 @@ static int match_in_dir(const char *d, const char *p, int flags, int (*errfunc)(
 			continue;
 		if (p2 && de->d_type && !S_ISDIR(de->d_type<<12) && !S_ISLNK(de->d_type<<12))
 			continue;
+		if (p2 && de->d_name[0]=='.' && !de->d_name[1])
+			continue;
+		if (p2 && de->d_name[0]=='.' && de->d_name[1]=='.' && !de->d_name[2])
+			continue;
 		if (*d) {
 			memcpy(name, d, l);
 			name[l] = '/';
