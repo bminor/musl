@@ -131,9 +131,14 @@ void __do_cleanup_pop(struct __ptcb *cb)
 static int start(void *p)
 {
 	pthread_t self = p;
+	/* States for startlock:
+	 * 0 = no need for start sync
+	 * 1 = waiting for parent to do work
+	 * 2 = failure in parent, child must abort
+	 * 3 = success in parent, child must restore sigmask */
 	if (self->startlock[0]) {
 		__wait(self->startlock, 0, 1, 1);
-		if (self->startlock[0]) {
+		if (self->startlock[0] == 2) {
 			self->detached = 2;
 			pthread_exit(0);
 		}
@@ -295,7 +300,7 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 	if (do_sched) {
 		ret = __syscall(SYS_sched_setscheduler, new->tid,
 			attr._a_policy, &attr._a_prio);
-		a_store(new->startlock, ret<0 ? 2 : 0);
+		a_store(new->startlock, ret<0 ? 2 : 3);
 		__wake(new->startlock, 1, 1);
 		if (ret < 0) return -ret;
 	}
