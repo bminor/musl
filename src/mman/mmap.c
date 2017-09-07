@@ -14,6 +14,7 @@ weak_alias(dummy, __vm_wait);
 
 void *__mmap(void *start, size_t len, int prot, int flags, int fd, off_t off)
 {
+	long ret;
 	if (off & OFF_MASK) {
 		errno = EINVAL;
 		return MAP_FAILED;
@@ -26,10 +27,14 @@ void *__mmap(void *start, size_t len, int prot, int flags, int fd, off_t off)
 		__vm_wait();
 	}
 #ifdef SYS_mmap2
-	return (void *)syscall(SYS_mmap2, start, len, prot, flags, fd, off/UNIT);
+	ret = __syscall(SYS_mmap2, start, len, prot, flags, fd, off/UNIT);
 #else
-	return (void *)syscall(SYS_mmap, start, len, prot, flags, fd, off);
+	ret = __syscall(SYS_mmap, start, len, prot, flags, fd, off);
 #endif
+	/* Fixup incorrect EPERM from kernel. */
+	if (ret == -EPERM && !start && (flags&MAP_ANON) && !(flags&MAP_FIXED))
+		ret = -ENOMEM;
+	return (void *)__syscall_ret(ret);
 }
 
 weak_alias(__mmap, mmap);
