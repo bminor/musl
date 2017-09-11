@@ -228,6 +228,8 @@ struct linger {
 #define SO_MEMINFO              55
 #define SO_INCOMING_NAPI_ID     56
 #define SO_COOKIE               57
+#define SCM_TIMESTAMPING_PKTINFO 58
+#define SO_PEERGROUPS           59
 
 #ifndef SOL_SOCKET
 #define SOL_SOCKET      1
