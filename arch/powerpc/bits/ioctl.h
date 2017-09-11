@@ -104,6 +104,7 @@
 #define TIOCGPKT	_IOR('T', 0x38, int)
 #define TIOCGPTLCK	_IOR('T', 0x39, int)
 #define TIOCGEXCL	_IOR('T', 0x40, int)
+#define TIOCGPTPEER	_IO('T', 0x41)
 
 #define TIOCSERCONFIG	0x5453
 #define TIOCSERGWILD	0x5454
