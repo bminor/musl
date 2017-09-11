@@ -320,5 +320,6 @@
 #define __NR_copy_file_range            375
 #define __NR_preadv2                    376
 #define __NR_pwritev2                   377
+#define __NR_s390_guarded_storage       378
 #define __NR_statx                      379
 
