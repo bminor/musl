@@ -32,6 +32,8 @@
 #define TCP_SAVED_SYN    28
 #define TCP_REPAIR_WINDOW 29
 #define TCP_FASTOPEN_CONNECT 30
+#define TCP_ULP          31
+#define TCP_MD5SIG_EXT   32
 
 #define TCP_ESTABLISHED  1
 #define TCP_SYN_SENT     2
@@ -207,11 +209,14 @@ struct tcp_info {
 
 #define TCP_MD5SIG_MAXKEYLEN    80
 
+#define TCP_MD5SIG_FLAG_PREFIX  1
+
 struct tcp_md5sig {
 	struct sockaddr_storage tcpm_addr;
-	uint16_t __tcpm_pad1;
+	uint8_t tcpm_flags;
+	uint8_t tcpm_prefixlen;
 	uint16_t tcpm_keylen;
-	uint32_t __tcpm_pad2;
+	uint32_t __tcpm_pad;
 	uint8_t tcpm_key[TCP_MD5SIG_MAXKEYLEN];
 };
 
