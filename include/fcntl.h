@@ -127,6 +127,18 @@ int posix_fallocate(int, off_t, off_t);
 #define F_SEAL_GROW	0x0004
 #define F_SEAL_WRITE	0x0008
 
+#define F_GET_RW_HINT		1035
+#define F_SET_RW_HINT		1036
+#define F_GET_FILE_RW_HINT	1037
+#define F_SET_FILE_RW_HINT	1038
+
+#define RWF_WRITE_LIFE_NOT_SET	0
+#define RWH_WRITE_LIFE_NONE	1
+#define RWH_WRITE_LIFE_SHORT	2
+#define RWH_WRITE_LIFE_MEDIUM	3
+#define RWH_WRITE_LIFE_LONG	4
+#define RWH_WRITE_LIFE_EXTREME	5
+
 #define DN_ACCESS	0x00000001
 #define DN_MODIFY	0x00000002
 #define DN_CREATE	0x00000004
