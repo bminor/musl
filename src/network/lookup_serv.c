@@ -64,7 +64,7 @@ int __lookup_serv(struct service buf[static MAXSERVS], const char *name, int pro
 		return cnt;
 	}
 
-	if (flags & AI_NUMERICSERV) return EAI_SERVICE;
+	if (flags & AI_NUMERICSERV) return EAI_NONAME;
 
 	size_t l = strlen(name);
 
