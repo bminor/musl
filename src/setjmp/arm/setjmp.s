@@ -41,4 +41,5 @@ setjmp:
 3:	bx lr
 
 .hidden __hwcap
+.align 2
 1:	.word __hwcap-1b
