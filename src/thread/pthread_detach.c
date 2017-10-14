@@ -9,7 +9,8 @@ static int __pthread_detach(pthread_t t)
 	if (a_swap(t->exitlock, 1))
 		return __pthread_join(t, 0);
 	t->detached = 2;
-	__unlock(t->exitlock);
+	a_store(t->exitlock, 0);
+	__wake(t->exitlock, 1, 1);
 	return 0;
 }
 
