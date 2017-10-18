@@ -111,6 +111,7 @@ static int dns_parse_callback(void *c, int rr, const void *data, int len, const 
 {
 	char tmp[256];
 	struct dpc_ctx *ctx = c;
+	if (ctx->cnt >= MAXADDRS) return -1;
 	switch (rr) {
 	case RR_A:
 		if (len != 4) return -1;
