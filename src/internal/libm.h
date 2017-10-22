@@ -216,4 +216,11 @@ extern int __signgam;
 hidden double __lgamma_r(double, int *);
 hidden float __lgammaf_r(float, int *);
 
+/* error handling functions */
+hidden float __math_xflowf(uint32_t, float);
+hidden float __math_uflowf(uint32_t);
+hidden float __math_oflowf(uint32_t);
+hidden float __math_divzerof(uint32_t);
+hidden float __math_invalidf(float);
+
 #endif
