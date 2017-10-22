@@ -40,7 +40,7 @@ int __execvpe(const char *file, char *const argv[], char *const envp[])
 		memcpy(b+(z-p)+(z>p), file, k+1);
 		execve(b, argv, envp);
 		if (errno == EACCES) seen_eacces = 1;
-		else if (errno != ENOENT) return -1;
+		else if (errno != ENOENT && errno != ENOTDIR) return -1;
 		if (!*z++) break;
 	}
 	if (seen_eacces) errno = EACCES;
