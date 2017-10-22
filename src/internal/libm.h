@@ -64,6 +64,12 @@ union ldshape {
 /* Support signaling NaNs.  */
 #define WANT_SNAN 0
 
+#if WANT_SNAN
+#error SNaN is unsupported
+#else
+#define issignalingf_inline(x) 0
+#endif
+
 #ifndef TOINT_INTRINSICS
 #define TOINT_INTRINSICS 0
 #endif
