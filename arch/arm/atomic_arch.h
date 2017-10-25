@@ -82,9 +82,13 @@ static inline void a_crash()
 		: : : "memory");
 }
 
+#if __ARM_ARCH >= 5
+
 #define a_clz_32 a_clz_32
 static inline int a_clz_32(uint32_t x)
 {
 	__asm__ ("clz %0, %1" : "=r"(x) : "r"(x));
 	return x;
 }
+
+#endif
