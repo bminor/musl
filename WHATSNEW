@@ -1852,3 +1852,13 @@ arch-specific bugs fixed:
 - fchown was broken on archs without SYS_fchown syscall
 - fstatat was broken on mips64
 - various incorrect constants in powerpc64 and mips headers
+
+
+1.1.18 release notes
+
+regression fixes:
+- glob failed to match literal . and .. path components
+- build for armv4t ISA level was broken
+
+other bug fixes:
+- stack overflow in posix_spawnp with large PATH variable in environment
