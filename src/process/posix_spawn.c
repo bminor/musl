@@ -27,12 +27,7 @@ static int __sys_dup2(int old, int new)
 #ifdef SYS_dup2
 	return __syscall(SYS_dup2, old, new);
 #else
-	if (old==new) {
-		int r = __syscall(SYS_fcntl, old, F_GETFD);
-		return r<0 ? r : old;
-	} else {
-		return __syscall(SYS_dup3, old, new, 0);
-	}
+	return __syscall(SYS_dup3, old, new, 0);
 #endif
 }
 
@@ -109,8 +104,17 @@ static int child(void *args_vp)
 				__syscall(SYS_close, op->fd);
 				break;
 			case FDOP_DUP2:
-				if ((ret=__sys_dup2(op->srcfd, op->fd))<0)
-					goto fail;
+				fd = op->srcfd;
+				if (fd != op->fd) {
+					if ((ret=__sys_dup2(fd, op->fd))<0)
+						goto fail;
+				} else {
+					ret = __syscall(SYS_fcntl, fd, F_GETFD);
+					ret = __syscall(SYS_fcntl, fd, F_SETFD,
+					                ret & ~FD_CLOEXEC);
+					if (ret<0)
+						goto fail;
+				}
 				break;
 			case FDOP_OPEN:
 				fd = __sys_open(op->path, op->oflag, op->mode);
