@@ -129,11 +129,6 @@ iconv_t iconv_open(const char *to, const char *from)
 	return combine_to_from(t, f);
 }
 
-int iconv_close(iconv_t cd)
-{
-	return 0;
-}
-
 static unsigned get_16(const unsigned char *s, int e)
 {
 	e &= 1;
