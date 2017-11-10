@@ -195,11 +195,10 @@ size_t iconv(iconv_t cd, char **restrict in, size_t *restrict inb, char **restri
 
 		switch (type) {
 		case UTF_8:
-			if (c < 128) break; // optimization
+			if (c < 128) break;
 			l = mbrtowc_utf8(&wc, *in, *inb, &st);
-			if (!l) l++;
-			else if (l == (size_t)-1) goto ilseq;
-			else if (l == (size_t)-2) goto starved;
+			if (l == (size_t)-1) goto ilseq;
+			if (l == (size_t)-2) goto starved;
 			c = wc;
 			break;
 		case US_ASCII:
