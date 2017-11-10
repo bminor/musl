@@ -18,6 +18,7 @@
 #define UTF_8       0310
 #define EUC_JP      0320
 #define SHIFT_JIS   0321
+#define ISO2022_JP  0322
 #define GB18030     0330
 #define GBK         0331
 #define GB2312      0332
@@ -41,6 +42,7 @@ static const unsigned char charmaps[] =
 "ascii\0usascii\0iso646\0iso646us\0\0\307"
 "eucjp\0\0\320"
 "shiftjis\0sjis\0\0\321"
+"iso2022jp\0\0\322"
 "gb18030\0\0\330"
 "gbk\0\0\331"
 "gb2312\0\0\332"
@@ -123,6 +125,7 @@ static size_t extract_to(iconv_t cd)
 iconv_t iconv_open(const char *to, const char *from)
 {
 	size_t f, t;
+	struct stateful_cd *scd;
 
 	if ((t = find_charmap(to))==-1
 	 || (f = find_charmap(from))==-1
@@ -132,8 +135,9 @@ iconv_t iconv_open(const char *to, const char *from)
 	}
 	iconv_t cd = combine_to_from(t, f);
 
-	if (0) {
-		struct stateful_cd *scd = malloc(sizeof *scd);
+	switch (charmaps[f]) {
+	case ISO2022_JP:
+		scd = malloc(sizeof *scd);
 		if (!scd) return (iconv_t)-1;
 		scd->base_cd = cd;
 		scd->state = 0;
@@ -293,6 +297,45 @@ size_t iconv(iconv_t cd, char **restrict in, size_t *restrict inb, char **restri
 			if (c >= 84 || d >= 94) goto ilseq;
 			c = jis0208[c][d];
 			if (!c) goto ilseq;
+			break;
+		case ISO2022_JP:
+			if (c >= 128) goto ilseq;
+			if (c == '\033') {
+				l = 3;
+				if (*inb < 3) goto starved;
+				c = *((unsigned char *)*in + 1);
+				d = *((unsigned char *)*in + 2);
+				if (c != '(' && c != '$') goto ilseq;
+				switch (128*(c=='$') + d) {
+				case 'B': scd->state=0; continue;
+				case 'J': scd->state=1; continue;
+				case 'I': scd->state=4; continue;
+				case 128+'@': scd->state=2; continue;
+				case 128+'B': scd->state=3; continue;
+				}
+				goto ilseq;
+			}
+			switch (scd->state) {
+			case 1:
+				if (c=='\\') c = 0xa5;
+				if (c=='~') c = 0x203e;
+				break;
+			case 2:
+			case 3:
+				l = 2;
+				if (*inb < 2) goto starved;
+				d = *((unsigned char *)*in + 1);
+				c -= 0x21;
+				d -= 0x21;
+				if (c >= 84 || d >= 94) goto ilseq;
+				c = jis0208[c][d];
+				if (!c) goto ilseq;
+				break;
+			case 4:
+				if (c-0x60 < 0x1f) goto ilseq;
+				if (c-0x21 < 0x5e) c += 0xff61-0x21;
+				break;
+			}
 			break;
 		case GB2312:
 			if (c < 128) break;
