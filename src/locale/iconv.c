@@ -100,6 +100,21 @@ static size_t find_charmap(const void *name)
 	return -1;
 }
 
+static iconv_t combine_to_from(size_t t, size_t f)
+{
+	return (void *)(f<<16 | t);
+}
+
+static size_t extract_from(iconv_t cd)
+{
+	return (size_t)cd >> 16;
+}
+
+static size_t extract_to(iconv_t cd)
+{
+	return (size_t)cd & 0xffff;
+}
+
 iconv_t iconv_open(const char *to, const char *from)
 {
 	size_t f, t;
@@ -111,7 +126,7 @@ iconv_t iconv_open(const char *to, const char *from)
 		return (iconv_t)-1;
 	}
 
-	return (void *)(f<<16 | t);
+	return combine_to_from(t, f);
 }
 
 int iconv_close(iconv_t cd)
@@ -159,12 +174,11 @@ static unsigned legacy_map(const unsigned char *map, unsigned c)
 	return x ? x : c;
 }
 
-size_t iconv(iconv_t cd0, char **restrict in, size_t *restrict inb, char **restrict out, size_t *restrict outb)
+size_t iconv(iconv_t cd, char **restrict in, size_t *restrict inb, char **restrict out, size_t *restrict outb)
 {
 	size_t x=0;
-	unsigned long cd = (unsigned long)cd0;
-	unsigned to = cd & 0xffff;
-	unsigned from = cd >> 16;
+	unsigned to = extract_to(cd);
+	unsigned from = extract_from(cd);
 	const unsigned char *map = charmaps+from+1;
 	const unsigned char *tomap = charmaps+to+1;
 	mbstate_t st = {0};
@@ -322,7 +336,7 @@ size_t iconv(iconv_t cd0, char **restrict in, size_t *restrict inb, char **restr
 					if (totype-0300U > 8) k = 2;
 					else k = "\10\4\4\10\4\4\10\2\4"[totype-0300];
 					if (k > *outb) goto toobig;
-					x += iconv((iconv_t)(uintptr_t)to,
+					x += iconv(combine_to_from(to, 0),
 						&(char *){"\303\212\314\204"
 						"\303\212\314\214"
 						"\303\252\314\204"
