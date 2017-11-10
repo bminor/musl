@@ -100,9 +100,14 @@ static size_t find_charmap(const void *name)
 	return -1;
 }
 
+struct stateful_cd {
+	iconv_t base_cd;
+	unsigned state;
+};
+
 static iconv_t combine_to_from(size_t t, size_t f)
 {
-	return (void *)(f<<16 | t);
+	return (void *)(f<<16 | t<<1 | 1);
 }
 
 static size_t extract_from(iconv_t cd)
@@ -112,7 +117,7 @@ static size_t extract_from(iconv_t cd)
 
 static size_t extract_to(iconv_t cd)
 {
-	return (size_t)cd & 0xffff;
+	return (size_t)cd >> 1 & 0x7fff;
 }
 
 iconv_t iconv_open(const char *to, const char *from)
@@ -125,8 +130,17 @@ iconv_t iconv_open(const char *to, const char *from)
 		errno = EINVAL;
 		return (iconv_t)-1;
 	}
+	iconv_t cd = combine_to_from(t, f);
 
-	return combine_to_from(t, f);
+	if (0) {
+		struct stateful_cd *scd = malloc(sizeof *scd);
+		if (!scd) return (iconv_t)-1;
+		scd->base_cd = cd;
+		scd->state = 0;
+		cd = (iconv_t)scd;
+	}
+
+	return cd;
 }
 
 static unsigned get_16(const unsigned char *s, int e)
@@ -172,6 +186,11 @@ static unsigned legacy_map(const unsigned char *map, unsigned c)
 size_t iconv(iconv_t cd, char **restrict in, size_t *restrict inb, char **restrict out, size_t *restrict outb)
 {
 	size_t x=0;
+	struct stateful_cd *scd=0;
+	if (!((size_t)cd & 1)) {
+		scd = (void *)cd;
+		cd = scd->base_cd;
+	}
 	unsigned to = extract_to(cd);
 	unsigned from = extract_from(cd);
 	const unsigned char *map = charmaps+from+1;
