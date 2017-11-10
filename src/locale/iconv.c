@@ -193,8 +193,9 @@ size_t iconv(iconv_t cd, char **restrict in, size_t *restrict inb, char **restri
 		c = *(unsigned char *)*in;
 		l = 1;
 
-		if (c >= 128 || type-UTF_32BE < 7U) switch (type) {
+		switch (type) {
 		case UTF_8:
+			if (c < 128) break; // optimization
 			l = mbrtowc_utf8(&wc, *in, *inb, &st);
 			if (!l) l++;
 			else if (l == (size_t)-1) goto ilseq;
@@ -202,7 +203,8 @@ size_t iconv(iconv_t cd, char **restrict in, size_t *restrict inb, char **restri
 			c = wc;
 			break;
 		case US_ASCII:
-			goto ilseq;
+			if (c >= 128) goto ilseq;
+			break;
 		case WCHAR_T:
 			l = sizeof(wchar_t);
 			if (*inb < l) goto starved;
@@ -234,6 +236,7 @@ size_t iconv(iconv_t cd, char **restrict in, size_t *restrict inb, char **restri
 			}
 			break;
 		case SHIFT_JIS:
+			if (c < 128) break;
 			if (c-0xa1 <= 0xdf-0xa1) {
 				c += 0xff61-0xa1;
 				break;
@@ -257,6 +260,7 @@ size_t iconv(iconv_t cd, char **restrict in, size_t *restrict inb, char **restri
 			if (!c) goto ilseq;
 			break;
 		case EUC_JP:
+			if (c < 128) break;
 			l = 2;
 			if (*inb < 2) goto starved;
 			d = *((unsigned char *)*in + 1);
@@ -273,9 +277,11 @@ size_t iconv(iconv_t cd, char **restrict in, size_t *restrict inb, char **restri
 			if (!c) goto ilseq;
 			break;
 		case GB2312:
+			if (c < 128) break;
 			if (c < 0xa1) goto ilseq;
 		case GBK:
 		case GB18030:
+			if (c < 128) break;
 			c -= 0x81;
 			if (c >= 126) goto ilseq;
 			l = 2;
@@ -311,6 +317,7 @@ size_t iconv(iconv_t cd, char **restrict in, size_t *restrict inb, char **restri
 			c = gb18030[c][d];
 			break;
 		case BIG5:
+			if (c < 128) break;
 			l = 2;
 			if (*inb < 2) goto starved;
 			d = *((unsigned char *)*in + 1);
@@ -348,6 +355,7 @@ size_t iconv(iconv_t cd, char **restrict in, size_t *restrict inb, char **restri
 			if (!c) goto ilseq;
 			break;
 		case EUC_KR:
+			if (c < 128) break;
 			l = 2;
 			if (*inb < 2) goto starved;
 			d = *((unsigned char *)*in + 1);
