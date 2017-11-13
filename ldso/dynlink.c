@@ -725,7 +725,6 @@ done_mapping:
 	dso->base = base;
 	dso->dynv = laddr(dso, dyn);
 	if (dso->tls.size) dso->tls.image = laddr(dso, tls_image);
-	if (!runtime) reclaim_gaps(dso);
 	free(allocated_buf);
 	return map;
 noexec:
@@ -1044,6 +1043,10 @@ static struct dso *load_library(const char *name, struct dso *needed_by)
 		unmap_library(&temp_dso);
 		return load_library("libc.so", needed_by);
 	}
+	/* Past this point, if we haven't reached runtime yet, ldso has
+	 * committed either to use the mapped library or to abort execution.
+	 * Unmapping is not possible, so we can safely reclaim gaps. */
+	if (!runtime) reclaim_gaps(&temp_dso);
 
 	/* Allocate storage for the new DSO. When there is TLS, this
 	 * storage must include a reservation for all pre-existing
@@ -1545,13 +1548,11 @@ _Noreturn void __dls3(size_t *sp)
 			dprintf(2, "%s: cannot load %s: %s\n", ldname, argv[0], strerror(errno));
 			_exit(1);
 		}
-		runtime = 1;
 		Ehdr *ehdr = (void *)map_library(fd, &app);
 		if (!ehdr) {
 			dprintf(2, "%s: %s: Not a valid dynamic program\n", ldname, argv[0]);
 			_exit(1);
 		}
-		runtime = 0;
 		close(fd);
 		ldso.name = ldname;
 		app.name = argv[0];
