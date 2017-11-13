@@ -27,8 +27,10 @@
 
 /* Definitions of charmaps. Each charmap consists of:
  * 1. Empty-string-terminated list of null-terminated aliases.
- * 2. Special type code or number of elided entries.
- * 3. Character table (size determined by field 2). */
+ * 2. Special type code or number of elided quads of entries.
+ * 3. Character table (size determined by field 2), consisting
+ *    of 5 bytes for every 4 characters, interpreted as 10-bit
+ *    indices into the legacy_chars table. */
 
 static const unsigned char charmaps[] =
 "utf8\0char\0\0\310"
@@ -51,6 +53,9 @@ static const unsigned char charmaps[] =
 #include "codepages.h"
 ;
 
+/* Table of characters that appear in legacy 8-bit codepages,
+ * limited to 1024 slots (10 bit indices). The first 256 entries
+ * are elided since those characters are obviously all included. */
 static const unsigned short legacy_chars[] = {
 #include "legacychars.h"
 };
@@ -96,7 +101,7 @@ static size_t find_charmap(const void *name)
 		s += strlen((void *)s)+1;
 		if (!*s) {
 			if (s[1] > 0200) s+=2;
-			else s+=2+(128U-s[1])/4*5;
+			else s+=2+(64U-s[1])*5;
 		}
 	}
 	return -1;
@@ -181,10 +186,10 @@ static void put_32(unsigned char *s, unsigned c, int e)
 
 static unsigned legacy_map(const unsigned char *map, unsigned c)
 {
-	unsigned x = c - 128 - map[-1];
-	x = legacy_chars[ map[x*5/4]>>2*x%8 |
-		map[x*5/4+1]<<8-2*x%8 & 1023 ];
-	return x ? x : c;
+	if (c < 4*map[-1]) return c;
+	unsigned x = c - 4*map[-1];
+	x = map[x*5/4]>>2*x%8 | map[x*5/4+1]<<8-2*x%8 & 1023;
+	return x < 256 ? x : legacy_chars[x-256];
 }
 
 size_t iconv(iconv_t cd, char **restrict in, size_t *restrict inb, char **restrict out, size_t *restrict outb)
@@ -449,9 +454,9 @@ size_t iconv(iconv_t cd, char **restrict in, size_t *restrict inb, char **restri
 			if (!c) goto ilseq;
 			break;
 		default:
-			if (c < 128+type) break;
+			if (!c) break;
 			c = legacy_map(map, c);
-			if (c==1) goto ilseq;
+			if (!c) goto ilseq;
 		}
 
 		switch (totype) {
@@ -475,14 +480,14 @@ size_t iconv(iconv_t cd, char **restrict in, size_t *restrict inb, char **restri
 			if (c > 0x7f) subst: x++, c='*';
 		default:
 			if (*outb < 1) goto toobig;
-			if (c < 128+totype || (c<256 && c==legacy_map(tomap, c))) {
+			if (c<256 && c==legacy_map(tomap, c)) {
 			revout:
 				*(*out)++ = c;
 				*outb -= 1;
 				break;
 			}
 			d = c;
-			for (c=128+totype; c<256; c++) {
+			for (c=4*totype; c<256; c++) {
 				if (d == legacy_map(tomap, c)) {
 					goto revout;
 				}
