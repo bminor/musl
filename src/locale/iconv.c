@@ -80,6 +80,10 @@ static const unsigned short ksc[93][94] = {
 #include "ksc.h"
 };
 
+static const unsigned short rev_jis[] = {
+#include "revjis.h"
+};
+
 static int fuzzycmp(const unsigned char *a, const unsigned char *b)
 {
 	for (; *a && *b; a++, b++) {
@@ -134,7 +138,7 @@ iconv_t iconv_open(const char *to, const char *from)
 
 	if ((t = find_charmap(to))==-1
 	 || (f = find_charmap(from))==-1
-	 || (charmaps[t] >= 0320)) {
+	 || (charmaps[t] >= 0330)) {
 		errno = EINVAL;
 		return (iconv_t)-1;
 	}
@@ -190,6 +194,25 @@ static unsigned legacy_map(const unsigned char *map, unsigned c)
 	unsigned x = c - 4*map[-1];
 	x = map[x*5/4]>>2*x%8 | map[x*5/4+1]<<8-2*x%8 & 1023;
 	return x < 256 ? x : legacy_chars[x-256];
+}
+
+static unsigned uni_to_jis(unsigned c)
+{
+	unsigned nel = sizeof rev_jis / sizeof *rev_jis;
+	unsigned d, j, i, b = 0;
+	for (;;) {
+		i = nel/2;
+		j = rev_jis[b+i];
+		d = jis0208[j/256][j%256];
+		if (d==c) return j + 0x2121;
+		else if (nel == 1) return 0;
+		else if (c < d)
+			nel /= 2;
+		else {
+			b += i;
+			nel -= nel/2;
+		}
+	}
 }
 
 size_t iconv(iconv_t cd, char **restrict in, size_t *restrict inb, char **restrict out, size_t *restrict outb)
@@ -493,6 +516,79 @@ size_t iconv(iconv_t cd, char **restrict in, size_t *restrict inb, char **restri
 				}
 			}
 			goto subst;
+		case SHIFT_JIS:
+			if (c < 128) goto revout;
+			if (c == 0xa5) {
+				x++;
+				c = '\\';
+				goto revout;
+			}
+			if (c == 0x203e) {
+				x++;
+				c = '~';
+				goto revout;
+			}
+			if (c-0xff61 <= 0xdf-0xa1) {
+				c += 0xa1 - 0xff61;
+				goto revout;
+			}
+			c = uni_to_jis(c);
+			if (!c) goto subst;
+			if (*outb < 2) goto toobig;
+			d = c%256;
+			c = c/256;
+			*(*out)++ = (c+1)/2 + (c<95 ? 112 : 176);
+			*(*out)++ = c%2 ? d + 31 + d/96 : d + 126;
+			*outb -= 2;
+			break;
+		case EUC_JP:
+			if (c < 128) goto revout;
+			if (c-0xff61 <= 0xdf-0xa1) {
+				c += 0x0e00 + 0x21 - 0xff61;
+			} else {
+				c = uni_to_jis(c);
+			}
+			if (!c) goto subst;
+			if (*outb < 2) goto toobig;
+			*(*out)++ = c/256 + 0x80;
+			*(*out)++ = c%256 + 0x80;
+			*outb -= 2;
+			break;
+		case ISO2022_JP:
+			if (c < 128) goto revout;
+			if (c-0xff61 <= 0xdf-0xa1 || c==0xa5 || c==0x203e) {
+				if (*outb < 7) goto toobig;
+				*(*out)++ = '\033';
+				*(*out)++ = '(';
+				if (c==0xa5) {
+					*(*out)++ = 'J';
+					*(*out)++ = '\\';
+				} else if (c==0x203e) {
+					*(*out)++ = 'J';
+					*(*out)++ = '~';
+				} else {
+					*(*out)++ = 'I';
+					*(*out)++ = c-0xff61+0x21;
+				}
+				*(*out)++ = '\033';
+				*(*out)++ = '(';
+				*(*out)++ = 'B';
+				*outb -= 7;
+				break;
+			}
+			c = uni_to_jis(c);
+			if (!c) goto subst;
+			if (*outb < 8) goto toobig;
+			*(*out)++ = '\033';
+			*(*out)++ = '$';
+			*(*out)++ = 'B';
+			*(*out)++ = c/256;
+			*(*out)++ = c%256;
+			*(*out)++ = '\033';
+			*(*out)++ = '(';
+			*(*out)++ = 'B';
+			*outb -= 8;
+			break;
 		case UCS2BE:
 		case UCS2LE:
 		case UTF_16BE:
