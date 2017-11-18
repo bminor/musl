@@ -22,6 +22,7 @@ static wint_t __fgetwc_unlocked_internal(FILE *f)
 			f->rpos++;
 			return WEOF;
 		}
+		f->rpos = f->rend;
 	} else l = -2;
 
 	/* Convert character byte-by-byte */
