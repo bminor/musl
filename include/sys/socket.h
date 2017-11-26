@@ -108,7 +108,8 @@ struct linger {
 #define PF_VSOCK        40
 #define PF_KCM          41
 #define PF_QIPCRTR      42
-#define PF_MAX          43
+#define PF_SMC          43
+#define PF_MAX          44
 
 #define AF_UNSPEC       PF_UNSPEC
 #define AF_LOCAL        PF_LOCAL
@@ -156,6 +157,7 @@ struct linger {
 #define AF_VSOCK        PF_VSOCK
 #define AF_KCM          PF_KCM
 #define AF_QIPCRTR      PF_QIPCRTR
+#define AF_SMC          PF_SMC
 #define AF_MAX          PF_MAX
 
 #ifndef SO_DEBUG
