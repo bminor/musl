@@ -232,6 +232,7 @@ struct linger {
 #define SO_COOKIE               57
 #define SCM_TIMESTAMPING_PKTINFO 58
 #define SO_PEERGROUPS           59
+#define SO_ZEROCOPY             60
 
 #ifndef SOL_SOCKET
 #define SOL_SOCKET      1
@@ -285,6 +286,7 @@ struct linger {
 #define MSG_MORE      0x8000
 #define MSG_WAITFORONE 0x10000
 #define MSG_BATCH     0x40000
+#define MSG_ZEROCOPY  0x4000000
 #define MSG_FASTOPEN  0x20000000
 #define MSG_CMSG_CLOEXEC 0x40000000
 
