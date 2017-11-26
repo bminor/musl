@@ -231,6 +231,8 @@ int sigrelse(int);
 void (*sigset(int, void (*)(int)))(int);
 #define TRAP_BRKPT 1
 #define TRAP_TRACE 2
+#define TRAP_BRANCH 3
+#define TRAP_HWBKPT 4
 #define POLL_IN 1
 #define POLL_OUT 2
 #define POLL_MSG 3
