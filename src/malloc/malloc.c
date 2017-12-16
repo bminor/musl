@@ -366,15 +366,32 @@ void *malloc(size_t n)
 	return CHUNK_TO_MEM(c);
 }
 
+static size_t mal0_clear(char *p, size_t pagesz, size_t n)
+{
+#ifdef __GNUC__
+	typedef uint64_t __attribute__((__may_alias__)) T;
+#else
+	typedef unsigned char T;
+#endif
+	char *pp = p + n;
+	size_t i = (uintptr_t)pp & (pagesz - 1);
+	for (;;) {
+		pp = memset(pp - i, 0, i);
+		if (pp - p < pagesz) return pp - p;
+		for (i = pagesz; i; i -= 2*sizeof(T), pp -= 2*sizeof(T))
+		        if (((T *)pp)[-1] | ((T *)pp)[-2])
+				break;
+	}
+}
+
 void *__malloc0(size_t n)
 {
 	void *p = malloc(n);
-	if (p && !IS_MMAPPED(MEM_TO_CHUNK(p))) {
-		size_t *z;
-		n = (n + sizeof *z - 1)/sizeof *z;
-		for (z=p; n; n--, z++) if (*z) *z=0;
-	}
-	return p;
+	if (!p || IS_MMAPPED(MEM_TO_CHUNK(p)))
+		return p;
+	if (n >= PAGE_SIZE)
+		n = mal0_clear(p, PAGE_SIZE, n);
+	return memset(p, 0, n);
 }
 
 void *realloc(void *p, size_t n)
