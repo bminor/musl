@@ -630,7 +630,7 @@ size_t iconv(iconv_t cd, char **restrict in, size_t *restrict inb, char **restri
 		case UTF_16:
 		case UTF_16BE:
 		case UTF_16LE:
-			if (c < 0x10000 || type-UCS2BE < 2U) {
+			if (c < 0x10000 || totype-UCS2BE < 2U) {
 				if (c >= 0x10000) c = 0xFFFD;
 				if (*outb < 2) goto toobig;
 				put_16((void *)*out, c, totype);
