@@ -37,10 +37,10 @@ _Noreturn void __pthread_exit(void *result)
 
 	__pthread_tsd_run_dtors();
 
-	__lock(self->exitlock);
+	LOCK(self->exitlock);
 
 	/* Mark this thread dead before decrementing count */
-	__lock(self->killlock);
+	LOCK(self->killlock);
 	self->dead = 1;
 
 	/* Block all signals before decrementing the live thread count.
@@ -54,7 +54,7 @@ _Noreturn void __pthread_exit(void *result)
 	 * been blocked. This precludes observation of the thread id
 	 * as a live thread (with application code running in it) after
 	 * the thread was reported dead by ESRCH being returned. */
-	__unlock(self->killlock);
+	UNLOCK(self->killlock);
 
 	/* It's impossible to determine whether this is "the last thread"
 	 * until performing the atomic decrement, since multiple threads
