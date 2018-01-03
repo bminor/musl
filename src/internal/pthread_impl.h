@@ -39,8 +39,8 @@ struct pthread {
 	int unblock_cancel;
 	volatile int timer_id;
 	locale_t locale;
-	volatile int killlock[2];
-	volatile int exitlock[2];
+	volatile int killlock[1];
+	volatile int exitlock[1];
 	volatile int startlock[2];
 	unsigned long sigmask[_NSIG/8/sizeof(long)];
 	char *dlerror_buf;

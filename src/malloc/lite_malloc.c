@@ -11,7 +11,7 @@ void *__expand_heap(size_t *);
 static void *__simple_malloc(size_t n)
 {
 	static char *cur, *end;
-	static volatile int lock[2];
+	static volatile int lock[1];
 	size_t align=1, pad;
 	void *p;
 

@@ -21,7 +21,7 @@ char *__strchrnul(const char *, int);
 
 char *setlocale(int cat, const char *name)
 {
-	static volatile int lock[2];
+	static volatile int lock[1];
 
 	if ((unsigned)cat > LC_ALL) return 0;
 

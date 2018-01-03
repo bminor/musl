@@ -13,7 +13,7 @@ static struct fl
 } builtin, *head;
 
 static int slot;
-static volatile int lock[2];
+static volatile int lock[1];
 
 void __funcs_on_exit()
 {

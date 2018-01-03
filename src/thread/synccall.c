@@ -14,7 +14,7 @@ static struct chain {
 	sem_t target_sem, caller_sem;
 } *volatile head;
 
-static volatile int synccall_lock[2];
+static volatile int synccall_lock[1];
 static volatile int target_tid;
 static void (*callback)(void *), *context;
 static volatile int dummy = 0;

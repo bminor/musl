@@ -34,7 +34,7 @@ static char *gettextdir(const char *domainname, size_t *dirlen)
 
 char *bindtextdomain(const char *domainname, const char *dirname)
 {
-	static volatile int lock[2];
+	static volatile int lock[1];
 	struct binding *p, *q;
 
 	if (!domainname) return 0;

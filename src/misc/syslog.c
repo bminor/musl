@@ -11,7 +11,7 @@
 #include <fcntl.h>
 #include "libc.h"
 
-static volatile int lock[2];
+static volatile int lock[1];
 static char log_ident[32];
 static int log_opt;
 static int log_facility = LOG_USER;
