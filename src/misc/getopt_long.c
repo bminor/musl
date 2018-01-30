@@ -63,7 +63,8 @@ static int __getopt_long_core(int argc, char *const *argv, const char *optstring
 			const char *name = longopts[i].name;
 			opt = argv[optind]+1;
 			if (*opt == '-') opt++;
-			for (; *name && *name == *opt; name++, opt++);
+			while (*opt && *opt != '=' && *opt == *name)
+				name++, opt++;
 			if (*opt && *opt != '=') continue;
 			arg = opt;
 			match = i;
