@@ -59,7 +59,7 @@ struct sigaltstack {
 
 typedef struct __ucontext {
 	unsigned long uc_flags;
-	struct ucontext *uc_link;
+	struct __ucontext *uc_link;
 	stack_t uc_stack;
 	sigset_t uc_sigmask;
 	mcontext_t uc_mcontext;
