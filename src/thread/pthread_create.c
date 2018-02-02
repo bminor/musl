@@ -232,8 +232,8 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 			memset(stack, 0, need);
 		} else {
 			size = ROUND(need);
-			guard = 0;
 		}
+		guard = 0;
 	} else {
 		guard = ROUND(attr._a_guardsize);
 		size = guard + ROUND(attr._a_stacksize
@@ -265,6 +265,7 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 	new->map_size = size;
 	new->stack = stack;
 	new->stack_size = stack - stack_limit;
+	new->guard_size = guard;
 	new->start = entry;
 	new->start_arg = arg;
 	new->self = new;

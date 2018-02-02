@@ -46,6 +46,7 @@ struct pthread {
 	char *dlerror_buf;
 	int dlerror_flag;
 	void *stdio_locks;
+	size_t guard_size;
 	uintptr_t canary_at_end;
 	void **dtv_copy;
 };
