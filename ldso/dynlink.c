@@ -1961,7 +1961,7 @@ int dladdr(const void *addr, Dl_info *info)
 		best = p->funcdescs + (bestsym - p->syms);
 
 	info->dli_fname = p->name;
-	info->dli_fbase = p->base;
+	info->dli_fbase = p->map;
 	info->dli_sname = strings + bestsym->st_name;
 	info->dli_saddr = best;
 
