@@ -623,6 +623,7 @@ typedef struct {
 
 
 #define NT_PRSTATUS	1
+#define NT_PRFPREG	2
 #define NT_FPREGSET	2
 #define NT_PRPSINFO	3
 #define NT_PRXREG	4
@@ -644,6 +645,19 @@ typedef struct {
 #define NT_PPC_VMX	0x100
 #define NT_PPC_SPE	0x101
 #define NT_PPC_VSX	0x102
+#define NT_PPC_TAR	0x103
+#define NT_PPC_PPR	0x104
+#define NT_PPC_DSCR	0x105
+#define NT_PPC_EBB	0x106
+#define NT_PPC_PMU	0x107
+#define NT_PPC_TM_CGPR	0x108
+#define NT_PPC_TM_CFPR	0x109
+#define NT_PPC_TM_CVMX	0x10a
+#define NT_PPC_TM_CVSX	0x10b
+#define NT_PPC_TM_SPR	0x10c
+#define NT_PPC_TM_CTAR	0x10d
+#define NT_PPC_TM_CPPR	0x10e
+#define NT_PPC_TM_CDSCR	0x10f
 #define NT_386_TLS	0x200
 #define NT_386_IOPERM	0x201
 #define NT_X86_XSTATE	0x202
@@ -656,14 +670,21 @@ typedef struct {
 #define NT_S390_LAST_BREAK	0x306
 #define NT_S390_SYSTEM_CALL	0x307
 #define NT_S390_TDB	0x308
+#define NT_S390_VXRS_LOW	0x309
+#define NT_S390_VXRS_HIGH	0x30a
+#define NT_S390_GS_CB	0x30b
+#define NT_S390_GS_BC	0x30c
+#define NT_S390_RI_CB	0x30d
 #define NT_ARM_VFP	0x400
 #define NT_ARM_TLS	0x401
 #define NT_ARM_HW_BREAK	0x402
 #define NT_ARM_HW_WATCH	0x403
 #define NT_ARM_SYSTEM_CALL	0x404
+#define NT_ARM_SVE	0x405
 #define NT_METAG_CBUF	0x500
 #define NT_METAG_RPIPE	0x501
 #define NT_METAG_TLS	0x502
+#define NT_ARC_V2	0x600
 #define NT_VERSION	1
 
 
