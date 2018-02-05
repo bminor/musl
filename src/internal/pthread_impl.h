@@ -13,11 +13,15 @@
 #define pthread __pthread
 
 struct pthread {
+	/* Part 1 -- these fields may be external or
+	 * internal (accessed via asm) ABI. Do not change. */
 	struct pthread *self;
 	void **dtv, *unused1, *unused2;
 	uintptr_t sysinfo;
 	uintptr_t canary, canary2;
 	pid_t tid, pid;
+
+	/* Part 2 -- implementation details, non-ABI. */
 	int tsd_used, errno_val;
 	volatile int cancel, canceldisable, cancelasync;
 	int detached;
@@ -47,6 +51,9 @@ struct pthread {
 	int dlerror_flag;
 	void *stdio_locks;
 	size_t guard_size;
+
+	/* Part 3 -- the positions of these fields relative to
+	 * the end of the structure is external and internal ABI. */
 	uintptr_t canary_at_end;
 	void **dtv_copy;
 };
