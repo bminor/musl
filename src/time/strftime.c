@@ -251,7 +251,8 @@ size_t __strftime_l(char *restrict s, size_t n, const char *restrict f, const st
 		t = __strftime_fmt_1(&buf, &k, *f, tm, loc, pad);
 		if (!t) break;
 		if (width) {
-			for (; *t=='+' || *t=='-' || (*t=='0'&&t[1]); t++, k--);
+			if (*t=='+' || *t=='-') t++, k--;
+			for (; *t=='0' && t[1]-'0'<10U; t++, k--);
 			width--;
 			if (plus && tm->tm_year >= 10000-1900)
 				s[l++] = '+';
