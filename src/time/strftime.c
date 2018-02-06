@@ -251,15 +251,21 @@ size_t __strftime_l(char *restrict s, size_t n, const char *restrict f, const st
 		t = __strftime_fmt_1(&buf, &k, *f, tm, loc, pad);
 		if (!t) break;
 		if (width) {
+			/* Trim off any sign and leading zeros, then
+			 * count remaining digits to determine behavior
+			 * for the + flag. */
 			if (*t=='+' || *t=='-') t++, k--;
 			for (; *t=='0' && t[1]-'0'<10U; t++, k--);
-			width--;
-			if (plus && tm->tm_year >= 10000-1900)
-				s[l++] = '+';
-			else if (tm->tm_year < -1900)
+			if (width < k) width = k;
+			size_t d;
+			for (d=0; t[d]-'0'<10U; d++);
+			if (tm->tm_year < -1900) {
 				s[l++] = '-';
-			else
-				width++;
+				width--;
+			} else if (plus && d+(width-k) >= (*p=='C'?3:5)) {
+				s[l++] = '+';
+				width--;
+			}
 			for (; width > k && l < n; width--)
 				s[l++] = '0';
 		}
