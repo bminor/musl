@@ -817,6 +817,9 @@ static int fixup_rpath(struct dso *p, char *buf, size_t buf_size)
 		origin = ".";
 		l = 1;
 	}
+	/* Disallow non-absolute origins for suid/sgid/AT_SECURE. */
+	if (libc.secure && *origin != '/')
+		return 0;
 	p->rpath = malloc(strlen(p->rpath_orig) + n*l + 1);
 	if (!p->rpath) return -1;
 
