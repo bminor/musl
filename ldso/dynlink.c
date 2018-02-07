@@ -807,7 +807,16 @@ static int fixup_rpath(struct dso *p, char *buf, size_t buf_size)
 		origin = p->name;
 	}
 	t = strrchr(origin, '/');
-	l = t ? t-origin : 0;
+	if (t) {
+		l = t-origin;
+	} else {
+		/* Normally p->name will always be an absolute or relative
+		 * pathname containing at least one '/' character, but in the
+		 * case where ldso was invoked as a command to execute a
+		 * program in the working directory, app.name may not. Fix. */
+		origin = ".";
+		l = 1;
+	}
 	p->rpath = malloc(strlen(p->rpath_orig) + n*l + 1);
 	if (!p->rpath) return -1;
 
