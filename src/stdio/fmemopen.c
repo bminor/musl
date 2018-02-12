@@ -81,7 +81,7 @@ FILE *fmemopen(void *restrict buf, size_t size, const char *restrict mode)
 		return 0;
 	}
 
-	if (!buf && size > SIZE_MAX-sizeof(FILE)-BUFSIZ-UNGET) {
+	if (!buf && size > PTRDIFF_MAX) {
 		errno = ENOMEM;
 		return 0;
 	}
