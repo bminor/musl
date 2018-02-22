@@ -1862,3 +1862,48 @@ regression fixes:
 
 other bug fixes:
 - stack overflow in posix_spawnp with large PATH variable in environment
+
+
+1.1.19 release notes
+
+new features:
+- iconv framework for processing stateful encodings
+- iconv support for iso-2022-jp
+- iconv support for converting to legacy JIS-based Japanese encodings
+- iconv support for UTF-16/32 with BOM-determined endianness
+- iconv ibm1047 (ebcdic latin1-equivalent) support
+- iconv cp866 (dos cyrillic) support
+- character data tables & case mappings updated to Unicode 10.0
+- fopencookie stdio extension
+- strftime padding character extensions
+- header-level support for new linux features through 4.13
+
+compatibility:
+- UTC timezone is now called UTC instead of GMT
+- _DIRENT_HAVE_D_* macros in dirent.h
+- dladdr dli_fbase definition now matches other implementations
+- pthread_getattr_np now reports guard size
+- strftime '+' modifier better matches apparent intent of POSIX
+- getopt_long handles long option names containing '='
+- better compatibility with linux uapi headers
+- workaround linux bug where getcwd can return non-absolute pathname
+- configure logic for finding compiler_rt with clang
+- execvp path search now continues after ENOTDIR components
+
+bugs fixed:
+- fgetwc failed when character crossed buffer boundary
+- memory corruption after failing to dlopen a second libc
+- sysconf reported infinite rlimits incorrectly
+- getopt_long --opt=arg did not work with partial matches
+- printf was wrong for alt-form octal with value 0, no explicit precision
+- endian errors in arpa/nameser.h and netinet/icmp6.h (missing endian.h)
+- atfork handler could clobber fork's errno
+- iconv could wrongly output surrogate pairs in ucs2
+- fmemopen buffer underallocation with extreme size argument
+- getaddrinfo AI_NUMERICSERV wrong error code
+- data race in at_quick_exit
+- ldd failed to honor rpath $ORIGIN for program in . without "./" prefix
+
+arch-specfic bugs fixed:
+- x32 unistd.h wrongly reported LP64 instead of ILP32
+- aarch64 signal.h had wrong type for ucontext_t uc_link member
