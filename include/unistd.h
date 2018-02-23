@@ -176,6 +176,7 @@ int acct(const char *);
 long syscall(long, ...);
 int execvpe(const char *, char *const [], char *const []);
 int issetugid(void);
+int getentropy(void *, size_t);
 #endif
 
 #ifdef _GNU_SOURCE
