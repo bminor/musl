@@ -11,7 +11,7 @@ size_t __stdio_read(FILE *f, unsigned char *buf, size_t len)
 
 	cnt = syscall(SYS_readv, f->fd, iov, 2);
 	if (cnt <= 0) {
-		f->flags |= F_EOF ^ ((F_ERR^F_EOF) & cnt);
+		f->flags |= cnt ? F_ERR : F_EOF;
 		return cnt;
 	}
 	if (cnt <= iov[0].iov_len) return cnt;
