@@ -77,7 +77,7 @@ int getopt(int argc, char * const argv[], const char *optstring)
 		if (l>0) i+=l; else i++;
 	} while (l && d != c);
 
-	if (d != c) {
+	if (d != c || c == ':') {
 		optopt = c;
 		if (optstring[0] != ':' && opterr)
 			__getopt_msg(argv[0], ": unrecognized option: ", optchar, k);
