@@ -40,8 +40,8 @@
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 
 #define PIPE_BUF 4096
-#ifdef PAGE_SIZE
-#define PAGESIZE PAGE_SIZE
+#ifdef PAGESIZE
+#define PAGE_SIZE PAGESIZE
 #endif
 #define FILESIZEBITS 64
 #define NAME_MAX 255
