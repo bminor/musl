@@ -210,7 +210,7 @@ int sigpending(sigset_t *);
 int sigwait(const sigset_t *__restrict, int *__restrict);
 int sigwaitinfo(const sigset_t *__restrict, siginfo_t *__restrict);
 int sigtimedwait(const sigset_t *__restrict, siginfo_t *__restrict, const struct timespec *__restrict);
-int sigqueue(pid_t, int, const union sigval);
+int sigqueue(pid_t, int, union sigval);
 
 int pthread_sigmask(int, const sigset_t *__restrict, sigset_t *__restrict);
 int pthread_kill(pthread_t, int);
