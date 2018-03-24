@@ -119,7 +119,7 @@ $(OPTIMIZE_SRCS:$(srcdir)/%.c=obj/%.o) $(OPTIMIZE_SRCS:$(srcdir)/%.c=obj/%.lo): 
 MEMOPS_SRCS = src/string/memcpy.c src/string/memmove.c src/string/memcmp.c src/string/memset.c
 $(MEMOPS_SRCS:%.c=obj/%.o) $(MEMOPS_SRCS:%.c=obj/%.lo): CFLAGS_ALL += $(CFLAGS_MEMOPS)
 
-NOSSP_SRCS = $(wildcard crt/*.c) \
+NOSSP_SRCS = $(patsubst $(srcdir)/%,%,$(wildcard $(srcdir)/crt/*.c)) \
 	src/env/__libc_start_main.c src/env/__init_tls.c \
 	src/env/__stack_chk_fail.c \
 	src/thread/__set_thread_area.c src/thread/$(ARCH)/__set_thread_area.c \
