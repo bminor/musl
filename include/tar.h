@@ -1,6 +1,8 @@
 #ifndef	_TAR_H
 #define	_TAR_H
 
+#include <features.h>
+
 #define TSUID   04000
 #define TSGID   02000
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE) || defined(_XOPEN_SOURCE)
