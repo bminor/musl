@@ -476,23 +476,15 @@ static void redo_lazy_relocs()
 /* A huge hack: to make up for the wastefulness of shared libraries
  * needing at least a page of dirty memory even if they have no global
  * data, we reclaim the gaps at the beginning and end of writable maps
- * and "donate" them to the heap by setting up minimal malloc
- * structures and then freeing them. */
+ * and "donate" them to the heap. */
 
 static void reclaim(struct dso *dso, size_t start, size_t end)
 {
-	size_t *a, *z;
+	void __malloc_donate(char *, char *);
 	if (start >= dso->relro_start && start < dso->relro_end) start = dso->relro_end;
 	if (end   >= dso->relro_start && end   < dso->relro_end) end = dso->relro_start;
-	start = start + 6*sizeof(size_t)-1 & -4*sizeof(size_t);
-	end = (end & -4*sizeof(size_t)) - 2*sizeof(size_t);
-	if (start>end || end-start < 4*sizeof(size_t)) return;
-	a = laddr(dso, start);
-	z = laddr(dso, end);
-	a[-2] = 1;
-	a[-1] = z[0] = end-start + 2*sizeof(size_t) | 1;
-	z[1] = 1;
-	free(a);
+	if (start >= end) return;
+	__malloc_donate(laddr(dso, start), laddr(dso, end));
 }
 
 static void reclaim_gaps(struct dso *dso)

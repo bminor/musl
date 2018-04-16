@@ -299,6 +299,8 @@ static int pretrim(struct chunk *self, size_t n, int i, int j)
 	return 1;
 }
 
+static void bin_chunk(struct chunk *);
+
 static void trim(struct chunk *self, size_t n)
 {
 	size_t n1 = CHUNK_SIZE(self);
@@ -314,7 +316,7 @@ static void trim(struct chunk *self, size_t n)
 	next->psize = n1-n | C_INUSE;
 	self->csize = n | C_INUSE;
 
-	free(CHUNK_TO_MEM(split));
+	bin_chunk(split);
 }
 
 void *malloc(size_t n)
@@ -465,29 +467,14 @@ copy_free_ret:
 	return new;
 }
 
-void free(void *p)
+static void bin_chunk(struct chunk *self)
 {
-	struct chunk *self, *next;
+	struct chunk *next = NEXT_CHUNK(self);
 	size_t final_size, new_size, size;
 	int reclaim=0;
 	int i;
 
-	if (!p) return;
-
-	self = MEM_TO_CHUNK(p);
-
-	if (IS_MMAPPED(self)) {
-		size_t extra = self->psize;
-		char *base = (char *)self - extra;
-		size_t len = CHUNK_SIZE(self) + extra;
-		/* Crash on double free */
-		if (extra & 1) a_crash();
-		__munmap(base, len);
-		return;
-	}
-
 	final_size = new_size = CHUNK_SIZE(self);
-	next = NEXT_CHUNK(self);
 
 	/* Crash on corrupted footer (likely from buffer overflow) */
 	if (next->psize != self->csize) a_crash();
@@ -547,4 +534,42 @@ void free(void *p)
 	}
 
 	unlock_bin(i);
+}
+
+static void unmap_chunk(struct chunk *self)
+{
+	size_t extra = self->psize;
+	char *base = (char *)self - extra;
+	size_t len = CHUNK_SIZE(self) + extra;
+	/* Crash on double free */
+	if (extra & 1) a_crash();
+	__munmap(base, len);
+}
+
+void free(void *p)
+{
+	if (!p) return;
+
+	struct chunk *self = MEM_TO_CHUNK(p);
+
+	if (IS_MMAPPED(self))
+		unmap_chunk(self);
+	else
+		bin_chunk(self);
+}
+
+void __malloc_donate(char *start, char *end)
+{
+	size_t align_start_up = (SIZE_ALIGN-1) & (-(uintptr_t)start - OVERHEAD);
+	size_t align_end_down = (SIZE_ALIGN-1) & (uintptr_t)end;
+
+	if (end - start <= OVERHEAD + align_start_up + align_end_down)
+		return;
+	start += align_start_up + OVERHEAD;
+	end   -= align_end_down;
+
+	struct chunk *c = MEM_TO_CHUNK(start), *n = MEM_TO_CHUNK(end);
+	c->psize = n->csize = C_INUSE;
+	c->csize = n->psize = C_INUSE | (end-start);
+	bin_chunk(c);
 }
