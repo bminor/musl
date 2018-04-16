@@ -414,10 +414,9 @@ void *realloc(void *p, size_t n)
 		size_t newlen = n + extra;
 		/* Crash on realloc of freed chunk */
 		if (extra & 1) a_crash();
-		if (newlen < PAGE_SIZE && (new = malloc(n))) {
-			memcpy(new, p, n-OVERHEAD);
-			free(p);
-			return new;
+		if (newlen < PAGE_SIZE && (new = malloc(n-OVERHEAD))) {
+			n0 = n;
+			goto copy_free_ret;
 		}
 		newlen = (newlen + PAGE_SIZE-1) & -PAGE_SIZE;
 		if (oldlen == newlen) return p;
@@ -460,6 +459,7 @@ copy_realloc:
 	/* As a last resort, allocate a new chunk and copy to it. */
 	new = malloc(n-OVERHEAD);
 	if (!new) return 0;
+copy_free_ret:
 	memcpy(new, p, n0-OVERHEAD);
 	free(CHUNK_TO_MEM(self));
 	return new;
