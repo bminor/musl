@@ -590,10 +590,12 @@ tryldflag LDFLAGS_AUTO -Wl,--no-undefined
 # versions built without shared library support and pcc are broken.
 tryldflag LDFLAGS_AUTO -Wl,--exclude-libs=ALL
 
-# Linking with -Bsymbolic-functions is no longer mandatory for
-# the dynamic linker to work, but enable it if it works as
-# a linking optimization.
-tryldflag LDFLAGS_AUTO -Wl,-Bsymbolic-functions
+# Public data symbols must be interposable to allow for copy
+# relocations, but otherwise we want to bind symbols at libc link
+# time to eliminate startup relocations and PLT overhead. Use
+# --dynamic-list rather than -Bsymbolic-functions for greater
+# control over what symbols are left unbound.
+tryldflag LDFLAGS_AUTO -Wl,--dynamic-list="$srcdir/dynamic.list"
 
 # Find compiler runtime library
 test -z "$LIBCC" && tryldflag LIBCC -lgcc && tryldflag LIBCC -lgcc_eh
