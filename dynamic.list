@@ -6,6 +6,15 @@ stdin;
 stdout;
 stderr;
 
+malloc;
+calloc;
+realloc;
+free;
+memalign;
+posix_memalign;
+aligned_alloc;
+malloc_usable_size;
+
 timezone;
 daylight;
 tzname;

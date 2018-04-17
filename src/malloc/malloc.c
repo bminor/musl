@@ -368,6 +368,8 @@ void *malloc(size_t n)
 	return CHUNK_TO_MEM(c);
 }
 
+weak_alias(malloc, __internal_malloc);
+
 static size_t mal0_clear(char *p, size_t pagesz, size_t n)
 {
 #ifdef __GNUC__
@@ -386,13 +388,21 @@ static size_t mal0_clear(char *p, size_t pagesz, size_t n)
 	}
 }
 
-void *__malloc0(size_t n)
+void *calloc(size_t m, size_t n)
 {
+	if (n && m > (size_t)-1/n) {
+		errno = ENOMEM;
+		return 0;
+	}
+	n *= m;
 	void *p = malloc(n);
-	if (!p || IS_MMAPPED(MEM_TO_CHUNK(p)))
-		return p;
-	if (n >= PAGE_SIZE)
-		n = mal0_clear(p, PAGE_SIZE, n);
+	if (!p) return p;
+	if (malloc == __internal_malloc) {
+		if (IS_MMAPPED(MEM_TO_CHUNK(p)))
+			return p;
+		if (n >= PAGE_SIZE)
+			n = mal0_clear(p, PAGE_SIZE, n);
+	}
 	return memset(p, 0, n);
 }
 
@@ -557,6 +567,8 @@ void free(void *p)
 	else
 		bin_chunk(self);
 }
+
+weak_alias(free, __internal_free);
 
 void __malloc_donate(char *start, char *end)
 {

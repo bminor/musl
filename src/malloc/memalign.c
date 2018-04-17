@@ -3,9 +3,7 @@
 #include <errno.h>
 #include "libc.h"
 
-/* This function should work with most dlmalloc-like chunk bookkeeping
- * systems, but it's only guaranteed to work with the native implementation
- * used in this library. */
+void __internal_free(void *);
 
 void *__memalign(size_t align, size_t len)
 {
@@ -17,7 +15,7 @@ void *__memalign(size_t align, size_t len)
 		return NULL;
 	}
 
-	if (len > SIZE_MAX - align) {
+	if (len > SIZE_MAX - align || free != __internal_free) {
 		errno = ENOMEM;
 		return NULL;
 	}
