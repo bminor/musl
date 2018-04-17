@@ -158,10 +158,26 @@ static void *laddr(const struct dso *p, size_t v)
 	for (j=0; v-p->loadmap->segs[j].p_vaddr >= p->loadmap->segs[j].p_memsz; j++);
 	return (void *)(v - p->loadmap->segs[j].p_vaddr + p->loadmap->segs[j].addr);
 }
+static void *laddr_pg(const struct dso *p, size_t v)
+{
+	size_t j=0;
+	size_t pgsz = PAGE_SIZE;
+	if (!p->loadmap) return p->base + v;
+	for (j=0; ; j++) {
+		size_t a = p->loadmap->segs[j].p_vaddr;
+		size_t b = a + p->loadmap->segs[j].p_memsz;
+		a &= -pgsz;
+		b += pgsz-1;
+		b &= -pgsz;
+		if (v-a<b-a) break;
+	}
+	return (void *)(v - p->loadmap->segs[j].p_vaddr + p->loadmap->segs[j].addr);
+}
 #define fpaddr(p, v) ((void (*)())&(struct funcdesc){ \
 	laddr(p, v), (p)->got })
 #else
 #define laddr(p, v) (void *)((p)->base + (v))
+#define laddr_pg(p, v) laddr(p, v)
 #define fpaddr(p, v) ((void (*)())laddr(p, v))
 #endif
 
@@ -484,7 +500,8 @@ static void reclaim(struct dso *dso, size_t start, size_t end)
 	if (start >= dso->relro_start && start < dso->relro_end) start = dso->relro_end;
 	if (end   >= dso->relro_start && end   < dso->relro_end) end = dso->relro_start;
 	if (start >= end) return;
-	__malloc_donate(laddr(dso, start), laddr(dso, end));
+	char *base = laddr_pg(dso, start);
+	__malloc_donate(base, base+(end-start));
 }
 
 static void reclaim_gaps(struct dso *dso)
@@ -492,7 +509,6 @@ static void reclaim_gaps(struct dso *dso)
 	Phdr *ph = dso->phdr;
 	size_t phcnt = dso->phnum;
 
-	if (DL_FDPIC) return; // FIXME
 	for (; phcnt--; ph=(void *)((char *)ph+dso->phentsize)) {
 		if (ph->p_type!=PT_LOAD) continue;
 		if ((ph->p_flags&(PF_R|PF_W))!=(PF_R|PF_W)) continue;
