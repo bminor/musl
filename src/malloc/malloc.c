@@ -563,6 +563,9 @@ void __malloc_donate(char *start, char *end)
 	size_t align_start_up = (SIZE_ALIGN-1) & (-(uintptr_t)start - OVERHEAD);
 	size_t align_end_down = (SIZE_ALIGN-1) & (uintptr_t)end;
 
+	/* Getting past this condition ensures that the padding for alignment
+	 * and header overhead will not overflow and will leave a nonzero
+	 * multiple of SIZE_ALIGN bytes between start and end. */
 	if (end - start <= OVERHEAD + align_start_up + align_end_down)
 		return;
 	start += align_start_up + OVERHEAD;
