@@ -20,6 +20,15 @@ void __unlist_locked_file(FILE *f)
 	}
 }
 
+void __register_locked_file(FILE *f, pthread_t self)
+{
+	f->lockcount = 1;
+	f->prev_locked = 0;
+	f->next_locked = self->stdio_locks;
+	if (f->next_locked) f->next_locked->prev_locked = f;
+	self->stdio_locks = f;
+}
+
 int ftrylockfile(FILE *f)
 {
 	pthread_t self = __pthread_self();
@@ -34,10 +43,6 @@ int ftrylockfile(FILE *f)
 	if (owner < 0) f->lock = owner = 0;
 	if (owner || a_cas(&f->lock, 0, tid))
 		return -1;
-	f->lockcount = 1;
-	f->prev_locked = 0;
-	f->next_locked = self->stdio_locks;
-	if (f->next_locked) f->next_locked->prev_locked = f;
-	self->stdio_locks = f;
+	__register_locked_file(f, self);
 	return 0;
 }
