@@ -2,6 +2,8 @@
 #include "pthread_impl.h"
 #include <limits.h>
 
+#define MAYBE_WAITERS 0x40000000
+
 void __do_orphaned_stdio_locks()
 {
 	FILE *f;
@@ -22,14 +24,15 @@ int ftrylockfile(FILE *f)
 {
 	pthread_t self = __pthread_self();
 	int tid = self->tid;
-	if (f->lock == tid) {
+	int owner = f->lock;
+	if ((owner & ~MAYBE_WAITERS) == tid) {
 		if (f->lockcount == LONG_MAX)
 			return -1;
 		f->lockcount++;
 		return 0;
 	}
-	if (f->lock < 0) f->lock = 0;
-	if (f->lock || a_cas(&f->lock, 0, tid))
+	if (owner < 0) f->lock = owner = 0;
+	if (owner || a_cas(&f->lock, 0, tid))
 		return -1;
 	f->lockcount = 1;
 	f->prev_locked = 0;
