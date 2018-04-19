@@ -3,8 +3,6 @@
 #include <errno.h>
 #include "libc.h"
 
-void __internal_free(void *);
-
 void *__memalign(size_t align, size_t len)
 {
 	unsigned char *mem, *new, *end;
@@ -15,7 +13,7 @@ void *__memalign(size_t align, size_t len)
 		return NULL;
 	}
 
-	if (len > SIZE_MAX - align || free != __internal_free) {
+	if (len > SIZE_MAX - align) {
 		errno = ENOMEM;
 		return NULL;
 	}

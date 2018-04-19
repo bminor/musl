@@ -50,7 +50,7 @@ weak_alias(__simple_malloc, malloc);
 
 static void *__simple_calloc(size_t m, size_t n)
 {
-	if (n && m > (size_t)-1/n || malloc != __simple_malloc) {
+	if (n && m > (size_t)-1/n) {
 		errno = ENOMEM;
 		return 0;
 	}
