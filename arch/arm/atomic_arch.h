@@ -8,7 +8,7 @@ extern uintptr_t __attribute__((__visibility__("hidden")))
 	__a_cas_ptr, __a_barrier_ptr;
 
 #if ((__ARM_ARCH_6__ || __ARM_ARCH_6K__ || __ARM_ARCH_6KZ__ || __ARM_ARCH_6ZK__) && !__thumb__) \
- || __ARM_ARCH_7A__ || __ARM_ARCH_7R__ ||  __ARM_ARCH >= 7
+ || __ARM_ARCH_6T2__ || __ARM_ARCH_7A__ || __ARM_ARCH_7R__ || __ARM_ARCH >= 7
 
 #define a_ll a_ll
 static inline int a_ll(volatile int *p)
