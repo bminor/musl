@@ -134,6 +134,9 @@ static struct dso *const nodeps_dummy;
 struct debug *_dl_debug_addr = &debug;
 
 __attribute__((__visibility__("hidden")))
+extern int __malloc_replaced;
+
+__attribute__((__visibility__("hidden")))
 void (*const __init_array_start)(void)=0, (*const __fini_array_start)(void)=0;
 
 __attribute__((__visibility__("hidden")))
@@ -1690,6 +1693,12 @@ _Noreturn void __dls3(size_t *sp)
 
 	if (ldso_fail) _exit(127);
 	if (ldd_mode) _exit(0);
+
+	/* Determine if malloc was interposed by a replacement implementation
+	 * so that calloc and the memalign family can harden against the
+	 * possibility of incomplete replacement. */
+	if (find_sym(head, "malloc", 1).dso != &ldso)
+		__malloc_replaced = 1;
 
 	/* Switch to runtime mode: any further failures in the dynamic
 	 * linker are a reportable failure rather than a fatal startup
