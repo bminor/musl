@@ -263,8 +263,6 @@ static int pretrim(struct chunk *self, size_t n, int i, int j)
 	return 1;
 }
 
-static void bin_chunk(struct chunk *);
-
 static void trim(struct chunk *self, size_t n)
 {
 	size_t n1 = CHUNK_SIZE(self);
@@ -280,7 +278,7 @@ static void trim(struct chunk *self, size_t n)
 	next->psize = n1-n | C_INUSE;
 	self->csize = n | C_INUSE;
 
-	bin_chunk(split);
+	__bin_chunk(split);
 }
 
 void *malloc(size_t n)
@@ -436,7 +434,7 @@ copy_free_ret:
 	return new;
 }
 
-static void bin_chunk(struct chunk *self)
+void __bin_chunk(struct chunk *self)
 {
 	struct chunk *next = NEXT_CHUNK(self);
 	size_t final_size, new_size, size;
@@ -524,7 +522,7 @@ void free(void *p)
 	if (IS_MMAPPED(self))
 		unmap_chunk(self);
 	else
-		bin_chunk(self);
+		__bin_chunk(self);
 }
 
 void __malloc_donate(char *start, char *end)
@@ -543,5 +541,5 @@ void __malloc_donate(char *start, char *end)
 	struct chunk *c = MEM_TO_CHUNK(start), *n = MEM_TO_CHUNK(end);
 	c->psize = n->csize = C_INUSE;
 	c->csize = n->psize = C_INUSE | (end-start);
-	bin_chunk(c);
+	__bin_chunk(c);
 }

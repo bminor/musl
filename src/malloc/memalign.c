@@ -48,7 +48,7 @@ void *__memalign(size_t align, size_t len)
 	n->psize = c->csize = C_INUSE | (new-mem);
 	n->csize = t->psize -= new-mem;
 
-	free(mem);
+	__bin_chunk(c);
 	return new;
 }
 

@@ -36,4 +36,7 @@ struct bin {
 
 #define IS_MMAPPED(c) !((c)->csize & (C_INUSE))
 
+__attribute__((__visibility__("hidden")))
+void __bin_chunk(struct chunk *);
+
 #endif
