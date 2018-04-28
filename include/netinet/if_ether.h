@@ -5,6 +5,7 @@
 #include <sys/types.h>
 
 #define ETH_ALEN	6
+#define ETH_TLEN	2
 #define ETH_HLEN	14
 #define ETH_ZLEN	60
 #define ETH_DATA_LEN	1500
