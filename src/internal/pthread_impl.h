@@ -43,6 +43,7 @@ struct pthread {
 	int unblock_cancel;
 	volatile int timer_id;
 	locale_t locale;
+	volatile int join_futex;
 	volatile int killlock[1];
 	volatile int exitlock[1];
 	volatile int startlock[2];
