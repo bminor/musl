@@ -646,6 +646,8 @@ size_t iconv(iconv_t cd, char **restrict in, size_t *restrict inb, char **restri
 			*out += 4;
 			*outb -= 4;
 			break;
+		case UTF_32:
+			totype = UTF_32BE;
 		case UTF_32BE:
 		case UTF_32LE:
 			if (*outb < 4) goto toobig;
