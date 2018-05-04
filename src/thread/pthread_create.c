@@ -39,9 +39,11 @@ _Noreturn void __pthread_exit(void *result)
 
 	LOCK(self->exitlock);
 
-	/* Mark this thread dead before decrementing count */
+	/* Access to target the exiting thread with syscalls that use
+	 * its kernel tid is controlled by killlock. For detached threads,
+	 * any use past this point would have undefined behavior, but for
+	 * joinable threads it's a valid usage that must be handled. */
 	LOCK(self->killlock);
-	self->dead = 1;
 
 	/* Block all signals before decrementing the live thread count.
 	 * This is important to ensure that dynamically allocated TLS
@@ -49,20 +51,14 @@ _Noreturn void __pthread_exit(void *result)
 	 * reasons as well. */
 	__block_all_sigs(&set);
 
-	/* Wait to unlock the kill lock, which governs functions like
-	 * pthread_kill which target a thread id, until signals have
-	 * been blocked. This precludes observation of the thread id
-	 * as a live thread (with application code running in it) after
-	 * the thread was reported dead by ESRCH being returned. */
-	UNLOCK(self->killlock);
-
 	/* It's impossible to determine whether this is "the last thread"
 	 * until performing the atomic decrement, since multiple threads
 	 * could exit at the same time. For the last thread, revert the
-	 * decrement and unblock signals to give the atexit handlers and
-	 * stdio cleanup code a consistent state. */
+	 * decrement, restore the tid, and unblock signals to give the
+	 * atexit handlers and stdio cleanup code a consistent state. */
 	if (a_fetch_add(&libc.threads_minus_1, -1)==0) {
 		libc.threads_minus_1 = 0;
+		UNLOCK(self->killlock);
 		__restore_sigs(&set);
 		exit(0);
 	}
@@ -112,6 +108,12 @@ _Noreturn void __pthread_exit(void *result)
 		 * and then exits without touching the stack. */
 		__unmapself(self->map_base, self->map_size);
 	}
+
+	/* After the kernel thread exits, its tid may be reused. Clear it
+	 * to prevent inadvertent use and inform functions that would use
+	 * it that it's no longer available. */
+	self->tid = 0;
+	UNLOCK(self->killlock);
 
 	for (;;) __syscall(SYS_exit, 0);
 }

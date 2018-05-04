@@ -34,7 +34,6 @@ struct pthread {
 	void *result;
 	struct __ptcb *cancelbuf;
 	void **tsd;
-	volatile int dead;
 	struct {
 		volatile void *volatile head;
 		long off;
