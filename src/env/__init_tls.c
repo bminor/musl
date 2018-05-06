@@ -15,8 +15,8 @@ int __init_tp(void *p)
 	int r = __set_thread_area(TP_ADJ(p));
 	if (r < 0) return -1;
 	if (!r) libc.can_do_threads = 1;
-	td->join_futex = -1;
-	td->tid = __syscall(SYS_set_tid_address, &td->join_futex);
+	td->detach_state = DT_JOINABLE;
+	td->tid = __syscall(SYS_set_tid_address, &td->detach_state);
 	td->locale = &libc.global_locale;
 	td->robust_list.head = &td->robust_list.head;
 	return 0;

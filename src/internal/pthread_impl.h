@@ -24,7 +24,7 @@ struct pthread {
 	/* Part 2 -- implementation details, non-ABI. */
 	int tsd_used, errno_val;
 	volatile int cancel, canceldisable, cancelasync;
-	int detached;
+	volatile int detach_state;
 	unsigned char *map_base;
 	size_t map_size;
 	void *stack;
@@ -42,9 +42,7 @@ struct pthread {
 	int unblock_cancel;
 	volatile int timer_id;
 	locale_t locale;
-	volatile int join_futex;
 	volatile int killlock[1];
-	volatile int exitlock[1];
 	volatile int startlock[2];
 	unsigned long sigmask[_NSIG/8/sizeof(long)];
 	char *dlerror_buf;
@@ -56,6 +54,14 @@ struct pthread {
 	 * the end of the structure is external and internal ABI. */
 	uintptr_t canary_at_end;
 	void **dtv_copy;
+};
+
+enum {
+	DT_EXITED = 0,
+	DT_EXITING,
+	DT_JOINABLE,
+	DT_DETACHED,
+	DT_DYNAMIC,
 };
 
 struct __timer {

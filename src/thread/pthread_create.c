@@ -37,8 +37,6 @@ _Noreturn void __pthread_exit(void *result)
 
 	__pthread_tsd_run_dtors();
 
-	LOCK(self->exitlock);
-
 	/* Access to target the exiting thread with syscalls that use
 	 * its kernel tid is controlled by killlock. For detached threads,
 	 * any use past this point would have undefined behavior, but for
@@ -85,15 +83,19 @@ _Noreturn void __pthread_exit(void *result)
 	__do_orphaned_stdio_locks();
 	__dl_thread_cleanup();
 
-	if (self->detached && self->map_base) {
+	/* This atomic potentially competes with a concurrent pthread_detach
+	 * call; the loser is responsible for freeing thread resources. */
+	int state = a_cas(&self->detach_state, DT_JOINABLE, DT_EXITING);
+
+	if (state>=DT_DETACHED && self->map_base) {
 		/* Detached threads must avoid the kernel clear_child_tid
 		 * feature, since the virtual address will have been
 		 * unmapped and possibly already reused by a new mapping
 		 * at the time the kernel would perform the write. In
 		 * the case of threads that started out detached, the
 		 * initial clone flags are correct, but if the thread was
-		 * detached later (== 2), we need to clear it here. */
-		if (self->detached == 2) __syscall(SYS_set_tid_address, 0);
+		 * detached later, we need to clear it here. */
+		if (state == DT_DYNAMIC) __syscall(SYS_set_tid_address, 0);
 
 		/* Robust list will no longer be valid, and was already
 		 * processed above, so unregister it with the kernel. */
@@ -141,7 +143,7 @@ static int start(void *p)
 	if (self->startlock[0]) {
 		__wait(self->startlock, 0, 1, 1);
 		if (self->startlock[0] == 2) {
-			self->detached = 2;
+			self->detach_state = DT_DYNAMIC;
 			pthread_exit(0);
 		}
 		__restore_sigs(self->sigmask);
@@ -274,8 +276,10 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 	new->tsd = (void *)tsd;
 	new->locale = &libc.global_locale;
 	if (attr._a_detach) {
-		new->detached = 1;
+		new->detach_state = DT_DETACHED;
 		flags -= CLONE_CHILD_CLEARTID;
+	} else {
+		new->detach_state = DT_JOINABLE;
 	}
 	if (attr._a_sched) {
 		do_sched = new->startlock[0] = 1;
@@ -284,10 +288,9 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 	new->robust_list.head = &new->robust_list.head;
 	new->unblock_cancel = self->cancel;
 	new->CANARY = self->CANARY;
-	new->join_futex = -1;
 
 	a_inc(&libc.threads_minus_1);
-	ret = __clone((c11 ? start_c11 : start), stack, flags, new, &new->tid, TP_ADJ(new), &new->join_futex);
+	ret = __clone((c11 ? start_c11 : start), stack, flags, new, &new->tid, TP_ADJ(new), &new->detach_state);
 
 	__release_ptc();
 
