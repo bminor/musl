@@ -47,8 +47,6 @@ struct pthread {
 	volatile int timer_id;
 	locale_t locale;
 	volatile int killlock[1];
-	volatile int startlock[1];
-	unsigned long sigmask[_NSIG/8/sizeof(long)];
 	char *dlerror_buf;
 	void *stdio_locks;
 
