@@ -56,6 +56,14 @@ struct pthread {
 	void **dtv_copy;
 };
 
+struct start_sched_args {
+	void *start_arg;
+	void *(*start_fn)(void *);
+	sigset_t mask;
+	pthread_attr_t *attr;
+	volatile int futex;
+};
+
 enum {
 	DT_EXITED = 0,
 	DT_EXITING,

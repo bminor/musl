@@ -19,6 +19,12 @@ weak_alias(dummy_0, __pthread_tsd_run_dtors);
 weak_alias(dummy_0, __do_orphaned_stdio_locks);
 weak_alias(dummy_0, __dl_thread_cleanup);
 
+static void *dummy_1(void *p)
+{
+	return 0;
+}
+weak_alias(dummy_1, __start_sched);
+
 _Noreturn void __pthread_exit(void *result)
 {
 	pthread_t self = __pthread_self();
@@ -130,33 +136,6 @@ void __do_cleanup_push(struct __ptcb *cb)
 void __do_cleanup_pop(struct __ptcb *cb)
 {
 	__pthread_self()->cancelbuf = cb->__next;
-}
-
-struct start_sched_args {
-	void *start_arg;
-	void *(*start_fn)(void *);
-	sigset_t mask;
-	pthread_attr_t *attr;
-	volatile int futex;
-};
-
-static void *start_sched(void *p)
-{
-	struct start_sched_args *ssa = p;
-	void *start_arg = ssa->start_arg;
-	void *(*start_fn)(void *) = ssa->start_fn;
-	pthread_t self = __pthread_self();
-
-	int ret = -__syscall(SYS_sched_setscheduler, self->tid,
-		ssa->attr->_a_policy, &ssa->attr->_a_prio);
-	if (!ret) __restore_sigs(&ssa->mask);
-	a_store(&ssa->futex, ret);
-	__wake(&ssa->futex, 1, 1);
-	if (ret) {
-		self->detach_state = DT_DYNAMIC;
-		return 0;
-	}
-	return start_fn(start_arg);
 }
 
 static int start(void *p)
@@ -302,7 +281,7 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 		ssa.start_fn = new->start;
 		ssa.start_arg = new->start_arg;
 		ssa.attr = &attr;
-		new->start = start_sched;
+		new->start = __start_sched;
 		new->start_arg = &ssa;
 		__block_app_sigs(&ssa.mask);
 	}
