@@ -161,8 +161,8 @@ static inline void __wake(volatile void *addr, int cnt, int priv)
 static inline void __futexwait(volatile void *addr, int val, int priv)
 {
 	if (priv) priv = FUTEX_PRIVATE;
-	__syscall(SYS_futex, addr, FUTEX_WAIT|priv, val) != -ENOSYS ||
-	__syscall(SYS_futex, addr, FUTEX_WAIT, val);
+	__syscall(SYS_futex, addr, FUTEX_WAIT|priv, val, 0) != -ENOSYS ||
+	__syscall(SYS_futex, addr, FUTEX_WAIT, val, 0);
 }
 
 void __acquire_ptc(void);
