@@ -104,13 +104,19 @@ static void static_init_tls(size_t *aux)
 
 	main_tls.size += (-main_tls.size - (uintptr_t)main_tls.image)
 		& (main_tls.align-1);
-	if (main_tls.align < MIN_TLS_ALIGN) main_tls.align = MIN_TLS_ALIGN;
-#ifndef TLS_ABOVE_TP
+#ifdef TLS_ABOVE_TP
+	main_tls.offset = GAP_ABOVE_TP;
+	main_tls.offset += -GAP_ABOVE_TP & (main_tls.align-1);
+#else
 	main_tls.offset = main_tls.size;
 #endif
+	if (main_tls.align < MIN_TLS_ALIGN) main_tls.align = MIN_TLS_ALIGN;
 
 	libc.tls_align = main_tls.align;
 	libc.tls_size = 2*sizeof(void *) + sizeof(struct pthread)
+#ifdef TLS_ABOVE_TP
+		+ main_tls.offset
+#endif
 		+ main_tls.size + main_tls.align
 		+ MIN_TLS_ALIGN-1 & -MIN_TLS_ALIGN;
 

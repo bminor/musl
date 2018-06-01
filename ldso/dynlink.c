@@ -1594,8 +1594,9 @@ _Noreturn void __dls3(size_t *sp)
 		libc.tls_head = tls_tail = &app.tls;
 		app.tls_id = tls_cnt = 1;
 #ifdef TLS_ABOVE_TP
-		app.tls.offset = 0;
-		tls_offset = app.tls.size
+		app.tls.offset = GAP_ABOVE_TP;
+		app.tls.offset += -GAP_ABOVE_TP & (app.tls.align-1);
+		tls_offset = app.tls.offset + app.tls.size
 			+ ( -((uintptr_t)app.tls.image + app.tls.size)
 			& (app.tls.align-1) );
 #else
