@@ -461,7 +461,7 @@ size_t iconv(iconv_t cd, char **restrict in, size_t *restrict inb, char **restri
 					if (totype-0300U > 8) k = 2;
 					else k = "\10\4\4\10\4\4\10\2\4"[totype-0300];
 					if (k > *outb) goto toobig;
-					x += iconv(combine_to_from(to, 0),
+					x += iconv(combine_to_from(to, find_charmap("utf8")),
 						&(char *){"\303\212\314\204"
 						"\303\212\314\214"
 						"\303\252\314\204"
