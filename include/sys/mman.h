@@ -35,6 +35,7 @@ extern "C" {
 #define MAP_STACK      0x20000
 #define MAP_HUGETLB    0x40000
 #define MAP_SYNC       0x80000
+#define MAP_FIXED_NOREPLACE 0x100000
 #define MAP_FILE       0
 
 #define MAP_HUGE_SHIFT 26
