@@ -1129,7 +1129,25 @@ typedef struct {
 #define R_68K_GLOB_DAT	20
 #define R_68K_JMP_SLOT	21
 #define R_68K_RELATIVE	22
-#define R_68K_NUM	23
+#define R_68K_TLS_GD32	25
+#define R_68K_TLS_GD16	26
+#define R_68K_TLS_GD8	27
+#define R_68K_TLS_LDM32	28
+#define R_68K_TLS_LDM16	29
+#define R_68K_TLS_LDM8	30
+#define R_68K_TLS_LDO32	31
+#define R_68K_TLS_LDO16	32
+#define R_68K_TLS_LDO8	33
+#define R_68K_TLS_IE32	34
+#define R_68K_TLS_IE16	35
+#define R_68K_TLS_IE8	36
+#define R_68K_TLS_LE32	37
+#define R_68K_TLS_LE16	38
+#define R_68K_TLS_LE8	39
+#define R_68K_TLS_DTPMOD32	40
+#define R_68K_TLS_DTPREL32	41
+#define R_68K_TLS_TPREL32	42
+#define R_68K_NUM	43
 
 #define R_386_NONE	   0
 #define R_386_32	   1
