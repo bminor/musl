@@ -99,6 +99,10 @@ extern "C" {
 #define MREMAP_FIXED 2
 
 #define MLOCK_ONFAULT 0x01
+
+#define MFD_CLOEXEC 0x0001U
+#define MFD_ALLOW_SEALING 0x0002U
+#define MFD_HUGETLB 0x0004U
 #endif
 
 #include <bits/mman.h>
@@ -119,6 +123,7 @@ int munlockall (void);
 #ifdef _GNU_SOURCE
 void *mremap (void *, size_t, size_t, int, ...);
 int remap_file_pages (void *, size_t, int, size_t, int);
+int memfd_create (const char *, unsigned);
 int mlock2 (const void *, size_t, unsigned);
 #endif
 
