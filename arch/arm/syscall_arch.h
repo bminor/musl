@@ -103,3 +103,5 @@ static inline long __syscall6(long n, long a, long b, long c, long d, long e, lo
 #define VDSO_CGT_VER "LINUX_2.6"
 
 #define SYSCALL_FADVISE_6_ARG
+
+#define SYSCALL_IPC_BROKEN_MODE
