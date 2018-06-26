@@ -184,6 +184,10 @@ static int name_from_dns_search(struct address buf[static MAXADDRS], char canon[
 	for (dots=l=0; name[l]; l++) if (name[l]=='.') dots++;
 	if (dots >= conf.ndots || name[l-1]=='.') *search = 0;
 
+	/* Strip final dot for canon, fail if multiple trailing dots. */
+	if (name[l-1]=='.') l--;
+	if (!l || name[l-1]=='.') return EAI_NONAME;
+
 	/* This can never happen; the caller already checked length. */
 	if (l >= 256) return EAI_NONAME;
 
