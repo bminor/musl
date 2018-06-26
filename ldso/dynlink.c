@@ -706,18 +706,17 @@ static void *map_library(int fd, struct dso *dso)
 			dso->phnum = eh->e_phnum;
 			dso->phentsize = eh->e_phentsize;
 		}
-		/* Reuse the existing mapping for the lowest-address LOAD */
-		if ((ph->p_vaddr & -PAGE_SIZE) == addr_min && !DL_NOMMU_SUPPORT)
-			continue;
 		this_min = ph->p_vaddr & -PAGE_SIZE;
 		this_max = ph->p_vaddr+ph->p_memsz+PAGE_SIZE-1 & -PAGE_SIZE;
 		off_start = ph->p_offset & -PAGE_SIZE;
 		prot = (((ph->p_flags&PF_R) ? PROT_READ : 0) |
 			((ph->p_flags&PF_W) ? PROT_WRITE: 0) |
 			((ph->p_flags&PF_X) ? PROT_EXEC : 0));
-		if (mmap_fixed(base+this_min, this_max-this_min, prot, MAP_PRIVATE|MAP_FIXED, fd, off_start) == MAP_FAILED)
-			goto error;
-		if (ph->p_memsz > ph->p_filesz) {
+		/* Reuse the existing mapping for the lowest-address LOAD */
+		if ((ph->p_vaddr & -PAGE_SIZE) != addr_min || DL_NOMMU_SUPPORT)
+			if (mmap_fixed(base+this_min, this_max-this_min, prot, MAP_PRIVATE|MAP_FIXED, fd, off_start) == MAP_FAILED)
+				goto error;
+		if (ph->p_memsz > ph->p_filesz && (ph->p_flags&PF_W)) {
 			size_t brk = (size_t)base+ph->p_vaddr+ph->p_filesz;
 			size_t pgbrk = brk+PAGE_SIZE-1 & -PAGE_SIZE;
 			memset((void *)brk, 0, pgbrk-brk & PAGE_SIZE-1);
