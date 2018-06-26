@@ -183,6 +183,7 @@ struct linger {
 #define SO_RCVTIMEO     20
 #define SO_SNDTIMEO     21
 #define SO_ACCEPTCONN   30
+#define SO_PEERSEC      31
 #define SO_SNDBUFFORCE  32
 #define SO_RCVBUFFORCE  33
 #define SO_PROTOCOL     38
@@ -203,7 +204,6 @@ struct linger {
 #define SO_TIMESTAMP            29
 #define SCM_TIMESTAMP           SO_TIMESTAMP
 
-#define SO_PEERSEC              31
 #define SO_PASSSEC              34
 #define SO_TIMESTAMPNS          35
 #define SCM_TIMESTAMPNS         SO_TIMESTAMPNS
