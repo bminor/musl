@@ -1943,16 +1943,17 @@ failed:
 	return 0;
 }
 
-int dladdr(const void *addr, Dl_info *info)
+int dladdr(const void *addr_arg, Dl_info *info)
 {
+	size_t addr = (size_t)addr_arg;
 	struct dso *p;
 	Sym *sym, *bestsym;
 	uint32_t nsym;
 	char *strings;
-	void *best = 0;
+	size_t best = 0;
 
 	pthread_rwlock_rdlock(&lock);
-	p = addr2dso((size_t)addr);
+	p = addr2dso(addr);
 	pthread_rwlock_unlock(&lock);
 
 	if (!p) return 0;
@@ -1962,10 +1963,10 @@ int dladdr(const void *addr, Dl_info *info)
 	nsym = count_syms(p);
 
 	if (DL_FDPIC) {
-		size_t idx = ((size_t)addr-(size_t)p->funcdescs)
+		size_t idx = (addr-(size_t)p->funcdescs)
 			/ sizeof(*p->funcdescs);
 		if (idx < nsym && (sym[idx].st_info&0xf) == STT_FUNC) {
-			best = p->funcdescs + idx;
+			best = (size_t)(p->funcdescs + idx);
 			bestsym = sym + idx;
 		}
 	}
@@ -1974,7 +1975,7 @@ int dladdr(const void *addr, Dl_info *info)
 		if (sym->st_value
 		 && (1<<(sym->st_info&0xf) & OK_TYPES)
 		 && (1<<(sym->st_info>>4) & OK_BINDS)) {
-			void *symaddr = laddr(p, sym->st_value);
+			size_t symaddr = (size_t)laddr(p, sym->st_value);
 			if (symaddr > addr || symaddr < best)
 				continue;
 			best = symaddr;
@@ -1987,12 +1988,12 @@ int dladdr(const void *addr, Dl_info *info)
 	if (!best) return 0;
 
 	if (DL_FDPIC && (bestsym->st_info&0xf) == STT_FUNC)
-		best = p->funcdescs + (bestsym - p->syms);
+		best = (size_t)(p->funcdescs + (bestsym - p->syms));
 
 	info->dli_fname = p->name;
 	info->dli_fbase = p->map;
 	info->dli_sname = strings + bestsym->st_name;
-	info->dli_saddr = best;
+	info->dli_saddr = (void *)best;
 
 	return 1;
 }
