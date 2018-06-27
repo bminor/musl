@@ -1978,6 +1978,11 @@ int dladdr(const void *addr_arg, Dl_info *info)
 			size_t symaddr = (size_t)laddr(p, sym->st_value);
 			if (symaddr > addr || symaddr < best)
 				continue;
+			if (sym->st_size && symaddr+sym->st_size <= addr) {
+				best = 0;
+				bestsym = 0;
+				continue;
+			}
 			best = symaddr;
 			bestsym = sym;
 			if (addr == symaddr)
@@ -1985,13 +1990,17 @@ int dladdr(const void *addr_arg, Dl_info *info)
 		}
 	}
 
-	if (!best) return 0;
+	info->dli_fname = p->name;
+	info->dli_fbase = p->map;
+
+	if (!best) {
+		info->dli_sname = 0;
+		info->dli_saddr = 0;
+		return 1;
+	}
 
 	if (DL_FDPIC && (bestsym->st_info&0xf) == STT_FUNC)
 		best = (size_t)(p->funcdescs + (bestsym - p->syms));
-
-	info->dli_fname = p->name;
-	info->dli_fbase = p->map;
 	info->dli_sname = strings + bestsym->st_name;
 	info->dli_saddr = (void *)best;
 
