@@ -1978,7 +1978,7 @@ int dladdr(const void *addr_arg, Dl_info *info)
 		 && (1<<(sym->st_info&0xf) & OK_TYPES)
 		 && (1<<(sym->st_info>>4) & OK_BINDS)) {
 			size_t symaddr = (size_t)laddr(p, sym->st_value);
-			if (symaddr > addr || symaddr < best)
+			if (symaddr > addr || symaddr <= best)
 				continue;
 			best = symaddr;
 			bestsym = sym;
