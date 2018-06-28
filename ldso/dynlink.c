@@ -1951,6 +1951,7 @@ int dladdr(const void *addr_arg, Dl_info *info)
 	uint32_t nsym;
 	char *strings;
 	size_t best = 0;
+	size_t besterr = -1;
 
 	pthread_rwlock_rdlock(&lock);
 	p = addr2dso(addr);
@@ -1968,6 +1969,7 @@ int dladdr(const void *addr_arg, Dl_info *info)
 		if (idx < nsym && (sym[idx].st_info&0xf) == STT_FUNC) {
 			best = (size_t)(p->funcdescs + idx);
 			bestsym = sym + idx;
+			besterr = 0;
 		}
 	}
 
@@ -1978,16 +1980,17 @@ int dladdr(const void *addr_arg, Dl_info *info)
 			size_t symaddr = (size_t)laddr(p, sym->st_value);
 			if (symaddr > addr || symaddr < best)
 				continue;
-			if (sym->st_size && symaddr+sym->st_size <= addr) {
-				best = 0;
-				bestsym = 0;
-				continue;
-			}
 			best = symaddr;
 			bestsym = sym;
+			besterr = addr - symaddr;
 			if (addr == symaddr)
 				break;
 		}
+	}
+
+	if (bestsym && besterr > bestsym->st_size-1) {
+		best = 0;
+		bestsym = 0;
 	}
 
 	info->dli_fname = p->name;
