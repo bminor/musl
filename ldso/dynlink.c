@@ -1878,8 +1878,17 @@ static void *addr2dso(size_t a)
 					return p;
 			}
 		} else {
+			Phdr *ph = p->phdr;
+			size_t phcnt = p->phnum;
+			size_t entsz = p->phentsize;
+			size_t base = (size_t)p->base;
+			for (; phcnt--; ph=(void *)((char *)ph+entsz)) {
+				if (ph->p_type != PT_LOAD) continue;
+				if (a-base-ph->p_vaddr < ph->p_memsz)
+					return p;
+			}
 			if (a-(size_t)p->map < p->map_len)
-				return p;
+				return 0;
 		}
 	}
 	return 0;
