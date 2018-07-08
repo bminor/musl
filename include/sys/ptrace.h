@@ -88,6 +88,8 @@ extern "C" {
 
 #define PTRACE_PEEKSIGINFO_SHARED 1
 
+#include <bits/ptrace.h>
+
 struct __ptrace_peeksiginfo_args {
 	uint64_t off;
 	uint32_t flags;
