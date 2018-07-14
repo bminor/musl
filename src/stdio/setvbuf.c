@@ -14,7 +14,7 @@ int setvbuf(FILE *restrict f, char *restrict buf, int type, size_t size)
 		f->buf_size = 0;
 	} else {
 		if (buf && size >= UNGET) {
-			f->buf = (void *)buf;
+			f->buf = (void *)(buf + UNGET);
 			f->buf_size = size - UNGET;
 		}
 		if (type == _IOLBF && f->buf_size)
