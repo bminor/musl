@@ -385,6 +385,14 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 		sym_val = def.sym ? (size_t)laddr(def.dso, def.sym->st_value) : 0;
 		tls_val = def.sym ? def.sym->st_value : 0;
 
+		if ((type == REL_TPOFF || type == REL_TPOFF_NEG)
+		    && runtime && def.dso->tls_id > static_tls_cnt) {
+			error("Error relocating %s: %s: initial-exec TLS "
+				"resolves to dynamic definition in %s",
+				dso->name, name, def.dso->name);
+			longjmp(*rtld_fail, 1);
+		}
+
 		switch(type) {
 		case REL_NONE:
 			break;
