@@ -306,6 +306,7 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 
 	if (do_sched) {
 		__futexwait(&ssa.futex, -1, 1);
+		ret = ssa.futex;
 		if (ret) return ret;
 	}
 
