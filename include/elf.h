@@ -685,6 +685,7 @@ typedef struct {
 #define NT_METAG_RPIPE	0x501
 #define NT_METAG_TLS	0x502
 #define NT_ARC_V2	0x600
+#define NT_VMCOREDD	0x700
 #define NT_VERSION	1
 
 
