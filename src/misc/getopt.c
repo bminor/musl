@@ -84,18 +84,18 @@ int getopt(int argc, char * const argv[], const char *optstring)
 		return '?';
 	}
 	if (optstring[i] == ':') {
-		if (optstring[i+1] == ':') optarg = 0;
-		else if (optind >= argc) {
+		optarg = 0;
+		if (optstring[i+1] != ':' || optpos) {
+			optarg = argv[optind++] + optpos;
+			optpos = 0;
+		}
+		if (optind > argc) {
 			optopt = c;
 			if (optstring[0] == ':') return ':';
 			if (opterr) __getopt_msg(argv[0],
 				": option requires an argument: ",
 				optchar, k);
 			return '?';
-		}
-		if (optstring[i+1] != ':' || optpos) {
-			optarg = argv[optind++] + optpos;
-			optpos = 0;
 		}
 	}
 	return c;
