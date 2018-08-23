@@ -220,6 +220,7 @@ static int fmt_fp(FILE *f, long double y, int w, int p, int fl, int t)
 		else re=LDBL_MANT_DIG/4-1-p;
 
 		if (re) {
+			round *= 1<<(LDBL_MANT_DIG%4);
 			while (re--) round*=16;
 			if (*prefix=='-') {
 				y=-y;
