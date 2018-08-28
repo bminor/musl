@@ -112,6 +112,7 @@ FILE *fmemopen(void *restrict buf, size_t size, const char *restrict mode)
 	if (!plus) f->f.flags = (*mode == 'r') ? F_NOWR : F_NORD;
 	if (*mode == 'r') f->c.len = size;
 	else if (*mode == 'a') f->c.len = f->c.pos = strnlen(buf, size);
+	else if (plus) *f->c.buf = 0;
 
 	f->f.read = mread;
 	f->f.write = mwrite;
