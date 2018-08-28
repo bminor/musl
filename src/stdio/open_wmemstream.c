@@ -94,5 +94,7 @@ FILE *open_wmemstream(wchar_t **bufp, size_t *sizep)
 
 	if (!libc.threaded) f->f.lock = -1;
 
+	fwide(&f->f, 1);
+
 	return __ofl_add(&f->f);
 }

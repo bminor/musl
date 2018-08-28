@@ -89,6 +89,7 @@ FILE *open_memstream(char **bufp, size_t *sizep)
 	f->f.write = ms_write;
 	f->f.seek = ms_seek;
 	f->f.close = ms_close;
+	f->f.mode = -1;
 
 	if (!libc.threaded) f->f.lock = -1;
 
