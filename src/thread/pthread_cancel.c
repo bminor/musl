@@ -92,6 +92,10 @@ int pthread_cancel(pthread_t t)
 		init = 1;
 	}
 	a_store(&t->cancel, 1);
-	if (t == pthread_self() && !t->cancelasync) return 0;
+	if (t == pthread_self()) {
+		if (t->canceldisable == PTHREAD_CANCEL_ENABLE && t->cancelasync)
+			pthread_exit(PTHREAD_CANCELED);
+		return 0;
+	}
 	return pthread_kill(t, SIGCANCEL);
 }
