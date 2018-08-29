@@ -10,3 +10,8 @@ static inline struct pthread *__pthread_self()
 #define TP_ADJ(p) ((char *)(p) + sizeof(struct pthread))
 
 #define MC_PC sc_pc
+
+#ifdef __FDPIC__
+#define MC_GOT sc_regs[12]
+#define CANCEL_GOT (*(uintptr_t *)((char *)__syscall_cp_asm+sizeof(uintptr_t)))
+#endif

@@ -61,6 +61,9 @@ static void cancel_handler(int sig, siginfo_t *si, void *ctx)
 
 	if (self->cancelasync || pc >= (uintptr_t)__cp_begin && pc < (uintptr_t)__cp_end) {
 		uc->uc_mcontext.MC_PC = (uintptr_t)__cp_cancel;
+#ifdef CANCEL_GOT
+		uc->uc_mcontext.MC_GOT = CANCEL_GOT;
+#endif
 		return;
 	}
 
