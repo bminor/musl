@@ -674,9 +674,9 @@ int vfprintf(FILE *restrict f, const char *restrict fmt, va_list ap)
 	if (f->mode < 1) f->flags &= ~F_ERR;
 	if (!f->buf_size) {
 		saved_buf = f->buf;
-		f->wpos = f->wbase = f->buf = internal_buf;
+		f->buf = internal_buf;
 		f->buf_size = sizeof internal_buf;
-		f->wend = internal_buf + sizeof internal_buf;
+		f->wpos = f->wbase = f->wend = 0;
 	}
 	ret = printf_core(f, fmt, &ap2, nl_arg, nl_type);
 	if (saved_buf) {
