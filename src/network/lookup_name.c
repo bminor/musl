@@ -394,7 +394,7 @@ int __lookup_name(struct address buf[static MAXADDRS], char canon[static 256], c
 				key |= DAS_USABLE;
 				if (!getsockname(fd, sa, &salen)) {
 					if (family == AF_INET) memcpy(
-						&sa6.sin6_addr.s6_addr+12,
+						sa6.sin6_addr.s6_addr+12,
 						&sa4.sin_addr, 4);
 					if (dscope == scopeof(&sa6.sin6_addr))
 						key |= DAS_MATCHINGSCOPE;
