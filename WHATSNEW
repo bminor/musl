@@ -1919,7 +1919,7 @@ new features:
 - mlock2 syscall wrapper
 - memfd_create syscall wrapper
 - explicit_bzero function
-- header-level support for new linux features through 4.18 ??
+- header-level support for new linux features through 4.17
 - wcsftime now supports padding specifier extensions
 - dynamic linker's reclaim_gaps now works on fdpic archs
 - getaddrinfo now honors AI_ADDRCONFIG
