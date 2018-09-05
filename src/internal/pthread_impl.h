@@ -135,13 +135,9 @@ struct __timer {
 	((sigset_t *)(const unsigned long [_NSIG/8/sizeof(long)]){ \
 	 0x80000000 })
 
-pthread_t __pthread_self_init(void);
-
 int __clone(int (*)(void *), void *, int, void *, ...);
 int __set_thread_area(void *);
 int __libc_sigaction(int, const struct sigaction *, struct sigaction *);
-int __libc_sigprocmask(int, const sigset_t *, sigset_t *);
-void __lock(volatile int *);
 void __unmapself(void *, size_t);
 
 void __vm_wait(void);
