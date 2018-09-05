@@ -11,8 +11,7 @@ void __init_tls(size_t *);
 static void dummy(void) {}
 weak_alias(dummy, _init);
 
-__attribute__((__weak__, __visibility__("hidden")))
-extern void (*const __init_array_start)(void), (*const __init_array_end)(void);
+extern weak hidden void (*const __init_array_start)(void), (*const __init_array_end)(void);
 
 static void dummy1(void *p) {}
 weak_alias(dummy1, __init_ssp);

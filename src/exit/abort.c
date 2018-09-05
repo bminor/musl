@@ -6,8 +6,7 @@
 #include "libc.h"
 #include "ksigaction.h"
 
-__attribute__((__visibility__("hidden")))
-volatile int __abort_lock[1];
+hidden volatile int __abort_lock[1];
 
 _Noreturn void abort(void)
 {

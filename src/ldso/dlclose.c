@@ -1,7 +1,7 @@
 #include <dlfcn.h>
+#include "libc.h"
 
-__attribute__((__visibility__("hidden")))
-int __dl_invalid_handle(void *);
+hidden int __dl_invalid_handle(void *);
 
 int dlclose(void *p)
 {

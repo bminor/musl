@@ -99,8 +99,7 @@ int __init_tp(void *);
 void __init_libc(char **, char *);
 void *__copy_tls(unsigned char *);
 
-__attribute__((__visibility__("hidden")))
-const char *__libc_get_version(void);
+hidden const char *__libc_get_version(void);
 
 static struct builtin_tls {
 	char c;
@@ -133,14 +132,11 @@ static struct dso *const nodeps_dummy;
 
 struct debug *_dl_debug_addr = &debug;
 
-__attribute__((__visibility__("hidden")))
-extern int __malloc_replaced;
+extern hidden int __malloc_replaced;
 
-__attribute__((__visibility__("hidden")))
-void (*const __init_array_start)(void)=0, (*const __fini_array_start)(void)=0;
+hidden void (*const __init_array_start)(void)=0, (*const __fini_array_start)(void)=0;
 
-__attribute__((__visibility__("hidden")))
-extern void (*const __init_array_end)(void), (*const __fini_array_end)(void);
+extern hidden void (*const __init_array_end)(void), (*const __fini_array_end)(void);
 
 weak_alias(__init_array_start, __init_array_end);
 weak_alias(__fini_array_start, __fini_array_end);
@@ -306,8 +302,7 @@ static struct symdef find_sym(struct dso *dso, const char *s, int need_def)
 	return def;
 }
 
-__attribute__((__visibility__("hidden")))
-ptrdiff_t __tlsdesc_static(), __tlsdesc_dynamic();
+hidden ptrdiff_t __tlsdesc_static(), __tlsdesc_dynamic();
 
 static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stride)
 {
@@ -1332,8 +1327,7 @@ void __init_tls(size_t *auxv)
 {
 }
 
-__attribute__((__visibility__("hidden")))
-void *__tls_get_new(tls_mod_off_t *v)
+hidden void *__tls_get_new(tls_mod_off_t *v)
 {
 	pthread_t self = __pthread_self();
 
@@ -1401,8 +1395,7 @@ static void update_tls_size()
  * linker itself, but some of the relocations performed may need to be
  * replaced later due to copy relocations in the main program. */
 
-__attribute__((__visibility__("hidden")))
-void __dls2(unsigned char *base, size_t *sp)
+hidden void __dls2(unsigned char *base, size_t *sp)
 {
 	if (DL_FDPIC) {
 		void *p1 = (void *)sp[-2];
@@ -1860,8 +1853,7 @@ end:
 	return p;
 }
 
-__attribute__((__visibility__("hidden")))
-int __dl_invalid_handle(void *h)
+hidden int __dl_invalid_handle(void *h)
 {
 	struct dso *p;
 	for (p=head; p; p=p->next) if (h==p) return 0;
@@ -2027,8 +2019,7 @@ int dladdr(const void *addr_arg, Dl_info *info)
 	return 1;
 }
 
-__attribute__((__visibility__("hidden")))
-void *__dlsym(void *restrict p, const char *restrict s, void *restrict ra)
+hidden void *__dlsym(void *restrict p, const char *restrict s, void *restrict ra)
 {
 	void *res;
 	pthread_rwlock_rdlock(&lock);
@@ -2063,8 +2054,7 @@ int dl_iterate_phdr(int(*callback)(struct dl_phdr_info *info, size_t size, void 
 	return ret;
 }
 
-__attribute__((__visibility__("hidden")))
-void __dl_vseterr(const char *, va_list);
+hidden void __dl_vseterr(const char *, va_list);
 
 static void error(const char *fmt, ...)
 {

@@ -1,6 +1,8 @@
 #ifndef MALLOC_IMPL_H
 #define MALLOC_IMPL_H
 
+#include "libc.h"
+
 void *__mmap(void *, size_t, int, int, int, off_t);
 int __munmap(void *, size_t);
 void *__mremap(void *, size_t, size_t, int, ...);
@@ -36,10 +38,8 @@ struct bin {
 
 #define IS_MMAPPED(c) !((c)->csize & (C_INUSE))
 
-__attribute__((__visibility__("hidden")))
-void __bin_chunk(struct chunk *);
+hidden void __bin_chunk(struct chunk *);
 
-__attribute__((__visibility__("hidden")))
-extern int __malloc_replaced;
+hidden extern int __malloc_replaced;
 
 #endif

@@ -8,7 +8,8 @@
 
 volatile int dummy_lock[1] = { 0 };
 
-__attribute__((__visibility__("hidden")))
+extern hidden volatile int __abort_lock[1];
+
 weak_alias(dummy_lock, __abort_lock);
 
 static int unmask_done;

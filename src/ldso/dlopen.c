@@ -1,8 +1,7 @@
 #include <dlfcn.h>
 #include "libc.h"
 
-__attribute__((__visibility__("hidden")))
-void __dl_seterr(const char *, ...);
+hidden void __dl_seterr(const char *, ...);
 
 static void *stub_dlopen(const char *file, int mode)
 {

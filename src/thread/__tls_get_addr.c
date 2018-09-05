@@ -2,8 +2,7 @@
 #include "pthread_impl.h"
 #include "libc.h"
 
-__attribute__((__visibility__("hidden")))
-void *__tls_get_new(tls_mod_off_t *);
+hidden void *__tls_get_new(tls_mod_off_t *);
 
 void *__tls_get_addr(tls_mod_off_t *v)
 {

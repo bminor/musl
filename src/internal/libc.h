@@ -33,24 +33,21 @@ struct __libc {
 #define PAGE_SIZE libc.page_size
 #endif
 
-#ifdef __PIC__
-#define ATTR_LIBC_VISIBILITY __attribute__((visibility("hidden")))
-#else
-#define ATTR_LIBC_VISIBILITY
-#endif
+#define weak __attribute__((__weak__))
+#define hidden __attribute__((__visibility__("hidden")))
 
-extern struct __libc __libc ATTR_LIBC_VISIBILITY;
+extern hidden struct __libc __libc;
 #define libc __libc
 
-extern size_t __hwcap ATTR_LIBC_VISIBILITY;
-extern size_t __sysinfo ATTR_LIBC_VISIBILITY;
+extern hidden size_t __hwcap;
+extern hidden size_t __sysinfo;
 extern char *__progname, *__progname_full;
 
 /* Designed to avoid any overhead in non-threaded processes */
-void __lock(volatile int *) ATTR_LIBC_VISIBILITY;
-void __unlock(volatile int *) ATTR_LIBC_VISIBILITY;
-int __lockfile(FILE *) ATTR_LIBC_VISIBILITY;
-void __unlockfile(FILE *) ATTR_LIBC_VISIBILITY;
+hidden void __lock(volatile int *);
+hidden void __unlock(volatile int *);
+hidden int __lockfile(FILE *);
+hidden void __unlockfile(FILE *);
 #define LOCK(x) __lock(x)
 #define UNLOCK(x) __unlock(x)
 
@@ -61,7 +58,7 @@ extern char **__environ;
 
 #undef weak_alias
 #define weak_alias(old, new) \
-	extern __typeof(old) new __attribute__((weak, alias(#old)))
+	extern __typeof(old) new __attribute__((__weak__, __alias__(#old)))
 
 #undef LFS64_2
 #define LFS64_2(x, y) weak_alias(x, y)

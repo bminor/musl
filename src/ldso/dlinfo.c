@@ -1,11 +1,10 @@
 #define _GNU_SOURCE
 #include <dlfcn.h>
+#include "libc.h"
 
-__attribute__((__visibility__("hidden")))
-int __dl_invalid_handle(void *);
+hidden int __dl_invalid_handle(void *);
 
-__attribute__((__visibility__("hidden")))
-void __dl_seterr(const char *, ...);
+hidden void __dl_seterr(const char *, ...);
 
 int dlinfo(void *dso, int req, void *res)
 {
