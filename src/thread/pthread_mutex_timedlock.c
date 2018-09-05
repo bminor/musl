@@ -1,5 +1,7 @@
 #include "pthread_impl.h"
 
+int __pthread_mutex_trylock(pthread_mutex_t *);
+
 int __pthread_mutex_timedlock(pthread_mutex_t *restrict m, const struct timespec *restrict at)
 {
 	if ((m->_m_type&15) == PTHREAD_MUTEX_NORMAL
@@ -15,7 +17,7 @@ int __pthread_mutex_timedlock(pthread_mutex_t *restrict m, const struct timespec
 	int spins = 100;
 	while (spins-- && m->_m_lock && !m->_m_waiters) a_spin();
 
-	while ((r=pthread_mutex_trylock(m)) == EBUSY) {
+	while ((r=__pthread_mutex_trylock(m)) == EBUSY) {
 		if (!(r=m->_m_lock) || ((r&0x40000000) && (type&4)))
 			continue;
 		if ((type&3) == PTHREAD_MUTEX_ERRORCHECK
