@@ -99,8 +99,6 @@ int __init_tp(void *);
 void __init_libc(char **, char *);
 void *__copy_tls(unsigned char *);
 
-hidden const char *__libc_get_version(void);
-
 static struct builtin_tls {
 	char c;
 	struct pthread pt;
@@ -1562,7 +1560,7 @@ _Noreturn void __dls3(size_t *sp)
 				"Version %s\n"
 				"Dynamic Program Loader\n"
 				"Usage: %s [options] [--] pathname%s\n",
-				__libc_get_version(), ldname,
+				__libc_version, ldname,
 				ldd_mode ? "" : " [args]");
 			_exit(1);
 		}

@@ -43,6 +43,8 @@ extern hidden size_t __hwcap;
 extern hidden size_t __sysinfo;
 extern char *__progname, *__progname_full;
 
+extern hidden const char __libc_version[];
+
 /* Designed to avoid any overhead in non-threaded processes */
 hidden void __lock(volatile int *);
 hidden void __unlock(volatile int *);
