@@ -7,8 +7,6 @@
 
 #ifdef VDSO_CGT_SYM
 
-void *__vdsosym(const char *, const char *);
-
 static void *volatile vdso_func;
 
 static int cgt_init(clockid_t clk, struct timespec *ts)
