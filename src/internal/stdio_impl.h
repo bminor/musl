@@ -80,6 +80,11 @@ FILE *__ofl_add(FILE *f);
 FILE **__ofl_lock(void);
 void __ofl_unlock(void);
 
+struct __pthread;
+void __register_locked_file(FILE *, struct __pthread *);
+void __unlist_locked_file(FILE *);
+void __do_orphaned_stdio_locks(void);
+
 #define feof(f) ((f)->flags & F_EOF)
 #define ferror(f) ((f)->flags & F_ERR)
 
