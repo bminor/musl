@@ -8,6 +8,10 @@ int __munmap(void *, size_t);
 void *__mremap(void *, size_t, size_t, int, ...);
 int __madvise(void *, size_t, int);
 
+void *__expand_heap(size_t *);
+
+void __malloc_donate(char *, char *);
+
 struct chunk {
 	size_t psize, csize;
 	struct chunk *next, *prev;

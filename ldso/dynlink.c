@@ -20,6 +20,7 @@
 #include "pthread_impl.h"
 #include "libc.h"
 #include "dynlink.h"
+#include "malloc_impl.h"
 
 static void error(const char *, ...);
 
@@ -500,7 +501,6 @@ static void redo_lazy_relocs()
 
 static void reclaim(struct dso *dso, size_t start, size_t end)
 {
-	void __malloc_donate(char *, char *);
 	if (start >= dso->relro_start && start < dso->relro_end) start = dso->relro_end;
 	if (end   >= dso->relro_start && end   < dso->relro_end) end = dso->relro_start;
 	if (start >= end) return;
