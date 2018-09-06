@@ -1,4 +1,5 @@
 #include "stdio_impl.h"
+#include <stdio_ext.h>
 
 size_t __freadahead(FILE *f)
 {
