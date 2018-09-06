@@ -4,8 +4,6 @@
 #include "syscall.h"
 #include "libc.h"
 
-void __procfdname(char *, unsigned);
-
 int fstat(int fd, struct stat *st)
 {
 	int ret = __syscall(SYS_fstat, fd, st);

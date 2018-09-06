@@ -4,8 +4,6 @@
 #include <fcntl.h>
 #include "syscall.h"
 
-void __procfdname(char *, unsigned);
-
 int fexecve(int fd, char *const argv[], char *const envp[])
 {
 	int r = __syscall(SYS_execveat, fd, "", argv, envp, AT_EMPTY_PATH);
