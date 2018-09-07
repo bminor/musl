@@ -5,7 +5,7 @@
 #include "atomic.h"
 #include "libc.h"
 
-const char *__nl_langinfo_l(nl_item, locale_t);
+char *__nl_langinfo_l(nl_item, locale_t);
 
 char *__asctime_r(const struct tm *restrict tm, char *restrict buf)
 {

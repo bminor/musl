@@ -9,7 +9,7 @@
 #include "libc.h"
 #include "time_impl.h"
 
-const char *__nl_langinfo_l(nl_item, locale_t);
+char *__nl_langinfo_l(nl_item, locale_t);
 
 static int is_leap(int y)
 {
