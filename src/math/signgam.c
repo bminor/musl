@@ -1,4 +1,5 @@
 #include <math.h>
+#include "libm.h"
 #include "libc.h"
 
 int __signgam = 0;

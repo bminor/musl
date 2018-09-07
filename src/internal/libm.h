@@ -192,4 +192,8 @@ long double __tanl(long double, long double, int);
 long double __polevll(long double, const long double *, int);
 long double __p1evll(long double, const long double *, int);
 
+extern int __signgam;
+double __lgamma_r(double, int *);
+float __lgammaf_r(float, int *);
+
 #endif
