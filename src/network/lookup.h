@@ -36,4 +36,6 @@ int __lookup_ipliteral(struct address buf[static 1], const char *name, int famil
 
 int __get_resolv_conf(struct resolvconf *, char *, size_t);
 
+int __dns_parse(const unsigned char *, int, int (*)(void *, int, const void *, int, const void *), void *);
+
 #endif
