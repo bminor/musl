@@ -1,10 +1,11 @@
 #include <threads.h>
+#include <pthread.h>
 
-int __private_cond_signal(cnd_t *, int);
+int __private_cond_signal(pthread_cond_t *, int);
 
 int cnd_broadcast(cnd_t *c)
 {
 	/* This internal function never fails, and always returns zero,
 	 * which matches the value thrd_success is defined with. */
-	return __private_cond_signal(c, -1);
+	return __private_cond_signal((pthread_cond_t *)c, -1);
 }
