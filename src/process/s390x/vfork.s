@@ -5,4 +5,5 @@
 __vfork:
 vfork:
 	svc 190
+	.hidden __syscall_ret
 	jg  __syscall_ret

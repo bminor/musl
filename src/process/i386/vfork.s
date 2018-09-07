@@ -9,6 +9,7 @@ vfork:
 	int $128
 	push %edx
 	push %eax
+	.hidden __syscall_ret
 	call __syscall_ret
 	pop %edx
 	ret

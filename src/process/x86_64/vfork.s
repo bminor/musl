@@ -9,4 +9,5 @@ vfork:
 	syscall
 	push %rdx
 	mov %rax,%rdi
+	.hidden __syscall_ret
 	jmp __syscall_ret
