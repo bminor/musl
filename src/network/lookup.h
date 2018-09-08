@@ -35,6 +35,7 @@ int __lookup_name(struct address buf[static MAXADDRS], char canon[static 256], c
 int __lookup_ipliteral(struct address buf[static 1], const char *name, int family);
 
 int __get_resolv_conf(struct resolvconf *, char *, size_t);
+int __res_msend_rc(int, const unsigned char *const *, const int *, unsigned char *const *, int *, int, const struct resolvconf *);
 
 int __dns_parse(const unsigned char *, int, int (*)(void *, int, const void *, int, const void *), void *);
 

@@ -100,7 +100,6 @@ struct dpc_ctx {
 
 int __dn_expand(const unsigned char *, const unsigned char *, const unsigned char *, char *, int);
 int __res_mkquery(int, const char *, int, int, const unsigned char *, int, const unsigned char*, unsigned char *, int);
-int __res_msend_rc(int, const unsigned char *const *, const int *, unsigned char *const *, int *, int, const struct resolvconf *);
 
 #define RR_A 1
 #define RR_CNAME 5
