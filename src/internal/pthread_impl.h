@@ -135,6 +135,12 @@ struct __timer {
 	((sigset_t *)(const unsigned long [_NSIG/8/sizeof(long)]){ \
 	 0x80000000 })
 
+void *__tls_get_addr(tls_mod_off_t *);
+hidden void *__tls_get_new(tls_mod_off_t *);
+int __init_tp(void *);
+void *__copy_tls(unsigned char *);
+void __reset_tls();
+
 int __clone(int (*)(void *), void *, int, void *, ...);
 int __set_thread_area(void *);
 int __libc_sigaction(int, const struct sigaction *, struct sigaction *);

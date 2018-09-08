@@ -96,9 +96,7 @@ struct symdef {
 	struct dso *dso;
 };
 
-int __init_tp(void *);
 void __init_libc(char **, char *);
-void *__copy_tls(unsigned char *);
 
 static struct builtin_tls {
 	char c;
@@ -1891,8 +1889,6 @@ static void *addr2dso(size_t a)
 	}
 	return 0;
 }
-
-void *__tls_get_addr(tls_mod_off_t *);
 
 static void *do_dlsym(struct dso *p, const char *s, void *ra)
 {

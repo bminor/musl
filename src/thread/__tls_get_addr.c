@@ -2,8 +2,6 @@
 #include "pthread_impl.h"
 #include "libc.h"
 
-hidden void *__tls_get_new(tls_mod_off_t *);
-
 void *__tls_get_addr(tls_mod_off_t *v)
 {
 	pthread_t self = __pthread_self();
