@@ -61,6 +61,8 @@ size_t __string_read(FILE *, unsigned char *, size_t);
 int __toread(FILE *);
 int __towrite(FILE *);
 
+void __stdio_exit_needed(void);
+
 #if defined(__PIC__) && (100*__GNUC__+__GNUC_MINOR__ >= 303)
 __attribute__((visibility("protected")))
 #endif
