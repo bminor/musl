@@ -23,6 +23,7 @@ const struct __locale_map *__get_locale(int, const char *);
 const char *__mo_lookup(const void *, size_t, const char *);
 const char *__lctrans(const char *, const struct __locale_map *);
 const char *__lctrans_cur(const char *);
+int __loc_is_allocated(locale_t);
 
 #define LCTRANS(msg, lc, loc) __lctrans(msg, (loc)->cat[(lc)])
 #define LCTRANS_CUR(msg) __lctrans_cur(msg)
