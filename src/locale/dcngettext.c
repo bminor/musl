@@ -8,6 +8,7 @@
 #include "locale_impl.h"
 #include "libc.h"
 #include "atomic.h"
+#include "pleval.h"
 
 struct binding {
 	struct binding *next;
@@ -114,7 +115,6 @@ weak_alias(dummy_gettextdomain, __gettextdomain);
 
 const unsigned char *__map_file(const char *, size_t *);
 int __munmap(void *, size_t);
-unsigned long __pleval(const char *, unsigned long);
 
 char *dcngettext(const char *domainname, const char *msgid1, const char *msgid2, unsigned long int n, int category)
 {
