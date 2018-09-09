@@ -299,8 +299,6 @@ static struct symdef find_sym(struct dso *dso, const char *s, int need_def)
 	return def;
 }
 
-hidden ptrdiff_t __tlsdesc_static(), __tlsdesc_dynamic();
-
 static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stride)
 {
 	unsigned char *base = dso->base;
@@ -2047,8 +2045,6 @@ int dl_iterate_phdr(int(*callback)(struct dl_phdr_info *info, size_t size, void 
 	}
 	return ret;
 }
-
-hidden void __dl_vseterr(const char *, va_list);
 
 static void error(const char *fmt, ...)
 {

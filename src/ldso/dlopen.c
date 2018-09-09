@@ -1,7 +1,6 @@
 #include <dlfcn.h>
+#include "dynlink.h"
 #include "libc.h"
-
-hidden void __dl_seterr(const char *, ...);
 
 static void *stub_dlopen(const char *file, int mode)
 {

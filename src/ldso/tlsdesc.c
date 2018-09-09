@@ -1,7 +1,6 @@
 #include <stddef.h>
+#include <dynlink.h>
 #include "libc.h"
-
-hidden ptrdiff_t __tlsdesc_static(), __tlsdesc_dynamic();
 
 ptrdiff_t __tlsdesc_static()
 {

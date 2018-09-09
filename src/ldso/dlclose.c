@@ -1,7 +1,6 @@
 #include <dlfcn.h>
+#include "dynlink.h"
 #include "libc.h"
-
-hidden int __dl_invalid_handle(void *);
 
 int dlclose(void *p)
 {

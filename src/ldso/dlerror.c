@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include "pthread_impl.h"
+#include "dynlink.h"
 #include "libc.h"
 
 char *dlerror()
@@ -49,8 +50,6 @@ hidden void __dl_seterr(const char *fmt, ...)
 	__dl_vseterr(fmt, ap);
 	va_end(ap);
 }
-
-hidden int __dl_invalid_handle(void *);
 
 static int stub_invalid_handle(void *h)
 {

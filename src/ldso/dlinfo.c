@@ -1,10 +1,7 @@
 #define _GNU_SOURCE
 #include <dlfcn.h>
+#include "dynlink.h"
 #include "libc.h"
-
-hidden int __dl_invalid_handle(void *);
-
-hidden void __dl_seterr(const char *, ...);
 
 int dlinfo(void *dso, int req, void *res)
 {
