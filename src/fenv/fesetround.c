@@ -1,8 +1,9 @@
 #include <fenv.h>
+#include "libc.h"
 
 /* __fesetround wrapper for arch independent argument check */
 
-int __fesetround(int);
+hidden int __fesetround(int);
 
 int fesetround(int r)
 {
