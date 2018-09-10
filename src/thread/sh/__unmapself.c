@@ -1,7 +1,7 @@
 #include "pthread_impl.h"
 
-void __unmapself_sh_mmu(void *, size_t);
-void __unmapself_sh_nommu(void *, size_t);
+hidden void __unmapself_sh_mmu(void *, size_t);
+hidden void __unmapself_sh_nommu(void *, size_t);
 
 #if !defined(__SH3__) && !defined(__SH4__)
 #define __unmapself __unmapself_sh_nommu
