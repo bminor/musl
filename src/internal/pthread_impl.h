@@ -141,7 +141,7 @@ int __init_tp(void *);
 void *__copy_tls(unsigned char *);
 void __reset_tls();
 
-int __clone(int (*)(void *), void *, int, void *, ...);
+hidden int __clone(int (*)(void *), void *, int, void *, ...);
 int __set_thread_area(void *);
 int __libc_sigaction(int, const struct sigaction *, struct sigaction *);
 void __unmapself(void *, size_t);
