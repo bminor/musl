@@ -38,7 +38,11 @@ extern hidden struct __libc __libc;
 
 hidden void __init_libc(char **, char *);
 hidden void __init_tls(size_t *);
+hidden void __init_ssp(void *);
 hidden void __libc_start_init(void);
+hidden void __funcs_on_exit(void);
+hidden void __funcs_on_quick_exit(void);
+hidden void __libc_exit_fini(void);
 
 extern hidden size_t __hwcap;
 extern hidden size_t __sysinfo;
