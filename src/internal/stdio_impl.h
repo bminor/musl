@@ -87,6 +87,8 @@ void __register_locked_file(FILE *, struct __pthread *);
 void __unlist_locked_file(FILE *);
 void __do_orphaned_stdio_locks(void);
 
+void __getopt_msg(const char *, const char *, const char *, size_t);
+
 #define feof(f) ((f)->flags & F_EOF)
 #define ferror(f) ((f)->flags & F_ERR)
 
