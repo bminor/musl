@@ -4,11 +4,11 @@
 #include "libc.h"
 #include <sys/mman.h>
 
-void *__expand_heap(size_t *);
+hidden void *__expand_heap(size_t *);
 
-void __malloc_donate(char *, char *);
+hidden void __malloc_donate(char *, char *);
 
-void *__memalign(size_t, size_t);
+hidden void *__memalign(size_t, size_t);
 
 struct chunk {
 	size_t psize, csize;

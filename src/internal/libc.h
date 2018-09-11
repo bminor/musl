@@ -36,9 +36,9 @@ struct __libc {
 extern hidden struct __libc __libc;
 #define libc __libc
 
-void __init_libc(char **, char *);
-void __init_tls(size_t *);
-void __libc_start_init(void);
+hidden void __init_libc(char **, char *);
+hidden void __init_tls(size_t *);
+hidden void __libc_start_init(void);
 
 extern hidden size_t __hwcap;
 extern hidden size_t __sysinfo;
@@ -54,8 +54,8 @@ hidden void __unlockfile(FILE *);
 #define LOCK(x) __lock(x)
 #define UNLOCK(x) __unlock(x)
 
-void __synccall(void (*)(void *), void *);
-int __setxid(int, int, int, int);
+hidden void __synccall(void (*)(void *), void *);
+hidden int __setxid(int, int, int, int);
 
 #undef LFS64_2
 #define LFS64_2(x, y) weak_alias(x, y)

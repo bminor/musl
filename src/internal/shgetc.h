@@ -1,7 +1,7 @@
 #include "stdio_impl.h"
 
-void __shlim(FILE *, off_t);
-int __shgetc(FILE *);
+hidden void __shlim(FILE *, off_t);
+hidden int __shgetc(FILE *);
 
 #define shcnt(f) ((f)->shcnt + ((f)->rpos - (f)->rend))
 #define shlim(f, lim) __shlim((f), (lim))
