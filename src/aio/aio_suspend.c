@@ -5,8 +5,6 @@
 #include "libc.h"
 #include "pthread_impl.h"
 
-extern volatile int __aio_fut;
-
 int aio_suspend(const struct aiocb *const cbs[], int cnt, const struct timespec *ts)
 {
 	int i, tid = 0, ret, expect = 0;

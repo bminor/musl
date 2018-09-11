@@ -142,6 +142,18 @@ hidden int __init_tp(void *);
 hidden void *__copy_tls(unsigned char *);
 hidden void __reset_tls();
 
+hidden void __dl_thread_cleanup(void);
+hidden void __fork_handler(int);
+hidden void __testcancel();
+hidden void __do_cleanup_push(struct __ptcb *);
+hidden void __do_cleanup_pop(struct __ptcb *);
+hidden void __pthread_tsd_run_dtors();
+
+extern hidden volatile int __block_new_threads;
+extern hidden volatile size_t __pthread_tsd_size;
+extern hidden void *__pthread_tsd_main[];
+extern hidden volatile int __aio_fut;
+
 hidden int __clone(int (*)(void *), void *, int, void *, ...);
 hidden int __set_thread_area(void *);
 hidden int __libc_sigaction(int, const struct sigaction *, struct sigaction *);
@@ -167,6 +179,9 @@ static inline void __futexwait(volatile void *addr, int val, int priv)
 hidden void __acquire_ptc(void);
 hidden void __release_ptc(void);
 hidden void __inhibit_ptc(void);
+
+extern hidden size_t __default_stacksize;
+extern hidden size_t __default_guardsize;
 
 #define DEFAULT_STACK_SIZE 81920
 #define DEFAULT_GUARD_SIZE 4096
