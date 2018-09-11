@@ -12,6 +12,8 @@ void *__expand_heap(size_t *);
 
 void __malloc_donate(char *, char *);
 
+void *__memalign(size_t, size_t);
+
 struct chunk {
 	size_t psize, csize;
 	struct chunk *next, *prev;
