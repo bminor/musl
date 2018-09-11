@@ -5,8 +5,9 @@
 
 extern char **__environ;
 
-int __dup3(int, int, int);
-int __mkostemps(char *, int, int);
-int __execvpe(const char *, char *const *, char *const *);
+hidden int __dup3(int, int, int);
+hidden int __mkostemps(char *, int, int);
+hidden int __execvpe(const char *, char *const *, char *const *);
+hidden int __aio_close(int);
 
 #endif

@@ -2,7 +2,8 @@
 #define SYS_SYSINFO_H
 
 #include "../../../include/sys/sysinfo.h"
+#include <features.h>
 
-int __lsysinfo(struct sysinfo *);
+hidden int __lsysinfo(struct sysinfo *);
 
 #endif

@@ -3,6 +3,6 @@
 
 #include "../../../include/arpa/inet.h"
 
-int __inet_aton(const char *, struct in_addr *);
+hidden int __inet_aton(const char *, struct in_addr *);
 
 #endif
