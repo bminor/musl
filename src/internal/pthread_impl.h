@@ -138,18 +138,18 @@ struct __timer {
 
 void *__tls_get_addr(tls_mod_off_t *);
 hidden void *__tls_get_new(tls_mod_off_t *);
-int __init_tp(void *);
-void *__copy_tls(unsigned char *);
-void __reset_tls();
+hidden int __init_tp(void *);
+hidden void *__copy_tls(unsigned char *);
+hidden void __reset_tls();
 
 hidden int __clone(int (*)(void *), void *, int, void *, ...);
 hidden int __set_thread_area(void *);
-int __libc_sigaction(int, const struct sigaction *, struct sigaction *);
-void __unmapself(void *, size_t);
+hidden int __libc_sigaction(int, const struct sigaction *, struct sigaction *);
+hidden void __unmapself(void *, size_t);
 
-int __timedwait(volatile int *, int, clockid_t, const struct timespec *, int);
-int __timedwait_cp(volatile int *, int, clockid_t, const struct timespec *, int);
-void __wait(volatile int *, volatile int *, int, int);
+hidden int __timedwait(volatile int *, int, clockid_t, const struct timespec *, int);
+hidden int __timedwait_cp(volatile int *, int, clockid_t, const struct timespec *, int);
+hidden void __wait(volatile int *, volatile int *, int, int);
 static inline void __wake(volatile void *addr, int cnt, int priv)
 {
 	if (priv) priv = FUTEX_PRIVATE;
@@ -164,9 +164,9 @@ static inline void __futexwait(volatile void *addr, int val, int priv)
 	__syscall(SYS_futex, addr, FUTEX_WAIT, val, 0);
 }
 
-void __acquire_ptc(void);
-void __release_ptc(void);
-void __inhibit_ptc(void);
+hidden void __acquire_ptc(void);
+hidden void __release_ptc(void);
+hidden void __inhibit_ptc(void);
 
 #define DEFAULT_STACK_SIZE 81920
 #define DEFAULT_GUARD_SIZE 4096
