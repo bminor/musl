@@ -3,7 +3,7 @@
 #include "syscall.h"
 #include "libc.h"
 
-int __statfs(const char *path, struct statfs *buf)
+static int __statfs(const char *path, struct statfs *buf)
 {
 	*buf = (struct statfs){0};
 #ifdef SYS_statfs64
@@ -13,7 +13,7 @@ int __statfs(const char *path, struct statfs *buf)
 #endif
 }
 
-int __fstatfs(int fd, struct statfs *buf)
+static int __fstatfs(int fd, struct statfs *buf)
 {
 	*buf = (struct statfs){0};
 #ifdef SYS_fstatfs64

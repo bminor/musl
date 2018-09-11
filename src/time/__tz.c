@@ -398,7 +398,7 @@ dst:
 	UNLOCK(lock);
 }
 
-void __tzset()
+static void __tzset()
 {
 	LOCK(lock);
 	do_tzset();

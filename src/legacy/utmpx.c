@@ -36,7 +36,7 @@ void updwtmpx(const char *f, const struct utmpx *u)
 {
 }
 
-int __utmpxname(const char *f)
+static int __utmpxname(const char *f)
 {
 	errno = ENOTSUP;
 	return -1;
