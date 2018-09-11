@@ -5,8 +5,6 @@
 #include "atomic.h"
 #include "libc.h"
 
-char *__nl_langinfo_l(nl_item, locale_t);
-
 char *__asctime_r(const struct tm *restrict tm, char *restrict buf)
 {
 	if (snprintf(buf, 26, "%.3s %.3s%3d %.2d:%.2d:%.2d %d\n",

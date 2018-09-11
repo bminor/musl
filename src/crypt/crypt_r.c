@@ -1,14 +1,6 @@
 #include <crypt.h>
 #include "libc.h"
 
-struct crypt_data;
-
-char *__crypt_des(const char *, const char *, char *);
-char *__crypt_md5(const char *, const char *, char *);
-char *__crypt_blowfish(const char *, const char *, char *);
-char *__crypt_sha256(const char *, const char *, char *);
-char *__crypt_sha512(const char *, const char *, char *);
-
 char *__crypt_r(const char *key, const char *salt, struct crypt_data *data)
 {
 	/* Per the crypt_r API, the caller has provided a pointer to

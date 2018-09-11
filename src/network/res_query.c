@@ -2,9 +2,6 @@
 #include <netdb.h>
 #include "libc.h"
 
-int __res_mkquery(int, const char *, int, int, const unsigned char *, int, const unsigned char*, unsigned char *, int);
-int __res_send(const unsigned char *, int, unsigned char *, int);
-
 int __res_query(const char *name, int class, int type, unsigned char *dest, int len)
 {
 	unsigned char q[280];

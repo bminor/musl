@@ -96,8 +96,6 @@ struct symdef {
 	struct dso *dso;
 };
 
-void __init_libc(char **, char *);
-
 static struct builtin_tls {
 	char c;
 	struct pthread pt;

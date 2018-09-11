@@ -5,6 +5,7 @@
 #include <signal.h>
 #include <errno.h>
 #include <limits.h>
+#include <sys/mman.h>
 #include "libc.h"
 #include "syscall.h"
 #include "atomic.h"
@@ -146,10 +147,6 @@ hidden int __set_thread_area(void *);
 int __libc_sigaction(int, const struct sigaction *, struct sigaction *);
 void __unmapself(void *, size_t);
 
-void __vm_wait(void);
-void __vm_lock(void);
-void __vm_unlock(void);
-
 int __timedwait(volatile int *, int, clockid_t, const struct timespec *, int);
 int __timedwait_cp(volatile int *, int, clockid_t, const struct timespec *, int);
 void __wait(volatile int *, volatile int *, int, int);
@@ -170,10 +167,6 @@ static inline void __futexwait(volatile void *addr, int val, int priv)
 void __acquire_ptc(void);
 void __release_ptc(void);
 void __inhibit_ptc(void);
-
-void __block_all_sigs(void *);
-void __block_app_sigs(void *);
-void __restore_sigs(void *);
 
 #define DEFAULT_STACK_SIZE 81920
 #define DEFAULT_GUARD_SIZE 4096

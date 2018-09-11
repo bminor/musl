@@ -13,8 +13,6 @@
 #include <pthread.h>
 #include "libc.h"
 
-char *__shm_mapname(const char *, char *);
-
 static struct {
 	ino_t ino;
 	sem_t *sem;

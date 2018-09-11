@@ -33,11 +33,12 @@ struct __libc {
 #define PAGE_SIZE libc.page_size
 #endif
 
-#define weak __attribute__((__weak__))
-#define hidden __attribute__((__visibility__("hidden")))
-
 extern hidden struct __libc __libc;
 #define libc __libc
+
+void __init_libc(char **, char *);
+void __init_tls(size_t *);
+void __libc_start_init(void);
 
 extern hidden size_t __hwcap;
 extern hidden size_t __sysinfo;
@@ -55,12 +56,6 @@ hidden void __unlockfile(FILE *);
 
 void __synccall(void (*)(void *), void *);
 int __setxid(int, int, int, int);
-
-extern char **__environ;
-
-#undef weak_alias
-#define weak_alias(old, new) \
-	extern __typeof(old) new __attribute__((__weak__, __alias__(#old)))
 
 #undef LFS64_2
 #define LFS64_2(x, y) weak_alias(x, y)

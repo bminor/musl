@@ -6,10 +6,6 @@
 #include <string.h>
 #include <stddef.h>
 
-void *__mmap(void *, size_t, int, int, int, off_t);
-int __munmap(void *, size_t);
-int __mprotect(void *, size_t, int);
-
 static void dummy_0()
 {
 }

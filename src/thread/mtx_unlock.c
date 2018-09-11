@@ -1,8 +1,6 @@
 #include <threads.h>
 #include <pthread.h>
 
-int __pthread_mutex_unlock(pthread_mutex_t *);
-
 int mtx_unlock(mtx_t *mtx)
 {
 	/* The only cases where pthread_mutex_unlock can return an

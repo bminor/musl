@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 #include <stdlib.h>
+#include <unistd.h>
 #include "libc.h"
 
 static void dummy(char *old, char *new) {}

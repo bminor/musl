@@ -6,8 +6,6 @@
 #include <errno.h>
 #include "libc.h"
 
-char *__randname(char *);
-
 int __mkostemps(char *template, int len, int flags)
 {
 	size_t l = strlen(template);

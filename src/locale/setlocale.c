@@ -17,8 +17,6 @@ static char *setlocale_one_unlocked(int cat, const char *name)
 	return lm ? (char *)lm->name : "C";
 }
 
-char *__strchrnul(const char *, int);
-
 char *setlocale(int cat, const char *name)
 {
 	static volatile int lock[1];

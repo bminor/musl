@@ -5,9 +5,6 @@
 #include "syscall.h"
 #include "pthread_impl.h"
 
-int __pthread_setcancelstate(int, int *);
-int __clock_gettime(clockid_t, struct timespec *);
-
 int __timedwait_cp(volatile int *addr, int val,
 	clockid_t clk, const struct timespec *at, int priv)
 {

@@ -1,10 +1,6 @@
 #include "pthread_impl.h"
 #include <sys/mman.h>
 
-int __munmap(void *, size_t);
-void __pthread_testcancel(void);
-int __pthread_setcancelstate(int, int *);
-
 static int __pthread_timedjoin_np(pthread_t t, void **res, const struct timespec *at)
 {
 	int state, cs, r = 0;

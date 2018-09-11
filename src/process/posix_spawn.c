@@ -19,8 +19,6 @@ struct args {
 	char *const *argv, *const *envp;
 };
 
-void __get_handler_set(sigset_t *);
-
 static int __sys_dup2(int old, int new)
 {
 #ifdef SYS_dup2

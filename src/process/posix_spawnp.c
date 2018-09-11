@@ -1,8 +1,6 @@
 #include <spawn.h>
 #include <unistd.h>
 
-int __execvpe(const char *, char *const *, char *const *);
-
 int posix_spawnp(pid_t *restrict res, const char *restrict file,
 	const posix_spawn_file_actions_t *fa,
 	const posix_spawnattr_t *restrict attr,

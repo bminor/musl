@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <limits.h>
 #include <sys/stat.h>
+#include <sys/mman.h>
 #include <ctype.h>
 #include "locale_impl.h"
 #include "libc.h"
@@ -112,9 +113,6 @@ static char *dummy_gettextdomain()
 }
 
 weak_alias(dummy_gettextdomain, __gettextdomain);
-
-const unsigned char *__map_file(const char *, size_t *);
-int __munmap(void *, size_t);
 
 char *dcngettext(const char *domainname, const char *msgid1, const char *msgid2, unsigned long int n, int category)
 {

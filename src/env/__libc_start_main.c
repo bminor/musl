@@ -2,11 +2,10 @@
 #include <poll.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <unistd.h>
 #include "syscall.h"
 #include "atomic.h"
 #include "libc.h"
-
-void __init_tls(size_t *);
 
 static void dummy(void) {}
 weak_alias(dummy, _init);

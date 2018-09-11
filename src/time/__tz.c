@@ -3,6 +3,7 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
 #include "libc.h"
 
 long  __timezone = 0;
@@ -112,8 +113,6 @@ static size_t zi_dotprod(const unsigned char *z, const unsigned char *v, size_t 
 	}
 	return y;
 }
-
-int __munmap(void *, size_t);
 
 static void do_tzset()
 {

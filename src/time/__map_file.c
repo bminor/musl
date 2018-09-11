@@ -3,8 +3,6 @@
 #include <sys/stat.h>
 #include "syscall.h"
 
-void *__mmap(void *, size_t, int, int, int, off_t);
-
 const char unsigned *__map_file(const char *pathname, size_t *size)
 {
 	struct stat st;

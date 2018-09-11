@@ -9,8 +9,6 @@
 #include "libc.h"
 #include "time_impl.h"
 
-char *__nl_langinfo_l(nl_item, locale_t);
-
 static int is_leap(int y)
 {
 	/* Avoid overflow */
@@ -44,8 +42,6 @@ static int week_num(const struct tm *tm)
 	}
 	return val;
 }
-
-size_t __strftime_l(char *restrict, size_t, const char *restrict, const struct tm *restrict, locale_t);
 
 const char *__strftime_fmt_1(char (*s)[100], size_t *l, int f, const struct tm *tm, locale_t loc, int pad)
 {

@@ -2,11 +2,7 @@
 #define MALLOC_IMPL_H
 
 #include "libc.h"
-
-void *__mmap(void *, size_t, int, int, int, off_t);
-int __munmap(void *, size_t);
-void *__mremap(void *, size_t, size_t, int, ...);
-int __madvise(void *, size_t, int);
+#include <sys/mman.h>
 
 void *__expand_heap(size_t *);
 
