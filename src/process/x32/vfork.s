@@ -1,8 +1,5 @@
-.global __vfork
-.weak vfork
-.type __vfork,@function
+.global vfork
 .type vfork,@function
-__vfork:
 vfork:
 	pop %rdx
 	mov $0x4000003a,%eax /* SYS_vfork */

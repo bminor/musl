@@ -1,9 +1,6 @@
 .syntax unified
-.global __vfork
-.weak vfork
-.type __vfork,%function
+.global vfork
 .type vfork,%function
-__vfork:
 vfork:
 	mov ip, r7
 	mov r7, 190
