@@ -50,44 +50,44 @@ struct _IO_FILE {
 	struct __locale_struct *locale;
 };
 
-size_t __stdio_read(FILE *, unsigned char *, size_t);
-size_t __stdio_write(FILE *, const unsigned char *, size_t);
-size_t __stdout_write(FILE *, const unsigned char *, size_t);
-off_t __stdio_seek(FILE *, off_t, int);
-int __stdio_close(FILE *);
+hidden size_t __stdio_read(FILE *, unsigned char *, size_t);
+hidden size_t __stdio_write(FILE *, const unsigned char *, size_t);
+hidden size_t __stdout_write(FILE *, const unsigned char *, size_t);
+hidden off_t __stdio_seek(FILE *, off_t, int);
+hidden int __stdio_close(FILE *);
 
-size_t __string_read(FILE *, unsigned char *, size_t);
+hidden size_t __string_read(FILE *, unsigned char *, size_t);
 
-int __toread(FILE *);
-int __towrite(FILE *);
+hidden int __toread(FILE *);
+hidden int __towrite(FILE *);
 
-void __stdio_exit_needed(void);
+hidden void __stdio_exit_needed(void);
 
 #if defined(__PIC__) && (100*__GNUC__+__GNUC_MINOR__ >= 303)
 __attribute__((visibility("protected")))
 #endif
 int __overflow(FILE *, int), __uflow(FILE *);
 
-int __fseeko(FILE *, off_t, int);
-int __fseeko_unlocked(FILE *, off_t, int);
-off_t __ftello(FILE *);
-off_t __ftello_unlocked(FILE *);
-size_t __fwritex(const unsigned char *, size_t, FILE *);
-int __putc_unlocked(int, FILE *);
+hidden int __fseeko(FILE *, off_t, int);
+hidden int __fseeko_unlocked(FILE *, off_t, int);
+hidden off_t __ftello(FILE *);
+hidden off_t __ftello_unlocked(FILE *);
+hidden size_t __fwritex(const unsigned char *, size_t, FILE *);
+hidden int __putc_unlocked(int, FILE *);
 
-FILE *__fdopen(int, const char *);
-int __fmodeflags(const char *);
+hidden FILE *__fdopen(int, const char *);
+hidden int __fmodeflags(const char *);
 
-FILE *__ofl_add(FILE *f);
-FILE **__ofl_lock(void);
-void __ofl_unlock(void);
+hidden FILE *__ofl_add(FILE *f);
+hidden FILE **__ofl_lock(void);
+hidden void __ofl_unlock(void);
 
 struct __pthread;
-void __register_locked_file(FILE *, struct __pthread *);
-void __unlist_locked_file(FILE *);
-void __do_orphaned_stdio_locks(void);
+hidden void __register_locked_file(FILE *, struct __pthread *);
+hidden void __unlist_locked_file(FILE *);
+hidden void __do_orphaned_stdio_locks(void);
 
-void __getopt_msg(const char *, const char *, const char *, size_t);
+hidden void __getopt_msg(const char *, const char *, const char *, size_t);
 
 #define feof(f) ((f)->flags & F_EOF)
 #define ferror(f) ((f)->flags & F_ERR)
@@ -100,7 +100,7 @@ void __getopt_msg(const char *, const char *, const char *, size_t);
 	? *(f)->wpos++ = (c) : __overflow((f),(c)) )
 
 /* Caller-allocated FILE * operations */
-FILE *__fopen_rb_ca(const char *, FILE *, unsigned char *, size_t);
-int __fclose_ca(FILE *);
+hidden FILE *__fopen_rb_ca(const char *, FILE *, unsigned char *, size_t);
+hidden int __fclose_ca(FILE *);
 
 #endif
