@@ -5,6 +5,7 @@
 #include <string.h>
 #include <sys/mman.h>
 #include "libc.h"
+#include "lock.h"
 
 long  __timezone = 0;
 int   __daylight = 0;

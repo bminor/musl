@@ -9,6 +9,7 @@
 #include "locale_impl.h"
 #include "atomic.h"
 #include "pleval.h"
+#include "lock.h"
 
 struct binding {
 	struct binding *next;

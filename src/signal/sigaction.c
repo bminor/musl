@@ -4,6 +4,7 @@
 #include "syscall.h"
 #include "pthread_impl.h"
 #include "libc.h"
+#include "lock.h"
 #include "ksigaction.h"
 
 volatile int dummy_lock[1] = { 0 };

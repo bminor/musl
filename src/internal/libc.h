@@ -51,12 +51,6 @@ extern char *__progname, *__progname_full;
 
 extern hidden const char __libc_version[];
 
-/* Designed to avoid any overhead in non-threaded processes */
-hidden void __lock(volatile int *);
-hidden void __unlock(volatile int *);
-#define LOCK(x) __lock(x)
-#define UNLOCK(x) __unlock(x)
-
 hidden void __synccall(void (*)(void *), void *);
 hidden int __setxid(int, int, int, int);
 

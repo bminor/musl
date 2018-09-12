@@ -3,7 +3,7 @@
 #include <string.h>
 #include "locale_impl.h"
 #include "libc.h"
-#include "atomic.h"
+#include "lock.h"
 
 static char buf[LC_ALL*(LOCALE_NAME_MAX+1)];
 

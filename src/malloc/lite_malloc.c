@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <limits.h>
 #include <errno.h>
-#include "libc.h"
+#include "lock.h"
 #include "malloc_impl.h"
 
 #define ALIGN 16

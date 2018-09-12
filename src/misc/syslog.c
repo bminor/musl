@@ -9,7 +9,7 @@
 #include <pthread.h>
 #include <errno.h>
 #include <fcntl.h>
-#include "libc.h"
+#include "lock.h"
 
 static volatile int lock[1];
 static char log_ident[32];

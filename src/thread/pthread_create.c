@@ -2,6 +2,7 @@
 #include "pthread_impl.h"
 #include "stdio_impl.h"
 #include "libc.h"
+#include "lock.h"
 #include <sys/mman.h>
 #include <string.h>
 #include <stddef.h>

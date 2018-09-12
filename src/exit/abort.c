@@ -3,7 +3,7 @@
 #include "syscall.h"
 #include "pthread_impl.h"
 #include "atomic.h"
-#include "libc.h"
+#include "lock.h"
 #include "ksigaction.h"
 
 hidden volatile int __abort_lock[1];

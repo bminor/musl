@@ -11,7 +11,7 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <pthread.h>
-#include "libc.h"
+#include "lock.h"
 
 static struct {
 	ino_t ino;
