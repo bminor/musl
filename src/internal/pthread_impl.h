@@ -143,7 +143,6 @@ hidden void *__copy_tls(unsigned char *);
 hidden void __reset_tls();
 
 hidden void __dl_thread_cleanup(void);
-hidden void __fork_handler(int);
 hidden void __testcancel();
 hidden void __do_cleanup_push(struct __ptcb *);
 hidden void __do_cleanup_pop(struct __ptcb *);
