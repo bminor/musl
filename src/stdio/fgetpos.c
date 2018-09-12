@@ -1,5 +1,4 @@
 #include "stdio_impl.h"
-#include "libc.h"
 
 int fgetpos(FILE *restrict f, fpos_t *restrict pos)
 {
@@ -9,4 +8,4 @@ int fgetpos(FILE *restrict f, fpos_t *restrict pos)
 	return 0;
 }
 
-LFS64(fgetpos);
+weak_alias(fgetpos, fgetpos64);

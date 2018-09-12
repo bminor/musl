@@ -7,7 +7,6 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <stddef.h>
-#include "libc.h"
 
 struct match
 {
@@ -240,5 +239,5 @@ void globfree(glob_t *g)
 	g->gl_pathv = NULL;
 }
 
-LFS64(glob);
-LFS64(globfree);
+weak_alias(glob, glob64);
+weak_alias(globfree, globfree64);

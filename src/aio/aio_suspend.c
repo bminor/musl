@@ -73,4 +73,4 @@ int aio_suspend(const struct aiocb *const cbs[], int cnt, const struct timespec 
 	}
 }
 
-LFS64(aio_suspend);
+weak_alias(aio_suspend, aio_suspend64);

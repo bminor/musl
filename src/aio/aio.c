@@ -370,9 +370,9 @@ int __aio_close(int fd)
 	return fd;
 }
 
-LFS64(aio_cancel);
-LFS64(aio_error);
-LFS64(aio_fsync);
-LFS64(aio_read);
-LFS64(aio_write);
-LFS64(aio_return);
+weak_alias(aio_cancel, aio_cancel64);
+weak_alias(aio_error, aio_error64);
+weak_alias(aio_fsync, aio_fsync64);
+weak_alias(aio_read, aio_read64);
+weak_alias(aio_write, aio_write64);
+weak_alias(aio_return, aio_return64);

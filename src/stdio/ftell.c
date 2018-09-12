@@ -1,7 +1,6 @@
 #include "stdio_impl.h"
 #include <limits.h>
 #include <errno.h>
-#include "libc.h"
 
 off_t __ftello_unlocked(FILE *f)
 {
@@ -35,4 +34,4 @@ long ftell(FILE *f)
 
 weak_alias(__ftello, ftello);
 
-LFS64(ftello);
+weak_alias(ftello, ftello64);

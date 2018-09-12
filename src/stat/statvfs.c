@@ -1,7 +1,6 @@
 #include <sys/statvfs.h>
 #include <sys/statfs.h>
 #include "syscall.h"
-#include "libc.h"
 
 static int __statfs(const char *path, struct statfs *buf)
 {
@@ -58,7 +57,7 @@ int fstatvfs(int fd, struct statvfs *buf)
 	return 0;
 }
 
-LFS64(statvfs);
-LFS64(statfs);
-LFS64(fstatvfs);
-LFS64(fstatfs);
+weak_alias(statvfs, statvfs64);
+weak_alias(statfs, statfs64);
+weak_alias(fstatvfs, fstatvfs64);
+weak_alias(fstatfs, fstatfs64);

@@ -1,5 +1,4 @@
 #include "stdio_impl.h"
-#include "libc.h"
 
 int __fseeko_unlocked(FILE *f, off_t off, int whence)
 {
@@ -41,4 +40,4 @@ int fseek(FILE *f, long off, int whence)
 
 weak_alias(__fseeko, fseeko);
 
-LFS64(fseeko);
+weak_alias(fseeko, fseeko64);

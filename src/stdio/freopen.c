@@ -1,7 +1,6 @@
 #include "stdio_impl.h"
 #include <fcntl.h>
 #include <unistd.h>
-#include "libc.h"
 
 /* The basic idea of this implementation is to open a new FILE,
  * hack the necessary parts of the new FILE into the old one, then
@@ -51,4 +50,4 @@ fail:
 	return NULL;
 }
 
-LFS64(freopen);
+weak_alias(freopen, freopen64);

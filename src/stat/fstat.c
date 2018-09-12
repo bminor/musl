@@ -2,7 +2,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include "syscall.h"
-#include "libc.h"
 
 int fstat(int fd, struct stat *st)
 {
@@ -19,4 +18,4 @@ int fstat(int fd, struct stat *st)
 #endif
 }
 
-LFS64(fstat);
+weak_alias(fstat, fstat64);

@@ -59,10 +59,4 @@ hidden void __unlock(volatile int *);
 hidden void __synccall(void (*)(void *), void *);
 hidden int __setxid(int, int, int, int);
 
-#undef LFS64_2
-#define LFS64_2(x, y) weak_alias(x, y)
-
-#undef LFS64
-#define LFS64(x) LFS64_2(x, x##64)
-
 #endif

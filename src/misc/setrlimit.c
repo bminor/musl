@@ -47,4 +47,4 @@ int setrlimit(int resource, const struct rlimit *rlim)
 	return 0;
 }
 
-LFS64(setrlimit);
+weak_alias(setrlimit, setrlimit64);

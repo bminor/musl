@@ -2,7 +2,6 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
-#include "libc.h"
 
 FILE *fopen(const char *restrict filename, const char *restrict mode)
 {
@@ -31,4 +30,4 @@ FILE *fopen(const char *restrict filename, const char *restrict mode)
 	return 0;
 }
 
-LFS64(fopen);
+weak_alias(fopen, fopen64);
