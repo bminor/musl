@@ -1,5 +1,4 @@
 #include <resolv.h>
-#include "libc.h"
 
 int __res_send(const unsigned char *msg, int msglen, unsigned char *answer, int anslen)
 {

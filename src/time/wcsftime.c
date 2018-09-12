@@ -3,7 +3,6 @@
 #include <locale.h>
 #include "locale_impl.h"
 #include "time_impl.h"
-#include "libc.h"
 
 size_t __wcsftime_l(wchar_t *restrict s, size_t n, const wchar_t *restrict f, const struct tm *restrict tm, locale_t loc)
 {

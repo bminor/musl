@@ -3,7 +3,6 @@
 #include <stdarg.h>
 #include "pthread_impl.h"
 #include "dynlink.h"
-#include "libc.h"
 
 char *dlerror()
 {

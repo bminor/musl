@@ -2,7 +2,6 @@
 #include <errno.h>
 #include <time.h>
 #include "atomic.h"
-#include "libc.h"
 #include "pthread_impl.h"
 
 int aio_suspend(const struct aiocb *const cbs[], int cnt, const struct timespec *ts)

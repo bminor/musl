@@ -1,4 +1,5 @@
 #include "stdio_impl.h"
+#include "libc.h"
 
 int fgetpos(FILE *restrict f, fpos_t *restrict pos)
 {

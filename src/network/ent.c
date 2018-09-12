@@ -1,5 +1,4 @@
 #include <netdb.h>
-#include "libc.h"
 
 void sethostent(int x)
 {

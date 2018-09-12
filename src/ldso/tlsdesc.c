@@ -1,6 +1,5 @@
 #include <stddef.h>
 #include <dynlink.h>
-#include "libc.h"
 
 ptrdiff_t __tlsdesc_static()
 {

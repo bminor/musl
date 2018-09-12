@@ -2,7 +2,6 @@
 #include <utmpx.h>
 #include <stddef.h>
 #include <errno.h>
-#include "libc.h"
 
 void endutxent(void)
 {

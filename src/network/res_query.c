@@ -1,6 +1,5 @@
 #include <resolv.h>
 #include <netdb.h>
-#include "libc.h"
 
 int res_query(const char *name, int class, int type, unsigned char *dest, int len)
 {

@@ -1,7 +1,6 @@
 #ifndef MALLOC_IMPL_H
 #define MALLOC_IMPL_H
 
-#include "libc.h"
 #include <sys/mman.h>
 
 hidden void *__expand_heap(size_t *);

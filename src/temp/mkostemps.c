@@ -4,7 +4,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
-#include "libc.h"
 
 int __mkostemps(char *template, int len, int flags)
 {

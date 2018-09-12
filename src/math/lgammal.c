@@ -87,7 +87,6 @@
 
 #define _GNU_SOURCE
 #include "libm.h"
-#include "libc.h"
 
 #if LDBL_MANT_DIG == 53 && LDBL_MAX_EXP == 1024
 long double __lgammal_r(long double x, int *sg)

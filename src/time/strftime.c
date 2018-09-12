@@ -6,7 +6,6 @@
 #include <time.h>
 #include <limits.h>
 #include "locale_impl.h"
-#include "libc.h"
 #include "time_impl.h"
 
 static int is_leap(int y)

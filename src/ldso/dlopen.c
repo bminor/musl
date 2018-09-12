@@ -1,6 +1,5 @@
 #include <dlfcn.h>
 #include "dynlink.h"
-#include "libc.h"
 
 static void *stub_dlopen(const char *file, int mode)
 {

@@ -8,7 +8,6 @@
 #include "syscall.h"
 #include "pthread_impl.h"
 #include "fdop.h"
-#include "libc.h"
 
 struct args {
 	int p[2];

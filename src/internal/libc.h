@@ -53,8 +53,6 @@ extern hidden const char __libc_version[];
 /* Designed to avoid any overhead in non-threaded processes */
 hidden void __lock(volatile int *);
 hidden void __unlock(volatile int *);
-hidden int __lockfile(FILE *);
-hidden void __unlockfile(FILE *);
 #define LOCK(x) __lock(x)
 #define UNLOCK(x) __unlock(x)
 

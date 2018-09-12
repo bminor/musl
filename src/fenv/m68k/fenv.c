@@ -1,5 +1,5 @@
 #include <fenv.h>
-#include "libc.h"
+#include <features.h>
 
 #if __HAVE_68881__ || __mcffpu__
 

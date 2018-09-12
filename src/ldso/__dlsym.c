@@ -1,6 +1,5 @@
 #include <dlfcn.h>
 #include "dynlink.h"
-#include "libc.h"
 
 static void *stub_dlsym(void *restrict p, const char *restrict s, void *restrict ra)
 {

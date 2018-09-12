@@ -5,7 +5,7 @@
 #include <elf.h>
 #include <stdint.h>
 #include <stddef.h>
-#include "libc.h"
+#include <stdarg.h>
 
 #if UINTPTR_MAX == 0xffffffff
 typedef Elf32_Ehdr Ehdr;

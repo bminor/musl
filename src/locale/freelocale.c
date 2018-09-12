@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include "locale_impl.h"
-#include "libc.h"
 
 void freelocale(locale_t l)
 {

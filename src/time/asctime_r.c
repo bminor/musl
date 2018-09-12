@@ -3,7 +3,6 @@
 #include <langinfo.h>
 #include "locale_impl.h"
 #include "atomic.h"
-#include "libc.h"
 
 char *__asctime_r(const struct tm *restrict tm, char *restrict buf)
 {

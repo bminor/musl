@@ -1,5 +1,5 @@
 #include <sys/syscall.h>
-#include "libc.h"
+#include <features.h>
 
 hidden long __syscall_cp_internal(volatile void*, long long, long long,
                                   long long, long long, long long,

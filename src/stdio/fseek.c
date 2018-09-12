@@ -1,4 +1,5 @@
 #include "stdio_impl.h"
+#include "libc.h"
 
 int __fseeko_unlocked(FILE *f, off_t off, int whence)
 {

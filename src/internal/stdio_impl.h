@@ -3,7 +3,6 @@
 
 #include <stdio.h>
 #include "syscall.h"
-#include "libc.h"
 
 #define UNGET 8
 
@@ -53,6 +52,9 @@ struct _IO_FILE {
 extern hidden FILE *volatile __stdin_used;
 extern hidden FILE *volatile __stdout_used;
 extern hidden FILE *volatile __stderr_used;
+
+hidden int __lockfile(FILE *);
+hidden void __unlockfile(FILE *);
 
 hidden size_t __stdio_read(FILE *, unsigned char *, size_t);
 hidden size_t __stdio_write(FILE *, const unsigned char *, size_t);

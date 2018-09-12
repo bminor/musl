@@ -1,7 +1,6 @@
 #include <setjmp.h>
 #include <signal.h>
 #include "syscall.h"
-#include "libc.h"
 
 hidden int __sigsetjmp_tail(sigjmp_buf jb, int ret)
 {

@@ -3,7 +3,6 @@
 #include <string.h>
 #include <limits.h>
 #include <stdlib.h>
-#include "libc.h"
 #include "locale_impl.h"
 #include "stdio_impl.h"
 

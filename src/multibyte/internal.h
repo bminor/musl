@@ -1,7 +1,7 @@
 #define bittab __fsmu8
 
 #include <stdint.h>
-#include "libc.h"
+#include <features.h>
 
 extern hidden const uint32_t bittab[];
 

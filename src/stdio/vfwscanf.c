@@ -11,7 +11,6 @@
 #include "shgetc.h"
 #include "intscan.h"
 #include "floatscan.h"
-#include "libc.h"
 
 #define SIZE_hh -2
 #define SIZE_h  -1

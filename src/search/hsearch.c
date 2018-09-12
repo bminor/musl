@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <search.h>
-#include "libc.h"
 
 /*
 open addressing hash table with 2^n table size

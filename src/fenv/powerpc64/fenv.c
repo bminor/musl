@@ -1,6 +1,6 @@
 #define _GNU_SOURCE
 #include <fenv.h>
-#include "libc.h"
+#include <features.h>
 
 static inline double get_fpscr_f(void)
 {

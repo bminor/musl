@@ -1,5 +1,5 @@
 #include <fenv.h>
-#include "libc.h"
+#include <features.h>
 
 static inline unsigned get_fpc(void)
 {

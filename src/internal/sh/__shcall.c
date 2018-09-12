@@ -1,4 +1,4 @@
-#include "libc.h"
+#include <features.h>
 
 hidden int __shcall(void *arg, int (*func)(void *))
 {

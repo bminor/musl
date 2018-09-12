@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include "libc.h"
+#include <features.h>
 
 hidden void *__fdpic_fixup(void *map, uintptr_t *a, uintptr_t *z)
 {

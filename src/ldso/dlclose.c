@@ -1,6 +1,5 @@
 #include <dlfcn.h>
 #include "dynlink.h"
-#include "libc.h"
 
 int dlclose(void *p)
 {

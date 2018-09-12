@@ -1,7 +1,6 @@
 #define _GNU_SOURCE
 #include <dlfcn.h>
 #include "dynlink.h"
-#include "libc.h"
 
 int dlinfo(void *dso, int req, void *res)
 {

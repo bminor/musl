@@ -1,8 +1,8 @@
 #ifndef _INTERNAL_SYSCALL_H
 #define _INTERNAL_SYSCALL_H
 
+#include <features.h>
 #include <sys/syscall.h>
-#include "libc.h"
 #include "syscall_arch.h"
 
 #ifndef SYSCALL_RLIM_INFINITY

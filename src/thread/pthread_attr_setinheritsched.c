@@ -1,6 +1,5 @@
 #include "pthread_impl.h"
 #include "syscall.h"
-#include "libc.h"
 
 hidden void *__start_sched(void *p)
 {

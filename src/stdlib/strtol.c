@@ -4,7 +4,6 @@
 #include <inttypes.h>
 #include <limits.h>
 #include <ctype.h>
-#include "libc.h"
 
 static unsigned long long strtox(const char *s, char **p, int base, unsigned long long lim)
 {

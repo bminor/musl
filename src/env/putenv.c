@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "libc.h"
 
 static void dummy(char *old, char *new) {}
 weak_alias(dummy, __env_rm_add);

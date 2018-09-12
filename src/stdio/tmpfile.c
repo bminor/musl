@@ -2,6 +2,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include "stdio_impl.h"
+#include "libc.h"
 
 #define MAXTRIES 100
 

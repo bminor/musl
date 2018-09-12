@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "locale_impl.h"
-#include "libc.h"
 
 int __loc_is_allocated(locale_t loc)
 {

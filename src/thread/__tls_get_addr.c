@@ -1,6 +1,5 @@
 #include <stddef.h>
 #include "pthread_impl.h"
-#include "libc.h"
 
 void *__tls_get_addr(tls_mod_off_t *v)
 {

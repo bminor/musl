@@ -2,7 +2,6 @@
 #include <errno.h>
 #include <stdint.h>
 #include "syscall.h"
-#include "libc.h"
 #include "atomic.h"
 
 #ifdef VDSO_CGT_SYM

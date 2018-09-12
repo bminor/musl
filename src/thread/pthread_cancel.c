@@ -2,7 +2,6 @@
 #include <string.h>
 #include "pthread_impl.h"
 #include "syscall.h"
-#include "libc.h"
 
 hidden long __cancel(), __syscall_cp_asm(), __syscall_cp_c();
 

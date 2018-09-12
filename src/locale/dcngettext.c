@@ -7,7 +7,6 @@
 #include <sys/mman.h>
 #include <ctype.h>
 #include "locale_impl.h"
-#include "libc.h"
 #include "atomic.h"
 #include "pleval.h"
 

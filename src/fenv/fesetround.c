@@ -1,5 +1,5 @@
 #include <fenv.h>
-#include "libc.h"
+#include <features.h>
 
 /* __fesetround wrapper for arch independent argument check */
 

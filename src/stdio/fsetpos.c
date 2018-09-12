@@ -1,4 +1,5 @@
 #include "stdio_impl.h"
+#include "libc.h"
 
 int fsetpos(FILE *f, const fpos_t *pos)
 {

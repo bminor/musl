@@ -7,7 +7,6 @@
 #include <stdlib.h>
 #include "syscall.h"
 #include "atomic.h"
-#include "libc.h"
 #include "pthread_impl.h"
 
 /* The following is a threads-based implementation of AIO with minimal
