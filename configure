@@ -507,7 +507,7 @@ tryflag CFLAGS_AUTO -Werror=pointer-arith
 # parameter to stop printing warnings about LDFLAGS passed during
 # compiling stage and CFLAGS passed during linking stage.
 #
-tryflag CFLAGS_AUTO -Qunused-arguments
+test "$cc_family" = clang && tryflag CFLAGS_AUTO -Qunused-arguments
 
 if test "x$warnings" = xyes ; then
 tryflag CFLAGS_AUTO -Wall
