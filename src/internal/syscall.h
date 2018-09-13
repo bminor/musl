@@ -244,7 +244,7 @@ hidden long __syscall_ret(unsigned long), __syscall(syscall_arg_t, ...),
 #define __sys_open_cp(...) __SYSCALL_DISP(__sys_open_cp,,__VA_ARGS__)
 #define sys_open_cp(...) __syscall_ret(__sys_open_cp(__VA_ARGS__))
 
-hidden void __procfdname(char [static 15+3*sizeof(int)], unsigned);
+hidden void __procfdname(char __buf[static 15+3*sizeof(int)], unsigned);
 
 hidden void *__vdsosym(const char *, const char *);
 
