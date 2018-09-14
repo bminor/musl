@@ -100,8 +100,8 @@ struct msgcat {
 	struct msgcat *next;
 	const void *map;
 	size_t map_size;
-	void *volatile plural_rule;
-	volatile int nplurals;
+	const char *plural_rule;
+	int nplurals;
 	struct binding *binding;
 	const struct __locale_map *lm;
 	int cat;
@@ -200,20 +200,7 @@ notrans:
 		p->lm = lm;
 		p->map = map;
 		p->map_size = map_size;
-		do {
-			old_cats = cats;
-			p->next = old_cats;
-		} while (a_cas_p(&cats, old_cats, p) != old_cats);
-	}
 
-	const char *trans = __mo_lookup(p->map, p->map_size, msgid1);
-	if (!trans) goto notrans;
-
-	/* Non-plural-processing gettext forms pass a null pointer as
-	 * msgid2 to request that dcngettext suppress plural processing. */
-	if (!msgid2) return (char *)trans;
-
-	if (!p->plural_rule) {
 		const char *rule = "n!=1;";
 		unsigned long np = 2;
 		const char *r = __mo_lookup(p->map, p->map_size, "");
@@ -237,10 +224,22 @@ notrans:
 					rule = r+7;
 			}
 		}
-		a_store(&p->nplurals, np);
-		a_cas_p(&p->plural_rule, 0, (void *)rule);
+		p->nplurals = np;
+		p->plural_rule = rule;
+
+		do {
+			old_cats = cats;
+			p->next = old_cats;
+		} while (a_cas_p(&cats, old_cats, p) != old_cats);
 	}
-	if (p->nplurals) {
+
+	const char *trans = __mo_lookup(p->map, p->map_size, msgid1);
+	if (!trans) goto notrans;
+
+	/* Non-plural-processing gettext forms pass a null pointer as
+	 * msgid2 to request that dcngettext suppress plural processing. */
+
+	if (msgid2 && p->nplurals) {
 		unsigned long plural = __pleval(p->plural_rule, n);
 		if (plural > p->nplurals) goto notrans;
 		while (plural--) {
