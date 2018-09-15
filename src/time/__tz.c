@@ -130,6 +130,8 @@ static void do_tzset()
 
 	if (old_tz && !strcmp(s, old_tz)) return;
 
+	for (i=0; i<5; i++) r0[i] = r1[i] = 0;
+
 	if (zi) __munmap((void *)zi, map_size);
 
 	/* Cache the old value of TZ to check if it has changed. Avoid
@@ -194,7 +196,6 @@ static void do_tzset()
 			const unsigned char *p;
 			__tzname[0] = __tzname[1] = 0;
 			__daylight = __timezone = dst_off = 0;
-			for (i=0; i<5; i++) r0[i] = r1[i] = 0;
 			for (p=types; p<abbrevs; p+=6) {
 				if (!p[4] && !__tzname[0]) {
 					__tzname[0] = (char *)abbrevs + p[5];
