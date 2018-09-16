@@ -25,8 +25,13 @@ ssize_t getdelim(char **restrict s, size_t *restrict n, int delim, FILE *restric
 	if (!*s) *n=0;
 
 	for (;;) {
-		z = memchr(f->rpos, delim, f->rend - f->rpos);
-		k = z ? z - f->rpos + 1 : f->rend - f->rpos;
+		if (f->rpos != f->rend) {
+			z = memchr(f->rpos, delim, f->rend - f->rpos);
+			k = z ? z - f->rpos + 1 : f->rend - f->rpos;
+		} else {
+			z = 0;
+			k = 0;
+		}
 		if (i+k+1 >= *n) {
 			if (k >= SIZE_MAX/2-i) goto oom;
 			size_t m = i+k+2;
