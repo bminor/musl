@@ -15,6 +15,7 @@ ssize_t getdelim(char **restrict s, size_t *restrict n, int delim, FILE *restric
 	FLOCK(f);
 
 	if (!n || !s) {
+		f->mode |= f->mode-1;
 		f->flags |= F_ERR;
 		FUNLOCK(f);
 		errno = EINVAL;
@@ -58,6 +59,7 @@ ssize_t getdelim(char **restrict s, size_t *restrict n, int delim, FILE *restric
 
 	return i;
 oom:
+	f->mode |= f->mode-1;
 	f->flags |= F_ERR;
 	FUNLOCK(f);
 	errno = ENOMEM;
