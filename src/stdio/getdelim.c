@@ -32,15 +32,25 @@ ssize_t getdelim(char **restrict s, size_t *restrict n, int delim, FILE *restric
 			z = 0;
 			k = 0;
 		}
-		if (i+k+1 >= *n) {
-			if (k >= SIZE_MAX/2-i) goto oom;
+		if (i+k >= *n) {
 			size_t m = i+k+2;
 			if (!z && m < SIZE_MAX/4) m += m/2;
 			tmp = realloc(*s, m);
 			if (!tmp) {
 				m = i+k+2;
 				tmp = realloc(*s, m);
-				if (!tmp) goto oom;
+				if (!tmp) {
+					/* Copy as much as fits and ensure no
+					 * pushback remains in the FILE buf. */
+					k = *n-i;
+					memcpy(*s+i, f->rpos, k);
+					f->rpos += k;
+					f->mode |= f->mode-1;
+					f->flags |= F_ERR;
+					FUNLOCK(f);
+					errno = ENOMEM;
+					return -1;
+				}
 			}
 			*s = tmp;
 			*n = m;
@@ -56,19 +66,16 @@ ssize_t getdelim(char **restrict s, size_t *restrict n, int delim, FILE *restric
 			}
 			break;
 		}
-		if (((*s)[i++] = c) == delim) break;
+		/* If the byte read by getc won't fit without growing the
+		 * output buffer, push it back for next iteration. */
+		if (i+1 >= *n) *--f->rpos = c;
+		else if (((*s)[i++] = c) == delim) break;
 	}
 	(*s)[i] = 0;
 
 	FUNLOCK(f);
 
 	return i;
-oom:
-	f->mode |= f->mode-1;
-	f->flags |= F_ERR;
-	FUNLOCK(f);
-	errno = ENOMEM;
-	return -1;
 }
 
 weak_alias(getdelim, __getdelim);
