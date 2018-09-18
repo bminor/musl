@@ -2,9 +2,6 @@
 #include "pthread_impl.h"
 #include <string.h>
 
-extern size_t __default_stacksize;
-extern size_t __default_guardsize;
-
 int pthread_setattr_default_np(const pthread_attr_t *attrp)
 {
 	/* Reject anything in the attr object other than stack/guard size. */

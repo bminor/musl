@@ -162,8 +162,6 @@ static void *dummy_tsd[1] = { 0 };
 weak_alias(dummy_tsd, __pthread_tsd_main);
 
 volatile int __block_new_threads = 0;
-extern size_t __default_stacksize;
-extern size_t __default_guardsize;
 
 static FILE *volatile dummy_file = 0;
 weak_alias(dummy_file, __stdin_used);
