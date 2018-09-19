@@ -76,7 +76,16 @@ int getaddrinfo(const char *restrict host, const char *restrict serv, const stru
 				close(s);
 				if (!r) continue;
 			}
-			if (errno != EAFNOSUPPORT) return EAI_SYSTEM;
+			switch (errno) {
+			case EADDRNOTAVAIL:
+			case EAFNOSUPPORT:
+			case EHOSTUNREACH:
+			case ENETDOWN:
+			case ENETUNREACH:
+				break;
+			default:
+				return EAI_SYSTEM;
+			}
 			if (family == tf[i]) return EAI_NONAME;
 			family = tf[1-i];
 		}
