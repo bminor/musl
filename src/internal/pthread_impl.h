@@ -182,11 +182,14 @@ hidden void __acquire_ptc(void);
 hidden void __release_ptc(void);
 hidden void __inhibit_ptc(void);
 
-extern hidden size_t __default_stacksize;
-extern hidden size_t __default_guardsize;
+extern hidden unsigned __default_stacksize;
+extern hidden unsigned __default_guardsize;
 
 #define DEFAULT_STACK_SIZE 81920
 #define DEFAULT_GUARD_SIZE 4096
+
+#define DEFAULT_STACK_MAX (8<<20)
+#define DEFAULT_GUARD_MAX (1<<20)
 
 #define __ATTRP_C11_THREAD ((void*)(uintptr_t)-1)
 
