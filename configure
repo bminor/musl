@@ -579,6 +579,7 @@ fi
 
 if test "$ARCH" = "arm" ; then
 if trycppif __thumb2__ "$t" ; then
+tryflag CFLAGS_AUTO -mimplicit-it=always
 tryflag CFLAGS_AUTO -Wa,-mimplicit-it=always
 tryflag CFLAGS_AUTO -Wa,-mthumb
 fi
