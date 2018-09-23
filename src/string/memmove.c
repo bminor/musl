@@ -10,7 +10,7 @@ void *memmove(void *dest, const void *src, size_t n)
 	const char *s = src;
 
 	if (d==s) return d;
-	if (s+n <= d || d+n <= s) return memcpy(d, s, n);
+	if ((uintptr_t)s-(uintptr_t)d-n <= -2*n) return memcpy(d, s, n);
 
 	if (d<s) {
 		if ((uintptr_t)s % WS == (uintptr_t)d % WS) {
