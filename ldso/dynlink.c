@@ -458,6 +458,13 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 					+ addend;
 #endif
 			}
+#ifdef TLSDESC_BACKWARDS
+			/* Some archs (32-bit ARM at least) invert the order of
+			 * the descriptor members. Fix them up here. */
+			size_t tmp = reloc_addr[0];
+			reloc_addr[0] = reloc_addr[1];
+			reloc_addr[1] = tmp;
+#endif
 			break;
 		default:
 			error("Error relocating %s: unsupported relocation type %d",
