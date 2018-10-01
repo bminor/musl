@@ -19,6 +19,10 @@ __tlsdesc_dynamic:
 	ldr r2,[r1,#4]  // r2 = offset
 	ldr r1,[r1]     // r1 = modid
 
+#if ((__ARM_ARCH_6K__ || __ARM_ARCH_6KZ__ || __ARM_ARCH_6ZK__) && !__thumb__) \
+ || __ARM_ARCH_7A__ || __ARM_ARCH_7R__ || __ARM_ARCH >= 7
+	mrc p15,0,r0,c13,c0,3
+#else
 	ldr r0,1f
 	add r0,r0,pc
 	ldr r0,[r0]
@@ -28,6 +32,7 @@ __tlsdesc_dynamic:
 #else
 	mov lr,pc
 	bx r0
+#endif
 #endif
 	ldr r3,[r0,#-4] // r3 = dtv
 	ldr ip,[r3]     // ip = dtv slot count
@@ -58,5 +63,9 @@ __tlsdesc_dynamic:
 	sub r0,r0,r1    // r0 = retval-tp
 	b 4b
 
+#if ((__ARM_ARCH_6K__ || __ARM_ARCH_6KZ__ || __ARM_ARCH_6ZK__) && !__thumb__) \
+ || __ARM_ARCH_7A__ || __ARM_ARCH_7R__ || __ARM_ARCH >= 7
+#else
 	.align 2
 1:	.word __a_gettp_ptr - 2b
+#endif
