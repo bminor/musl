@@ -16,13 +16,7 @@ int getaddrinfo(const char *restrict host, const char *restrict serv, const stru
 	char canon[256], *outcanon;
 	int nservs, naddrs, nais, canon_len, i, j, k;
 	int family = AF_UNSPEC, flags = 0, proto = 0, socktype = 0;
-	struct aibuf {
-		struct addrinfo ai;
-		union sa {
-			struct sockaddr_in sin;
-			struct sockaddr_in6 sin6;
-		} sa;
-	} *out;
+	struct aibuf *out;
 
 	if (!host && !serv) return EAI_NONAME;
 
@@ -110,6 +104,7 @@ int getaddrinfo(const char *restrict host, const char *restrict serv, const stru
 	}
 
 	for (k=i=0; i<naddrs; i++) for (j=0; j<nservs; j++, k++) {
+		out[k].slot = i;
 		out[k].ai = (struct addrinfo){
 			.ai_family = addrs[i].family,
 			.ai_socktype = ports[j].socktype,
@@ -134,6 +129,7 @@ int getaddrinfo(const char *restrict host, const char *restrict serv, const stru
 			break;			
 		}
 	}
+	out[0].ref = nais;
 	out[nais-1].ai.ai_next = 0;
 	*res = &out->ai;
 	return 0;

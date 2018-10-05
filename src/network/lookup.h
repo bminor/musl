@@ -4,6 +4,18 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <features.h>
+#include <netinet/in.h>
+#include <netdb.h>
+
+struct aibuf {
+	struct addrinfo ai;
+	union sa {
+		struct sockaddr_in sin;
+		struct sockaddr_in6 sin6;
+	} sa;
+	volatile int lock[1];
+	short slot, ref;
+};
 
 struct address {
 	int family;
