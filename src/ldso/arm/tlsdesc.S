@@ -51,6 +51,7 @@ __tlsdesc_dynamic:
 
 3:
 #if __ARM_PCS_VFP || !__SOFTFP__
+	.fpu vfp
 	vpush {d0-d7}
 #endif
 	push {r0-r3}
