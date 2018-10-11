@@ -11,7 +11,7 @@
 struct match
 {
 	struct match *next;
-	char name[1];
+	char name[];
 };
 
 static int is_literal(const char *p, int useesc)
@@ -37,7 +37,7 @@ static int is_literal(const char *p, int useesc)
 
 static int append(struct match **tail, const char *name, size_t len, int mark)
 {
-	struct match *new = malloc(sizeof(struct match) + len + 1);
+	struct match *new = malloc(sizeof(struct match) + len + 2);
 	if (!new) return -1;
 	(*tail)->next = new;
 	new->next = NULL;
