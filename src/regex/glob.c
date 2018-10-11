@@ -41,8 +41,11 @@ static int append(struct match **tail, const char *name, size_t len, int mark)
 	if (!new) return -1;
 	(*tail)->next = new;
 	new->next = NULL;
-	strcpy(new->name, name);
-	if (mark) strcat(new->name, "/");
+	memcpy(new->name, name, len+1);
+	if (mark) {
+		new->name[len] = '/';
+		new->name[len+1] = 0;
+	}
 	*tail = new;
 	return 0;
 }
