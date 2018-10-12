@@ -72,7 +72,7 @@ struct dso {
 	struct tls_module tls;
 	size_t tls_id;
 	size_t relro_start, relro_end;
-	void **new_dtv;
+	uintptr_t *new_dtv;
 	unsigned char *new_tls;
 	volatile int new_dtv_idx, new_tls_idx;
 	struct td_index *td_index;
@@ -445,7 +445,7 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 				new->next = dso->td_index;
 				dso->td_index = new;
 				new->args[0] = def.dso->tls_id;
-				new->args[1] = tls_val + addend;
+				new->args[1] = tls_val + addend - DTP_OFFSET;
 				reloc_addr[0] = (size_t)__tlsdesc_dynamic;
 				reloc_addr[1] = (size_t)new;
 			} else {
@@ -1345,9 +1345,9 @@ hidden void *__tls_get_new(tls_mod_off_t *v)
 	/* Block signals to make accessing new TLS async-signal-safe */
 	sigset_t set;
 	__block_all_sigs(&set);
-	if (v[0]<=(size_t)self->dtv[0]) {
+	if (v[0] <= self->dtv[0]) {
 		__restore_sigs(&set);
-		return (char *)self->dtv[v[0]]+v[1]+DTP_OFFSET;
+		return (void *)(self->dtv[v[0]] + v[1]);
 	}
 
 	/* This is safe without any locks held because, if the caller
@@ -1357,15 +1357,12 @@ hidden void *__tls_get_new(tls_mod_off_t *v)
 	struct dso *p;
 	for (p=head; p->tls_id != v[0]; p=p->next);
 
-	/* Get new DTV space from new DSO if needed */
-	if (v[0] > (size_t)self->dtv[0]) {
-		void **newdtv = p->new_dtv +
-			(v[0]+1)*a_fetch_add(&p->new_dtv_idx,1);
-		memcpy(newdtv, self->dtv,
-			((size_t)self->dtv[0]+1) * sizeof(void *));
-		newdtv[0] = (void *)v[0];
-		self->dtv = self->dtv_copy = newdtv;
-	}
+	/* Get new DTV space from new DSO */
+	uintptr_t *newdtv = p->new_dtv +
+		(v[0]+1)*a_fetch_add(&p->new_dtv_idx,1);
+	memcpy(newdtv, self->dtv, (self->dtv[0]+1) * sizeof(uintptr_t));
+	newdtv[0] = v[0];
+	self->dtv = self->dtv_copy = newdtv;
 
 	/* Get new TLS memory from all new DSOs up to the requested one */
 	unsigned char *mem;
@@ -1375,7 +1372,7 @@ hidden void *__tls_get_new(tls_mod_off_t *v)
 			* a_fetch_add(&p->new_tls_idx,1);
 		mem += ((uintptr_t)p->tls.image - (uintptr_t)mem)
 			& (p->tls.align-1);
-		self->dtv[p->tls_id] = mem;
+		self->dtv[p->tls_id] = (uintptr_t)mem + DTP_OFFSET;
 		memcpy(mem, p->tls.image, p->tls.len);
 		if (p->tls_id == v[0]) break;
 	}

@@ -17,7 +17,8 @@ struct pthread {
 	/* Part 1 -- these fields may be external or
 	 * internal (accessed via asm) ABI. Do not change. */
 	struct pthread *self;
-	void **dtv, *unused1, *unused2;
+	uintptr_t *dtv;
+	void *unused1, *unused2;
 	uintptr_t sysinfo;
 	uintptr_t canary, canary2;
 
@@ -54,7 +55,7 @@ struct pthread {
 	/* Part 3 -- the positions of these fields relative to
 	 * the end of the structure is external and internal ABI. */
 	uintptr_t canary_at_end;
-	void **dtv_copy;
+	uintptr_t *dtv_copy;
 };
 
 struct start_sched_args {
