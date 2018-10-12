@@ -1918,7 +1918,7 @@ static void *do_dlsym(struct dso *p, const char *s, void *ra)
 		struct symdef def = find_sym(p, s, 0);
 		if (!def.sym) goto failed;
 		if ((def.sym->st_info&0xf) == STT_TLS)
-			return __tls_get_addr((tls_mod_off_t []){def.dso->tls_id, def.sym->st_value});
+			return __tls_get_addr((tls_mod_off_t []){def.dso->tls_id, def.sym->st_value-DTP_OFFSET});
 		if (DL_FDPIC && (def.sym->st_info&0xf) == STT_FUNC)
 			return def.dso->funcdescs + (def.sym - def.dso->syms);
 		return laddr(def.dso, def.sym->st_value);
@@ -1933,7 +1933,7 @@ static void *do_dlsym(struct dso *p, const char *s, void *ra)
 		sym = sysv_lookup(s, h, p);
 	}
 	if (sym && (sym->st_info&0xf) == STT_TLS)
-		return __tls_get_addr((tls_mod_off_t []){p->tls_id, sym->st_value});
+		return __tls_get_addr((tls_mod_off_t []){p->tls_id, sym->st_value-DTP_OFFSET});
 	if (DL_FDPIC && sym && sym->st_shndx && (sym->st_info&0xf) == STT_FUNC)
 		return p->funcdescs + (sym - p->syms);
 	if (sym && sym->st_value && (1<<(sym->st_info&0xf) & OK_TYPES))
@@ -1947,7 +1947,7 @@ static void *do_dlsym(struct dso *p, const char *s, void *ra)
 			sym = sysv_lookup(s, h, p->deps[i]);
 		}
 		if (sym && (sym->st_info&0xf) == STT_TLS)
-			return __tls_get_addr((tls_mod_off_t []){p->deps[i]->tls_id, sym->st_value});
+			return __tls_get_addr((tls_mod_off_t []){p->deps[i]->tls_id, sym->st_value-DTP_OFFSET});
 		if (DL_FDPIC && sym && sym->st_shndx && (sym->st_info&0xf) == STT_FUNC)
 			return p->deps[i]->funcdescs + (sym - p->deps[i]->syms);
 		if (sym && sym->st_value && (1<<(sym->st_info&0xf) & OK_TYPES))
