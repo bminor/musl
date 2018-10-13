@@ -53,21 +53,22 @@ static int do_glob(char *buf, size_t pos, int type, char *pat, int flags, int (*
 			break;
 		} else if (pat[i] == '[') {
 			in_bracket = 1;
-		} else if (pat[i] == '/') {
-			if (overflow) return 0;
-			in_bracket = 0;
-			pat += i+1;
-			i = -1;
-			pos += j+1;
-			j = -1;
 		} else if (pat[i] == '\\' && !(flags & GLOB_NOESCAPE)) {
 			/* Backslashes inside a bracket are (at least by
 			 * our interpretation) non-special, so if next
 			 * char is ']' we have a complete expression. */
 			if (in_bracket && pat[i+1]==']') break;
 			/* Unpaired final backslash never matches. */
-			if (!pat[i+1] || pat[i+1]=='/') return 0;
+			if (!pat[i+1]) return 0;
 			i++;
+		}
+		if (pat[i] == '/') {
+			if (overflow) return 0;
+			in_bracket = 0;
+			pat += i+1;
+			i = -1;
+			pos += j+1;
+			j = -1;
 		}
 		/* Only store a character if it fits in the buffer, but if
 		 * a potential bracket expression is open, the overflow
@@ -103,7 +104,17 @@ static int do_glob(char *buf, size_t pos, int type, char *pat, int flags, int (*
 			return GLOB_NOSPACE;
 		return 0;
 	}
-	char *p2 = strchr(pat, '/');
+	char *p2 = strchr(pat, '/'), saved_sep = '/';
+	/* Check if the '/' was escaped and, if so, remove the escape char
+	 * so that it will not be unpaired when passed to fnmatch. */
+	if (p2 && !(flags & GLOB_NOESCAPE)) {
+		char *p;
+		for (p=p2; p>pat && p[-1]=='\\'; p--);
+		if ((p2-p)%2) {
+			p2--;
+			saved_sep = '\\';
+		}
+	}
 	DIR *dir = opendir(pos ? buf : ".");
 	if (!dir) {
 		if (errfunc(buf, errno) || (flags & GLOB_ERR))
@@ -136,7 +147,7 @@ static int do_glob(char *buf, size_t pos, int type, char *pat, int flags, int (*
 			continue;
 
 		memcpy(buf+pos, de->d_name, l+1);
-		if (p2) *p2 = '/';
+		if (p2) *p2 = saved_sep;
 		int r = do_glob(buf, pos+l, de->d_type, p2 ? p2 : "", flags, errfunc, tail);
 		if (r) {
 			closedir(dir);
@@ -144,7 +155,7 @@ static int do_glob(char *buf, size_t pos, int type, char *pat, int flags, int (*
 		}
 	}
 	int readerr = errno;
-	if (p2) *p2 = '/';
+	if (p2) *p2 = saved_sep;
 	closedir(dir);
 	if (readerr && (errfunc(buf, errno) || (flags & GLOB_ERR)))
 		return GLOB_ABORTED;
