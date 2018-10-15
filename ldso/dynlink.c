@@ -1410,7 +1410,8 @@ hidden void __dls2(unsigned char *base, size_t *sp)
 		void *p2 = (void *)sp[-1];
 		if (!p1) {
 			size_t *auxv, aux[AUX_CNT];
-			for (auxv=sp+1+*sp+1; *auxv; auxv++); auxv++;
+			for (auxv=sp+1+*sp+1; *auxv; auxv++);
+			auxv++;
 			decode_vec(auxv, aux, AUX_CNT);
 			if (aux[AT_BASE]) ldso.base = (void *)aux[AT_BASE];
 			else ldso.base = (void *)(aux[AT_PHDR] & -4096);
