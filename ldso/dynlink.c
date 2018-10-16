@@ -1453,9 +1453,31 @@ hidden void __dls2(unsigned char *base, size_t *sp)
 
 	ldso.relocated = 0;
 
-	/* Call dynamic linker stage-3, __dls3, looking it up
+	/* Call dynamic linker stage-2b, __dls2b, looking it up
 	 * symbolically as a barrier against moving the address
 	 * load across the above relocation processing. */
+	struct symdef dls2b_def = find_sym(&ldso, "__dls2b", 0);
+	if (DL_FDPIC) ((stage3_func)&ldso.funcdescs[dls2b_def.sym-ldso.syms])(sp);
+	else ((stage3_func)laddr(&ldso, dls2b_def.sym->st_value))(sp);
+}
+
+/* Stage 2b sets up a valid thread pointer, which requires relocations
+ * completed in stage 2, and on which stage 3 is permitted to depend.
+ * This is done as a separate stage, with symbolic lookup as a barrier,
+ * so that loads of the thread pointer and &errno can be pure/const and
+ * thereby hoistable. */
+
+_Noreturn void __dls2b(size_t *sp)
+{
+	/* Setup early thread pointer in builtin_tls for ldso/libc itself to
+	 * use during dynamic linking. If possible it will also serve as the
+	 * thread pointer at runtime. */
+	libc.tls_size = sizeof builtin_tls;
+	libc.tls_align = tls_align;
+	if (__init_tp(__copy_tls((void *)builtin_tls)) < 0) {
+		a_crash();
+	}
+
 	struct symdef dls3_def = find_sym(&ldso, "__dls3", 0);
 	if (DL_FDPIC) ((stage3_func)&ldso.funcdescs[dls3_def.sym-ldso.syms])(sp);
 	else ((stage3_func)laddr(&ldso, dls3_def.sym->st_value))(sp);
@@ -1489,15 +1511,6 @@ _Noreturn void __dls3(size_t *sp)
 	libc.page_size = aux[AT_PAGESZ];
 	libc.secure = ((aux[0]&0x7800)!=0x7800 || aux[AT_UID]!=aux[AT_EUID]
 		|| aux[AT_GID]!=aux[AT_EGID] || aux[AT_SECURE]);
-
-	/* Setup early thread pointer in builtin_tls for ldso/libc itself to
-	 * use during dynamic linking. If possible it will also serve as the
-	 * thread pointer at runtime. */
-	libc.tls_size = sizeof builtin_tls;
-	libc.tls_align = tls_align;
-	if (__init_tp(__copy_tls((void *)builtin_tls)) < 0) {
-		a_crash();
-	}
 
 	/* Only trust user/env if kernel says we're not suid/sgid */
 	if (!libc.secure) {
