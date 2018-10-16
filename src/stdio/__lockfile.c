@@ -1,8 +1,6 @@
 #include "stdio_impl.h"
 #include "pthread_impl.h"
 
-#define MAYBE_WAITERS 0x40000000
-
 int __lockfile(FILE *f)
 {
 	int owner = f->lock, tid = __pthread_self()->tid;

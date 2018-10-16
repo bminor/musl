@@ -94,6 +94,8 @@ hidden void __register_locked_file(FILE *, struct __pthread *);
 hidden void __unlist_locked_file(FILE *);
 hidden void __do_orphaned_stdio_locks(void);
 
+#define MAYBE_WAITERS 0x40000000
+
 hidden void __getopt_msg(const char *, const char *, const char *, size_t);
 
 #define feof(f) ((f)->flags & F_EOF)
