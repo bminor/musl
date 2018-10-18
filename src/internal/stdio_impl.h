@@ -34,11 +34,9 @@ struct _IO_FILE {
 	int fd;
 	int pipe_pid;
 	long lockcount;
-	short dummy3;
-	signed char mode;
-	signed char lbf;
+	int mode;
 	volatile int lock;
-	volatile int waiters;
+	int lbf;
 	void *cookie;
 	off_t off;
 	char *getln_buf;
