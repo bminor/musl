@@ -17,6 +17,9 @@ weak_alias(dummy1, __init_ssp);
 
 #define AUX_CNT 38
 
+#ifdef __GNUC__
+__attribute__((__noinline__))
+#endif
 void __init_libc(char **envp, char *pn)
 {
 	size_t i, *auxv, aux[AUX_CNT] = { 0 };
@@ -69,6 +72,9 @@ int __libc_start_main(int (*main)(int,char **,char **), int argc, char **argv)
 {
 	char **envp = argv+argc+1;
 
+	/* External linkage, and explicit noinline attribute if available,
+	 * are used to prevent the stack frame used during init from
+	 * persisting for the entire process lifetime. */
 	__init_libc(envp, argv[0]);
 
 	/* Barrier against hoisting application code or anything using ssp
