@@ -105,7 +105,7 @@ hidden void __getopt_msg(const char *, const char *, const char *, size_t);
 	( ((f)->rpos != (f)->rend) ? *(f)->rpos++ : __uflow((f)) )
 
 #define putc_unlocked(c, f) \
-	( ((unsigned char)(c)!=(f)->lbf && (f)->wpos!=(f)->wend) \
+	( (((unsigned char)(c)!=(f)->lbf && (f)->wpos!=(f)->wend)) \
 	? *(f)->wpos++ = (c) : __overflow((f),(c)) )
 
 /* Caller-allocated FILE * operations */
