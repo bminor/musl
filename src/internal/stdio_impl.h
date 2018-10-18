@@ -106,7 +106,8 @@ hidden void __getopt_msg(const char *, const char *, const char *, size_t);
 
 #define putc_unlocked(c, f) \
 	( (((unsigned char)(c)!=(f)->lbf && (f)->wpos!=(f)->wend)) \
-	? *(f)->wpos++ = (c) : __overflow((f),(c)) )
+	? *(f)->wpos++ = (unsigned char)(c) \
+	: __overflow((f),(unsigned char)(c)) )
 
 /* Caller-allocated FILE * operations */
 hidden FILE *__fopen_rb_ca(const char *, FILE *, unsigned char *, size_t);
