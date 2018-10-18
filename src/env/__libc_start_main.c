@@ -79,7 +79,7 @@ int __libc_start_main(int (*main)(int,char **,char **), int argc, char **argv)
 
 	/* Barrier against hoisting application code or anything using ssp
 	 * or thread pointer prior to its initialization above. */
-	int (*stage2)();
+	int (*stage2)(int (*)(int,char **,char **), int, char **);
 	__asm__ ( "" : "=r"(stage2) : "0"(libc_start_main_stage2) : "memory" );
 	return stage2(main, argc, argv);
 }
