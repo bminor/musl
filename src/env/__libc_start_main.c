@@ -63,11 +63,24 @@ static void libc_start_init(void)
 
 weak_alias(libc_start_init, __libc_start_init);
 
+static int libc_start_main_stage2(int (*)(int,char **,char **), int, char **);
+
 int __libc_start_main(int (*main)(int,char **,char **), int argc, char **argv)
 {
 	char **envp = argv+argc+1;
 
 	__init_libc(envp, argv[0]);
+
+	/* Barrier against hoisting application code or anything using ssp
+	 * or thread pointer prior to its initialization above. */
+	int (*stage2)();
+	__asm__ ( "" : "=r"(stage2) : "r"(libc_start_main_stage2) : "memory" );
+	return stage2(main, argc, argv);
+}
+
+static int libc_start_main_stage2(int (*main)(int,char **,char **), int argc, char **argv)
+{
+	char **envp = argv+argc+1;
 	__libc_start_init();
 
 	/* Pass control to the application */
