@@ -27,6 +27,8 @@ hidden const char *__lctrans_impl(const char *, const struct __locale_map *);
 hidden int __loc_is_allocated(locale_t);
 hidden char *__gettextdomain(void);
 
+#define LOC_MAP_FAILED ((const struct __locale_map *)-1)
+
 #define LCTRANS(msg, lc, loc) __lctrans(msg, (loc)->cat[(lc)])
 #define LCTRANS_CUR(msg) __lctrans_cur(msg)
 
