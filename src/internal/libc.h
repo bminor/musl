@@ -8,7 +8,7 @@
 struct __locale_map;
 
 struct __locale_struct {
-	const struct __locale_map *volatile cat[6];
+	const struct __locale_map *cat[6];
 };
 
 struct tls_module {
