@@ -3,11 +3,14 @@
 /* stdout.c will override this if linked */
 static FILE *volatile dummy = 0;
 weak_alias(dummy, __stdout_used);
+weak_alias(dummy, __stderr_used);
 
 int fflush(FILE *f)
 {
 	if (!f) {
-		int r = __stdout_used ? fflush(__stdout_used) : 0;
+		int r = 0;
+		if (__stdout_used) r |= fflush(__stdout_used);
+		if (__stderr_used) r |= fflush(__stderr_used);
 
 		for (f=*__ofl_lock(); f; f=f->next) {
 			FLOCK(f);
