@@ -34,7 +34,7 @@ char *setlocale(int cat, const char *name)
 					part[z-p] = 0;
 					if (*z) p = z+1;
 				}
-				lm = __get_locale(i, name);
+				lm = __get_locale(i, part);
 				if (lm == LOC_MAP_FAILED) {
 					UNLOCK(lock);
 					return 0;
