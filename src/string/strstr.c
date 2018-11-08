@@ -109,7 +109,7 @@ static char *twoway_strstr(const unsigned char *h, const unsigned char *n)
 		if (BITOP(byteset, h[l-1], &)) {
 			k = l-shift[h[l-1]];
 			if (k) {
-				if (mem && k < p) k = l-p;
+				if (k < mem) k = mem;
 				h += k;
 				mem = 0;
 				continue;
