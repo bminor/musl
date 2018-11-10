@@ -72,6 +72,10 @@ enum {
 	TCP_NLA_SND_SSTHRESH,
 	TCP_NLA_DELIVERED,
 	TCP_NLA_DELIVERED_CE,
+	TCP_NLA_BYTES_SENT,
+	TCP_NLA_BYTES_RETRANS,
+	TCP_NLA_DSACK_DUPS,
+	TCP_NLA_REORD_SEEN,
 };
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
@@ -225,6 +229,10 @@ struct tcp_info {
 	uint64_t tcpi_sndbuf_limited;
 	uint32_t tcpi_delivered;
 	uint32_t tcpi_delivered_ce;
+	uint64_t tcpi_bytes_sent;
+	uint64_t tcpi_bytes_retrans;
+	uint32_t tcpi_dsack_dups;
+	uint32_t tcpi_reord_seen;
 };
 
 #define TCP_MD5SIG_MAXKEYLEN    80
