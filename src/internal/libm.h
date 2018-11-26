@@ -5,6 +5,7 @@
 #include <float.h>
 #include <math.h>
 #include <endian.h>
+#include "fp_arch.h"
 
 #if LDBL_MANT_DIG == 53 && LDBL_MAX_EXP == 1024
 #elif LDBL_MANT_DIG == 64 && LDBL_MAX_EXP == 16384 && __BYTE_ORDER == __LITTLE_ENDIAN
@@ -58,16 +59,74 @@ union ldshape {
 #error Unsupported long double representation
 #endif
 
+/* fp_barrier returns its input, but limits code transformations
+   as if it had a side-effect (e.g. observable io) and returned
+   an arbitrary value.  */
+
+#ifndef fp_barrierf
+#define fp_barrierf fp_barrierf
+static inline float fp_barrierf(float x)
+{
+	volatile float y = x;
+	return y;
+}
+#endif
+
+#ifndef fp_barrier
+#define fp_barrier fp_barrier
+static inline double fp_barrier(double x)
+{
+	volatile double y = x;
+	return y;
+}
+#endif
+
+#ifndef fp_barrierl
+#define fp_barrierl fp_barrierl
+static inline long double fp_barrierl(long double x)
+{
+	volatile long double y = x;
+	return y;
+}
+#endif
+
+/* fp_force_eval ensures that the input value is computed when that's
+   otherwise unused.  To prevent the constant folding of the input
+   expression, an additional fp_barrier may be needed or a compilation
+   mode that does so (e.g. -frounding-math in gcc). Then it can be
+   used to evaluate an expression for its fenv side-effects only.   */
+
+#ifndef fp_force_evalf
+#define fp_force_evalf fp_force_evalf
+static inline void fp_force_evalf(float x)
+{
+	volatile float y = x;
+}
+#endif
+
+#ifndef fp_force_eval
+#define fp_force_eval fp_force_eval
+static inline void fp_force_eval(double x)
+{
+	volatile double y = x;
+}
+#endif
+
+#ifndef fp_force_evall
+#define fp_force_evall fp_force_evall
+static inline void fp_force_evall(long double x)
+{
+	volatile long double y = x;
+}
+#endif
+
 #define FORCE_EVAL(x) do {                        \
 	if (sizeof(x) == sizeof(float)) {         \
-		volatile float __x;               \
-		__x = (x);                        \
+		fp_force_evalf(x);                \
 	} else if (sizeof(x) == sizeof(double)) { \
-		volatile double __x;              \
-		__x = (x);                        \
+		fp_force_eval(x);                 \
 	} else {                                  \
-		volatile long double __x;         \
-		__x = (x);                        \
+		fp_force_evall(x);                \
 	}                                         \
 } while(0)
 
