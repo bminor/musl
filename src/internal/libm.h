@@ -16,7 +16,6 @@
 #include <stdint.h>
 #include <float.h>
 #include <math.h>
-#include <complex.h>
 #include <endian.h>
 
 #if LDBL_MANT_DIG == 53 && LDBL_MAX_EXP == 1024
@@ -153,18 +152,6 @@ do {                                              \
   (d) = __u.f;                                    \
 } while (0)
 
-#undef __CMPLX
-#undef CMPLX
-#undef CMPLXF
-#undef CMPLXL
-
-#define __CMPLX(x, y, t) \
-	((union { _Complex t __z; t __xy[2]; }){.__xy = {(x),(y)}}.__z)
-
-#define CMPLX(x, y) __CMPLX(x, y, double)
-#define CMPLXF(x, y) __CMPLX(x, y, float)
-#define CMPLXL(x, y) __CMPLX(x, y, long double)
-
 /* fdlibm kernel functions */
 
 hidden int    __rem_pio2_large(double*,double*,int,int,int);
@@ -174,14 +161,12 @@ hidden double __sin(double,double,int);
 hidden double __cos(double,double);
 hidden double __tan(double,double,int);
 hidden double __expo2(double);
-hidden double complex __ldexp_cexp(double complex,int);
 
 hidden int    __rem_pio2f(float,double*);
 hidden float  __sindf(double);
 hidden float  __cosdf(double);
 hidden float  __tandf(double,int);
 hidden float  __expo2f(float);
-hidden float complex __ldexp_cexpf(float complex,int);
 
 hidden int __rem_pio2l(long double, long double *);
 hidden long double __sinl(long double, long double, int);
