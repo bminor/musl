@@ -59,6 +59,15 @@ union ldshape {
 #error Unsupported long double representation
 #endif
 
+/* Helps static branch prediction so hot path can be better optimized.  */
+#ifdef __GNUC__
+#define predict_true(x) __builtin_expect(!!(x), 1)
+#define predict_false(x) __builtin_expect(x, 0)
+#else
+#define predict_true(x) (x)
+#define predict_false(x) (x)
+#endif
+
 /* Evaluate an expression as the specified type. With standard excess
    precision handling a type cast or assignment is enough (with
    -ffloat-store an assignment is required, in old compilers argument
