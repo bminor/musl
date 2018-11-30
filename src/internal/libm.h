@@ -222,5 +222,10 @@ hidden float __math_uflowf(uint32_t);
 hidden float __math_oflowf(uint32_t);
 hidden float __math_divzerof(uint32_t);
 hidden float __math_invalidf(float);
+hidden double __math_xflow(uint32_t, double);
+hidden double __math_uflow(uint32_t);
+hidden double __math_oflow(uint32_t);
+hidden double __math_divzero(uint32_t);
+hidden double __math_invalid(double);
 
 #endif
