@@ -68,6 +68,7 @@ union ldshape {
 #error SNaN is unsupported
 #else
 #define issignalingf_inline(x) 0
+#define issignaling_inline(x) 0
 #endif
 
 #ifndef TOINT_INTRINSICS
