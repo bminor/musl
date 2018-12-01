@@ -59,6 +59,23 @@ union ldshape {
 #error Unsupported long double representation
 #endif
 
+/* Evaluate an expression as the specified type. With standard excess
+   precision handling a type cast or assignment is enough (with
+   -ffloat-store an assignment is required, in old compilers argument
+   passing and return statement may not drop excess precision).  */
+
+static inline float eval_as_float(float x)
+{
+	float y = x;
+	return y;
+}
+
+static inline double eval_as_double(double x)
+{
+	double y = x;
+	return y;
+}
+
 /* fp_barrier returns its input, but limits code transformations
    as if it had a side-effect (e.g. observable io) and returned
    an arbitrary value.  */
