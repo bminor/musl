@@ -59,6 +59,11 @@ union ldshape {
 #error Unsupported long double representation
 #endif
 
+/* Support non-nearest rounding mode.  */
+#define WANT_ROUNDING 1
+/* Support signaling NaNs.  */
+#define WANT_SNAN 0
+
 /* Helps static branch prediction so hot path can be better optimized.  */
 #ifdef __GNUC__
 #define predict_true(x) __builtin_expect(!!(x), 1)
