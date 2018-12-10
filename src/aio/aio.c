@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <sys/auxv.h>
 #include "syscall.h"
 #include "atomic.h"
 #include "pthread_impl.h"
@@ -256,6 +257,15 @@ static void *io_thread_func(void *ctx)
 	return 0;
 }
 
+static size_t io_thread_stack_size = MINSIGSTKSZ+2048;
+static pthread_once_t init_stack_size_once;
+
+static void init_stack_size()
+{
+	unsigned long val = __getauxval(AT_MINSIGSTKSZ);
+	if (val > MINSIGSTKSZ) io_thread_stack_size = val + 512;
+}
+
 static int submit(struct aiocb *cb, int op)
 {
 	int ret = 0;
@@ -271,8 +281,9 @@ static int submit(struct aiocb *cb, int op)
 		else
 			pthread_attr_init(&a);
 	} else {
+		pthread_once(&init_stack_size_once, init_stack_size);
 		pthread_attr_init(&a);
-		pthread_attr_setstacksize(&a, PTHREAD_STACK_MIN);
+		pthread_attr_setstacksize(&a, io_thread_stack_size);
 		pthread_attr_setguardsize(&a, 0);
 	}
 	pthread_attr_setdetachstate(&a, PTHREAD_CREATE_DETACHED);
