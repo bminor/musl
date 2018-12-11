@@ -72,13 +72,17 @@ volatile int __aio_fut;
 
 static struct aio_queue *__aio_get_queue(int fd, int need)
 {
-	if (fd < 0) return 0;
+	if (fd < 0) {
+		errno = EBADF;
+		return 0;
+	}
 	int a=fd>>24;
 	unsigned char b=fd>>16, c=fd>>8, d=fd;
 	struct aio_queue *q = 0;
 	pthread_rwlock_rdlock(&maplock);
 	if ((!map || !map[a] || !map[a][b] || !map[a][b][c] || !(q=map[a][b][c][d])) && need) {
 		pthread_rwlock_unlock(&maplock);
+		if (fcntl(fd, F_GETFD) < 0) return 0;
 		pthread_rwlock_wrlock(&maplock);
 		if (!map) map = calloc(sizeof *map, (-1U/2+1)>>24);
 		if (!map) goto out;
@@ -275,8 +279,7 @@ static int submit(struct aiocb *cb, int op)
 	sem_init(&args.sem, 0, 0);
 
 	if (!q) {
-		if (cb->aio_fildes < 0) errno = EBADF;
-		else errno = EAGAIN;
+		if (errno != EBADF) errno = EAGAIN;
 		return -1;
 	}
 	q->ref++;
@@ -358,8 +361,9 @@ int aio_cancel(int fd, struct aiocb *cb)
 	sigfillset(&allmask);
 	pthread_sigmask(SIG_BLOCK, &allmask, &origmask);
 
+	errno = ENOENT;
 	if (!(q = __aio_get_queue(fd, 0))) {
-		if (fcntl(fd, F_GETFD) < 0) ret = -1;
+		if (errno == EBADF) ret = -1;
 		goto done;
 	}
 
