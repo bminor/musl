@@ -280,6 +280,8 @@ static int submit(struct aiocb *cb, int op)
 
 	if (!q) {
 		if (errno != EBADF) errno = EAGAIN;
+		cb->__ret = -1;
+		cb->__err = errno;
 		return -1;
 	}
 	q->ref++;
@@ -303,8 +305,8 @@ static int submit(struct aiocb *cb, int op)
 	if (pthread_create(&td, &a, io_thread_func, &args)) {
 		pthread_mutex_lock(&q->lock);
 		__aio_unref_queue(q);
-		errno = EAGAIN;
-		ret = -1;
+		cb->__err = errno = EAGAIN;
+		cb->__ret = ret = -1;
 	}
 	pthread_sigmask(SIG_SETMASK, &origmask, 0);
 
