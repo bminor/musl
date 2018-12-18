@@ -21,6 +21,8 @@ void __get_handler_set(sigset_t *set)
 	memcpy(set, handler_set, sizeof handler_set);
 }
 
+volatile int __eintr_valid_flag;
+
 int __libc_sigaction(int sig, const struct sigaction *restrict sa, struct sigaction *restrict old)
 {
 	struct k_sigaction ksa, ksa_old;
@@ -42,6 +44,10 @@ int __libc_sigaction(int sig, const struct sigaction *restrict sa, struct sigact
 				__syscall(SYS_rt_sigprocmask, SIG_UNBLOCK,
 					SIGPT_SET, 0, _NSIG/8);
 				unmask_done = 1;
+			}
+
+			if (!(sa->sa_flags & SA_RESTART)) {
+				a_store(&__eintr_valid_flag, 1);
 			}
 		}
 		/* Changing the disposition of SIGABRT to anything but
