@@ -920,7 +920,7 @@ static void *dl_mmap(size_t n)
 #else
 	p = (void *)__syscall(SYS_mmap, 0, n, prot, flags, -1, 0);
 #endif
-	return p == MAP_FAILED ? 0 : p;
+	return (unsigned long)p > -4096UL ? 0 : p;
 }
 
 static void makefuncdescs(struct dso *p)
