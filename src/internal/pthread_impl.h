@@ -29,15 +29,12 @@ struct pthread {
 	volatile int cancel;
 	volatile unsigned char canceldisable, cancelasync;
 	unsigned char tsd_used:1;
-	unsigned char unblock_cancel:1;
 	unsigned char dlerror_flag:1;
 	unsigned char *map_base;
 	size_t map_size;
 	void *stack;
 	size_t stack_size;
 	size_t guard_size;
-	void *start_arg;
-	void *(*start)(void *);
 	void *result;
 	struct __ptcb *cancelbuf;
 	void **tsd;
@@ -56,14 +53,6 @@ struct pthread {
 	 * the end of the structure is external and internal ABI. */
 	uintptr_t canary_at_end;
 	uintptr_t *dtv_copy;
-};
-
-struct start_sched_args {
-	void *start_arg;
-	void *(*start_fn)(void *);
-	sigset_t mask;
-	pthread_attr_t *attr;
-	volatile int futex;
 };
 
 enum {

@@ -27,7 +27,6 @@ static void cleanup_fromsig(void *p)
 	self->cancelbuf = 0;
 	self->canceldisable = 0;
 	self->cancelasync = 0;
-	self->unblock_cancel = 0;
 	__reset_tls();
 	longjmp(p, 1);
 }

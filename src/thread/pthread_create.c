@@ -16,12 +16,6 @@ weak_alias(dummy_0, __pthread_tsd_run_dtors);
 weak_alias(dummy_0, __do_orphaned_stdio_locks);
 weak_alias(dummy_0, __dl_thread_cleanup);
 
-static void *dummy_1(void *p)
-{
-	return 0;
-}
-weak_alias(dummy_1, __start_sched);
-
 _Noreturn void __pthread_exit(void *result)
 {
 	pthread_t self = __pthread_self();
@@ -135,21 +129,38 @@ void __do_cleanup_pop(struct __ptcb *cb)
 	__pthread_self()->cancelbuf = cb->__next;
 }
 
+struct start_args {
+	void *(*start_func)(void *);
+	void *start_arg;
+	pthread_attr_t *attr;
+	volatile int *perr;
+	unsigned long sig_mask[_NSIG/8/sizeof(long)];
+};
+
 static int start(void *p)
 {
-	pthread_t self = p;
-	if (self->unblock_cancel)
-		__syscall(SYS_rt_sigprocmask, SIG_UNBLOCK,
-			SIGPT_SET, 0, _NSIG/8);
-	__pthread_exit(self->start(self->start_arg));
+	struct start_args *args = p;
+	if (args->attr) {
+		pthread_t self = __pthread_self();
+		int ret = -__syscall(SYS_sched_setscheduler, self->tid,
+			args->attr->_a_policy, &args->attr->_a_prio);
+		if (a_swap(args->perr, ret)==-2)
+			__wake(args->perr, 1, 1);
+		if (ret) {
+			self->detach_state = DT_DYNAMIC;
+			__pthread_exit(0);
+		}
+	}
+	__syscall(SYS_rt_sigprocmask, SIG_SETMASK, &args->sig_mask, 0, _NSIG/8);
+	__pthread_exit(args->start_func(args->start_arg));
 	return 0;
 }
 
 static int start_c11(void *p)
 {
-	pthread_t self = p;
-	int (*start)(void*) = (int(*)(void*)) self->start;
-	__pthread_exit((void *)(uintptr_t)start(self->start_arg));
+	struct start_args *args = p;
+	int (*start)(void*) = (int(*)(void*)) args->start_func;
+	__pthread_exit((void *)(uintptr_t)start(args->start_arg));
 	return 0;
 }
 
@@ -182,9 +193,9 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 	unsigned flags = CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND
 		| CLONE_THREAD | CLONE_SYSVSEM | CLONE_SETTLS
 		| CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID | CLONE_DETACHED;
-	int do_sched = 0;
 	pthread_attr_t attr = { 0 };
-	struct start_sched_args ssa;
+	sigset_t set;
+	volatile int err = -1;
 
 	if (!libc.can_do_threads) return ENOSYS;
 	self = __pthread_self();
@@ -257,8 +268,6 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 	new->stack = stack;
 	new->stack_size = stack - stack_limit;
 	new->guard_size = guard;
-	new->start = entry;
-	new->start_arg = arg;
 	new->self = new;
 	new->tsd = (void *)tsd;
 	new->locale = &libc.global_locale;
@@ -268,28 +277,37 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 	} else {
 		new->detach_state = DT_JOINABLE;
 	}
-	if (attr._a_sched) {
-		do_sched = 1;
-		ssa.futex = -1;
-		ssa.start_fn = new->start;
-		ssa.start_arg = new->start_arg;
-		ssa.attr = &attr;
-		new->start = __start_sched;
-		new->start_arg = &ssa;
-		__block_app_sigs(&ssa.mask);
-	}
 	new->robust_list.head = &new->robust_list.head;
-	new->unblock_cancel = self->cancel;
 	new->CANARY = self->CANARY;
 
-	a_inc(&libc.threads_minus_1);
-	ret = __clone((c11 ? start_c11 : start), stack, flags, new, &new->tid, TP_ADJ(new), &new->detach_state);
-
-	__release_ptc();
-
-	if (do_sched) {
-		__restore_sigs(&ssa.mask);
+	/* Setup argument structure for the new thread on its stack. */
+	stack -= (uintptr_t)stack % sizeof(uintptr_t);
+	stack -= sizeof(struct start_args);
+	struct start_args *args = (void *)stack;
+	args->start_func = entry;
+	args->start_arg = arg;
+	if (attr._a_sched) {
+		args->attr = &attr;
+		args->perr = &err;
+	} else {
+		args->attr = 0;
+		args->perr = 0;
 	}
+
+	__block_app_sigs(&set);
+
+	/* Ensure SIGCANCEL is unblocked in new thread. This requires
+	 * working with a copy of the set so we can restore the
+	 * original mask in the calling thread. */
+	memcpy(&args->sig_mask, &set, sizeof args->sig_mask);
+	args->sig_mask[(SIGCANCEL-1)/8/sizeof(long)] &=
+		~(1UL<<((SIGCANCEL-1)%(8*sizeof(long))));
+
+	a_inc(&libc.threads_minus_1);
+	ret = __clone((c11 ? start_c11 : start), stack, flags, args, &new->tid, TP_ADJ(new), &new->detach_state);
+
+	__restore_sigs(&set);
+	__release_ptc();
 
 	if (ret < 0) {
 		a_dec(&libc.threads_minus_1);
@@ -297,9 +315,10 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 		return EAGAIN;
 	}
 
-	if (do_sched) {
-		__futexwait(&ssa.futex, -1, 1);
-		ret = ssa.futex;
+	if (attr._a_sched) {
+		if (a_cas(&err, -1, -2)==-1)
+			__wait(&err, 0, -2, 1);
+		ret = err;
 		if (ret) return ret;
 	}
 
