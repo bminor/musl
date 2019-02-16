@@ -32,16 +32,16 @@ int __pthread_key_create(pthread_key_t *k, void (*dtor)(void *))
 	/* Purely a sentinel value since null means slot is free. */
 	if (!dtor) dtor = nodtor;
 
-	pthread_rwlock_wrlock(&key_lock);
+	__pthread_rwlock_wrlock(&key_lock);
 	do {
 		if (!keys[j]) {
 			keys[next_key = *k = j] = dtor;
-			pthread_rwlock_unlock(&key_lock);
+			__pthread_rwlock_unlock(&key_lock);
 			return 0;
 		}
 	} while ((j=(j+1)%PTHREAD_KEYS_MAX) != next_key);
 
-	pthread_rwlock_unlock(&key_lock);
+	__pthread_rwlock_unlock(&key_lock);
 	return EAGAIN;
 }
 
@@ -57,9 +57,9 @@ int __pthread_key_delete(pthread_key_t k)
 	__tl_unlock();
 	__restore_sigs(&set);
 
-	pthread_rwlock_wrlock(&key_lock);
+	__pthread_rwlock_wrlock(&key_lock);
 	keys[k] = 0;
-	pthread_rwlock_unlock(&key_lock);
+	__pthread_rwlock_unlock(&key_lock);
 
 	return 0;
 }
@@ -69,19 +69,19 @@ void __pthread_tsd_run_dtors()
 	pthread_t self = __pthread_self();
 	int i, j;
 	for (j=0; self->tsd_used && j<PTHREAD_DESTRUCTOR_ITERATIONS; j++) {
-		pthread_rwlock_rdlock(&key_lock);
+		__pthread_rwlock_rdlock(&key_lock);
 		self->tsd_used = 0;
 		for (i=0; i<PTHREAD_KEYS_MAX; i++) {
 			void *val = self->tsd[i];
 			void (*dtor)(void *) = keys[i];
 			self->tsd[i] = 0;
 			if (val && dtor && dtor != nodtor) {
-				pthread_rwlock_unlock(&key_lock);
+				__pthread_rwlock_unlock(&key_lock);
 				dtor(val);
-				pthread_rwlock_rdlock(&key_lock);
+				__pthread_rwlock_rdlock(&key_lock);
 			}
 		}
-		pthread_rwlock_unlock(&key_lock);
+		__pthread_rwlock_unlock(&key_lock);
 	}
 }
 
