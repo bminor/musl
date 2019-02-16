@@ -18,7 +18,7 @@ struct pthread {
 	 * internal (accessed via asm) ABI. Do not change. */
 	struct pthread *self;
 	uintptr_t *dtv;
-	void *unused1, *unused2;
+	struct pthread *prev, *next; /* non-ABI */
 	uintptr_t sysinfo;
 	uintptr_t canary, canary2;
 
@@ -56,11 +56,9 @@ struct pthread {
 };
 
 enum {
-	DT_EXITED = 0,
-	DT_EXITING,
+	DT_EXITING = 0,
 	DT_JOINABLE,
 	DT_DETACHED,
-	DT_DYNAMIC,
 };
 
 struct __timer {
@@ -172,6 +170,12 @@ static inline void __futexwait(volatile void *addr, int val, int priv)
 hidden void __acquire_ptc(void);
 hidden void __release_ptc(void);
 hidden void __inhibit_ptc(void);
+
+hidden void __tl_lock(void);
+hidden void __tl_unlock(void);
+hidden void __tl_sync(pthread_t);
+
+extern hidden volatile int __thread_list_lock;
 
 extern hidden unsigned __default_stacksize;
 extern hidden unsigned __default_guardsize;
