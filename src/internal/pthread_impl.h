@@ -139,7 +139,6 @@ hidden void __pthread_tsd_run_dtors();
 hidden void __pthread_key_delete_synccall(void (*)(void *), void *);
 hidden int __pthread_key_delete_impl(pthread_key_t);
 
-extern hidden volatile int __block_new_threads;
 extern hidden volatile size_t __pthread_tsd_size;
 extern hidden void *__pthread_tsd_main[];
 extern hidden volatile int __aio_fut;
