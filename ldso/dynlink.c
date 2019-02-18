@@ -17,6 +17,7 @@
 #include <pthread.h>
 #include <ctype.h>
 #include <dlfcn.h>
+#include <semaphore.h>
 #include "pthread_impl.h"
 #include "libc.h"
 #include "dynlink.h"
@@ -1338,48 +1339,6 @@ void __init_tls(size_t *auxv)
 {
 }
 
-hidden void *__tls_get_new(tls_mod_off_t *v)
-{
-	pthread_t self = __pthread_self();
-
-	/* Block signals to make accessing new TLS async-signal-safe */
-	sigset_t set;
-	__block_all_sigs(&set);
-	if (v[0] <= self->dtv[0]) {
-		__restore_sigs(&set);
-		return (void *)(self->dtv[v[0]] + v[1]);
-	}
-
-	/* This is safe without any locks held because, if the caller
-	 * is able to request the Nth entry of the DTV, the DSO list
-	 * must be valid at least that far out and it was synchronized
-	 * at program startup or by an already-completed call to dlopen. */
-	struct dso *p;
-	for (p=head; p->tls_id != v[0]; p=p->next);
-
-	/* Get new DTV space from new DSO */
-	uintptr_t *newdtv = p->new_dtv +
-		(v[0]+1)*a_fetch_add(&p->new_dtv_idx,1);
-	memcpy(newdtv, self->dtv, (self->dtv[0]+1) * sizeof(uintptr_t));
-	newdtv[0] = v[0];
-	self->dtv = self->dtv_copy = newdtv;
-
-	/* Get new TLS memory from all new DSOs up to the requested one */
-	unsigned char *mem;
-	for (p=head; ; p=p->next) {
-		if (!p->tls_id || self->dtv[p->tls_id]) continue;
-		mem = p->new_tls + (p->tls.size + p->tls.align)
-			* a_fetch_add(&p->new_tls_idx,1);
-		mem += ((uintptr_t)p->tls.image - (uintptr_t)mem)
-			& (p->tls.align-1);
-		self->dtv[p->tls_id] = (uintptr_t)mem + DTP_OFFSET;
-		memcpy(mem, p->tls.image, p->tls.len);
-		if (p->tls_id == v[0]) break;
-	}
-	__restore_sigs(&set);
-	return mem + v[1] + DTP_OFFSET;
-}
-
 static void update_tls_size()
 {
 	libc.tls_cnt = tls_cnt;
@@ -1390,6 +1349,82 @@ static void update_tls_size()
 		sizeof(struct pthread) +
 		tls_align * 2,
 	tls_align);
+}
+
+void __dl_prepare_for_threads(void)
+{
+	/* MEMBARRIER_CMD_REGISTER_PRIVATE_EXPEDITED */
+	__syscall(SYS_membarrier, 1<<4, 0);
+}
+
+static sem_t barrier_sem;
+static void bcast_barrier(int s)
+{
+	sem_post(&barrier_sem);
+}
+
+static void install_new_tls(void)
+{
+	sigset_t set;
+	pthread_t self = __pthread_self(), td;
+	uintptr_t (*newdtv)[tls_cnt+1] = (void *)tail->new_dtv;
+	struct dso *p;
+	size_t i, j;
+	size_t old_cnt = self->dtv[0];
+
+	__block_app_sigs(&set);
+	__tl_lock();
+	/* Copy existing dtv contents from all existing threads. */
+	for (i=0, td=self; !i || td!=self; i++, td=td->next) {
+		memcpy(newdtv+i, td->dtv,
+			(old_cnt+1)*sizeof(uintptr_t));
+		newdtv[i][0] = tls_cnt;
+	}
+	/* Install new dtls into the enlarged, uninstalled dtv copies. */
+	for (p=head; ; p=p->next) {
+		if (!p->tls_id || self->dtv[p->tls_id]) continue;
+		unsigned char *mem = p->new_tls;
+		for (j=0; j<i; j++) {
+			unsigned char *new = mem;
+			new += ((uintptr_t)p->tls.image - (uintptr_t)mem)
+				& (p->tls.align-1);
+			memcpy(new, p->tls.image, p->tls.len);
+			newdtv[j][p->tls_id] =
+				(uintptr_t)new + DTP_OFFSET;
+			mem += p->tls.size + p->tls.align;
+		}
+		if (p->tls_id == tls_cnt) break;
+	}
+
+	/* Broadcast barrier to ensure contents of new dtv is visible
+	 * if the new dtv pointer is. Use SYS_membarrier if it works,
+	 * otherwise emulate with a signal. */
+
+	/* MEMBARRIER_CMD_PRIVATE_EXPEDITED */
+	if (__syscall(SYS_membarrier, 1<<3, 0)) {
+		sem_init(&barrier_sem, 0, 0);
+		struct sigaction sa = {
+			.sa_flags = SA_RESTART,
+			.sa_handler = bcast_barrier
+		};
+		memset(&sa.sa_mask, -1, sizeof sa.sa_mask);
+		__libc_sigaction(SIGSYNCCALL, &sa, 0);	
+		for (td=self->next; td!=self; td=td->next)
+			if (j) __syscall(SYS_tkill, td->tid, SIGSYNCCALL);
+		for (td=self->next; td!=self; td=td->next)
+			sem_wait(&barrier_sem);
+		sa.sa_handler = SIG_IGN;
+		__libc_sigaction(SIGSYNCCALL, &sa, 0);
+		sem_destroy(&barrier_sem);
+	}
+
+	/* Install new dtv for each thread. */
+	for (j=0, td=self; !j || td!=self; j++, td=td->next) {
+		td->dtv = td->dtv_copy = newdtv[j];
+	}
+
+	__tl_unlock();
+	__restore_sigs(&set);
 }
 
 /* Stage 1 of the dynamic linker is defined in dlstart.c. It calls the
@@ -1864,6 +1899,8 @@ void *dlopen(const char *file, int mode)
 	redo_lazy_relocs();
 
 	update_tls_size();
+	if (tls_cnt != orig_tls_cnt)
+		install_new_tls();
 	_dl_debug_state();
 	orig_tail = tail;
 end:
