@@ -51,15 +51,17 @@ int __pthread_key_delete(pthread_key_t k)
 	pthread_t self = __pthread_self(), td=self;
 
 	__block_app_sigs(&set);
+	__pthread_rwlock_wrlock(&key_lock);
+
 	__tl_lock();
 	do td->tsd[k] = 0;
 	while ((td=td->next)!=self);
 	__tl_unlock();
-	__restore_sigs(&set);
 
-	__pthread_rwlock_wrlock(&key_lock);
 	keys[k] = 0;
+
 	__pthread_rwlock_unlock(&key_lock);
+	__restore_sigs(&set);
 
 	return 0;
 }
