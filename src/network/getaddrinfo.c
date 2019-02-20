@@ -104,7 +104,7 @@ int getaddrinfo(const char *restrict host, const char *restrict serv, const stru
 	}
 
 	for (k=i=0; i<naddrs; i++) for (j=0; j<nservs; j++, k++) {
-		out[k].slot = i;
+		out[k].slot = k;
 		out[k].ai = (struct addrinfo){
 			.ai_family = addrs[i].family,
 			.ai_socktype = ports[j].socktype,
