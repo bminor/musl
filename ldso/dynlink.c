@@ -1410,7 +1410,7 @@ static void install_new_tls(void)
 		memset(&sa.sa_mask, -1, sizeof sa.sa_mask);
 		__libc_sigaction(SIGSYNCCALL, &sa, 0);	
 		for (td=self->next; td!=self; td=td->next)
-			if (j) __syscall(SYS_tkill, td->tid, SIGSYNCCALL);
+			__syscall(SYS_tkill, td->tid, SIGSYNCCALL);
 		for (td=self->next; td!=self; td=td->next)
 			sem_wait(&barrier_sem);
 		sa.sa_handler = SIG_IGN;
