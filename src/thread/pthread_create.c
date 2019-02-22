@@ -15,7 +15,7 @@ weak_alias(dummy_0, __release_ptc);
 weak_alias(dummy_0, __pthread_tsd_run_dtors);
 weak_alias(dummy_0, __do_orphaned_stdio_locks);
 weak_alias(dummy_0, __dl_thread_cleanup);
-weak_alias(dummy_0, __dl_prepare_for_threads);
+weak_alias(dummy_0, __membarrier_init);
 
 static int tl_lock_count;
 static int tl_lock_waiters;
@@ -246,7 +246,7 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 		init_file_lock(__stderr_used);
 		__syscall(SYS_rt_sigprocmask, SIG_UNBLOCK, SIGPT_SET, 0, _NSIG/8);
 		self->tsd = (void **)__pthread_tsd_main;
-		__dl_prepare_for_threads();
+		__membarrier_init();
 		libc.threaded = 1;
 	}
 	if (attrp && !c11) attr = *attrp;

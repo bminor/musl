@@ -18,6 +18,7 @@
 #include <ctype.h>
 #include <dlfcn.h>
 #include <semaphore.h>
+#include <sys/membarrier.h>
 #include "pthread_impl.h"
 #include "libc.h"
 #include "dynlink.h"
@@ -1351,18 +1352,6 @@ static void update_tls_size()
 	tls_align);
 }
 
-void __dl_prepare_for_threads(void)
-{
-	/* MEMBARRIER_CMD_REGISTER_PRIVATE_EXPEDITED */
-	__syscall(SYS_membarrier, 1<<4, 0);
-}
-
-static sem_t barrier_sem;
-static void bcast_barrier(int s)
-{
-	sem_post(&barrier_sem);
-}
-
 static void install_new_tls(void)
 {
 	sigset_t set;
@@ -1397,26 +1386,11 @@ static void install_new_tls(void)
 	}
 
 	/* Broadcast barrier to ensure contents of new dtv is visible
-	 * if the new dtv pointer is. Use SYS_membarrier if it works,
-	 * otherwise emulate with a signal. */
+	 * if the new dtv pointer is. The __membarrier function has a
+	 * fallback emulation using signals for kernels that lack the
+	 * feature at the syscall level. */
 
-	/* MEMBARRIER_CMD_PRIVATE_EXPEDITED */
-	if (__syscall(SYS_membarrier, 1<<3, 0)) {
-		sem_init(&barrier_sem, 0, 0);
-		struct sigaction sa = {
-			.sa_flags = SA_RESTART,
-			.sa_handler = bcast_barrier
-		};
-		memset(&sa.sa_mask, -1, sizeof sa.sa_mask);
-		__libc_sigaction(SIGSYNCCALL, &sa, 0);	
-		for (td=self->next; td!=self; td=td->next)
-			__syscall(SYS_tkill, td->tid, SIGSYNCCALL);
-		for (td=self->next; td!=self; td=td->next)
-			sem_wait(&barrier_sem);
-		sa.sa_handler = SIG_IGN;
-		__libc_sigaction(SIGSYNCCALL, &sa, 0);
-		sem_destroy(&barrier_sem);
-	}
+	__membarrier(MEMBARRIER_CMD_PRIVATE_EXPEDITED, 0);
 
 	/* Install new dtv for each thread. */
 	for (j=0, td=self; !j || td!=self; j++, td=td->next) {
