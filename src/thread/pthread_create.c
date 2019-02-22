@@ -17,28 +17,38 @@ weak_alias(dummy_0, __do_orphaned_stdio_locks);
 weak_alias(dummy_0, __dl_thread_cleanup);
 weak_alias(dummy_0, __dl_prepare_for_threads);
 
+static int tl_lock_count;
+static int tl_lock_waiters;
+
 void __tl_lock(void)
 {
-	if (!a_cas(&__thread_list_lock, 0, 1)) return;
-	do {
-		a_cas(&__thread_list_lock, 1, 2);
-		__futexwait(&__thread_list_lock, 2, 0);
-	} while (a_cas(&__thread_list_lock, 0, 2));
+	int tid = __pthread_self()->tid;
+	int val = __thread_list_lock;
+	if (val == tid) {
+		tl_lock_count++;
+		return;
+	}
+	while ((val = a_cas(&__thread_list_lock, 0, tid)))
+		__wait(&__thread_list_lock, &tl_lock_waiters, val, 0);
 }
 
 void __tl_unlock(void)
 {
-	if (a_swap(&__thread_list_lock, 0)==2)
-		__wake(&__thread_list_lock, 1, 0);
+	if (tl_lock_count) {
+		tl_lock_count--;
+		return;
+	}
+	a_store(&__thread_list_lock, 0);
+	if (tl_lock_waiters) __wake(&__thread_list_lock, 1, 0);
 }
 
 void __tl_sync(pthread_t td)
 {
 	a_barrier();
-	if (!__thread_list_lock) return;
-	a_cas(&__thread_list_lock, 1, 2);
-	__wait(&__thread_list_lock, 0, 2, 0);
-	__wake(&__thread_list_lock, 1, 0);
+	int val = __thread_list_lock;
+	if (!val) return;
+	__wait(&__thread_list_lock, &tl_lock_waiters, val, 0);
+	if (tl_lock_waiters) __wake(&__thread_list_lock, 1, 0);
 }
 
 _Noreturn void __pthread_exit(void *result)
