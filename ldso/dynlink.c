@@ -29,6 +29,8 @@ static void error(const char *, ...);
 #define MAXP2(a,b) (-(-(a)&-(b)))
 #define ALIGN(x,y) ((x)+(y)-1 & -(y))
 
+#define container_of(p,t,m) ((t*)((char *)(p)-offsetof(t,m)))
+
 struct debug {
 	int ver;
 	void *head;
@@ -1356,7 +1358,8 @@ static void install_new_tls(void)
 {
 	sigset_t set;
 	pthread_t self = __pthread_self(), td;
-	uintptr_t (*newdtv)[tls_cnt+1] = (void *)tail->new_dtv;
+	struct dso *dtv_provider = container_of(tls_tail, struct dso, tls);
+	uintptr_t (*newdtv)[tls_cnt+1] = (void *)dtv_provider->new_dtv;
 	struct dso *p;
 	size_t i, j;
 	size_t old_cnt = self->dtv[0];
