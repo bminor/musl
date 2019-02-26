@@ -71,7 +71,10 @@ struct dso {
 	char relocated;
 	char constructed;
 	char kernel_mapped;
+	char mark;
+	char bfs_built;
 	struct dso **deps, *needed_by;
+	size_t ndeps_direct;
 	char *rpath_orig, *rpath;
 	struct tls_module tls;
 	size_t tls_id;
@@ -127,7 +130,6 @@ static size_t static_tls_cnt;
 static pthread_mutex_t init_fini_lock = { ._m_type = PTHREAD_MUTEX_RECURSIVE };
 static struct fdpic_loadmap *app_loadmap;
 static struct fdpic_dummy_loadmap app_dummy_loadmap;
-static struct dso *const nodeps_dummy;
 
 struct debug *_dl_debug_addr = &debug;
 
@@ -1140,30 +1142,76 @@ static struct dso *load_library(const char *name, struct dso *needed_by)
 	return p;
 }
 
+static void load_direct_deps(struct dso *p)
+{
+	size_t i, cnt;
+	if (p->deps) return;
+	for (i=cnt=0; p->dynv[i]; i+=2)
+		if (p->dynv[i] == DT_NEEDED) cnt++;
+	p->deps = calloc(cnt+1, sizeof *p->deps);
+	if (!p->deps) {
+		error("Error loading dependencies for %s", p->name);
+		if (runtime) longjmp(*rtld_fail, 1);
+	}
+	for (i=cnt=0; p->dynv[i]; i+=2) {
+		if (p->dynv[i] != DT_NEEDED) continue;
+		struct dso *dep = load_library(p->strings + p->dynv[i+1], p);
+		if (!dep) {
+			error("Error loading shared library %s: %m (needed by %s)",
+				p->strings + p->dynv[i+1], p->name);
+			if (runtime) longjmp(*rtld_fail, 1);
+			continue;
+		}
+		p->deps[cnt++] = dep;
+		p->deps[cnt] = 0;
+	}
+	p->ndeps_direct = cnt;
+}
+
 static void load_deps(struct dso *p)
 {
-	size_t i, ndeps=0;
-	struct dso ***deps = &p->deps, **tmp, *dep;
-	for (; p; p=p->next) {
-		for (i=0; p->dynv[i]; i+=2) {
-			if (p->dynv[i] != DT_NEEDED) continue;
-			dep = load_library(p->strings + p->dynv[i+1], p);
-			if (!dep) {
-				error("Error loading shared library %s: %m (needed by %s)",
-					p->strings + p->dynv[i+1], p->name);
-				if (runtime) longjmp(*rtld_fail, 1);
-				continue;
-			}
-			if (runtime) {
-				tmp = realloc(*deps, sizeof(*tmp)*(ndeps+2));
-				if (!tmp) longjmp(*rtld_fail, 1);
-				tmp[ndeps++] = dep;
-				tmp[ndeps] = 0;
-				*deps = tmp;
-			}
+	if (p->deps) return;
+	for (; p; p=p->next)
+		load_direct_deps(p);
+}
+
+static void extend_bfs_deps(struct dso *p)
+{
+	size_t i, j, cnt, ndeps_all;
+	struct dso **tmp;
+
+	if (p->bfs_built) return;
+	ndeps_all = p->ndeps_direct;
+
+	/* Mark existing (direct) deps so they won't be duplicated. */
+	for (i=0; p->deps[i]; i++)
+		p->deps[i]->mark = 1;
+
+	/* For each dependency already in the list, copy its list of direct
+	 * dependencies to the list, excluding any items already in the
+	 * list. Note that the list this loop iterates over will grow during
+	 * the loop, but since duplicates are excluded, growth is bounded. */
+	for (i=0; p->deps[i]; i++) {
+		struct dso *dep = p->deps[i];
+		for (j=cnt=0; j<dep->ndeps_direct; j++)
+			if (!dep->deps[j]->mark) cnt++;
+		tmp = realloc(p->deps, sizeof(*p->deps) * (ndeps_all+cnt+1));
+		if (!tmp) {
+			error("Error recording dependencies for %s", p->name);
+			if (runtime) longjmp(*rtld_fail, 1);
+			continue;
 		}
+		p->deps = tmp;
+		for (j=0; j<dep->ndeps_direct; j++) {
+			if (dep->deps[j]->mark) continue;
+			dep->deps[j]->mark = 1;
+			p->deps[ndeps_all++] = dep->deps[j];
+		}
+		p->deps[ndeps_all] = 0;
 	}
-	if (!*deps) *deps = (struct dso **)&nodeps_dummy;
+	p->bfs_built = 1;
+	for (p=head; p; p=p->next)
+		p->mark = 0;
 }
 
 static void load_preload(char *s)
@@ -1816,8 +1864,7 @@ void *dlopen(const char *file, int mode)
 			free(p->funcdescs);
 			if (p->rpath != p->rpath_orig)
 				free(p->rpath);
-			if (p->deps != &nodeps_dummy)
-				free(p->deps);
+			free(p->deps);
 			unmap_library(p);
 			free(p);
 		}
@@ -1843,24 +1890,22 @@ void *dlopen(const char *file, int mode)
 	}
 
 	/* First load handling */
-	int first_load = !p->deps;
-	if (first_load) {
-		load_deps(p);
-		if (!p->relocated && (mode & RTLD_LAZY)) {
-			prepare_lazy(p);
-			for (i=0; p->deps[i]; i++)
-				if (!p->deps[i]->relocated)
-					prepare_lazy(p->deps[i]);
-		}
+	load_deps(p);
+	extend_bfs_deps(p);
+	if (!p->relocated && (mode & RTLD_LAZY)) {
+		prepare_lazy(p);
+		for (i=0; p->deps[i]; i++)
+			if (!p->deps[i]->relocated)
+				prepare_lazy(p->deps[i]);
 	}
-	if (first_load || (mode & RTLD_GLOBAL)) {
+	if (!p->relocated || (mode & RTLD_GLOBAL)) {
 		/* Make new symbols global, at least temporarily, so we can do
 		 * relocations. If not RTLD_GLOBAL, this is reverted below. */
 		add_syms(p);
 		for (i=0; p->deps[i]; i++)
 			add_syms(p->deps[i]);
 	}
-	if (first_load) {
+	if (!p->relocated) {
 		reloc_all(p);
 	}
 
