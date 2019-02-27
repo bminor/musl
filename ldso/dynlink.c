@@ -1374,7 +1374,7 @@ static void install_new_tls(void)
 	}
 	/* Install new dtls into the enlarged, uninstalled dtv copies. */
 	for (p=head; ; p=p->next) {
-		if (!p->tls_id || self->dtv[p->tls_id]) continue;
+		if (p->tls_id <= old_cnt) continue;
 		unsigned char *mem = p->new_tls;
 		for (j=0; j<i; j++) {
 			unsigned char *new = mem;
