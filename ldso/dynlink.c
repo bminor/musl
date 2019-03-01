@@ -73,6 +73,7 @@ struct dso {
 	char kernel_mapped;
 	char mark;
 	char bfs_built;
+	char runtime_loaded;
 	struct dso **deps, *needed_by;
 	size_t ndeps_direct;
 	char *rpath_orig, *rpath;
@@ -1107,6 +1108,7 @@ static struct dso *load_library(const char *name, struct dso *needed_by)
 	p->ino = st.st_ino;
 	p->needed_by = needed_by;
 	p->name = p->buf;
+	p->runtime_loaded = runtime;
 	strcpy(p->name, pathname);
 	/* Add a shortname only if name arg was not an explicit pathname. */
 	if (pathname != name) p->shortname = strrchr(p->name, '/')+1;
@@ -1180,6 +1182,10 @@ static void extend_bfs_deps(struct dso *p)
 	size_t i, j, cnt, ndeps_all;
 	struct dso **tmp;
 
+	/* Can't use realloc if the original p->deps was allocated at
+	 * program entry and malloc has been replaced. */
+	int no_realloc = __malloc_replaced && !p->runtime_loaded;
+
 	if (p->bfs_built) return;
 	ndeps_all = p->ndeps_direct;
 
@@ -1195,11 +1201,17 @@ static void extend_bfs_deps(struct dso *p)
 		struct dso *dep = p->deps[i];
 		for (j=cnt=0; j<dep->ndeps_direct; j++)
 			if (!dep->deps[j]->mark) cnt++;
-		tmp = realloc(p->deps, sizeof(*p->deps) * (ndeps_all+cnt+1));
+		tmp = no_realloc ? 
+			malloc(sizeof(*tmp) * (ndeps_all+cnt+1)) :
+			realloc(p->deps, sizeof(*tmp) * (ndeps_all+cnt+1));
 		if (!tmp) {
 			error("Error recording dependencies for %s", p->name);
 			if (runtime) longjmp(*rtld_fail, 1);
 			continue;
+		}
+		if (no_realloc) {
+			memcpy(tmp, p->deps, sizeof(*tmp) * (ndeps_all+1));
+			no_realloc = 0;
 		}
 		p->deps = tmp;
 		for (j=0; j<dep->ndeps_direct; j++) {
