@@ -1146,16 +1146,23 @@ static struct dso *load_library(const char *name, struct dso *needed_by)
 
 static void load_direct_deps(struct dso *p)
 {
-	size_t i, cnt;
+	size_t i, cnt=0;
 	if (p->deps) return;
-	for (i=cnt=0; p->dynv[i]; i+=2)
+	/* For head, all preloads are direct pseudo-dependencies.
+	 * Count and include them now to avoid realloc later. */
+	if (p==head) for (struct dso *q=p->next; q; q=q->next)
+		cnt++;
+	for (i=0; p->dynv[i]; i+=2)
 		if (p->dynv[i] == DT_NEEDED) cnt++;
 	p->deps = calloc(cnt+1, sizeof *p->deps);
 	if (!p->deps) {
 		error("Error loading dependencies for %s", p->name);
 		if (runtime) longjmp(*rtld_fail, 1);
 	}
-	for (i=cnt=0; p->dynv[i]; i+=2) {
+	cnt=0;
+	if (p==head) for (struct dso *q=p->next; q; q=q->next)
+		p->deps[cnt++] = q;
+	for (i=0; p->dynv[i]; i+=2) {
 		if (p->dynv[i] != DT_NEEDED) continue;
 		struct dso *dep = load_library(p->strings + p->dynv[i+1], p);
 		if (!dep) {
@@ -1165,8 +1172,8 @@ static void load_direct_deps(struct dso *p)
 			continue;
 		}
 		p->deps[cnt++] = dep;
-		p->deps[cnt] = 0;
 	}
+	p->deps[cnt] = 0;
 	p->ndeps_direct = cnt;
 }
 
