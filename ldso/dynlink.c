@@ -124,6 +124,7 @@ static int runtime;
 static int ldd_mode;
 static int ldso_fail;
 static int noload;
+static int shutting_down;
 static jmp_buf *rtld_fail;
 static pthread_rwlock_t lock;
 static struct debug debug;
@@ -1350,7 +1351,18 @@ void __libc_exit_fini()
 {
 	struct dso *p;
 	size_t dyn[DYN_CNT];
+	int self = __pthread_self()->tid;
+
+	/* Take both locks before setting shutting_down, so that
+	 * either lock is sufficient to read its value. The lock
+	 * order matches that in dlopen to avoid deadlock. */
+	pthread_rwlock_wrlock(&lock);
+	pthread_mutex_lock(&init_fini_lock);
+	shutting_down = 1;
+	pthread_rwlock_unlock(&lock);
 	for (p=fini_head; p; p=p->fini_next) {
+		while (p->ctor_visitor && p->ctor_visitor!=self)
+			pthread_cond_wait(&ctor_cond, &init_fini_lock);
 		if (!p->constructed) continue;
 		decode_vec(p->dynv, dyn, DYN_CNT);
 		if (dyn[0] & (1<<DT_FINI_ARRAY)) {
@@ -1431,7 +1443,7 @@ static void do_init_fini(struct dso **queue)
 
 	pthread_mutex_lock(&init_fini_lock);
 	for (i=0; (p=queue[i]); i++) {
-		while (p->ctor_visitor && p->ctor_visitor!=self)
+		while ((p->ctor_visitor && p->ctor_visitor!=self) || shutting_down)
 			pthread_cond_wait(&ctor_cond, &init_fini_lock);
 		if (p->ctor_visitor || p->constructed)
 			continue;
@@ -1937,6 +1949,10 @@ void *dlopen(const char *file, int mode)
 	__inhibit_ptc();
 
 	p = 0;
+	if (shutting_down) {
+		error("Cannot dlopen while program is exiting.");
+		goto end;
+	}
 	orig_tls_tail = tls_tail;
 	orig_tls_cnt = tls_cnt;
 	orig_tls_offset = tls_offset;
