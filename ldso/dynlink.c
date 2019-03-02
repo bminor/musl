@@ -76,6 +76,8 @@ struct dso {
 	char runtime_loaded;
 	struct dso **deps, *needed_by;
 	size_t ndeps_direct;
+	size_t next_dep;
+	int ctor_visitor;
 	char *rpath_orig, *rpath;
 	struct tls_module tls;
 	size_t tls_id;
@@ -128,7 +130,9 @@ static struct debug debug;
 static struct tls_module *tls_tail;
 static size_t tls_cnt, tls_offset, tls_align = MIN_TLS_ALIGN;
 static size_t static_tls_cnt;
-static pthread_mutex_t init_fini_lock = { ._m_type = PTHREAD_MUTEX_RECURSIVE };
+static pthread_mutex_t init_fini_lock;
+static pthread_cond_t ctor_cond;
+static struct dso **main_ctor_queue;
 static struct fdpic_loadmap *app_loadmap;
 static struct fdpic_dummy_loadmap app_dummy_loadmap;
 
@@ -1361,22 +1365,87 @@ void __libc_exit_fini()
 	}
 }
 
-static void do_init_fini(struct dso *p)
+static struct dso **queue_ctors(struct dso *dso)
 {
-	size_t dyn[DYN_CNT];
-	int need_locking = libc.threads_minus_1;
-	/* Allow recursive calls that arise when a library calls
-	 * dlopen from one of its constructors, but block any
-	 * other threads until all ctors have finished. */
-	if (need_locking) pthread_mutex_lock(&init_fini_lock);
-	for (; p; p=p->prev) {
+	size_t cnt, qpos, spos, i;
+	struct dso *p, **queue, **stack;
+
+	if (ldd_mode) return 0;
+
+	/* Bound on queue size is the total number of indirect deps.
+	 * If a bfs deps list was built, we can use it. Otherwise,
+	 * bound by the total number of DSOs, which is always safe and
+	 * is reasonable we use it (for main app at startup). */
+	if (dso->bfs_built) {
+		for (cnt=0; dso->deps[cnt]; cnt++)
+			dso->deps[cnt]->mark = 0;
+		cnt++; /* self, not included in deps */
+	} else {
+		for (cnt=0, p=head; p; cnt++, p=p->next)
+			p->mark = 0;
+	}
+	cnt++; /* termination slot */
+	stack = queue = calloc(cnt, sizeof *queue);
+
+	if (!queue) {
+		error("Error allocating constructor queue: %m\n");
+		if (runtime) longjmp(*rtld_fail, 1);
+		return 0;
+	}
+
+	/* Opposite ends of the allocated buffer serve as an output queue
+	 * and a working stack. Setup initial stack with just the argument
+	 * dso and initial queue empty... */
+	qpos = 0;
+	spos = cnt;
+	stack[--spos] = dso;
+	dso->next_dep = 0;
+	dso->mark = 1;
+
+	/* Then perform pseudo-DFS sort, but ignoring circular deps. */
+	while (spos<cnt) {
+		p = stack[spos++];
+		while (p->next_dep < p->ndeps_direct) {
+			if (p->deps[p->next_dep]->mark) {
+				p->next_dep++;
+			} else {
+				stack[--spos] = p;
+				p = p->deps[p->next_dep];
+				p->next_dep = 0;
+				p->mark = 1;
+			}
+		}
+		queue[qpos++] = p;
+	}
+	queue[qpos] = 0;
+	for (i=0; i<qpos; i++) queue[i]->mark = 0;
+
+	return queue;
+}
+
+static void do_init_fini(struct dso **queue)
+{
+	struct dso *p;
+	size_t dyn[DYN_CNT], i;
+	int self = __pthread_self()->tid;
+
+	pthread_mutex_lock(&init_fini_lock);
+	for (i=0; (p=queue[i]); i++) {
+		while (p->ctor_visitor && p->ctor_visitor!=self)
+			pthread_cond_wait(&ctor_cond, &init_fini_lock);
+		if (p->ctor_visitor || p->constructed)
+			continue;
 		if (p->constructed) continue;
-		p->constructed = 1;
+		p->ctor_visitor = self;
+		
 		decode_vec(p->dynv, dyn, DYN_CNT);
 		if (dyn[0] & ((1<<DT_FINI) | (1<<DT_FINI_ARRAY))) {
 			p->fini_next = fini_head;
 			fini_head = p;
 		}
+
+		pthread_mutex_unlock(&init_fini_lock);
+
 #ifndef NO_LEGACY_INITFINI
 		if ((dyn[0] & (1<<DT_INIT)) && dyn[DT_INIT])
 			fpaddr(p, dyn[DT_INIT])();
@@ -1386,17 +1455,22 @@ static void do_init_fini(struct dso *p)
 			size_t *fn = laddr(p, dyn[DT_INIT_ARRAY]);
 			while (n--) ((void (*)(void))*fn++)();
 		}
-		if (!need_locking && libc.threads_minus_1) {
-			need_locking = 1;
-			pthread_mutex_lock(&init_fini_lock);
-		}
+
+		pthread_mutex_lock(&init_fini_lock);
+		p->ctor_visitor = 0;
+		p->constructed = 1;
+		pthread_cond_broadcast(&ctor_cond);
 	}
-	if (need_locking) pthread_mutex_unlock(&init_fini_lock);
+	pthread_mutex_unlock(&init_fini_lock);
 }
 
 void __libc_start_init(void)
 {
-	do_init_fini(tail);
+	do_init_fini(main_ctor_queue);
+	/* This is valid because the queue was allocated after redoing
+	 * relocations with any interposed malloc having taken effect. */
+	free(main_ctor_queue);
+	main_ctor_queue = 0;
 }
 
 static void dl_debug_state(void)
@@ -1793,6 +1867,8 @@ _Noreturn void __dls3(size_t *sp)
 	}
 	static_tls_cnt = tls_cnt;
 
+	main_ctor_queue = queue_ctors(&app);
+
 	if (ldso_fail) _exit(127);
 	if (ldd_mode) _exit(0);
 
@@ -1852,6 +1928,7 @@ void *dlopen(const char *file, int mode)
 	size_t i;
 	int cs;
 	jmp_buf jb;
+	struct dso **volatile ctor_queue = 0;
 
 	if (!file) return head;
 
@@ -1886,6 +1963,7 @@ void *dlopen(const char *file, int mode)
 			free(p->deps);
 			unmap_library(p);
 			free(p);
+			free(ctor_queue);
 		}
 		if (!orig_tls_tail) libc.tls_head = 0;
 		tls_tail = orig_tls_tail;
@@ -1911,6 +1989,9 @@ void *dlopen(const char *file, int mode)
 	/* First load handling */
 	load_deps(p);
 	extend_bfs_deps(p);
+	pthread_mutex_lock(&init_fini_lock);
+	if (!p->constructed) ctor_queue = queue_ctors(p);
+	pthread_mutex_unlock(&init_fini_lock);
 	if (!p->relocated && (mode & RTLD_LAZY)) {
 		prepare_lazy(p);
 		for (i=0; p->deps[i]; i++)
@@ -1948,7 +2029,10 @@ end:
 	__release_ptc();
 	if (p) gencnt++;
 	pthread_rwlock_unlock(&lock);
-	if (p) do_init_fini(orig_tail);
+	if (ctor_queue) {
+		do_init_fini(ctor_queue);
+		free(ctor_queue);
+	}
 	pthread_setcancelstate(cs, 0);
 	return p;
 }
