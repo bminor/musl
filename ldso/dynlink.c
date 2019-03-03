@@ -134,6 +134,7 @@ static size_t static_tls_cnt;
 static pthread_mutex_t init_fini_lock;
 static pthread_cond_t ctor_cond;
 static struct dso *builtin_deps[2];
+static struct dso *const no_deps[1];
 static struct dso **main_ctor_queue;
 static struct fdpic_loadmap *app_loadmap;
 static struct fdpic_dummy_loadmap app_dummy_loadmap;
@@ -1820,6 +1821,7 @@ _Noreturn void __dls3(size_t *sp)
 	reclaim_gaps(&ldso);
 
 	/* Load preload/needed libraries, add symbols to global namespace. */
+	ldso.deps = (struct dso **)no_deps;
 	if (env_preload) load_preload(env_preload);
  	load_deps(&app);
 	for (struct dso *p=head; p; p=p->next)
@@ -1841,6 +1843,7 @@ _Noreturn void __dls3(size_t *sp)
 		vdso.name = "";
 		vdso.shortname = "linux-gate.so.1";
 		vdso.relocated = 1;
+		vdso.deps = (struct dso **)no_deps;
 		decode_dyn(&vdso);
 		vdso.prev = tail;
 		tail->next = &vdso;
