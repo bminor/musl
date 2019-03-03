@@ -30,6 +30,7 @@ static void error(const char *, ...);
 #define ALIGN(x,y) ((x)+(y)-1 & -(y))
 
 #define container_of(p,t,m) ((t*)((char *)(p)-offsetof(t,m)))
+#define countof(a) ((sizeof (a))/(sizeof (a)[0]))
 
 struct debug {
 	int ver;
@@ -135,6 +136,7 @@ static pthread_mutex_t init_fini_lock;
 static pthread_cond_t ctor_cond;
 static struct dso *builtin_deps[2];
 static struct dso *const no_deps[1];
+static struct dso *builtin_ctor_queue[4];
 static struct dso **main_ctor_queue;
 static struct fdpic_loadmap *app_loadmap;
 static struct fdpic_dummy_loadmap app_dummy_loadmap;
@@ -1405,7 +1407,10 @@ static struct dso **queue_ctors(struct dso *dso)
 			p->mark = 0;
 	}
 	cnt++; /* termination slot */
-	stack = queue = calloc(cnt, sizeof *queue);
+	if (dso==head && cnt <= countof(builtin_ctor_queue))
+		queue = builtin_ctor_queue;
+	else
+		queue = calloc(cnt, sizeof *queue);
 
 	if (!queue) {
 		error("Error allocating constructor queue: %m\n");
@@ -1416,6 +1421,7 @@ static struct dso **queue_ctors(struct dso *dso)
 	/* Opposite ends of the allocated buffer serve as an output queue
 	 * and a working stack. Setup initial stack with just the argument
 	 * dso and initial queue empty... */
+	stack = queue;
 	qpos = 0;
 	spos = cnt;
 	stack[--spos] = dso;
@@ -1487,7 +1493,8 @@ static void do_init_fini(struct dso **queue)
 void __libc_start_init(void)
 {
 	do_init_fini(main_ctor_queue);
-	if (!__malloc_replaced) free(main_ctor_queue);
+	if (!__malloc_replaced && main_ctor_queue != builtin_ctor_queue)
+		free(main_ctor_queue);
 	main_ctor_queue = 0;
 }
 
