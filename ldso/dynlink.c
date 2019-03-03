@@ -1479,9 +1479,7 @@ static void do_init_fini(struct dso **queue)
 void __libc_start_init(void)
 {
 	do_init_fini(main_ctor_queue);
-	/* This is valid because the queue was allocated after redoing
-	 * relocations with any interposed malloc having taken effect. */
-	free(main_ctor_queue);
+	if (!__malloc_replaced) free(main_ctor_queue);
 	main_ctor_queue = 0;
 }
 
@@ -1851,6 +1849,14 @@ _Noreturn void __dls3(size_t *sp)
 		}
 	}
 
+	/* This must be done before final relocations, since it calls
+	 * malloc, which may be provided by the application. Calling any
+	 * application code prior to the jump to its entry point is not
+	 * valid in our model and does not work with FDPIC, where there
+	 * are additional relocation-like fixups that only the entry point
+	 * code can see to perform. */
+	main_ctor_queue = queue_ctors(&app);
+
 	/* The main program must be relocated LAST since it may contin
 	 * copy relocations which depend on libraries' relocations. */
 	reloc_all(app.next);
@@ -1878,8 +1884,6 @@ _Noreturn void __dls3(size_t *sp)
 		libc.tls_size = tmp_tls_size;
 	}
 	static_tls_cnt = tls_cnt;
-
-	main_ctor_queue = queue_ctors(&app);
 
 	if (ldso_fail) _exit(127);
 	if (ldd_mode) _exit(0);
