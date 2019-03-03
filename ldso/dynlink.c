@@ -133,6 +133,7 @@ static size_t tls_cnt, tls_offset, tls_align = MIN_TLS_ALIGN;
 static size_t static_tls_cnt;
 static pthread_mutex_t init_fini_lock;
 static pthread_cond_t ctor_cond;
+static struct dso *builtin_deps[2];
 static struct dso **main_ctor_queue;
 static struct fdpic_loadmap *app_loadmap;
 static struct fdpic_dummy_loadmap app_dummy_loadmap;
@@ -1152,6 +1153,7 @@ static struct dso *load_library(const char *name, struct dso *needed_by)
 static void load_direct_deps(struct dso *p)
 {
 	size_t i, cnt=0;
+
 	if (p->deps) return;
 	/* For head, all preloads are direct pseudo-dependencies.
 	 * Count and include them now to avoid realloc later. */
@@ -1159,7 +1161,10 @@ static void load_direct_deps(struct dso *p)
 		cnt++;
 	for (i=0; p->dynv[i]; i+=2)
 		if (p->dynv[i] == DT_NEEDED) cnt++;
-	p->deps = calloc(cnt+1, sizeof *p->deps);
+	/* Use builtin buffer for apps with no external deps, to
+	 * preserve property of no runtime failure paths. */
+	p->deps = (p==head && cnt<2) ? builtin_deps :
+		calloc(cnt+1, sizeof *p->deps);
 	if (!p->deps) {
 		error("Error loading dependencies for %s", p->name);
 		if (runtime) longjmp(*rtld_fail, 1);
@@ -1195,8 +1200,10 @@ static void extend_bfs_deps(struct dso *p)
 	struct dso **tmp;
 
 	/* Can't use realloc if the original p->deps was allocated at
-	 * program entry and malloc has been replaced. */
-	int no_realloc = __malloc_replaced && !p->runtime_loaded;
+	 * program entry and malloc has been replaced, or if it's
+	 * the builtin non-allocated trivial main program deps array. */
+	int no_realloc = (__malloc_replaced && !p->runtime_loaded)
+		|| p->deps == builtin_deps;
 
 	if (p->bfs_built) return;
 	ndeps_all = p->ndeps_direct;
