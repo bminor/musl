@@ -76,6 +76,7 @@ enum {
 	TCP_NLA_BYTES_RETRANS,
 	TCP_NLA_DSACK_DUPS,
 	TCP_NLA_REORD_SEEN,
+	TCP_NLA_SRTT,
 };
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
