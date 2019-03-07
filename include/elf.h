@@ -682,6 +682,7 @@ typedef struct {
 #define NT_ARM_HW_WATCH	0x403
 #define NT_ARM_SYSTEM_CALL	0x404
 #define NT_ARM_SVE	0x405
+#define NT_ARM_PAC_MASK	0x406
 #define NT_METAG_CBUF	0x500
 #define NT_METAG_RPIPE	0x501
 #define NT_METAG_TLS	0x502
@@ -689,6 +690,7 @@ typedef struct {
 #define NT_VMCOREDD	0x700
 #define NT_MIPS_DSP	0x800
 #define NT_MIPS_FP_MODE	0x801
+#define NT_MIPS_MSA	0x802
 #define NT_VERSION	1
 
 
