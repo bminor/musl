@@ -2000,8 +2000,9 @@ void *dlopen(const char *file, int mode)
 			free(p->deps);
 			unmap_library(p);
 			free(p);
-			free(ctor_queue);
 		}
+		free(ctor_queue);
+		ctor_queue = 0;
 		if (!orig_tls_tail) libc.tls_head = 0;
 		tls_tail = orig_tls_tail;
 		if (tls_tail) tls_tail->next = 0;
