@@ -57,6 +57,7 @@ TYPEDEF struct { unsigned __attr; } pthread_condattr_t;
 TYPEDEF struct { unsigned __attr; } pthread_barrierattr_t;
 TYPEDEF struct { unsigned __attr[2]; } pthread_rwlockattr_t;
 
+STRUCT _IO_FILE { char __x; };
 TYPEDEF struct _IO_FILE FILE;
 
 TYPEDEF struct __mbstate_t { unsigned __opaque1, __opaque2; } mbstate_t;
