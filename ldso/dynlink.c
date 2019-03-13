@@ -1461,7 +1461,6 @@ static void do_init_fini(struct dso **queue)
 			pthread_cond_wait(&ctor_cond, &init_fini_lock);
 		if (p->ctor_visitor || p->constructed)
 			continue;
-		if (p->constructed) continue;
 		p->ctor_visitor = self;
 		
 		decode_vec(p->dynv, dyn, DYN_CNT);
