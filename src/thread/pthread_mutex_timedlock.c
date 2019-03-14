@@ -9,7 +9,7 @@ int __pthread_mutex_timedlock(pthread_mutex_t *restrict m, const struct timespec
 	int type = m->_m_type;
 	int r, t, priv = (type & 128) ^ 128;
 
-	r = pthread_mutex_trylock(m);
+	r = __pthread_mutex_trylock(m);
 	if (r != EBUSY) return r;
 	
 	int spins = 100;
