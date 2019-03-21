@@ -22,7 +22,6 @@ weak_alias(dummy_0, __tl_unlock);
 
 int __pthread_key_create(pthread_key_t *k, void (*dtor)(void *))
 {
-	pthread_key_t j = next_key;
 	pthread_t self = __pthread_self();
 
 	/* This can only happen in the main thread before
@@ -33,6 +32,7 @@ int __pthread_key_create(pthread_key_t *k, void (*dtor)(void *))
 	if (!dtor) dtor = nodtor;
 
 	__pthread_rwlock_wrlock(&key_lock);
+	pthread_key_t j = next_key;
 	do {
 		if (!keys[j]) {
 			keys[next_key = *k = j] = dtor;
