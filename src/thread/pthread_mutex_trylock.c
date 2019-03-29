@@ -3,7 +3,7 @@
 int __pthread_mutex_trylock_owner(pthread_mutex_t *m)
 {
 	int old, own;
-	int type = m->_m_type & 15;
+	int type = m->_m_type;
 	pthread_t self = __pthread_self();
 	int tid = self->tid;
 
@@ -17,7 +17,7 @@ int __pthread_mutex_trylock_owner(pthread_mutex_t *m)
 	if (own == 0x3fffffff) return ENOTRECOVERABLE;
 	if (own || (old && !(type & 4))) return EBUSY;
 
-	if (m->_m_type & 128) {
+	if (type & 128) {
 		if (!self->robust_list.off) {
 			self->robust_list.off = (char*)&m->_m_lock-(char *)&m->_m_next;
 			__syscall(SYS_set_robust_list, &self->robust_list, 3*sizeof(long));
