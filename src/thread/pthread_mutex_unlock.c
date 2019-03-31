@@ -8,10 +8,11 @@ int __pthread_mutex_unlock(pthread_mutex_t *m)
 	int type = m->_m_type & 15;
 	int priv = (m->_m_type & 128) ^ 128;
 	int new = 0;
+	int old;
 
 	if (type != PTHREAD_MUTEX_NORMAL) {
 		self = __pthread_self();
-		int old = m->_m_lock;
+		old = m->_m_lock;
 		int own = old & 0x3fffffff;
 		if (own != self->tid)
 			return EPERM;
@@ -29,7 +30,16 @@ int __pthread_mutex_unlock(pthread_mutex_t *m)
 		if (next != &self->robust_list.head) *(volatile void *volatile *)
 			((char *)next - sizeof(void *)) = prev;
 	}
-	cont = a_swap(&m->_m_lock, new);
+	if (type&8) {
+		if (old<0 || a_cas(&m->_m_lock, old, new)!=old) {
+			if (new) a_store(&m->_m_waiters, -1);
+			__syscall(SYS_futex, &m->_m_lock, FUTEX_UNLOCK_PI|priv);
+		}
+		cont = 0;
+		waiters = 0;
+	} else {
+		cont = a_swap(&m->_m_lock, new);
+	}
 	if (type != PTHREAD_MUTEX_NORMAL && !priv) {
 		self->robust_list.pending = 0;
 		__vm_unlock();

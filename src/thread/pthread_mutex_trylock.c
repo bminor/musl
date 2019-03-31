@@ -9,10 +9,17 @@ int __pthread_mutex_trylock_owner(pthread_mutex_t *m)
 
 	old = m->_m_lock;
 	own = old & 0x3fffffff;
-	if (own == tid && (type&3) == PTHREAD_MUTEX_RECURSIVE) {
-		if ((unsigned)m->_m_count >= INT_MAX) return EAGAIN;
-		m->_m_count++;
-		return 0;
+	if (own == tid) {
+		if ((type&8) && m->_m_count<0) {
+			old &= 0x40000000;
+			m->_m_count = 0;
+			goto success;
+		}
+		if ((type&3) == PTHREAD_MUTEX_RECURSIVE) {
+			if ((unsigned)m->_m_count >= INT_MAX) return EAGAIN;
+			m->_m_count++;
+			return 0;
+		}
 	}
 	if (own == 0x3fffffff) return ENOTRECOVERABLE;
 	if (own || (old && !(type & 4))) return EBUSY;
@@ -29,7 +36,16 @@ int __pthread_mutex_trylock_owner(pthread_mutex_t *m)
 
 	if (a_cas(&m->_m_lock, old, tid) != old) {
 		self->robust_list.pending = 0;
+		if ((type&12)==12 & m->_m_waiters) return ENOTRECOVERABLE;
 		return EBUSY;
+	}
+
+success:
+	if ((type&8) && m->_m_waiters) {
+		int priv = (type & 128) ^ 128;
+		__syscall(SYS_futex, &m->_m_lock, FUTEX_UNLOCK_PI|priv);
+		self->robust_list.pending = 0;
+		return (type&4) ? ENOTRECOVERABLE : EBUSY;
 	}
 
 	volatile void *next = self->robust_list.head;
