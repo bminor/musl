@@ -36,7 +36,7 @@ int __pthread_mutex_trylock_owner(pthread_mutex_t *m)
 
 	if (a_cas(&m->_m_lock, old, tid) != old) {
 		self->robust_list.pending = 0;
-		if ((type&12)==12 & m->_m_waiters) return ENOTRECOVERABLE;
+		if ((type&12)==12 && m->_m_waiters) return ENOTRECOVERABLE;
 		return EBUSY;
 	}
 
