@@ -44,17 +44,18 @@ int __membarrier(int cmd, int flags)
 			.sa_handler = bcast_barrier
 		};
 		memset(&sa.sa_mask, -1, sizeof sa.sa_mask);
-		__libc_sigaction(SIGSYNCCALL, &sa, 0);	
-		for (td=self->next; td!=self; td=td->next)
-			__syscall(SYS_tkill, td->tid, SIGSYNCCALL);
-		for (td=self->next; td!=self; td=td->next)
-			sem_wait(&barrier_sem);
-		sa.sa_handler = SIG_IGN;
-		__libc_sigaction(SIGSYNCCALL, &sa, 0);
+		if (!__libc_sigaction(SIGSYNCCALL, &sa, 0)) {
+			for (td=self->next; td!=self; td=td->next)
+				__syscall(SYS_tkill, td->tid, SIGSYNCCALL);
+			for (td=self->next; td!=self; td=td->next)
+				sem_wait(&barrier_sem);
+			r = 0;
+			sa.sa_handler = SIG_IGN;
+			__libc_sigaction(SIGSYNCCALL, &sa, 0);
+		}
 		sem_destroy(&barrier_sem);
 		__tl_unlock();
 		__restore_sigs(&set);
-		return 0;
 	}
 	return __syscall_ret(r);
 }
