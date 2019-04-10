@@ -1,3 +1,4 @@
+#define SYSCALL_NO_TLS 1
 #include <elf.h>
 #include <limits.h>
 #include <sys/mman.h>
@@ -21,6 +22,7 @@ int __init_tp(void *p)
 	td->tid = __syscall(SYS_set_tid_address, &__thread_list_lock);
 	td->locale = &libc.global_locale;
 	td->robust_list.head = &td->robust_list.head;
+	td->sysinfo = __sysinfo;
 	td->next = td->prev = td;
 	return 0;
 }

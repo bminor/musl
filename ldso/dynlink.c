@@ -1,4 +1,5 @@
 #define _GNU_SOURCE
+#define SYSCALL_NO_TLS 1
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -1685,6 +1686,8 @@ _Noreturn void __dls3(size_t *sp)
 	libc.auxv = auxv = (void *)(argv+i+1);
 	decode_vec(auxv, aux, AUX_CNT);
 	__hwcap = aux[AT_HWCAP];
+	search_vec(auxv, &__sysinfo, AT_SYSINFO);
+	__pthread_self()->sysinfo = __sysinfo;
 	libc.page_size = aux[AT_PAGESZ];
 	libc.secure = ((aux[0]&0x7800)!=0x7800 || aux[AT_UID]!=aux[AT_EUID]
 		|| aux[AT_GID]!=aux[AT_EGID] || aux[AT_SECURE]);
