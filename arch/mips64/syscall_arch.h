@@ -79,16 +79,14 @@ static inline long __syscall2(long n, long a, long b)
 {
 	struct kernel_stat kst;
 	long ret;
-	register long r4 __asm__("$4");
-	register long r5 __asm__("$5");
+	register long r4 __asm__("$4") = a;
+	register long r5 __asm__("$5") = b;
 	register long r7 __asm__("$7");
 	register long r2 __asm__("$2");
 
-	r5 = b;
 	if (n == SYS_stat || n == SYS_fstat || n == SYS_lstat)
 		r5 = (long) &kst;
 
-	r4 = a;
 	__asm__ __volatile__ (
 		"daddu $2,$0,%2 ; syscall"
 		: "=&r"(r2), "=r"(r7) : "ir"(n), "0"(r2), "1"(r7),
@@ -109,18 +107,15 @@ static inline long __syscall3(long n, long a, long b, long c)
 {
 	struct kernel_stat kst;
 	long ret;
-	register long r4 __asm__("$4");
-	register long r5 __asm__("$5");
-	register long r6 __asm__("$6");
+	register long r4 __asm__("$4") = a;
+	register long r5 __asm__("$5") = b;
+	register long r6 __asm__("$6") = c;
 	register long r7 __asm__("$7");
 	register long r2 __asm__("$2");
 
-	r5 = b;
 	if (n == SYS_stat || n == SYS_fstat || n == SYS_lstat)
 		r5 = (long) &kst;
 
-	r4 = a;
-	r6 = c;
 	__asm__ __volatile__ (
 		"daddu $2,$0,%2 ; syscall"
 		: "=&r"(r2), "=r"(r7) : "ir"(n), "0"(r2), "1"(r7),
@@ -141,16 +136,12 @@ static inline long __syscall4(long n, long a, long b, long c, long d)
 {
 	struct kernel_stat kst;
 	long ret;
-	register long r4 __asm__("$4");
-	register long r5 __asm__("$5");
-	register long r6 __asm__("$6");
-	register long r7 __asm__("$7");
+	register long r4 __asm__("$4") = a;
+	register long r5 __asm__("$5") = b;
+	register long r6 __asm__("$6") = c;
+	register long r7 __asm__("$7") = d;
 	register long r2 __asm__("$2");
 
-	r4 = a;
-	r5 = b;
-	r6 = c;
-	r7 = d;
 	if (n == SYS_stat || n == SYS_fstat || n == SYS_lstat)
 		r5 = (long) &kst;
 	if (n == SYS_newfstatat)
