@@ -3,8 +3,6 @@
 ((union { long long ll; long l[2]; }){ .ll = x }).l[1]
 #define __SYSCALL_LL_O(x) 0, __SYSCALL_LL_E((x))
 
-#ifndef __clang__
-
 static __inline long __syscall0(long n)
 {
 	register unsigned long r12 __asm__("r12") = n;
@@ -95,12 +93,5 @@ static inline long __syscall6(long n, long a, long b, long c, long d, long e, lo
 		: "memory", "r4");
 	return r3;
 }
-
-#else
-
-#undef SYSCALL_NO_INLINE
-#define SYSCALL_NO_INLINE
-
-#endif
 
 #define SYSCALL_IPC_BROKEN_MODE
