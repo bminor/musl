@@ -38,6 +38,7 @@ struct cmsghdr {
 #define SO_RCVTIMEO     20
 #define SO_SNDTIMEO     21
 #define SO_ACCEPTCONN   30
+#define SO_PEERSEC      31
 #define SO_SNDBUFFORCE  32
 #define SO_RCVBUFFORCE  33
 #define SO_PROTOCOL     38
