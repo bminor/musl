@@ -124,7 +124,7 @@ static inline long __syscall6(long n, long a, long b, long c, long d, long e, lo
 	register long r6 __asm__("$6") = c;
 	register long r7 __asm__("$7") = d;
 	register long r8 __asm__("$8") = e;
-	register long r8 __asm__("$9") = f;
+	register long r9 __asm__("$9") = f;
 	register long r2 __asm__("$2");
 	__asm__ __volatile__ (
 		"addu $2,$0,%2 ; syscall"
