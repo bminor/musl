@@ -147,6 +147,31 @@ static inline long __syscall6(long n, long a, long b, long c, long d, long e, lo
 	return r2;
 }
 
+static inline long __syscall7(long n, long a, long b, long c, long d, long e, long f, long g)
+{
+	register long r4 __asm__("$4") = a;
+	register long r5 __asm__("$5") = b;
+	register long r6 __asm__("$6") = c;
+	register long r7 __asm__("$7") = d;
+	register long r8 __asm__("$8") = e;
+	register long r9 __asm__("$9") = f;
+	register long r10 __asm__("$10") = g;
+	register long r2 __asm__("$2");
+	__asm__ __volatile__ (
+		"subu $sp,$sp,32 ; sw $8,16($sp) ; sw $9,20($sp) ; sw $10,24($sp) ; "
+		"addu $2,$0,%5 ; syscall ;"
+		"addu $sp,$sp,32"
+		: "=&r"(r2), "=r"(r7), "+r"(r8), "+r"(r9), "+r"(r10)
+		: "ir"(n), "0"(r2), "1"(r7), "r"(r4), "r"(r5), "r"(r6)
+		: "$1", "$3", "$11", "$12", "$13",
+		  "$14", "$15", "$24", "$25", "hi", "lo", "memory");
+	if (r7) return -r2;
+	long ret = r2;
+	if (n == SYS_stat64 || n == SYS_fstat64 || n == SYS_lstat64) __stat_fix(b);
+	if (n == SYS_fstatat64) __stat_fix(c);
+	return r2;
+}
+
 #define VDSO_USEFUL
 #define VDSO_CGT_SYM "__vdso_clock_gettime"
 #define VDSO_CGT_VER "LINUX_2.6"
