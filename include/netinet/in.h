@@ -52,6 +52,7 @@ struct ipv6_mreq {
 #define INADDR_UNSPEC_GROUP     ((in_addr_t) 0xe0000000)
 #define INADDR_ALLHOSTS_GROUP   ((in_addr_t) 0xe0000001)
 #define INADDR_ALLRTRS_GROUP    ((in_addr_t) 0xe0000002)
+#define INADDR_ALLSNOOPERS_GROUP ((in_addr_t) 0xe000006a)
 #define INADDR_MAX_LOCAL_GROUP  ((in_addr_t) 0xe00000ff)
 
 #define IN6ADDR_ANY_INIT      { { { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 } } }
