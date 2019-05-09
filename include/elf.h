@@ -683,6 +683,8 @@ typedef struct {
 #define NT_ARM_SYSTEM_CALL	0x404
 #define NT_ARM_SVE	0x405
 #define NT_ARM_PAC_MASK	0x406
+#define NT_ARM_PACA_KEYS	0x407
+#define NT_ARM_PACG_KEYS	0x408
 #define NT_METAG_CBUF	0x500
 #define NT_METAG_RPIPE	0x501
 #define NT_METAG_TLS	0x502
