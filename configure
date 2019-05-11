@@ -573,6 +573,20 @@ printf "using compiler runtime libraries: %s\n" "$LIBCC"
 SUBARCH=
 t="$CFLAGS_C99FSE $CPPFLAGS $CFLAGS"
 
+if test "$ARCH" = "i386" ; then
+printf "checking whether compiler can use ebx in PIC asm constraints... "
+cat > "$tmpc" <<EOF
+int foo(int x) { __asm__ ( "" : "+b"(x) ); return x; }
+EOF
+if $CC $CFLAGS_C99FSE $CPPFLAGS $CFLAGS -fPIC \
+  -c -o /dev/null "$tmpc" >/dev/null 2>&1 ; then
+printf "yes\n"
+else
+printf "no\n"
+CFLAGS_AUTO="$CFLAGS_AUTO -DBROKEN_EBX_ASM"
+fi
+fi
+
 if test "$ARCH" = "x86_64" ; then
 trycppif __ILP32__ "$t" && ARCH=x32
 fi
