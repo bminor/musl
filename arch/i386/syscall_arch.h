@@ -49,17 +49,17 @@ static inline long __syscall4(long n, long a1, long a2, long a3, long a4)
 
 static inline long __syscall5(long n, long a1, long a2, long a3, long a4, long a5)
 {
-	unsigned long __ret, __tmp;
-	__asm__ __volatile__ ("mov %%ebx,%1 ; mov %3,%%ebx ; " SYSCALL_INSNS " ; mov %1,%%ebx"
-		: "=a"(__ret), "=m"(__tmp) : "a"(n), "g"(a1), "c"(a2), "d"(a3), "S"(a4), "D"(a5) : "memory");
+	unsigned long __ret;
+	__asm__ __volatile__ ("pushl %2 ; push %%ebx ; mov 4(%%esp),%%ebx ; " SYSCALL_INSNS " ; pop %%ebx ; add $4,%%esp"
+		: "=a"(__ret) : "a"(n), "g"(a1), "c"(a2), "d"(a3), "S"(a4), "D"(a5) : "memory");
 	return __ret;
 }
 
 static inline long __syscall6(long n, long a1, long a2, long a3, long a4, long a5, long a6)
 {
-	unsigned long __ret, __tmp1, __tmp2;
-	__asm__ __volatile__ ("mov %%ebx,%1 ; mov %%ebp,%2 ; mov %4,%%ebx ; mov %9,%%ebp ; " SYSCALL_INSNS " ; mov %2,%%ebp ; mov %1,%%ebx"
-		: "=a"(__ret), "=m"(__tmp1), "=m"(__tmp2) : "a"(n), "g"(a1), "c"(a2), "d"(a3), "S"(a4), "D"(a5), "g"(a6) : "memory");
+	unsigned long __ret, a1a6[2] = { a1, a6 };
+	__asm__ __volatile__ ("pushl %1 ; push %%ebx ; push %%ebp ; mov 8(%%esp),%%ebx ; mov 4(%%ebx),%%ebp ; mov (%%ebx),%%ebx ; " SYSCALL_INSNS " ; pop %%ebp ; pop %%ebx ; add $4,%%esp"
+		: "=a"(__ret) : "g"(&a1a6), "a"(n), "c"(a2), "d"(a3), "S"(a4), "D"(a5) : "memory");
 	return __ret;
 }
 
