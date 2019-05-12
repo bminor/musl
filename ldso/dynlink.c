@@ -86,7 +86,6 @@ struct dso {
 	size_t relro_start, relro_end;
 	uintptr_t *new_dtv;
 	unsigned char *new_tls;
-	volatile int new_dtv_idx, new_tls_idx;
 	struct td_index *td_index;
 	struct dso *fini_next;
 	char *shortname;
