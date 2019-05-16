@@ -1127,7 +1127,7 @@ static struct dso *load_library(const char *name, struct dso *needed_by)
 #ifdef TLS_ABOVE_TP
 		p->tls.offset = tls_offset + ( (tls_align-1) &
 			-(tls_offset + (uintptr_t)p->tls.image) );
-		tls_offset += p->tls.size;
+		tls_offset = p->tls.offset + p->tls.size;
 #else
 		tls_offset += p->tls.size + p->tls.align - 1;
 		tls_offset -= (tls_offset + (uintptr_t)p->tls.image)
@@ -1797,9 +1797,7 @@ _Noreturn void __dls3(size_t *sp)
 #ifdef TLS_ABOVE_TP
 		app.tls.offset = GAP_ABOVE_TP;
 		app.tls.offset += -GAP_ABOVE_TP & (app.tls.align-1);
-		tls_offset = app.tls.offset + app.tls.size
-			+ ( -((uintptr_t)app.tls.image + app.tls.size)
-			& (app.tls.align-1) );
+		tls_offset = app.tls.offset + app.tls.size;
 #else
 		tls_offset = app.tls.offset = app.tls.size
 			+ ( -((uintptr_t)app.tls.image + app.tls.size)
