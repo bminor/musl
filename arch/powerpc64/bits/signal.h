@@ -17,10 +17,14 @@ typedef struct {
 
 typedef struct {
 	unsigned __int128 vrregs[32];
-	unsigned _pad[3];
-	unsigned vrsave;
-	unsigned vscr;
-	unsigned _pad2[3];
+	struct {
+#if __BIG_ENDIAN__
+		unsigned _pad[3], vscr_word;
+#else
+		unsigned vscr_word, _pad[3];
+#endif
+	} vscr;
+	unsigned vrsave, _pad[3];
 } vrregset_t;
 
 typedef struct sigcontext {
