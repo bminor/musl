@@ -16,7 +16,10 @@ typedef struct {
 } fpregset_t;
 
 typedef struct {
-	unsigned __int128 vrregs[32];
+#ifdef __GNUC__
+	__attribute__((__aligned__(16)))
+#endif
+	unsigned vrregs[32][4];
 	struct {
 #if __BIG_ENDIAN__
 		unsigned _pad[3], vscr_word;
