@@ -1644,7 +1644,7 @@ hidden void __dls2(unsigned char *base, size_t *sp)
  * so that loads of the thread pointer and &errno can be pure/const and
  * thereby hoistable. */
 
-_Noreturn void __dls2b(size_t *sp)
+void __dls2b(size_t *sp)
 {
 	/* Setup early thread pointer in builtin_tls for ldso/libc itself to
 	 * use during dynamic linking. If possible it will also serve as the
@@ -1665,7 +1665,7 @@ _Noreturn void __dls2b(size_t *sp)
  * process dependencies and relocations for the main application and
  * transfer control to its entry point. */
 
-_Noreturn void __dls3(size_t *sp)
+void __dls3(size_t *sp)
 {
 	static struct dso app, vdso;
 	size_t aux[AUX_CNT], *auxv;
