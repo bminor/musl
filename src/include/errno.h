@@ -3,6 +3,9 @@
 
 #include "../../include/errno.h"
 
+#ifdef __GNUC__
+__attribute__((const))
+#endif
 hidden int *___errno_location(void);
 
 #undef errno
