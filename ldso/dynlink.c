@@ -407,6 +407,9 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 		case REL_PLT:
 			*reloc_addr = sym_val + addend;
 			break;
+		case REL_USYMBOLIC:
+			memcpy(reloc_addr, &(size_t){sym_val + addend}, sizeof(size_t));
+			break;
 		case REL_RELATIVE:
 			*reloc_addr = (size_t)base + addend;
 			break;
