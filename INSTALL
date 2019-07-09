@@ -96,6 +96,11 @@ and ABI combinations:
 
 * OpenRISC 1000 (or1k)
 
+* RISC-V 64
+    * Little endian
+    * Hard, soft, and hard-single/soft-double floating point ABIs
+    * Standard ELF; no shared-text NOMMU support
+
 
 
 Build and Installation Procedure
