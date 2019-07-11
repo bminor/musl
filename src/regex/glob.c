@@ -92,16 +92,23 @@ static int do_glob(char *buf, size_t pos, int type, char *pat, int flags, int (*
 	if (!*pat) {
 		/* If we consumed any components above, or if GLOB_MARK is
 		 * requested and we don't yet know if the match is a dir,
-		 * we must call stat to confirm the file exists and/or
-		 * determine its type. */
+		 * we must confirm the file exists and/or determine its type.
+		 *
+		 * If marking dirs, symlink type is inconclusive; we need the
+		 * type for the symlink target, and therefore must try stat
+		 * first unless type is known not to be a symlink. Otherwise,
+		 * or if that fails, use lstat for determining existence to
+		 * avoid false negatives in the case of broken symlinks. */
 		struct stat st;
-		if ((flags & GLOB_MARK) && type==DT_LNK) type = 0;
-		if (!type && stat(buf, &st)) {
+		if ((flags & GLOB_MARK) && (!type||type==DT_LNK) && !stat(buf, &st)) {
+			if (S_ISDIR(st.st_mode)) type = DT_DIR;
+			else type = DT_REG;
+		}
+		if (!type && lstat(buf, &st)) {
 			if (errno!=ENOENT && (errfunc(buf, errno) || (flags & GLOB_ERR)))
 				return GLOB_ABORTED;
 			return 0;
 		}
-		if (!type && S_ISDIR(st.st_mode)) type = DT_DIR;
 		if (append(tail, buf, pos, (flags & GLOB_MARK) && type==DT_DIR))
 			return GLOB_NOSPACE;
 		return 0;
