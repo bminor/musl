@@ -22,10 +22,11 @@ static inline void __stat_fix(long p)
 static inline long __syscall0(long n)
 {
 	register long r7 __asm__("$7");
-	register long r2 __asm__("$2");
+	register long r2 __asm__("$2") = n;
 	__asm__ __volatile__ (
-		"addu $2,$0,%2 ; syscall"
-		: "=&r"(r2), "=r"(r7) : "ir"(n), "0"(r2), "1"(r7)
+		"syscall"
+		: "+&r"(r2), "=r"(r7)
+		:
 		: SYSCALL_CLOBBERLIST);
 	return r7 ? -r2 : r2;
 }
@@ -34,11 +35,11 @@ static inline long __syscall1(long n, long a)
 {
 	register long r4 __asm__("$4") = a;
 	register long r7 __asm__("$7");
-	register long r2 __asm__("$2");
+	register long r2 __asm__("$2") = n;
 	__asm__ __volatile__ (
-		"addu $2,$0,%2 ; syscall"
-		: "=&r"(r2), "=r"(r7) : "ir"(n), "0"(r2), "1"(r7),
-		  "r"(r4)
+		"syscall"
+		: "+&r"(r2), "=r"(r7)
+		: "r"(r4)
 		: SYSCALL_CLOBBERLIST);
 	return r7 ? -r2 : r2;
 }
@@ -48,11 +49,11 @@ static inline long __syscall2(long n, long a, long b)
 	register long r4 __asm__("$4") = a;
 	register long r5 __asm__("$5") = b;
 	register long r7 __asm__("$7");
-	register long r2 __asm__("$2");
+	register long r2 __asm__("$2") = n;
 	__asm__ __volatile__ (
-		"addu $2,$0,%2 ; syscall"
-		: "=&r"(r2), "=r"(r7) : "ir"(n), "0"(r2), "1"(r7),
-		  "r"(r4), "r"(r5)
+		"syscall"
+		: "+&r"(r2), "=r"(r7)
+		: "r"(r4), "r"(r5)
 		: SYSCALL_CLOBBERLIST);
 	if (r7) return -r2;
 	long ret = r2;
@@ -66,11 +67,11 @@ static inline long __syscall3(long n, long a, long b, long c)
 	register long r5 __asm__("$5") = b;
 	register long r6 __asm__("$6") = c;
 	register long r7 __asm__("$7");
-	register long r2 __asm__("$2");
+	register long r2 __asm__("$2") = n;
 	__asm__ __volatile__ (
-		"addu $2,$0,%2 ; syscall"
-		: "=&r"(r2), "=r"(r7) : "ir"(n), "0"(r2), "1"(r7),
-		  "r"(r4), "r"(r5), "r"(r6)
+		"syscall"
+		: "+&r"(r2), "=r"(r7)
+		: "r"(r4), "r"(r5), "r"(r6)
 		: SYSCALL_CLOBBERLIST);
 	if (r7) return -r2;
 	long ret = r2;
@@ -84,11 +85,11 @@ static inline long __syscall4(long n, long a, long b, long c, long d)
 	register long r5 __asm__("$5") = b;
 	register long r6 __asm__("$6") = c;
 	register long r7 __asm__("$7") = d;
-	register long r2 __asm__("$2");
+	register long r2 __asm__("$2") = n;
 	__asm__ __volatile__ (
-		"addu $2,$0,%2 ; syscall"
-		: "=&r"(r2), "=r"(r7) : "ir"(n), "0"(r2), "1"(r7),
-		  "r"(r4), "r"(r5), "r"(r6)
+		"syscall"
+		: "+&r"(r2), "+r"(r7)
+		: "r"(r4), "r"(r5), "r"(r6)
 		: SYSCALL_CLOBBERLIST);
 	if (r7) return -r2;
 	long ret = r2;
@@ -104,11 +105,11 @@ static inline long __syscall5(long n, long a, long b, long c, long d, long e)
 	register long r6 __asm__("$6") = c;
 	register long r7 __asm__("$7") = d;
 	register long r8 __asm__("$8") = e;
-	register long r2 __asm__("$2");
+	register long r2 __asm__("$2") = n;
 	__asm__ __volatile__ (
-		"addu $2,$0,%2 ; syscall"
-		: "=&r"(r2), "=r"(r7) : "ir"(n), "0"(r2), "1"(r7),
-		  "r"(r4), "r"(r5), "r"(r6), "r"(r8)
+		"syscall"
+		: "+&r"(r2), "+r"(r7)
+		: "r"(r4), "r"(r5), "r"(r6), "r"(r8)
 		: SYSCALL_CLOBBERLIST);
 	if (n == SYS_stat || n == SYS_fstat || n == SYS_lstat) __stat_fix(b);
 	if (n == SYS_newfstatat) __stat_fix(c);
@@ -123,11 +124,11 @@ static inline long __syscall6(long n, long a, long b, long c, long d, long e, lo
 	register long r7 __asm__("$7") = d;
 	register long r8 __asm__("$8") = e;
 	register long r9 __asm__("$9") = f;
-	register long r2 __asm__("$2");
+	register long r2 __asm__("$2") = n;
 	__asm__ __volatile__ (
-		"addu $2,$0,%2 ; syscall"
-		: "=&r"(r2), "=r"(r7) : "ir"(n), "0"(r2), "1"(r7),
-		  "r"(r4), "r"(r5), "r"(r6), "r"(r8), "r"(r9)
+		"syscall"
+		: "+&r"(r2), "+r"(r7)
+		: "r"(r4), "r"(r5), "r"(r6), "r"(r8), "r"(r9)
 		: SYSCALL_CLOBBERLIST);
 	if (n == SYS_stat || n == SYS_fstat || n == SYS_lstat) __stat_fix(b);
 	if (n == SYS_newfstatat) __stat_fix(c);
