@@ -46,6 +46,10 @@ static void __stat_fix(struct kernel_stat *kst, struct stat *st)
 	st->st_blocks = kst->st_blocks;
 }
 
+#define SYSCALL_CLOBBERLIST \
+	"$1", "$3", "$10", "$11", "$12", "$13", \
+	"$14", "$15", "$24", "$25", "hi", "lo", "memory"
+
 static inline long __syscall0(long n)
 {
 	register long r7 __asm__("$7");
@@ -53,8 +57,7 @@ static inline long __syscall0(long n)
 	__asm__ __volatile__ (
 		"daddu $2,$0,%2 ; syscall"
 		: "=&r"(r2), "=r"(r7) : "ir"(n), "0"(r2), "1"(r7)
-		: "$1", "$3", "$8", "$9", "$10", "$11", "$12", "$13",
-		  "$14", "$15", "$24", "$25", "hi", "lo", "memory");
+		: SYSCALL_CLOBBERLIST);
 	return r7 ? -r2 : r2;
 }
 
@@ -67,8 +70,7 @@ static inline long __syscall1(long n, long a)
 		"daddu $2,$0,%2 ; syscall"
 		: "=&r"(r2), "=r"(r7) : "ir"(n), "0"(r2), "1"(r7),
 		  "r"(r4)
-		: "$1", "$3", "$8", "$9", "$10", "$11", "$12", "$13",
-		  "$14", "$15", "$24", "$25", "hi", "lo", "memory");
+		: SYSCALL_CLOBBERLIST);
 	return r7 ? -r2 : r2;
 }
 
@@ -88,8 +90,7 @@ static inline long __syscall2(long n, long a, long b)
 		"daddu $2,$0,%2 ; syscall"
 		: "=&r"(r2), "=r"(r7) : "ir"(n), "0"(r2), "1"(r7),
 		  "r"(r4), "r"(r5)
-		: "$1", "$3", "$8", "$9", "$10", "$11", "$12", "$13",
-		  "$14", "$15", "$24", "$25", "hi", "lo", "memory");
+		: SYSCALL_CLOBBERLIST);
 
 	if (r7) return -r2;
 	ret = r2;
@@ -117,8 +118,7 @@ static inline long __syscall3(long n, long a, long b, long c)
 		"daddu $2,$0,%2 ; syscall"
 		: "=&r"(r2), "=r"(r7) : "ir"(n), "0"(r2), "1"(r7),
 		  "r"(r4), "r"(r5), "r"(r6)
-		: "$1", "$3", "$8", "$9", "$10", "$11", "$12", "$13",
-		  "$14", "$15", "$24", "$25", "hi", "lo", "memory");
+		: SYSCALL_CLOBBERLIST);
 
 	if (r7) return -r2;
 	ret = r2;
@@ -148,8 +148,7 @@ static inline long __syscall4(long n, long a, long b, long c, long d)
 		"daddu $2,$0,%2 ; syscall"
 		: "=&r"(r2), "=r"(r7) : "ir"(n), "0"(r2), "1"(r7),
 		  "r"(r4), "r"(r5), "r"(r6)
-		: "$1", "$3", "$8", "$9", "$10", "$11", "$12", "$13",
-		  "$14", "$15", "$24", "$25", "hi", "lo", "memory");
+		: SYSCALL_CLOBBERLIST);
 
 	if (r7) return -r2;
 	ret = r2;
@@ -182,8 +181,7 @@ static inline long __syscall5(long n, long a, long b, long c, long d, long e)
 		"daddu $2,$0,%2 ; syscall"
 		: "=&r"(r2), "=r"(r7) : "ir"(n), "0"(r2), "1"(r7),
 		  "r"(r4), "r"(r5), "r"(r6), "r"(r8)
-		: "$1", "$3", "$9", "$10", "$11", "$12", "$13",
-		  "$14", "$15", "$24", "$25", "hi", "lo", "memory");
+		: SYSCALL_CLOBBERLIST);
 
 	if (r7) return -r2;
 	ret = r2;
@@ -217,8 +215,7 @@ static inline long __syscall6(long n, long a, long b, long c, long d, long e, lo
 		"daddu $2,$0,%2 ; syscall"
 		: "=&r"(r2), "=r"(r7) : "ir"(n), "0"(r2), "1"(r7),
 		  "r"(r4), "r"(r5), "r"(r6), "r"(r8), "r"(r9)
-		: "$1", "$3", "$10", "$11", "$12", "$13",
-		  "$14", "$15", "$24", "$25", "hi", "lo", "memory");
+		: SYSCALL_CLOBBERLIST);
 
 	if (r7) return -r2;
 	ret = r2;
