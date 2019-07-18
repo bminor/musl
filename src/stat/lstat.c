@@ -1,6 +1,5 @@
 #include <sys/stat.h>
 #include <fcntl.h>
-#include "syscall.h"
 
 int lstat(const char *restrict path, struct stat *restrict buf)
 {
