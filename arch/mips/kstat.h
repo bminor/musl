@@ -1,13 +1,13 @@
 struct kstat {
-	dev_t st_dev;
-	long __st_padding1[2];
+	unsigned st_dev;
+	long __st_padding1[3];
 	ino_t st_ino;
 	mode_t st_mode;
 	nlink_t st_nlink;
 	uid_t st_uid;
 	gid_t st_gid;
-	dev_t st_rdev;
-	long __st_padding2[2];
+	unsigned st_rdev;
+	long __st_padding2[3];
 	off_t st_size;
 	long st_atime_sec;
 	long st_atime_nsec;

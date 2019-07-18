@@ -3,18 +3,6 @@
 
 #define SYSCALL_RLIM_INFINITY (-1UL/2)
 
-#if _MIPSEL || __MIPSEL || __MIPSEL__
-#define __stat_fix(st) ((st),(void)0)
-#else
-#include <sys/stat.h>
-static inline void __stat_fix(long p)
-{
-	struct stat *st = (struct stat *)p;
-	st->st_dev >>= 32;
-	st->st_rdev >>= 32;
-}
-#endif
-
 #define SYSCALL_CLOBBERLIST \
 	"$1", "$3", "$10", "$11", "$12", "$13", \
 	"$14", "$15", "$24", "$25", "hi", "lo", "memory"
@@ -55,10 +43,7 @@ static inline long __syscall2(long n, long a, long b)
 		: "+&r"(r2), "=r"(r7)
 		: "r"(r4), "r"(r5)
 		: SYSCALL_CLOBBERLIST);
-	if (r7) return -r2;
-	long ret = r2;
-	if (n == SYS_stat || n == SYS_fstat || n == SYS_lstat) __stat_fix(b);
-	return ret;
+	return r7 ? -r2 : r2;
 }
 
 static inline long __syscall3(long n, long a, long b, long c)
@@ -73,10 +58,7 @@ static inline long __syscall3(long n, long a, long b, long c)
 		: "+&r"(r2), "=r"(r7)
 		: "r"(r4), "r"(r5), "r"(r6)
 		: SYSCALL_CLOBBERLIST);
-	if (r7) return -r2;
-	long ret = r2;
-	if (n == SYS_stat || n == SYS_fstat || n == SYS_lstat) __stat_fix(b);
-	return ret;
+	return r7 ? -r2 : r2;
 }
 
 static inline long __syscall4(long n, long a, long b, long c, long d)
@@ -91,11 +73,7 @@ static inline long __syscall4(long n, long a, long b, long c, long d)
 		: "+&r"(r2), "+r"(r7)
 		: "r"(r4), "r"(r5), "r"(r6)
 		: SYSCALL_CLOBBERLIST);
-	if (r7) return -r2;
-	long ret = r2;
-	if (n == SYS_stat || n == SYS_fstat || n == SYS_lstat) __stat_fix(b);
-	if (n == SYS_newfstatat) __stat_fix(c);
-	return ret;
+	return r7 ? -r2 : r2;
 }
 
 static inline long __syscall5(long n, long a, long b, long c, long d, long e)
@@ -111,9 +89,7 @@ static inline long __syscall5(long n, long a, long b, long c, long d, long e)
 		: "+&r"(r2), "+r"(r7)
 		: "r"(r4), "r"(r5), "r"(r6), "r"(r8)
 		: SYSCALL_CLOBBERLIST);
-	if (n == SYS_stat || n == SYS_fstat || n == SYS_lstat) __stat_fix(b);
-	if (n == SYS_newfstatat) __stat_fix(c);
-	return r2;
+	return r7 ? -r2 : r2;
 }
 
 static inline long __syscall6(long n, long a, long b, long c, long d, long e, long f)
@@ -130,9 +106,7 @@ static inline long __syscall6(long n, long a, long b, long c, long d, long e, lo
 		: "+&r"(r2), "+r"(r7)
 		: "r"(r4), "r"(r5), "r"(r6), "r"(r8), "r"(r9)
 		: SYSCALL_CLOBBERLIST);
-	if (n == SYS_stat || n == SYS_fstat || n == SYS_lstat) __stat_fix(b);
-	if (n == SYS_newfstatat) __stat_fix(c);
-	return r2;
+	return r7 ? -r2 : r2;
 }
 
 #define VDSO_USEFUL
