@@ -31,7 +31,7 @@ struct statx {
 	uint32_t stx_dev_major;
 	uint32_t stx_dev_minor;
 	uint64_t spare[14];
-} stx;
+};
 
 static int fstatat_statx(int fd, const char *restrict path, struct stat *restrict st, int flag)
 {
