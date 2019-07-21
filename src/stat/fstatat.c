@@ -67,16 +67,16 @@ static int fstatat_kstat(int fd, const char *restrict path, struct stat *restric
 	struct kstat kst;
 
 	if (flag==AT_EMPTY_PATH && fd>=0 && !*path) {
-		ret = __syscall(SYS_fstat, fd, st);
+		ret = __syscall(SYS_fstat, fd, &kst);
 		if (ret==-EBADF && __syscall(SYS_fcntl, fd, F_GETFD)>=0) {
-			ret = __syscall(SYS_fstatat, fd, path, st, flag);
+			ret = __syscall(SYS_fstatat, fd, path, &kst, flag);
 			if (ret==-EINVAL) {
 				char buf[15+3*sizeof(int)];
 				__procfdname(buf, fd);
 #ifdef SYS_stat
-				ret = __syscall(SYS_stat, buf, st);
+				ret = __syscall(SYS_stat, buf, &kst);
 #else
-				ret = __syscall(SYS_fstatat, AT_FDCWD, buf, st, 0);
+				ret = __syscall(SYS_fstatat, AT_FDCWD, buf, &kst, 0);
 #endif
 			}
 		}
