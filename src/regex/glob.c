@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <stddef.h>
+#include <unistd.h>
+#include <pwd.h>
 
 struct match
 {
@@ -182,6 +184,39 @@ static int sort(const void *a, const void *b)
 	return strcmp(*(const char **)a, *(const char **)b);
 }
 
+static int expand_tilde(char **pat, char *buf, size_t *pos)
+{
+	char *p = *pat + 1;
+	size_t i = 0;
+
+	char delim, *name_end = __strchrnul(p, '/');
+	if ((delim = *name_end)) *name_end++ = 0;
+	*pat = name_end;
+
+	char *home = *p ? NULL : getenv("HOME");
+	if (!home) {
+		struct passwd pw, *res;
+		switch (*p ? getpwnam_r(p, &pw, buf, PATH_MAX, &res)
+			   : getpwuid_r(getuid(), &pw, buf, PATH_MAX, &res)) {
+		case ENOMEM:
+			return GLOB_NOSPACE;
+		case 0:
+			if (!res)
+		default:
+				return GLOB_NOMATCH;
+		}
+		home = pw.pw_dir;
+	}
+	while (i < PATH_MAX - 2 && *home)
+		buf[i++] = *home++;
+	if (*home)
+		return GLOB_NOMATCH;
+	if ((buf[i] = delim))
+		buf[++i] = 0;
+	*pos = i;
+	return 0;
+}
+
 int glob(const char *restrict pat, int flags, int (*errfunc)(const char *path, int err), glob_t *restrict g)
 {
 	struct match head = { .next = NULL }, *tail = &head;
@@ -202,7 +237,12 @@ int glob(const char *restrict pat, int flags, int (*errfunc)(const char *path, i
 		char *p = strdup(pat);
 		if (!p) return GLOB_NOSPACE;
 		buf[0] = 0;
-		error = do_glob(buf, 0, 0, p, flags, errfunc, &tail);
+		size_t pos = 0;
+		char *s = p;
+		if ((flags & (GLOB_TILDE | GLOB_TILDE_CHECK)) && *p == '~')
+			error = expand_tilde(&s, buf, &pos);
+		if (!error)
+			error = do_glob(buf, pos, 0, s, flags, errfunc, &tail);
 		free(p);
 	}
 
