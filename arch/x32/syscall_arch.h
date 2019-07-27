@@ -124,3 +124,5 @@ static __inline long __syscall6(long long n, long long a1, long long a2, long lo
 					  "d"(a3), "r"(a4), "r"(a5), "r"(a6) : "rcx", "r11", "memory");
 	return ret;
 }
+
+#undef SYS_futimesat
