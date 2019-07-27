@@ -193,6 +193,89 @@ hidden long __syscall_ret(unsigned long),
 #define SYS_sendfile SYS_sendfile64
 #endif
 
+
+/* Ensure that the plain syscall names are defined even for "time64-only"
+ * archs. These facilitate callers passing null time arguments, and make
+ * tests for establishing which to use/fallback-to more consistent when
+ * they do need to be called with time arguments. */
+
+#ifndef SYS_clock_gettime
+#define SYS_clock_gettime SYS_clock_gettime64
+#endif
+
+#ifndef SYS_clock_settime
+#define SYS_clock_settime SYS_clock_settime64
+#endif
+
+#ifndef SYS_clock_adjtime
+#define SYS_clock_adjtime SYS_clock_adjtime64
+#endif
+
+#ifndef SYS_clock_getres
+#define SYS_clock_getres SYS_clock_getres_time64
+#endif
+
+#ifndef SYS_clock_nanosleep
+#define SYS_clock_nanosleep SYS_clock_nanosleep_time64
+#endif
+
+#ifndef SYS_timer_gettime
+#define SYS_timer_gettime SYS_timer_gettime64
+#endif
+
+#ifndef SYS_timer_settime
+#define SYS_timer_settime SYS_timer_settime64
+#endif
+
+#ifndef SYS_timerfd_gettime
+#define SYS_timerfd_gettime SYS_timerfd_gettime64
+#endif
+
+#ifndef SYS_timerfd_settime
+#define SYS_timerfd_settime SYS_timerfd_settime64
+#endif
+
+#ifndef SYS_utimensat
+#define SYS_utimensat SYS_utimensat_time64
+#endif
+
+#ifndef SYS_pselect6
+#define SYS_pselect6 SYS_pselect6_time64
+#endif
+
+#ifndef SYS_ppoll
+#define SYS_ppoll SYS_ppoll_time64
+#endif
+
+#ifndef SYS_recvmmsg
+#define SYS_recvmmsg SYS_recvmmsg_time64
+#endif
+
+#ifndef SYS_mq_timedsend
+#define SYS_mq_timedsend SYS_mq_timedsend_time64
+#endif
+
+#ifndef SYS_mq_timedreceive
+#define SYS_mq_timedreceive SYS_mq_timedreceive_time64
+#endif
+
+/* SYS_semtimedop omitted because SYS_ipc may provide it */
+
+#ifndef SYS_rt_sigtimedwait
+#define SYS_rt_sigtimedwait SYS_rt_sigtimedwait_time64
+#endif
+
+#ifndef SYS_futex
+#define SYS_futex SYS_futex_time64
+#endif
+
+#ifndef SYS_sched_rr_get_interval
+#define SYS_sched_rr_get_interval SYS_sched_rr_get_interval_time64
+#endif
+
+
+
+
 /* socketcall calls */
 
 #define __SC_socket      1
