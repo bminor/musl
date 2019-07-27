@@ -126,3 +126,22 @@ static __inline long __syscall6(long long n, long long a1, long long a2, long lo
 }
 
 #undef SYS_futimesat
+
+#define SYS_clock_gettime64 SYS_clock_gettime
+#define SYS_clock_settime64 SYS_clock_settime
+#define SYS_clock_adjtime64 SYS_clock_adjtime
+#define SYS_clock_nanosleep_time64 SYS_clock_nanosleep
+#define SYS_timer_gettime64 SYS_timer_gettime
+#define SYS_timer_settime64 SYS_timer_settime
+#define SYS_timerfd_gettime64 SYS_timerfd_gettime
+#define SYS_timerfd_settime64 SYS_timerfd_settime
+#define SYS_utimensat_time64 SYS_utimensat
+#define SYS_pselect6_time64 SYS_pselect6
+#define SYS_ppoll_time64 SYS_ppoll
+#define SYS_recvmmsg_time64 SYS_recvmmsg
+#define SYS_mq_timedsend_time64 SYS_mq_timedsend
+#define SYS_mq_timedreceive_time64 SYS_mq_timedreceive
+#define SYS_semtimedop_time64 SYS_semtimedop
+#define SYS_rt_sigtimedwait_time64 SYS_rt_sigtimedwait
+#define SYS_futex_time64 SYS_futex
+#define SYS_sched_rr_get_interval_time64 SYS_sched_rr_get_interval
