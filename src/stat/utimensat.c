@@ -6,6 +6,8 @@
 
 int utimensat(int fd, const char *path, const struct timespec times[2], int flags)
 {
+	if (times && times[0].tv_nsec==UTIME_NOW && times[1].tv_nsec==UTIME_NOW)
+		times = 0;
 	int r = __syscall(SYS_utimensat, fd, path, times, flags);
 #ifdef SYS_futimesat
 	if (r != -ENOSYS || flags) return __syscall_ret(r);
@@ -15,12 +17,8 @@ int utimensat(int fd, const char *path, const struct timespec times[2], int flag
 		tv = tmp;
 		for (i=0; i<2; i++) {
 			if (times[i].tv_nsec >= 1000000000ULL) {
-				if (times[i].tv_nsec == UTIME_NOW &&
-				    times[1-i].tv_nsec == UTIME_NOW) {
-					tv = 0;
-					break;
-				}
-				if (times[i].tv_nsec == UTIME_OMIT)
+				if (times[i].tv_nsec == UTIME_NOW
+				 || times[i].tv_nsec == UTIME_OMIT)
 					return __syscall_ret(-ENOSYS);
 				return __syscall_ret(-EINVAL);
 			}
