@@ -3,7 +3,7 @@ struct semid_ds {
 	time_t sem_otime;
 	time_t sem_ctime;
 	unsigned short sem_nsems;
-	char __sem_nsems_pad[sizeof(time_t)-sizeof(short)];
-	time_t __unused3;
-	time_t __unused4;
+	char __sem_nsems_pad[sizeof(long)-sizeof(short)];
+	long __unused3;
+	long __unused4;
 };
