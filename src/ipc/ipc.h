@@ -16,3 +16,9 @@
 #ifndef IPC_64
 #define IPC_64 0x100
 #endif
+
+#define IPC_TIME64 (IPC_STAT & 0x100)
+
+#define IPC_CMD(cmd) (((cmd) & ~IPC_TIME64) | IPC_64)
+
+#define IPC_HILO(b,t) ((b)->t = (b)->__##t##_lo | 0LL+(b)->__##t##_hi<<32)
