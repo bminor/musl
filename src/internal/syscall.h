@@ -299,6 +299,13 @@ hidden long __syscall_ret(unsigned long),
 #define __SC_recvmmsg    19
 #define __SC_sendmmsg    20
 
+#ifndef SO_RCVTIMEO_OLD
+#define SO_RCVTIMEO_OLD  20
+#endif
+#ifndef SO_SNDTIMEO_OLD
+#define SO_SNDTIMEO_OLD  21
+#endif
+
 #ifdef SYS_open
 #define __sys_open2(x,pn,fl) __syscall2(SYS_open, pn, (fl)|O_LARGEFILE)
 #define __sys_open3(x,pn,fl,mo) __syscall3(SYS_open, pn, (fl)|O_LARGEFILE, mo)

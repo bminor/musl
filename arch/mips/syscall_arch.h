@@ -141,3 +141,6 @@ static inline long __syscall7(long n, long a, long b, long c, long d, long e, lo
 #define VDSO_USEFUL
 #define VDSO_CGT_SYM "__vdso_clock_gettime"
 #define VDSO_CGT_VER "LINUX_2.6"
+
+#define SO_SNDTIMEO_OLD 0x1005
+#define SO_RCVTIMEO_OLD 0x1006
