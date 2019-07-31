@@ -133,6 +133,10 @@ __CPU_op_func_S(XOR, ^)
 
 #endif
 
+#if _REDIR_TIME64
+__REDIR(sched_rr_get_interval, __sched_rr_get_interval_time64);
+#endif
+
 #ifdef __cplusplus
 }
 #endif

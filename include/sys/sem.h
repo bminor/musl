@@ -60,6 +60,12 @@ int semop(int, struct sembuf *, size_t);
 int semtimedop(int, struct sembuf *, size_t, const struct timespec *);
 #endif
 
+#if _REDIR_TIME64
+#ifdef _GNU_SOURCE
+__REDIR(semtimedop, __semtimedop_time64);
+#endif
+#endif
+
 #ifdef __cplusplus
 }
 #endif

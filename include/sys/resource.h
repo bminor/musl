@@ -104,6 +104,10 @@ int prlimit(pid_t, int, const struct rlimit *, struct rlimit *);
 #define rlim64_t rlim_t
 #endif
 
+#if _REDIR_TIME64
+__REDIR(getrusage, __getrusage_time64);
+#endif
+
 #ifdef __cplusplus
 }
 #endif
