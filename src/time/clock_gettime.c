@@ -40,6 +40,24 @@ int __clock_gettime(clockid_t clk, struct timespec *ts)
 	}
 #endif
 
+#ifdef SYS_clock_gettime64
+	if (sizeof(time_t) > 4)
+		r = __syscall(SYS_clock_gettime64, clk, ts);
+	if (SYS_clock_gettime == SYS_clock_gettime64 || r!=-ENOSYS)
+		return __syscall_ret(r);
+	long ts32[2];
+	r = __syscall(SYS_clock_gettime, clk, ts32);
+	if (r==-ENOSYS && clk==CLOCK_REALTIME) {
+		r = __syscall(SYS_gettimeofday, ts32, 0);
+		ts32[1] *= 1000;
+	}
+	if (!r) {
+		ts->tv_sec = ts32[0];
+		ts->tv_nsec = ts32[1];
+		return r;
+	}
+	return __syscall_ret(r);
+#else
 	r = __syscall(SYS_clock_gettime, clk, ts);
 	if (r == -ENOSYS) {
 		if (clk == CLOCK_REALTIME) {
@@ -50,6 +68,7 @@ int __clock_gettime(clockid_t clk, struct timespec *ts)
 		r = -EINVAL;
 	}
 	return __syscall_ret(r);
+#endif
 }
 
 weak_alias(__clock_gettime, clock_gettime);
