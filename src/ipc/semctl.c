@@ -20,7 +20,7 @@ int semctl(int id, int num, int cmd, ...)
 	va_list ap;
 	switch (cmd) {
 	case SETVAL: case GETALL: case SETALL: case IPC_STAT: case IPC_SET:
-	case IPC_INFO: case SEM_INFO: case SEM_STAT:
+	case IPC_INFO: case SEM_INFO: case SEM_STAT: case SEM_STAT_ANY:
 		va_start(ap, cmd);
 		arg = va_arg(ap, union semun);
 		va_end(ap);
