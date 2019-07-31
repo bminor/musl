@@ -29,7 +29,9 @@ extern "C" {
 
 #define IPC_RMID 0
 #define IPC_SET  1
+#ifndef IPC_STAT
 #define IPC_STAT 2
+#endif
 #define IPC_INFO 3
 
 #define IPC_PRIVATE ((key_t) 0)
