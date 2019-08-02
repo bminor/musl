@@ -15,8 +15,6 @@
 #define SO_REUSEPORT    15
 #define SO_RCVLOWAT     16
 #define SO_SNDLOWAT     17
-#define SO_RCVTIMEO     18
-#define SO_SNDTIMEO     19
 #define SO_PASSCRED     20
 #define SO_PEERCRED     21
 #define SO_ACCEPTCONN   30
@@ -25,3 +23,8 @@
 #define SO_RCVBUFFORCE  33
 #define SO_PROTOCOL     38
 #define SO_DOMAIN       39
+#define SO_TIMESTAMP    63
+#define SO_TIMESTAMPNS  64
+#define SO_TIMESTAMPING 65
+#define SO_RCVTIMEO     66
+#define SO_SNDTIMEO     67

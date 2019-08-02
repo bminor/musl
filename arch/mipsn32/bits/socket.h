@@ -16,13 +16,16 @@
 #define SO_RCVBUF       0x1002
 #define SO_SNDLOWAT     0x1003
 #define SO_RCVLOWAT     0x1004
-#define SO_RCVTIMEO     0x1006
-#define SO_SNDTIMEO     0x1005
 #define SO_ERROR        0x1007
 #define SO_TYPE         0x1008
 #define SO_ACCEPTCONN   0x1009
 #define SO_PROTOCOL     0x1028
 #define SO_DOMAIN       0x1029
+#define SO_TIMESTAMP    63
+#define SO_TIMESTAMPNS  64
+#define SO_TIMESTAMPING 65
+#define SO_RCVTIMEO     66
+#define SO_SNDTIMEO     67
 
 #define SO_NO_CHECK     11
 #define SO_PRIORITY     12

@@ -1,3 +1,4 @@
+#define _REDIR_TIME64 1
 #define _Addr int
 #define _Int64 long long
 #define _Reg int
@@ -18,5 +19,5 @@ TYPEDEF double double_t;
 
 TYPEDEF struct { long long __ll; long double __ld; } max_align_t;
 
-TYPEDEF long time_t;
-TYPEDEF long suseconds_t;
+TYPEDEF long long time_t;
+TYPEDEF long long suseconds_t;
