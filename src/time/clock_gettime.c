@@ -73,6 +73,7 @@ int __clock_gettime(clockid_t clk, struct timespec *ts)
 #endif
 
 #ifdef SYS_clock_gettime64
+	r = -ENOSYS;
 	if (sizeof(time_t) > 4)
 		r = __syscall(SYS_clock_gettime64, clk, ts);
 	if (SYS_clock_gettime == SYS_clock_gettime64 || r!=-ENOSYS)
