@@ -13,4 +13,4 @@ atan2f:
 	fld %st(0)
 	fmul %st(1)
 	fstps 4(%esp)
-	ret
+1:	ret

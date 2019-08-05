@@ -11,4 +11,4 @@ atan2:
 	jae 1f
 		# subnormal x, return x with underflow
 	fsts 4(%esp)
-	ret
+1:	ret
