@@ -12,29 +12,29 @@
 typedef unsigned long greg_t;
 typedef unsigned long gregset_t[32];
 
-struct __riscv_f_ext_state {
+struct __riscv_mc_f_ext_state {
 	unsigned int f[32];
 	unsigned int fcsr;
 };
 
-struct __riscv_d_ext_state {
+struct __riscv_mc_d_ext_state {
 	unsigned long long f[32];
 	unsigned int fcsr;
 };
 
-struct __riscv_q_ext_state {
+struct __riscv_mc_q_ext_state {
 	unsigned long long f[64] __attribute__((aligned(16)));
 	unsigned int fcsr;
 	unsigned int reserved[3];
 };
 
-union __riscv_fp_state {
-	struct __riscv_f_ext_state f;
-	struct __riscv_d_ext_state d;
-	struct __riscv_q_ext_state q;
+union __riscv_mc_fp_state {
+	struct __riscv_mc_f_ext_state f;
+	struct __riscv_mc_d_ext_state d;
+	struct __riscv_mc_q_ext_state q;
 };
 
-typedef union __riscv_fp_state fpregset_t;
+typedef union __riscv_mc_fp_state fpregset_t;
 
 typedef struct sigcontext {
 	gregset_t gregs;
