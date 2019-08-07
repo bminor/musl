@@ -35,7 +35,8 @@ int select(int n, fd_set *restrict rfds, fd_set *restrict wfds, fd_set *restrict
 		return __syscall_ret(r);
 #endif
 #ifdef SYS_select
-	return syscall_cp(SYS_select, n, rfds, wfds, efds, ((long[]){s, us}));
+	return syscall_cp(SYS_select, n, rfds, wfds, efds,
+		tv ? ((long[]){s, us}) : 0);
 #else
 	return syscall_cp(SYS_pselect6, n, rfds, wfds, efds,
 		tv ? ((long[]){s, ns}) : 0, ((syscall_arg_t[]){ 0, _NSIG/8 }));
