@@ -22,7 +22,7 @@ int recvmmsg(int fd, struct mmsghdr *msgvec, unsigned int vlen, unsigned int fla
 	int r = -ENOSYS;
 	if (SYS_recvmmsg == SYS_recvmmsg_time64 || !IS32BIT(s))
 		r = __syscall_cp(SYS_recvmmsg_time64, fd, msgvec, vlen, flags,
-			((long long[]){s, ns}));
+			timeout ? ((long long[]){s, ns}) : 0);
 	if (SYS_recvmmsg == SYS_recvmmsg_time64 || r!=-ENOSYS)
 		return __syscall_ret(r);
 	return syscall_cp(SYS_recvmmsg, fd, msgvec, vlen, flags,
