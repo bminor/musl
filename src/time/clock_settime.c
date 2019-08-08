@@ -17,7 +17,7 @@ int clock_settime(clockid_t clk, const struct timespec *ts)
 		return __syscall_ret(r);
 	if (!IS32BIT(s))
 		return __syscall_ret(-ENOTSUP);
-	return syscall(SYS_clock_settime, clk, ts ? ((long[]){s, ns}) : 0);
+	return syscall(SYS_clock_settime, clk, ((long[]){s, ns}));
 #else
 	return syscall(SYS_clock_settime, clk, ts);
 #endif
