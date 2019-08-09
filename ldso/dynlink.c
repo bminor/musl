@@ -2237,6 +2237,33 @@ hidden void *__dlsym(void *restrict p, const char *restrict s, void *restrict ra
 	return res;
 }
 
+hidden void *__dlsym_redir_time64(void *restrict p, const char *restrict s, void *restrict ra)
+{
+#if _REDIR_TIME64
+	const char *suffix, *suffix2 = "";
+	char redir[36];
+
+	/* Map the symbol name to a time64 version of itself according to the
+	 * pattern used for naming the redirected time64 symbols. */
+	size_t l = strnlen(s, sizeof redir);
+	if (l<4 || l==sizeof redir) goto no_redir;
+	if (s[l-2]=='_' && s[l-1]=='r') {
+		l -= 2;
+		suffix2 = s+l;
+	}
+	if (l<4) goto no_redir;
+	if (!strcmp(s+l-4, "time")) suffix = "64";
+	else suffix = "_time64";
+
+	/* Use the presence of the remapped symbol name in libc to determine
+	 * whether it's one that requires time64 redirection; replace if so. */
+	snprintf(redir, sizeof redir, "__%.*s%s%s", (int)l, s, suffix, suffix2);
+	if (find_sym(&ldso, redir, 1).sym) s = redir;
+no_redir:
+#endif
+	return __dlsym(p, s, ra);
+}
+
 int dl_iterate_phdr(int(*callback)(struct dl_phdr_info *info, size_t size, void *data), void *data)
 {
 	struct dso *current;
