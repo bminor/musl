@@ -19,10 +19,14 @@ extern "C" {
 struct sched_param {
 	int sched_priority;
 	int __reserved1;
+#if _REDIR_TIME64
+	long __reserved2[4];
+#else
 	struct {
 		time_t __reserved1;
 		long __reserved2;
 	} __reserved2[2];
+#endif
 	int __reserved3;
 };
 
