@@ -283,12 +283,16 @@ static Sym *gnu_lookup_filtered(uint32_t h1, uint32_t *hashtab, struct dso *dso,
 #define ARCH_SYM_REJECT_UND(s) 0
 #endif
 
-static struct symdef find_sym(struct dso *dso, const char *s, int need_def)
+#if defined(__GNUC__)
+__attribute__((always_inline))
+#endif
+static inline struct symdef find_sym2(struct dso *dso, const char *s, int need_def, int use_deps)
 {
 	uint32_t h = 0, gh = gnu_hash(s), gho = gh / (8*sizeof(size_t)), *ght;
 	size_t ghm = 1ul << gh % (8*sizeof(size_t));
 	struct symdef def = {0};
-	for (; dso; dso=dso->syms_next) {
+	struct dso **deps = use_deps ? dso->deps : 0;
+	for (; dso; dso=use_deps ? *deps++ : dso->syms_next) {
 		Sym *sym;
 		if ((ght = dso->ghashtab)) {
 			sym = gnu_lookup_filtered(gh, ght, dso, s, gho, ghm);
@@ -311,6 +315,11 @@ static struct symdef find_sym(struct dso *dso, const char *s, int need_def)
 		break;
 	}
 	return def;
+}
+
+static struct symdef find_sym(struct dso *dso, const char *s, int need_def)
+{
+	return find_sym2(dso, s, need_def, 0);
 }
 
 static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stride)
@@ -2123,58 +2132,27 @@ static void *addr2dso(size_t a)
 
 static void *do_dlsym(struct dso *p, const char *s, void *ra)
 {
-	size_t i;
-	uint32_t h = 0, gh = 0, *ght;
-	Sym *sym;
-	if (p == head || p == RTLD_DEFAULT || p == RTLD_NEXT) {
-		if (p == RTLD_DEFAULT) {
-			p = head;
-		} else if (p == RTLD_NEXT) {
-			p = addr2dso((size_t)ra);
-			if (!p) p=head;
-			p = p->next;
-		}
-		struct symdef def = find_sym(p, s, 0);
-		if (!def.sym) goto failed;
-		if ((def.sym->st_info&0xf) == STT_TLS)
-			return __tls_get_addr((tls_mod_off_t []){def.dso->tls_id, def.sym->st_value-DTP_OFFSET});
-		if (DL_FDPIC && (def.sym->st_info&0xf) == STT_FUNC)
-			return def.dso->funcdescs + (def.sym - def.dso->syms);
-		return laddr(def.dso, def.sym->st_value);
-	}
-	if (__dl_invalid_handle(p))
+	int use_deps = 0;
+	if (p == head || p == RTLD_DEFAULT) {
+		p = head;
+	} else if (p == RTLD_NEXT) {
+		p = addr2dso((size_t)ra);
+		if (!p) p=head;
+		p = p->next;
+	} else if (__dl_invalid_handle(p)) {
 		return 0;
-	if ((ght = p->ghashtab)) {
-		gh = gnu_hash(s);
-		sym = gnu_lookup(gh, ght, p, s);
-	} else {
-		h = sysv_hash(s);
-		sym = sysv_lookup(s, h, p);
+	} else
+		use_deps = 1;
+	struct symdef def = find_sym2(p, s, 0, use_deps);
+	if (!def.sym) {
+		error("Symbol not found: %s", s);
+		return 0;
 	}
-	if (sym && (sym->st_info&0xf) == STT_TLS)
-		return __tls_get_addr((tls_mod_off_t []){p->tls_id, sym->st_value-DTP_OFFSET});
-	if (DL_FDPIC && sym && sym->st_shndx && (sym->st_info&0xf) == STT_FUNC)
-		return p->funcdescs + (sym - p->syms);
-	if (sym && sym->st_value && (1<<(sym->st_info&0xf) & OK_TYPES))
-		return laddr(p, sym->st_value);
-	for (i=0; p->deps[i]; i++) {
-		if ((ght = p->deps[i]->ghashtab)) {
-			if (!gh) gh = gnu_hash(s);
-			sym = gnu_lookup(gh, ght, p->deps[i], s);
-		} else {
-			if (!h) h = sysv_hash(s);
-			sym = sysv_lookup(s, h, p->deps[i]);
-		}
-		if (sym && (sym->st_info&0xf) == STT_TLS)
-			return __tls_get_addr((tls_mod_off_t []){p->deps[i]->tls_id, sym->st_value-DTP_OFFSET});
-		if (DL_FDPIC && sym && sym->st_shndx && (sym->st_info&0xf) == STT_FUNC)
-			return p->deps[i]->funcdescs + (sym - p->deps[i]->syms);
-		if (sym && sym->st_value && (1<<(sym->st_info&0xf) & OK_TYPES))
-			return laddr(p->deps[i], sym->st_value);
-	}
-failed:
-	error("Symbol not found: %s", s);
-	return 0;
+	if ((def.sym->st_info&0xf) == STT_TLS)
+		return __tls_get_addr((tls_mod_off_t []){def.dso->tls_id, def.sym->st_value-DTP_OFFSET});
+	if (DL_FDPIC && (def.sym->st_info&0xf) == STT_FUNC)
+		return def.dso->funcdescs + (def.sym - def.dso->syms);
+	return laddr(def.dso, def.sym->st_value);
 }
 
 int dladdr(const void *addr_arg, Dl_info *info)
