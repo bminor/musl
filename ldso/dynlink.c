@@ -1874,11 +1874,8 @@ void __dls3(size_t *sp)
 	 * code can see to perform. */
 	main_ctor_queue = queue_ctors(&app);
 
-	/* The main program must be relocated LAST since it may contin
-	 * copy relocations which depend on libraries' relocations. */
-	reloc_all(app.next);
-	reloc_all(&app);
-
+	/* Initial TLS must also be allocated before final relocations
+	 * might result in calloc being a call to application code. */
 	update_tls_size();
 	if (libc.tls_size > sizeof builtin_tls || tls_align > MIN_TLS_ALIGN) {
 		void *initial_tls = calloc(libc.tls_size, 1);
@@ -1901,6 +1898,11 @@ void __dls3(size_t *sp)
 		libc.tls_size = tmp_tls_size;
 	}
 	static_tls_cnt = tls_cnt;
+
+	/* The main program must be relocated LAST since it may contin
+	 * copy relocations which depend on libraries' relocations. */
+	reloc_all(app.next);
+	reloc_all(&app);
 
 	if (ldso_fail) _exit(127);
 	if (ldd_mode) _exit(0);
