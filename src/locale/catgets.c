@@ -7,7 +7,7 @@
 
 #define V(p) be32toh(*(uint32_t *)(p))
 
-int cmp(const void *a, const void *b)
+static int cmp(const void *a, const void *b)
 {
 	uint32_t x = V(a), y = V(b);
 	return x<y ? -1 : x>y ? 1 : 0;
