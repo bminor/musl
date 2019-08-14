@@ -1889,13 +1889,25 @@ void __dls3(size_t *sp)
 	/* Initial TLS must also be allocated before final relocations
 	 * might result in calloc being a call to application code. */
 	update_tls_size();
+	void *initial_tls = builtin_tls;
 	if (libc.tls_size > sizeof builtin_tls || tls_align > MIN_TLS_ALIGN) {
-		void *initial_tls = calloc(libc.tls_size, 1);
+		initial_tls = calloc(libc.tls_size, 1);
 		if (!initial_tls) {
 			dprintf(2, "%s: Error getting %zu bytes thread-local storage: %m\n",
 				argv[0], libc.tls_size);
 			_exit(127);
 		}
+	}
+	static_tls_cnt = tls_cnt;
+
+	/* The main program must be relocated LAST since it may contain
+	 * copy relocations which depend on libraries' relocations. */
+	reloc_all(app.next);
+	reloc_all(&app);
+
+	/* Actual copying to new TLS needs to happen after relocations,
+	 * since the TLS images might have contained relocated addresses. */
+	if (initial_tls != builtin_tls) {
 		if (__init_tp(__copy_tls(initial_tls)) < 0) {
 			a_crash();
 		}
@@ -1909,12 +1921,6 @@ void __dls3(size_t *sp)
 		if (__copy_tls((void*)builtin_tls) != self) a_crash();
 		libc.tls_size = tmp_tls_size;
 	}
-	static_tls_cnt = tls_cnt;
-
-	/* The main program must be relocated LAST since it may contin
-	 * copy relocations which depend on libraries' relocations. */
-	reloc_all(app.next);
-	reloc_all(&app);
 
 	if (ldso_fail) _exit(127);
 	if (ldd_mode) _exit(0);
