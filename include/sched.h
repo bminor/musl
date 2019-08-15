@@ -18,10 +18,12 @@ extern "C" {
 
 struct sched_param {
 	int sched_priority;
-	int sched_ss_low_priority;
-	struct timespec sched_ss_repl_period;
-	struct timespec sched_ss_init_budget;
-	int sched_ss_max_repl;
+	int __reserved1;
+	struct {
+		time_t __reserved1;
+		long __reserved2;
+	} __reserved2[2];
+	int __reserved3;
 };
 
 int    sched_get_priority_max(int);
