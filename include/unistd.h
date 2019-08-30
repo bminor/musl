@@ -176,6 +176,7 @@ long syscall(long, ...);
 int execvpe(const char *, char *const [], char *const []);
 int issetugid(void);
 int getentropy(void *, size_t);
+extern int optreset;
 #endif
 
 #ifdef _GNU_SOURCE
