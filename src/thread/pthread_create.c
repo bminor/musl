@@ -356,13 +356,14 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 		new->prev = self;
 		new->next->prev = new;
 		new->prev->next = new;
+	} else {
+		libc.threads_minus_1--;
 	}
 	__tl_unlock();
 	__restore_sigs(&set);
 	__release_ptc();
 
 	if (ret < 0) {
-		libc.threads_minus_1--;
 		if (map) __munmap(map, size);
 		return EAGAIN;
 	}
