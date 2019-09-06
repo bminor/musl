@@ -184,8 +184,8 @@ static int start(void *p)
 		if (a_cas(&args->control, 1, 2)==1)
 			__wait(&args->control, 0, 2, 1);
 		if (args->control) {
-			__pthread_self()->detach_state = DT_DETACHED;
-			__pthread_exit(0);
+			__syscall(SYS_set_tid_address, &args->control);
+			return 0;
 		}
 	}
 	__syscall(SYS_rt_sigprocmask, SIG_SETMASK, &args->sig_mask, 0, _NSIG/8);
@@ -339,8 +339,21 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 	libc.threads_minus_1++;
 	ret = __clone((c11 ? start_c11 : start), stack, flags, args, &new->tid, TP_ADJ(new), &__thread_list_lock);
 
-	/* If clone succeeded, new thread must be linked on the thread
-	 * list before unlocking it, even if scheduling may still fail. */
+	/* All clone failures translate to EAGAIN. If explicit scheduling
+	 * was requested, attempt it before unlocking the thread list so
+	 * that the failed thread is never exposed and so that we can
+	 * clean up all transient resource usage before returning. */
+	if (ret < 0) {
+		ret = -EAGAIN;
+	} else if (attr._a_sched) {
+		ret = __syscall(SYS_sched_setscheduler,
+			new->tid, attr._a_policy, &attr._a_prio);
+		if (a_swap(&args->control, ret ? 3 : 0)==2)
+			__wake(&args->control, 1, 1);
+		if (ret)
+			__wait(&args->control, 0, 3, 0);
+	}
+
 	if (ret >= 0) {
 		new->next = self->next;
 		new->prev = self;
@@ -355,15 +368,7 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 
 	if (ret < 0) {
 		if (map) __munmap(map, size);
-		return EAGAIN;
-	}
-
-	if (attr._a_sched) {
-		int ret = -__syscall(SYS_sched_setscheduler, new->tid,
-			attr._a_policy, &attr._a_prio);
-		if (a_swap(&args->control, ret ? 3 : 0)==2)
-			__wake(&args->control, 1, 1);
-		if (ret) return ret;
+		return -ret;
 	}
 
 	*res = new;
