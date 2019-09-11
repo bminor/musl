@@ -30,7 +30,11 @@ __tlsdesc_dynamic:
 #if __ARM_ARCH >= 5
 	blx r0          // r0 = tp
 #else
+#if __thumb__
+	add lr,pc,#1
+#else
 	mov lr,pc
+#endif
 	bx r0
 #endif
 #endif
