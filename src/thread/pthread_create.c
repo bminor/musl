@@ -185,7 +185,7 @@ static int start(void *p)
 			__wait(&args->control, 0, 2, 1);
 		if (args->control) {
 			__syscall(SYS_set_tid_address, &args->control);
-			return 0;
+			for (;;) __syscall(SYS_exit, 0);
 		}
 	}
 	__syscall(SYS_rt_sigprocmask, SIG_SETMASK, &args->sig_mask, 0, _NSIG/8);
