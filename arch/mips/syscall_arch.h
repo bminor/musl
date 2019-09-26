@@ -5,6 +5,16 @@
 
 #define SYSCALL_RLIM_INFINITY (-1UL/2)
 
+#if __mips_isa_rev >= 6
+#define SYSCALL_CLOBBERLIST \
+	"$1", "$3", "$11", "$12", "$13", \
+	"$14", "$15", "$24", "$25", "memory"
+#else
+#define SYSCALL_CLOBBERLIST \
+	"$1", "$3", "$11", "$12", "$13", \
+	"$14", "$15", "$24", "$25", "hi", "lo", "memory"
+#endif
+
 static inline long __syscall0(long n)
 {
 	register long r7 __asm__("$7");
@@ -12,8 +22,7 @@ static inline long __syscall0(long n)
 	__asm__ __volatile__ (
 		"addu $2,$0,%2 ; syscall"
 		: "=&r"(r2), "=r"(r7) : "ir"(n), "0"(r2), "1"(r7)
-		: "$1", "$3", "$8", "$9", "$10", "$11", "$12", "$13",
-		  "$14", "$15", "$24", "$25", "hi", "lo", "memory");
+		: SYSCALL_CLOBBERLIST, "$8", "$9", "$10");
 	return r7 ? -r2 : r2;
 }
 
@@ -26,8 +35,7 @@ static inline long __syscall1(long n, long a)
 		"addu $2,$0,%2 ; syscall"
 		: "=&r"(r2), "=r"(r7) : "ir"(n), "0"(r2), "1"(r7),
 		  "r"(r4)
-		: "$1", "$3", "$8", "$9", "$10", "$11", "$12", "$13",
-		  "$14", "$15", "$24", "$25", "hi", "lo", "memory");
+		: SYSCALL_CLOBBERLIST, "$8", "$9", "$10");
 	return r7 ? -r2 : r2;
 }
 
@@ -41,8 +49,7 @@ static inline long __syscall2(long n, long a, long b)
 		"addu $2,$0,%2 ; syscall"
 		: "=&r"(r2), "=r"(r7) : "ir"(n), "0"(r2), "1"(r7),
 		  "r"(r4), "r"(r5)
-		: "$1", "$3", "$8", "$9", "$10", "$11", "$12", "$13",
-		  "$14", "$15", "$24", "$25", "hi", "lo", "memory");
+		: SYSCALL_CLOBBERLIST, "$8", "$9", "$10");
 	return r7 ? -r2 : r2;
 }
 
@@ -57,8 +64,7 @@ static inline long __syscall3(long n, long a, long b, long c)
 		"addu $2,$0,%2 ; syscall"
 		: "=&r"(r2), "=r"(r7) : "ir"(n), "0"(r2), "1"(r7),
 		  "r"(r4), "r"(r5), "r"(r6)
-		: "$1", "$3", "$8", "$9", "$10", "$11", "$12", "$13",
-		  "$14", "$15", "$24", "$25", "hi", "lo", "memory");
+		: SYSCALL_CLOBBERLIST, "$8", "$9", "$10");
 	return r7 ? -r2 : r2;
 }
 
@@ -73,8 +79,7 @@ static inline long __syscall4(long n, long a, long b, long c, long d)
 		"addu $2,$0,%2 ; syscall"
 		: "=&r"(r2), "=r"(r7) : "ir"(n), "0"(r2), "1"(r7),
 		  "r"(r4), "r"(r5), "r"(r6)
-		: "$1", "$3", "$8", "$9", "$10", "$11", "$12", "$13",
-		  "$14", "$15", "$24", "$25", "hi", "lo", "memory");
+		: SYSCALL_CLOBBERLIST, "$8", "$9", "$10");
 	return r7 ? -r2 : r2;
 }
 
@@ -92,8 +97,7 @@ static inline long __syscall5(long n, long a, long b, long c, long d, long e)
 		"addu $sp,$sp,32"
 		: "=&r"(r2), "=r"(r7), "+r"(r8)
 		: "ir"(n), "0"(r2), "1"(r7), "r"(r4), "r"(r5), "r"(r6)
-		: "$1", "$3", "$9", "$10", "$11", "$12", "$13",
-		  "$14", "$15", "$24", "$25", "hi", "lo", "memory");
+		: SYSCALL_CLOBBERLIST, "$9", "$10");
 	return r7 ? -r2 : r2;
 }
 
@@ -112,8 +116,7 @@ static inline long __syscall6(long n, long a, long b, long c, long d, long e, lo
 		"addu $sp,$sp,32"
 		: "=&r"(r2), "=r"(r7), "+r"(r8), "+r"(r9)
 		: "ir"(n), "0"(r2), "1"(r7), "r"(r4), "r"(r5), "r"(r6)
-		: "$1", "$3", "$10", "$11", "$12", "$13",
-		  "$14", "$15", "$24", "$25", "hi", "lo", "memory");
+		: SYSCALL_CLOBBERLIST, "$10");
 	return r7 ? -r2 : r2;
 }
 
@@ -133,8 +136,7 @@ static inline long __syscall7(long n, long a, long b, long c, long d, long e, lo
 		"addu $sp,$sp,32"
 		: "=&r"(r2), "=r"(r7), "+r"(r8), "+r"(r9), "+r"(r10)
 		: "ir"(n), "0"(r2), "1"(r7), "r"(r4), "r"(r5), "r"(r6)
-		: "$1", "$3", "$11", "$12", "$13",
-		  "$14", "$15", "$24", "$25", "hi", "lo", "memory");
+		: SYSCALL_CLOBBERLIST);
 	return r7 ? -r2 : r2;
 }
 

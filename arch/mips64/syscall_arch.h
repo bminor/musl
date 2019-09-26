@@ -3,9 +3,15 @@
 
 #define SYSCALL_RLIM_INFINITY (-1UL/2)
 
+#if __mips_isa_rev >= 6
+#define SYSCALL_CLOBBERLIST \
+	"$1", "$3", "$10", "$11", "$12", "$13", \
+	"$14", "$15", "$24", "$25", "memory"
+#else
 #define SYSCALL_CLOBBERLIST \
 	"$1", "$3", "$10", "$11", "$12", "$13", \
 	"$14", "$15", "$24", "$25", "hi", "lo", "memory"
+#endif
 
 static inline long __syscall0(long n)
 {
