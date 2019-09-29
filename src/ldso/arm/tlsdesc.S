@@ -8,8 +8,6 @@ __tlsdesc_static:
 	ldr r0,[r0]
 	bx lr
 
-.hidden __tls_get_new
-
 .global __tlsdesc_dynamic
 .hidden __tlsdesc_dynamic
 .type __tlsdesc_dynamic,%function
