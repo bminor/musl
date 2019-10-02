@@ -6,12 +6,6 @@
 # define SIGSTKSZ 8192
 #endif
 
-#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
-typedef unsigned long greg_t;
-typedef unsigned long gregset_t[32];
-typedef union __riscv_mc_fp_state fpregset_t;
-#endif
-
 typedef unsigned long __riscv_mc_gp_state[32];
 
 struct __riscv_mc_f_ext_state {
@@ -40,6 +34,16 @@ typedef struct mcontext_t {
 	__riscv_mc_gp_state __gregs;
 	union __riscv_mc_fp_state __fpregs;
 } mcontext_t;
+
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+typedef unsigned long greg_t;
+typedef unsigned long gregset_t[32];
+typedef union __riscv_mc_fp_state fpregset_t;
+struct sigcontext {
+	gregset_t gregs;
+	fpregset_t fpregs;
+};
+#endif
 
 struct sigaltstack {
 	void *ss_sp;
