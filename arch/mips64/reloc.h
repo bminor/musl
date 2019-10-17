@@ -1,9 +1,3 @@
-#ifndef __RELOC_H__
-#define __RELOC_H__
-
-#define _GNU_SOURCE
-#include <endian.h>
-
 #if __mips_isa_rev >= 6
 #define ISA_SUFFIX "r6"
 #else
@@ -62,5 +56,3 @@
 	"	daddu %0, %0, $ra \n" \
 	".set pop \n" \
 	: "=r"(*(fp)) : : "memory", "ra" )
-
-#endif
