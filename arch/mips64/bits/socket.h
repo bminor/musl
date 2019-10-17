@@ -1,5 +1,3 @@
-#include <endian.h>
-
 struct msghdr {
 	void *msg_name;
 	socklen_t msg_namelen;

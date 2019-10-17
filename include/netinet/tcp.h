@@ -97,7 +97,6 @@ enum {
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <stdint.h>
-#include <endian.h>
 
 typedef uint32_t tcp_seq;
 

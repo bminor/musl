@@ -25,8 +25,6 @@ extern "C" {
 #define SETVAL		16
 #define SETALL		17
 
-#include <endian.h>
-
 #include <bits/sem.h>
 
 #define _SEM_SEMUN_UNDEFINED 1
