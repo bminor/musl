@@ -2,6 +2,12 @@
 #define _Int64 long long
 #define _Reg int
 
+#if __ARMEB__
+#define __BYTE_ORDER 4321
+#else
+#define __BYTE_ORDER 1234
+#endif
+
 #ifndef __cplusplus
 TYPEDEF unsigned wchar_t;
 #endif

@@ -3,15 +3,9 @@
 
 #include <features.h>
 
-#define __LITTLE_ENDIAN 1234
-#define __BIG_ENDIAN 4321
 #define __PDP_ENDIAN 3412
 
-#if defined(__GNUC__) && defined(__BYTE_ORDER__)
-#define __BYTE_ORDER __BYTE_ORDER__
-#else
-#include <bits/endian.h>
-#endif
+#include <bits/alltypes.h>
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 

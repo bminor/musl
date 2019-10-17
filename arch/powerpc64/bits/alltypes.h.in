@@ -2,6 +2,12 @@
 #define _Int64 long
 #define _Reg long
 
+#if __BIG_ENDIAN__
+#define __BYTE_ORDER 4321
+#else
+#define __BYTE_ORDER 1234
+#endif
+
 #ifndef __cplusplus
 TYPEDEF int wchar_t;
 #endif

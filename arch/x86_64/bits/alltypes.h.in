@@ -2,6 +2,8 @@
 #define _Int64 long
 #define _Reg long
 
+#define __BYTE_ORDER 1234
+
 #ifndef __cplusplus
 TYPEDEF int wchar_t;
 #endif

@@ -1,3 +1,6 @@
+#define __LITTLE_ENDIAN 1234
+#define __BIG_ENDIAN 4321
+
 TYPEDEF unsigned _Addr size_t;
 TYPEDEF unsigned _Addr uintptr_t;
 TYPEDEF _Addr ptrdiff_t;
