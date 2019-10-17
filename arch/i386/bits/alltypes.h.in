@@ -3,6 +3,7 @@
 #define _Reg int
 
 #define __BYTE_ORDER 1234
+#define __LONG_MAX 0x7fffffffL
 
 #ifndef __cplusplus
 #ifdef __WCHAR_TYPE__

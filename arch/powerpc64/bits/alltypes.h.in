@@ -8,6 +8,8 @@
 #define __BYTE_ORDER 1234
 #endif
 
+#define __LONG_MAX 0x7fffffffffffffffL
+
 #ifndef __cplusplus
 TYPEDEF int wchar_t;
 #endif

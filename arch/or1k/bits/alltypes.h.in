@@ -3,6 +3,7 @@
 #define _Reg int
 
 #define __BYTE_ORDER 4321
+#define __LONG_MAX 0x7fffffffL
 
 #ifndef __cplusplus
 TYPEDEF unsigned wchar_t;
