@@ -2,9 +2,6 @@
 #define _Int64 long long
 #define _Reg int
 
-TYPEDEF __builtin_va_list va_list;
-TYPEDEF __builtin_va_list __isoc_va_list;
-
 #ifndef __cplusplus
 TYPEDEF unsigned wchar_t;
 #endif
