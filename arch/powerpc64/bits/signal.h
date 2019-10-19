@@ -32,7 +32,7 @@ typedef struct sigcontext {
 	int _pad0;
 	unsigned long handler;
 	unsigned long oldmask;
-	void *regs;
+	struct pt_regs *regs;
 	gregset_t gp_regs;
 	fpregset_t fp_regs;
 	vrregset_t *v_regs;
