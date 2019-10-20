@@ -38,7 +38,7 @@ TYPEDEF void * timer_t;
 TYPEDEF int clockid_t;
 TYPEDEF long clock_t;
 STRUCT timeval { time_t tv_sec; suseconds_t tv_usec; };
-STRUCT timespec { time_t tv_sec; long tv_nsec; };
+STRUCT timespec { time_t tv_sec; int :8*(sizeof(time_t)-sizeof(long))*(__BYTE_ORDER==4321); long tv_nsec; int :8*(sizeof(time_t)-sizeof(long))*(__BYTE_ORDER!=4321); };
 
 TYPEDEF int pid_t;
 TYPEDEF unsigned id_t;
