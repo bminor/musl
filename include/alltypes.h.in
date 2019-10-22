@@ -8,6 +8,8 @@ TYPEDEF _Addr ssize_t;
 TYPEDEF _Addr intptr_t;
 TYPEDEF _Addr regoff_t;
 TYPEDEF _Reg register_t;
+TYPEDEF _Int64 time_t;
+TYPEDEF _Int64 suseconds_t;
 
 TYPEDEF signed char     int8_t;
 TYPEDEF signed short    int16_t;

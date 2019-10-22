@@ -23,6 +23,3 @@ TYPEDEF long double double_t;
 #endif
 
 TYPEDEF struct { long long __ll; long double __ld; } max_align_t;
-
-TYPEDEF long long time_t;
-TYPEDEF long long suseconds_t;
