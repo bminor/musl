@@ -182,14 +182,23 @@ struct linger {
 #define SO_PEERCRED     17
 #define SO_RCVLOWAT     18
 #define SO_SNDLOWAT     19
-#define SO_RCVTIMEO     20
-#define SO_SNDTIMEO     21
 #define SO_ACCEPTCONN   30
 #define SO_PEERSEC      31
 #define SO_SNDBUFFORCE  32
 #define SO_RCVBUFFORCE  33
 #define SO_PROTOCOL     38
 #define SO_DOMAIN       39
+#endif
+
+#ifndef SO_RCVTIMEO
+#define SO_RCVTIMEO     20
+#define SO_SNDTIMEO     21
+#endif
+
+#ifndef SO_TIMESTAMP
+#define SO_TIMESTAMP    29
+#define SO_TIMESTAMPNS  35
+#define SO_TIMESTAMPING 37
 #endif
 
 #define SO_SECURITY_AUTHENTICATION              22
@@ -203,14 +212,10 @@ struct linger {
 #define SO_GET_FILTER           SO_ATTACH_FILTER
 
 #define SO_PEERNAME             28
-#define SO_TIMESTAMP            29
 #define SCM_TIMESTAMP           SO_TIMESTAMP
-
 #define SO_PASSSEC              34
-#define SO_TIMESTAMPNS          35
 #define SCM_TIMESTAMPNS         SO_TIMESTAMPNS
 #define SO_MARK                 36
-#define SO_TIMESTAMPING         37
 #define SCM_TIMESTAMPING        SO_TIMESTAMPING
 #define SO_RXQ_OVFL             40
 #define SO_WIFI_STATUS          41
