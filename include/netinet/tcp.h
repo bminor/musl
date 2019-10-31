@@ -38,6 +38,7 @@
 #define TCP_FASTOPEN_NO_COOKIE 34
 #define TCP_ZEROCOPY_RECEIVE   35
 #define TCP_INQ          36
+#define TCP_TX_DELAY     37
 
 #define TCP_CM_INQ TCP_INQ
 
