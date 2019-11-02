@@ -23,8 +23,3 @@
 #define SO_RCVBUFFORCE  33
 #define SO_PROTOCOL     38
 #define SO_DOMAIN       39
-#define SO_TIMESTAMP    63
-#define SO_TIMESTAMPNS  64
-#define SO_TIMESTAMPING 65
-#define SO_RCVTIMEO     66
-#define SO_SNDTIMEO     67

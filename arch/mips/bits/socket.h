@@ -21,11 +21,6 @@
 #define SO_ACCEPTCONN   0x1009
 #define SO_PROTOCOL     0x1028
 #define SO_DOMAIN       0x1029
-#define SO_TIMESTAMP    63
-#define SO_TIMESTAMPNS  64
-#define SO_TIMESTAMPING 65
-#define SO_RCVTIMEO     66
-#define SO_SNDTIMEO     67
 
 #define SO_NO_CHECK     11
 #define SO_PRIORITY     12
