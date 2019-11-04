@@ -75,7 +75,7 @@ WRAPCC_CLANG = clang
 LDSO_PATHNAME = $(syslibdir)/ld-musl-$(ARCH)$(SUBARCH).so.1
 
 -include config.mak
--include arch/$(ARCH)/arch.mak
+-include $(srcdir)/arch/$(ARCH)/arch.mak
 
 ifeq ($(ARCH),)
 
