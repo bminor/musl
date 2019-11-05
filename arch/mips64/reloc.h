@@ -27,6 +27,8 @@
 #define REL_DTPOFF      R_MIPS_TLS_DTPREL64
 #define REL_TPOFF       R_MIPS_TLS_TPREL64
 
+#include <endian.h>
+
 #undef R_TYPE
 #undef R_SYM
 #undef R_INFO
