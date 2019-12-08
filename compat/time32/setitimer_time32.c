@@ -15,9 +15,11 @@ int __setitimer_time32(int which, const struct itimerval32 *restrict new32, stru
 	 * timer setting, so we can't fail on out-of-range old value.
 	 * Since these are relative times, values large enough to overflow
 	 * don't make sense anyway. */
-	old32->it_interval.tv_sec = old.it_interval.tv_sec;
-	old32->it_interval.tv_usec = old.it_interval.tv_usec;
-	old32->it_value.tv_sec = old.it_value.tv_sec;
-	old32->it_value.tv_usec = old.it_value.tv_usec;
+	if (old32) {
+		old32->it_interval.tv_sec = old.it_interval.tv_sec;
+		old32->it_interval.tv_usec = old.it_interval.tv_usec;
+		old32->it_value.tv_sec = old.it_value.tv_sec;
+		old32->it_value.tv_usec = old.it_value.tv_usec;
+	}
 	return 0;
 }
