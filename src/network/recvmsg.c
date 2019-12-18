@@ -5,7 +5,9 @@
 #include <string.h>
 #include "syscall.h"
 
-static void convert_scm_timestamps(struct msghdr *msg, socklen_t csize)
+hidden void __convert_scm_timestamps(struct msghdr *, socklen_t);
+
+void __convert_scm_timestamps(struct msghdr *msg, socklen_t csize)
 {
 	if (SCM_TIMESTAMP == SCM_TIMESTAMP_OLD) return;
 	if (!msg->msg_control || !msg->msg_controllen) return;
@@ -58,7 +60,7 @@ ssize_t recvmsg(int fd, struct msghdr *msg, int flags)
 	}
 #endif
 	r = socketcall_cp(recvmsg, fd, msg, flags, 0, 0, 0);
-	if (r >= 0) convert_scm_timestamps(msg, orig_controllen);
+	if (r >= 0) __convert_scm_timestamps(msg, orig_controllen);
 #if LONG_MAX > INT_MAX
 	if (orig) *orig = h;
 #endif
