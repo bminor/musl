@@ -128,6 +128,7 @@ int ioctl(int fd, int req, ...)
 			r = __syscall(SYS_ioctl, fd, compat_map[i].old_req, u.buf);
 			if (r<0) break;
 			convert_ioctl_struct(&compat_map[i], u.buf, arg, R);
+			break;
 		}
 	}
 	return __syscall_ret(r);
