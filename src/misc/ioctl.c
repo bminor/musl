@@ -120,7 +120,7 @@ int ioctl(int fd, int req, ...)
 	arg = va_arg(ap, void *);
 	va_end(ap);
 	int r = __syscall(SYS_ioctl, fd, req, arg);
-	if (req && r==-ENOTTY) {
+	if (SIOCGSTAMP != SIOCGSTAMP_OLD && req && r==-ENOTTY) {
 		for (int i=0; i<sizeof compat_map/sizeof *compat_map; i++) {
 			if (compat_map[i].new_req != req) continue;
 			union {
