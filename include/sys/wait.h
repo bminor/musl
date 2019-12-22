@@ -13,7 +13,8 @@ extern "C" {
 typedef enum {
 	P_ALL = 0,
 	P_PID = 1,
-	P_PGID = 2
+	P_PGID = 2,
+	P_PIDFD = 3
 } idtype_t;
 
 pid_t wait (int *);
