@@ -234,6 +234,8 @@ struct tcp_info {
 	uint64_t tcpi_bytes_retrans;
 	uint32_t tcpi_dsack_dups;
 	uint32_t tcpi_reord_seen;
+	uint32_t tcpi_rcv_ooopack;
+	uint32_t tcpi_snd_wnd;
 };
 
 #define TCP_MD5SIG_MAXKEYLEN    80
