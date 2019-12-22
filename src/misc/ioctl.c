@@ -57,6 +57,9 @@ static const struct ioctl_compat_map compat_map[] = {
 	/* VIDIOC_DQEVENT */
 	{ _IOR('V', 89, new_misaligned(96)), _IOR('V', 89, char[96]), 96, R, 0, OFFS(76,80) },
 
+	/* VIDIOC_OMAP3ISP_STAT_REQ */
+	{ _IOWR('V', 192+6, char[32]), _IOWR('V', 192+6, char[24]), 22, WR, 0, OFFS(0,4) },
+
 	/* PPPIOCGIDLE */
 	{ _IOR('t', 63, char[16]), _IOR('t', 63, char[8]), 8, R, 0, OFFS(0,4) },
 
