@@ -361,4 +361,5 @@
 #define __NR_fsmount		6432
 #define __NR_fspick		6433
 #define __NR_pidfd_open		6434
+#define __NR_clone3		6435
 
