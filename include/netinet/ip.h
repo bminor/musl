@@ -190,6 +190,8 @@ struct ip_timestamp {
 
 #define	IP_MSS		576
 
+#define __UAPI_DEF_IPHDR	0
+
 #ifdef __cplusplus
 }
 #endif
