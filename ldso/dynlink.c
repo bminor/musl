@@ -107,6 +107,8 @@ struct symdef {
 	struct dso *dso;
 };
 
+typedef void (*stage3_func)(size_t *);
+
 static struct builtin_tls {
 	char c;
 	struct pthread pt;
