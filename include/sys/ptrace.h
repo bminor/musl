@@ -109,7 +109,8 @@ struct __ptrace_seccomp_metadata {
 
 struct __ptrace_syscall_info {
 	uint8_t op;
-	uint32_t arch __attribute__((__aligned__(4)));
+	uint8_t __pad[3];
+	uint32_t arch;
 	uint64_t instruction_pointer;
 	uint64_t stack_pointer;
 	union {
