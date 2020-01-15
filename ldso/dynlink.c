@@ -1670,6 +1670,7 @@ void __dls2b(size_t *sp, size_t *auxv)
 	/* Setup early thread pointer in builtin_tls for ldso/libc itself to
 	 * use during dynamic linking. If possible it will also serve as the
 	 * thread pointer at runtime. */
+	search_vec(auxv, &__hwcap, AT_HWCAP);
 	libc.auxv = auxv;
 	libc.tls_size = sizeof builtin_tls;
 	libc.tls_align = tls_align;
@@ -1704,7 +1705,6 @@ void __dls3(size_t *sp, size_t *auxv)
 	 * global data that may be needed before we can make syscalls. */
 	__environ = envp;
 	decode_vec(auxv, aux, AUX_CNT);
-	__hwcap = aux[AT_HWCAP];
 	search_vec(auxv, &__sysinfo, AT_SYSINFO);
 	__pthread_self()->sysinfo = __sysinfo;
 	libc.page_size = aux[AT_PAGESZ];
