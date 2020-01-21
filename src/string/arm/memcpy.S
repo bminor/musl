@@ -1,5 +1,3 @@
-#if !__ARMEB__
-
 /*
  * Copyright (C) 2008 The Android Open Source Project
  * All rights reserved.
@@ -42,7 +40,7 @@
  * code safely callable from thumb mode, adjusting the return
  * instructions to be compatible with pre-thumb ARM cpus, removal of
  * prefetch code that is not compatible with older cpus and support for
- * building as thumb 2.
+ * building as thumb 2 and big-endian.
  */
 
 .syntax unified
@@ -227,24 +225,45 @@ non_congruent:
 	 * becomes aligned to 32 bits (r5 = nb of words to copy for alignment)
 	 */
 	movs    r5, r5, lsl #31
+
+#if __ARMEB__
+	movmi   r3, r3, ror #24
+	strbmi	r3, [r0], #1
+	movcs   r3, r3, ror #24
+	strbcs	r3, [r0], #1
+	movcs   r3, r3, ror #24
+	strbcs	r3, [r0], #1
+#else
 	strbmi r3, [r0], #1
 	movmi   r3, r3, lsr #8
 	strbcs r3, [r0], #1
 	movcs   r3, r3, lsr #8
 	strbcs r3, [r0], #1
 	movcs   r3, r3, lsr #8
+#endif
 
 	cmp     r2, #4
 	blo     partial_word_tail
+
+#if __ARMEB__
+	mov	r3, r3, lsr r12
+	mov	r3, r3, lsl r12
+#endif
 
 	/* Align destination to 32 bytes (cache line boundary) */
 1:      tst     r0, #0x1c
 	beq     2f
 	ldr     r5, [r1], #4
 	sub     r2, r2, #4
+#if __ARMEB__
+	mov     r4, r5,                 lsr lr
+	orr     r4, r4, r3
+	mov     r3, r5,                 lsl r12
+#else
 	mov     r4, r5,                 lsl lr
 	orr     r4, r4, r3
 	mov     r3, r5,                 lsr r12
+#endif
 	str     r4, [r0], #4
 	cmp     r2, #4
 	bhs     1b
@@ -270,6 +289,25 @@ loop16:
 	ldmia   r1!, {   r5,r6,r7,  r8,r9,r10,r11}
 	subs    r2, r2, #32
 	ldrhs   r12, [r1], #4
+#if __ARMEB__
+	orr     r3, r3, r4, lsr #16
+	mov     r4, r4, lsl #16
+	orr     r4, r4, r5, lsr #16
+	mov     r5, r5, lsl #16
+	orr     r5, r5, r6, lsr #16
+	mov     r6, r6, lsl #16
+	orr     r6, r6, r7, lsr #16
+	mov     r7, r7, lsl #16
+	orr     r7, r7, r8, lsr #16
+	mov     r8, r8, lsl #16
+	orr     r8, r8, r9, lsr #16
+	mov     r9, r9, lsl #16
+	orr     r9, r9, r10, lsr #16
+	mov     r10, r10,               lsl #16
+	orr     r10, r10, r11, lsr #16
+	stmia   r0!, {r3,r4,r5,r6, r7,r8,r9,r10}
+	mov     r3, r11, lsl #16
+#else
 	orr     r3, r3, r4, lsl #16
 	mov     r4, r4, lsr #16
 	orr     r4, r4, r5, lsl #16
@@ -287,6 +325,7 @@ loop16:
 	orr     r10, r10, r11, lsl #16
 	stmia   r0!, {r3,r4,r5,r6, r7,r8,r9,r10}
 	mov     r3, r11, lsr #16
+#endif
 	bhs     1b
 	b       less_than_thirtytwo
 
@@ -296,6 +335,25 @@ loop8:
 	ldmia   r1!, {   r5,r6,r7,  r8,r9,r10,r11}
 	subs    r2, r2, #32
 	ldrhs   r12, [r1], #4
+#if __ARMEB__
+	orr     r3, r3, r4, lsr #24
+	mov     r4, r4, lsl #8
+	orr     r4, r4, r5, lsr #24
+	mov     r5, r5, lsl #8
+	orr     r5, r5, r6, lsr #24
+	mov     r6, r6,  lsl #8
+	orr     r6, r6, r7, lsr #24
+	mov     r7, r7,  lsl #8
+	orr     r7, r7, r8,             lsr #24
+	mov     r8, r8,  lsl #8
+	orr     r8, r8, r9,             lsr #24
+	mov     r9, r9,  lsl #8
+	orr     r9, r9, r10,    lsr #24
+	mov     r10, r10, lsl #8
+	orr     r10, r10, r11,  lsr #24
+	stmia   r0!, {r3,r4,r5,r6, r7,r8,r9,r10}
+	mov     r3, r11, lsl #8
+#else
 	orr     r3, r3, r4, lsl #24
 	mov     r4, r4, lsr #8
 	orr     r4, r4, r5, lsl #24
@@ -313,6 +371,7 @@ loop8:
 	orr     r10, r10, r11,  lsl #24
 	stmia   r0!, {r3,r4,r5,r6, r7,r8,r9,r10}
 	mov     r3, r11, lsr #8
+#endif
 	bhs     1b
 	b       less_than_thirtytwo
 
@@ -322,6 +381,25 @@ loop24:
 	ldmia   r1!, {   r5,r6,r7,  r8,r9,r10,r11}
 	subs    r2, r2, #32
 	ldrhs   r12, [r1], #4
+#if __ARMEB__
+	orr     r3, r3, r4, lsr #8
+	mov     r4, r4, lsl #24
+	orr     r4, r4, r5, lsr #8
+	mov     r5, r5, lsl #24
+	orr     r5, r5, r6, lsr #8
+	mov     r6, r6, lsl #24
+	orr     r6, r6, r7, lsr #8
+	mov     r7, r7, lsl #24
+	orr     r7, r7, r8, lsr #8
+	mov     r8, r8, lsl #24
+	orr     r8, r8, r9, lsr #8
+	mov     r9, r9, lsl #24
+	orr     r9, r9, r10, lsr #8
+	mov     r10, r10, lsl #24
+	orr     r10, r10, r11, lsr #8
+	stmia   r0!, {r3,r4,r5,r6, r7,r8,r9,r10}
+	mov     r3, r11, lsl #24
+#else
 	orr     r3, r3, r4, lsl #8
 	mov     r4, r4, lsr #24
 	orr     r4, r4, r5, lsl #8
@@ -339,6 +417,7 @@ loop24:
 	orr     r10, r10, r11, lsl #8
 	stmia   r0!, {r3,r4,r5,r6, r7,r8,r9,r10}
 	mov     r3, r11, lsr #24
+#endif
 	bhs     1b
 
 less_than_thirtytwo:
@@ -350,9 +429,15 @@ less_than_thirtytwo:
 
 1:      ldr     r5, [r1], #4
 	sub     r2, r2, #4
+#if __ARMEB__
+	mov     r4, r5,                 lsr lr
+	orr     r4, r4, r3
+	mov     r3,     r5,                     lsl r12
+#else
 	mov     r4, r5,                 lsl lr
 	orr     r4, r4, r3
 	mov     r3,     r5,                     lsr r12
+#endif
 	str     r4, [r0], #4
 	cmp     r2, #4
 	bhs     1b
@@ -360,11 +445,20 @@ less_than_thirtytwo:
 partial_word_tail:
 	/* we have a partial word in the input buffer */
 	movs    r5, lr, lsl #(31-3)
+#if __ARMEB__
+	movmi   r3, r3, ror #24
+	strbmi r3, [r0], #1
+	movcs   r3, r3, ror #24
+	strbcs r3, [r0], #1
+	movcs   r3, r3, ror #24
+	strbcs r3, [r0], #1
+#else
 	strbmi r3, [r0], #1
 	movmi   r3, r3, lsr #8
 	strbcs r3, [r0], #1
 	movcs   r3, r3, lsr #8
 	strbcs r3, [r0], #1
+#endif
 
 	/* Refill spilled registers from the stack. Don't update sp. */
 	ldmfd   sp, {r5-r11}
@@ -383,4 +477,3 @@ copy_last_3_and_return:
 	ldmfd   sp!, {r0, r4, lr}
 	bx      lr
 
-#endif

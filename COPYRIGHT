@@ -127,7 +127,7 @@ Copyright © 2017-2018 Arm Limited
 and labelled as such in comments in the individual source files. All
 have been licensed under extremely permissive terms.
 
-The ARM memcpy code (src/string/arm/memcpy_el.S) is Copyright © 2008
+The ARM memcpy code (src/string/arm/memcpy.S) is Copyright © 2008
 The Android Open Source Project and is licensed under a two-clause BSD
 license. It was taken from Bionic libc, used on Android.
 
