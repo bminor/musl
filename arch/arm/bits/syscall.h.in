@@ -55,7 +55,7 @@
 #define __NR_sethostname	74
 #define __NR_setrlimit	75
 #define __NR_getrusage	77
-#define __NR_gettimeofday	78
+#define __NR_gettimeofday_time32	78
 #define __NR_settimeofday	79
 #define __NR_getgroups	80
 #define __NR_setgroups	81
@@ -216,7 +216,7 @@
 #define __NR_timer_getoverrun	260
 #define __NR_timer_delete	261
 #define __NR_clock_settime	262
-#define __NR_clock_gettime	263
+#define __NR_clock_gettime32	263
 #define __NR_clock_getres	264
 #define __NR_clock_nanosleep	265
 #define __NR_statfs64	266

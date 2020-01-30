@@ -76,7 +76,7 @@
 #define __NR_setrlimit		 75
 #define __NR_getrlimit		 76   /* Back compatible 2Gig limited rlimit */
 #define __NR_getrusage		 77
-#define __NR_gettimeofday	 78
+#define __NR_gettimeofday_time32	 78
 #define __NR_settimeofday	 79
 #define __NR_getgroups		 80
 #define __NR_setgroups		 81
@@ -262,7 +262,7 @@
 #define __NR_timer_getoverrun	(__NR_timer_create+3)
 #define __NR_timer_delete	(__NR_timer_create+4)
 #define __NR_clock_settime	(__NR_timer_create+5)
-#define __NR_clock_gettime	(__NR_timer_create+6)
+#define __NR_clock_gettime32	(__NR_timer_create+6)
 #define __NR_clock_getres	(__NR_timer_create+7)
 #define __NR_clock_nanosleep	(__NR_timer_create+8)
 #define __NR_statfs64		268

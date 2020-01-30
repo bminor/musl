@@ -92,7 +92,7 @@
 #define __NR_fchown			6091
 #define __NR_lchown			6092
 #define __NR_umask			6093
-#define __NR_gettimeofday		6094
+#define __NR_gettimeofday_time32		6094
 #define __NR_getrlimit			6095
 #define __NR_getrusage			6096
 #define __NR_sysinfo			6097
@@ -224,7 +224,7 @@
 #define __NR_timer_getoverrun		6223
 #define __NR_timer_delete		6224
 #define __NR_clock_settime		6225
-#define __NR_clock_gettime		6226
+#define __NR_clock_gettime32		6226
 #define __NR_clock_getres		6227
 #define __NR_clock_nanosleep		6228
 #define __NR_tgkill			6229

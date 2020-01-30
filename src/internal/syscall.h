@@ -193,6 +193,13 @@ hidden long __syscall_ret(unsigned long),
 #define SYS_sendfile SYS_sendfile64
 #endif
 
+#ifndef SYS_clock_gettime
+#define SYS_clock_gettime SYS_clock_gettime32
+#endif
+
+#ifndef SYS_gettimeofday
+#define SYS_gettimeofday SYS_gettimeofday_time32
+#endif
 
 /* Ensure that the plain syscall names are defined even for "time64-only"
  * archs. These facilitate callers passing null time arguments, and make

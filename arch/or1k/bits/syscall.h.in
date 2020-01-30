@@ -112,7 +112,7 @@
 #define __NR_timer_settime 110
 #define __NR_timer_delete 111
 #define __NR_clock_settime 112
-#define __NR_clock_gettime 113
+#define __NR_clock_gettime32 113
 #define __NR_clock_getres 114
 #define __NR_clock_nanosleep 115
 #define __NR_syslog 116
@@ -168,7 +168,7 @@
 #define __NR_umask 166
 #define __NR_prctl 167
 #define __NR_getcpu 168
-#define __NR_gettimeofday 169
+#define __NR_gettimeofday_time32 169
 #define __NR_settimeofday 170
 #define __NR_adjtimex 171
 #define __NR_getpid 172
