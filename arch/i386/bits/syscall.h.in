@@ -257,8 +257,8 @@
 #define __NR_remap_file_pages	257
 #define __NR_set_tid_address	258
 #define __NR_timer_create	259
-#define __NR_timer_settime	(__NR_timer_create+1)
-#define __NR_timer_gettime	(__NR_timer_create+2)
+#define __NR_timer_settime32	(__NR_timer_create+1)
+#define __NR_timer_gettime32	(__NR_timer_create+2)
 #define __NR_timer_getoverrun	(__NR_timer_create+3)
 #define __NR_timer_delete	(__NR_timer_create+4)
 #define __NR_clock_settime32	(__NR_timer_create+5)
@@ -322,8 +322,8 @@
 #define __NR_timerfd_create	322
 #define __NR_eventfd		323
 #define __NR_fallocate		324
-#define __NR_timerfd_settime	325
-#define __NR_timerfd_gettime	326
+#define __NR_timerfd_settime32	325
+#define __NR_timerfd_gettime32	326
 #define __NR_signalfd4		327
 #define __NR_eventfd2		328
 #define __NR_epoll_create1	329

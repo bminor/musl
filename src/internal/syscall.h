@@ -193,6 +193,22 @@ hidden long __syscall_ret(unsigned long),
 #define SYS_sendfile SYS_sendfile64
 #endif
 
+#ifndef SYS_timer_settime
+#define SYS_timer_settime SYS_timer_settime32
+#endif
+
+#ifndef SYS_timer_gettime
+#define SYS_timer_gettime SYS_timer_gettime32
+#endif
+
+#ifndef SYS_timerfd_settime
+#define SYS_timerfd_settime SYS_timerfd_settime32
+#endif
+
+#ifndef SYS_timerfd_gettime
+#define SYS_timerfd_gettime SYS_timerfd_gettime32
+#endif
+
 #ifndef SYS_clock_settime
 #define SYS_clock_settime SYS_clock_settime32
 #endif

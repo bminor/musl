@@ -238,8 +238,8 @@
 #define __NR_epoll_wait             238
 #define __NR_remap_file_pages       239
 #define __NR_timer_create           240
-#define __NR_timer_settime          241
-#define __NR_timer_gettime          242
+#define __NR_timer_settime32          241
+#define __NR_timer_gettime32          242
 #define __NR_timer_getoverrun       243
 #define __NR_timer_delete           244
 #define __NR_clock_settime32          245
@@ -307,8 +307,8 @@
 #define __NR_sync_file_range2	308
 #define __NR_fallocate		309
 #define __NR_subpage_prot		310
-#define __NR_timerfd_settime	311
-#define __NR_timerfd_gettime	312
+#define __NR_timerfd_settime32	311
+#define __NR_timerfd_gettime32	312
 #define __NR_signalfd4		313
 #define __NR_eventfd2		314
 #define __NR_epoll_create1	315

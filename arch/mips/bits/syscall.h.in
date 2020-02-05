@@ -256,8 +256,8 @@
 #define __NR_statfs64                4255
 #define __NR_fstatfs64               4256
 #define __NR_timer_create            4257
-#define __NR_timer_settime           4258
-#define __NR_timer_gettime           4259
+#define __NR_timer_settime32           4258
+#define __NR_timer_gettime32           4259
 #define __NR_timer_getoverrun        4260
 #define __NR_timer_delete            4261
 #define __NR_clock_settime32           4262
@@ -319,8 +319,8 @@
 #define __NR_eventfd                 4319
 #define __NR_fallocate               4320
 #define __NR_timerfd_create          4321
-#define __NR_timerfd_gettime         4322
-#define __NR_timerfd_settime         4323
+#define __NR_timerfd_gettime32         4322
+#define __NR_timerfd_settime32         4323
 #define __NR_signalfd4               4324
 #define __NR_eventfd2                4325
 #define __NR_epoll_create1           4326
