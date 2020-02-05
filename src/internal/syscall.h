@@ -193,12 +193,28 @@ hidden long __syscall_ret(unsigned long),
 #define SYS_sendfile SYS_sendfile64
 #endif
 
+#ifndef SYS_clock_settime
+#define SYS_clock_settime SYS_clock_settime32
+#endif
+
 #ifndef SYS_clock_gettime
 #define SYS_clock_gettime SYS_clock_gettime32
 #endif
 
+#ifndef SYS_clock_getres
+#define SYS_clock_getres SYS_clock_getres_time32
+#endif
+
+#ifndef SYS_clock_nanosleep
+#define SYS_clock_nanosleep SYS_clock_nanosleep_time32
+#endif
+
 #ifndef SYS_gettimeofday
 #define SYS_gettimeofday SYS_gettimeofday_time32
+#endif
+
+#ifndef SYS_settimeofday
+#define SYS_settimeofday SYS_settimeofday_time32
 #endif
 
 /* Ensure that the plain syscall names are defined even for "time64-only"

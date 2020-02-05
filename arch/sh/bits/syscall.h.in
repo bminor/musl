@@ -68,7 +68,7 @@
 #define __NR_getrlimit              76
 #define __NR_getrusage              77
 #define __NR_gettimeofday_time32           78
-#define __NR_settimeofday           79
+#define __NR_settimeofday_time32           79
 #define __NR_getgroups              80
 #define __NR_setgroups              81
 #define __NR_symlink                83
@@ -235,10 +235,10 @@
 #define __NR_timer_gettime          261
 #define __NR_timer_getoverrun       262
 #define __NR_timer_delete           263
-#define __NR_clock_settime          264
+#define __NR_clock_settime32          264
 #define __NR_clock_gettime32          265
-#define __NR_clock_getres           266
-#define __NR_clock_nanosleep        267
+#define __NR_clock_getres_time32           266
+#define __NR_clock_nanosleep_time32        267
 #define __NR_statfs64               268
 #define __NR_fstatfs64              269
 #define __NR_tgkill                 270
