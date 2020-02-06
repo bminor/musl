@@ -1,35 +1,8 @@
-.global expm1f
-.type expm1f,@function
-expm1f:
-	flds 4(%esp)
-	mov 4(%esp),%eax
-	add %eax,%eax
-	cmp $0x01000000,%eax
-	jae 1f
-		# subnormal x, return x with underflow
-	fld %st(0)
-	fmul %st(1)
-	fstps 4(%esp)
-	ret
-
 .global expm1l
 .type expm1l,@function
 expm1l:
 	fldt 4(%esp)
-	jmp 1f
-
-.global expm1
-.type expm1,@function
-expm1:
-	fldl 4(%esp)
-	mov 8(%esp),%eax
-	add %eax,%eax
-	cmp $0x00200000,%eax
-	jae 1f
-		# subnormal x, return x with underflow
-	fsts 4(%esp)
-	ret
-1:	fldl2e
+	fldl2e
 	fmulp
 	mov $0xc2820000,%eax
 	push %eax
@@ -59,12 +32,6 @@ expm1:
 	fsubrp
 	ret
 
-.global exp2f
-.type exp2f,@function
-exp2f:
-	flds 4(%esp)
-	jmp 1f
-
 .global exp2l
 .global __exp2l
 .hidden __exp2l
@@ -72,26 +39,6 @@ exp2f:
 exp2l:
 __exp2l:
 	fldt 4(%esp)
-	jmp 1f
-
-.global expf
-.type expf,@function
-expf:
-	flds 4(%esp)
-	jmp 2f
-
-.global exp
-.type exp,@function
-exp:
-	fldl 4(%esp)
-2:	fldl2e
-	fmulp
-	jmp 1f
-
-.global exp2
-.type exp2,@function
-exp2:
-	fldl 4(%esp)
 1:	sub $12,%esp
 	fld %st(0)
 	fstpt (%esp)
