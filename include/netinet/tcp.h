@@ -181,6 +181,13 @@ struct tcphdr {
 #define TCP_CA_Recovery		3
 #define TCP_CA_Loss		4
 
+enum tcp_fastopen_client_fail {
+	TFO_STATUS_UNSPEC,
+	TFO_COOKIE_UNAVAILABLE,
+	TFO_DATA_NOT_ACKED,
+	TFO_SYN_RETRANSMITTED,
+};
+
 struct tcp_info {
 	uint8_t tcpi_state;
 	uint8_t tcpi_ca_state;
@@ -189,7 +196,7 @@ struct tcp_info {
 	uint8_t tcpi_backoff;
 	uint8_t tcpi_options;
 	uint8_t tcpi_snd_wscale : 4, tcpi_rcv_wscale : 4;
-	uint8_t tcpi_delivery_rate_app_limited : 1;
+	uint8_t tcpi_delivery_rate_app_limited : 1, tcpi_fastopen_client_fail : 2;
 	uint32_t tcpi_rto;
 	uint32_t tcpi_ato;
 	uint32_t tcpi_snd_mss;
