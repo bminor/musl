@@ -415,8 +415,6 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 		}
 
 		switch(type) {
-		case REL_NONE:
-			break;
 		case REL_OFFSET:
 			addend -= (size_t)reloc_addr;
 		case REL_SYMBOLIC:
