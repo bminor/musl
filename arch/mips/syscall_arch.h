@@ -21,7 +21,8 @@ static inline long __syscall0(long n)
 	register long r2 __asm__("$2");
 	__asm__ __volatile__ (
 		"addu $2,$0,%2 ; syscall"
-		: "=&r"(r2), "=r"(r7) : "ir"(n), "0"(r2), "1"(r7)
+		: "=&r"(r2), "=r"(r7)
+		: "ir"(n), "0"(r2)
 		: SYSCALL_CLOBBERLIST, "$8", "$9", "$10");
 	return r7 ? -r2 : r2;
 }
@@ -33,8 +34,8 @@ static inline long __syscall1(long n, long a)
 	register long r2 __asm__("$2");
 	__asm__ __volatile__ (
 		"addu $2,$0,%2 ; syscall"
-		: "=&r"(r2), "=r"(r7) : "ir"(n), "0"(r2), "1"(r7),
-		  "r"(r4)
+		: "=&r"(r2), "=r"(r7)
+		: "ir"(n), "0"(r2), "r"(r4)
 		: SYSCALL_CLOBBERLIST, "$8", "$9", "$10");
 	return r7 ? -r2 : r2;
 }
@@ -47,8 +48,8 @@ static inline long __syscall2(long n, long a, long b)
 	register long r2 __asm__("$2");
 	__asm__ __volatile__ (
 		"addu $2,$0,%2 ; syscall"
-		: "=&r"(r2), "=r"(r7) : "ir"(n), "0"(r2), "1"(r7),
-		  "r"(r4), "r"(r5)
+		: "=&r"(r2), "=r"(r7)
+		: "ir"(n), "0"(r2), "r"(r4), "r"(r5)
 		: SYSCALL_CLOBBERLIST, "$8", "$9", "$10");
 	return r7 ? -r2 : r2;
 }
@@ -62,8 +63,8 @@ static inline long __syscall3(long n, long a, long b, long c)
 	register long r2 __asm__("$2");
 	__asm__ __volatile__ (
 		"addu $2,$0,%2 ; syscall"
-		: "=&r"(r2), "=r"(r7) : "ir"(n), "0"(r2), "1"(r7),
-		  "r"(r4), "r"(r5), "r"(r6)
+		: "=&r"(r2), "=r"(r7)
+		: "ir"(n), "0"(r2), "r"(r4), "r"(r5), "r"(r6)
 		: SYSCALL_CLOBBERLIST, "$8", "$9", "$10");
 	return r7 ? -r2 : r2;
 }
@@ -77,8 +78,8 @@ static inline long __syscall4(long n, long a, long b, long c, long d)
 	register long r2 __asm__("$2");
 	__asm__ __volatile__ (
 		"addu $2,$0,%2 ; syscall"
-		: "=&r"(r2), "=r"(r7) : "ir"(n), "0"(r2), "1"(r7),
-		  "r"(r4), "r"(r5), "r"(r6)
+		: "=&r"(r2), "+r"(r7)
+		: "ir"(n), "0"(r2), "r"(r4), "r"(r5), "r"(r6)
 		: SYSCALL_CLOBBERLIST, "$8", "$9", "$10");
 	return r7 ? -r2 : r2;
 }
@@ -95,8 +96,8 @@ static inline long __syscall5(long n, long a, long b, long c, long d, long e)
 		"subu $sp,$sp,32 ; sw $8,16($sp) ; "
 		"addu $2,$0,%3 ; syscall ;"
 		"addu $sp,$sp,32"
-		: "=&r"(r2), "=r"(r7), "+r"(r8)
-		: "ir"(n), "0"(r2), "1"(r7), "r"(r4), "r"(r5), "r"(r6)
+		: "=&r"(r2), "+r"(r7), "+r"(r8)
+		: "ir"(n), "0"(r2), "r"(r4), "r"(r5), "r"(r6)
 		: SYSCALL_CLOBBERLIST, "$9", "$10");
 	return r7 ? -r2 : r2;
 }
@@ -114,8 +115,8 @@ static inline long __syscall6(long n, long a, long b, long c, long d, long e, lo
 		"subu $sp,$sp,32 ; sw $8,16($sp) ; sw $9,20($sp) ; "
 		"addu $2,$0,%4 ; syscall ;"
 		"addu $sp,$sp,32"
-		: "=&r"(r2), "=r"(r7), "+r"(r8), "+r"(r9)
-		: "ir"(n), "0"(r2), "1"(r7), "r"(r4), "r"(r5), "r"(r6)
+		: "=&r"(r2), "+r"(r7), "+r"(r8), "+r"(r9)
+		: "ir"(n), "0"(r2), "r"(r4), "r"(r5), "r"(r6)
 		: SYSCALL_CLOBBERLIST, "$10");
 	return r7 ? -r2 : r2;
 }
@@ -134,8 +135,8 @@ static inline long __syscall7(long n, long a, long b, long c, long d, long e, lo
 		"subu $sp,$sp,32 ; sw $8,16($sp) ; sw $9,20($sp) ; sw $10,24($sp) ; "
 		"addu $2,$0,%5 ; syscall ;"
 		"addu $sp,$sp,32"
-		: "=&r"(r2), "=r"(r7), "+r"(r8), "+r"(r9), "+r"(r10)
-		: "ir"(n), "0"(r2), "1"(r7), "r"(r4), "r"(r5), "r"(r6)
+		: "=&r"(r2), "+r"(r7), "+r"(r8), "+r"(r9), "+r"(r10)
+		: "ir"(n), "0"(r2), "r"(r4), "r"(r5), "r"(r6)
 		: SYSCALL_CLOBBERLIST);
 	return r7 ? -r2 : r2;
 }
