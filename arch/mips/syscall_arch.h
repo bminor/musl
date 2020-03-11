@@ -24,7 +24,7 @@ static inline long __syscall0(long n)
 		: "=&r"(r2), "=r"(r7)
 		: "ir"(n), "0"(r2)
 		: SYSCALL_CLOBBERLIST, "$8", "$9", "$10");
-	return r7 ? -r2 : r2;
+	return r7 && r2>0 ? -r2 : r2;
 }
 
 static inline long __syscall1(long n, long a)
@@ -37,7 +37,7 @@ static inline long __syscall1(long n, long a)
 		: "=&r"(r2), "=r"(r7)
 		: "ir"(n), "0"(r2), "r"(r4)
 		: SYSCALL_CLOBBERLIST, "$8", "$9", "$10");
-	return r7 ? -r2 : r2;
+	return r7 && r2>0 ? -r2 : r2;
 }
 
 static inline long __syscall2(long n, long a, long b)
@@ -51,7 +51,7 @@ static inline long __syscall2(long n, long a, long b)
 		: "=&r"(r2), "=r"(r7)
 		: "ir"(n), "0"(r2), "r"(r4), "r"(r5)
 		: SYSCALL_CLOBBERLIST, "$8", "$9", "$10");
-	return r7 ? -r2 : r2;
+	return r7 && r2>0 ? -r2 : r2;
 }
 
 static inline long __syscall3(long n, long a, long b, long c)
@@ -66,7 +66,7 @@ static inline long __syscall3(long n, long a, long b, long c)
 		: "=&r"(r2), "=r"(r7)
 		: "ir"(n), "0"(r2), "r"(r4), "r"(r5), "r"(r6)
 		: SYSCALL_CLOBBERLIST, "$8", "$9", "$10");
-	return r7 ? -r2 : r2;
+	return r7 && r2>0 ? -r2 : r2;
 }
 
 static inline long __syscall4(long n, long a, long b, long c, long d)
@@ -81,7 +81,7 @@ static inline long __syscall4(long n, long a, long b, long c, long d)
 		: "=&r"(r2), "+r"(r7)
 		: "ir"(n), "0"(r2), "r"(r4), "r"(r5), "r"(r6)
 		: SYSCALL_CLOBBERLIST, "$8", "$9", "$10");
-	return r7 ? -r2 : r2;
+	return r7 && r2>0 ? -r2 : r2;
 }
 
 static inline long __syscall5(long n, long a, long b, long c, long d, long e)
@@ -99,7 +99,7 @@ static inline long __syscall5(long n, long a, long b, long c, long d, long e)
 		: "=&r"(r2), "+r"(r7), "+r"(r8)
 		: "ir"(n), "0"(r2), "r"(r4), "r"(r5), "r"(r6)
 		: SYSCALL_CLOBBERLIST, "$9", "$10");
-	return r7 ? -r2 : r2;
+	return r7 && r2>0 ? -r2 : r2;
 }
 
 static inline long __syscall6(long n, long a, long b, long c, long d, long e, long f)
@@ -118,7 +118,7 @@ static inline long __syscall6(long n, long a, long b, long c, long d, long e, lo
 		: "=&r"(r2), "+r"(r7), "+r"(r8), "+r"(r9)
 		: "ir"(n), "0"(r2), "r"(r4), "r"(r5), "r"(r6)
 		: SYSCALL_CLOBBERLIST, "$10");
-	return r7 ? -r2 : r2;
+	return r7 && r2>0 ? -r2 : r2;
 }
 
 static inline long __syscall7(long n, long a, long b, long c, long d, long e, long f, long g)
@@ -138,7 +138,7 @@ static inline long __syscall7(long n, long a, long b, long c, long d, long e, lo
 		: "=&r"(r2), "+r"(r7), "+r"(r8), "+r"(r9), "+r"(r10)
 		: "ir"(n), "0"(r2), "r"(r4), "r"(r5), "r"(r6)
 		: SYSCALL_CLOBBERLIST);
-	return r7 ? -r2 : r2;
+	return r7 && r2>0 ? -r2 : r2;
 }
 
 #define VDSO_USEFUL
