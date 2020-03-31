@@ -101,8 +101,10 @@ uint16_t ntohs(uint16_t);
 #define IPPROTO_MH       135
 #define IPPROTO_UDPLITE  136
 #define IPPROTO_MPLS     137
+#define IPPROTO_ETHERNET 143
 #define IPPROTO_RAW      255
-#define IPPROTO_MAX      256
+#define IPPROTO_MPTCP    262
+#define IPPROTO_MAX      263
 
 #define IN6_IS_ADDR_UNSPECIFIED(a) \
         (((uint32_t *) (a))[0] == 0 && ((uint32_t *) (a))[1] == 0 && \
