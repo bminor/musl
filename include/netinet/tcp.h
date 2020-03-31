@@ -78,6 +78,7 @@ enum {
 	TCP_NLA_DSACK_DUPS,
 	TCP_NLA_REORD_SEEN,
 	TCP_NLA_SRTT,
+	TCP_NLA_TIMEOUT_REHASH,
 };
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
@@ -247,14 +248,15 @@ struct tcp_info {
 
 #define TCP_MD5SIG_MAXKEYLEN    80
 
-#define TCP_MD5SIG_FLAG_PREFIX  1
+#define TCP_MD5SIG_FLAG_PREFIX  0x1
+#define TCP_MD5SIG_FLAG_IFINDEX 0x2
 
 struct tcp_md5sig {
 	struct sockaddr_storage tcpm_addr;
 	uint8_t tcpm_flags;
 	uint8_t tcpm_prefixlen;
 	uint16_t tcpm_keylen;
-	uint32_t __tcpm_pad;
+	int tcpm_ifindex;
 	uint8_t tcpm_key[TCP_MD5SIG_MAXKEYLEN];
 };
 
