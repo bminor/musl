@@ -338,4 +338,6 @@
 #define __NR_fspick		5433
 #define __NR_pidfd_open		5434
 #define __NR_clone3		5435
+#define __NR_openat2		5437
+#define __NR_pidfd_getfd	5438
 
