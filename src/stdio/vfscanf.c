@@ -76,6 +76,9 @@ int vfscanf(FILE *restrict f, const char *restrict fmt, va_list ap)
 
 	FLOCK(f);
 
+	if (!f->rpos) __toread(f);
+	if (!f->rpos) goto input_fail;
+
 	for (p=(const unsigned char *)fmt; *p; p++) {
 
 		alloc = 0;
