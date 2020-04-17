@@ -2,6 +2,7 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stddef.h>
 #include <inttypes.h>
 #include "libc.h"
 
@@ -95,7 +96,7 @@ FILE *fmemopen(void *restrict buf, size_t size, const char *restrict mode)
 
 	f = malloc(sizeof *f + (buf?0:size));
 	if (!f) return 0;
-	memset(&f->f, 0, sizeof f->f);
+	memset(f, 0, offsetof(struct mem_FILE, buf));
 	f->f.cookie = &f->c;
 	f->f.fd = -1;
 	f->f.lbf = EOF;
@@ -106,7 +107,6 @@ FILE *fmemopen(void *restrict buf, size_t size, const char *restrict mode)
 		memset(buf, 0, size);
 	}
 
-	memset(&f->c, 0, sizeof f->c);
 	f->c.buf = buf;
 	f->c.size = size;
 	f->c.mode = *mode;
