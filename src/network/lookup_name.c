@@ -149,6 +149,7 @@ static int name_from_dns(struct address buf[static MAXADDRS], char canon[static 
 				0, 0, 0, qbuf[nq], sizeof *qbuf);
 			if (qlens[nq] == -1)
 				return EAI_NONAME;
+			qbuf[nq][3] = 0; /* don't need AD flag */
 			nq++;
 		}
 	}
