@@ -26,7 +26,7 @@ int __malloc_replaced;
 
 static inline void lock(volatile int *lk)
 {
-	if (libc.threads_minus_1)
+	if (libc.threaded)
 		while(a_swap(lk, 1)) __wait(lk, lk+1, 1, 1);
 }
 

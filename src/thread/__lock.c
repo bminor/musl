@@ -18,7 +18,7 @@
 
 void __lock(volatile int *l)
 {
-	if (!libc.threads_minus_1) return;
+	if (!libc.threaded) return;
 	/* fast path: INT_MIN for the lock, +1 for the congestion */
 	int current = a_cas(l, 0, INT_MIN + 1);
 	if (!current) return;
