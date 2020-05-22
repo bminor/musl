@@ -26,8 +26,11 @@ int __malloc_replaced;
 
 static inline void lock(volatile int *lk)
 {
-	if (libc.threaded)
+	int need_locks = libc.need_locks;
+	if (need_locks) {
 		while(a_swap(lk, 1)) __wait(lk, lk+1, 1, 1);
+		if (need_locks < 0) libc.need_locks = 0;
+	}
 }
 
 static inline void unlock(volatile int *lk)

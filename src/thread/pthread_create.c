@@ -118,8 +118,8 @@ _Noreturn void __pthread_exit(void *result)
 	 * until the lock is released, which only happens after SYS_exit
 	 * has been called, via the exit futex address pointing at the lock.
 	 * This needs to happen after any possible calls to LOCK() that might
-	 * skip locking if libc.threads_minus_1 is zero. */
-	libc.threads_minus_1--;
+	 * skip locking if process appears single-threaded. */
+	if (!--libc.threads_minus_1) libc.need_locks = -1;
 	self->next->prev = self->prev;
 	self->prev->next = self->next;
 	self->prev = self->next = self;
@@ -339,7 +339,7 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 		~(1UL<<((SIGCANCEL-1)%(8*sizeof(long))));
 
 	__tl_lock();
-	libc.threads_minus_1++;
+	if (!libc.threads_minus_1++) libc.need_locks = 1;
 	ret = __clone((c11 ? start_c11 : start), stack, flags, args, &new->tid, TP_ADJ(new), &__thread_list_lock);
 
 	/* All clone failures translate to EAGAIN. If explicit scheduling
@@ -363,7 +363,7 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 		new->next->prev = new;
 		new->prev->next = new;
 	} else {
-		libc.threads_minus_1--;
+		if (!--libc.threads_minus_1) libc.need_locks = 0;
 	}
 	__tl_unlock();
 	__restore_sigs(&set);
