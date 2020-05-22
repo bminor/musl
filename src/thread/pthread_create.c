@@ -90,14 +90,7 @@ _Noreturn void __pthread_exit(void *result)
 		exit(0);
 	}
 
-	/* At this point we are committed to thread termination. Unlink
-	 * the thread from the list. This change will not be visible
-	 * until the lock is released, which only happens after SYS_exit
-	 * has been called, via the exit futex address pointing at the lock. */
-	libc.threads_minus_1--;
-	self->next->prev = self->prev;
-	self->prev->next = self->next;
-	self->prev = self->next = self;
+	/* At this point we are committed to thread termination. */
 
 	/* Process robust list in userspace to handle non-pshared mutexes
 	 * and the detached thread case where the robust list head will
@@ -120,6 +113,16 @@ _Noreturn void __pthread_exit(void *result)
 
 	__do_orphaned_stdio_locks();
 	__dl_thread_cleanup();
+
+	/* Last, unlink thread from the list. This change will not be visible
+	 * until the lock is released, which only happens after SYS_exit
+	 * has been called, via the exit futex address pointing at the lock.
+	 * This needs to happen after any possible calls to LOCK() that might
+	 * skip locking if libc.threads_minus_1 is zero. */
+	libc.threads_minus_1--;
+	self->next->prev = self->prev;
+	self->prev->next = self->next;
+	self->prev = self->next = self;
 
 	/* This atomic potentially competes with a concurrent pthread_detach
 	 * call; the loser is responsible for freeing thread resources. */
