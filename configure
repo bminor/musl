@@ -495,6 +495,13 @@ fnmatch '-mtune=*|*\ -mtune=*' "$CC $CFLAGS" || tryldflag CFLAGS_AUTO -mtune=gen
 fi
 
 #
+# GCC defines -w as overriding any -W options, regardless of order, but
+# clang has a bunch of annoying warnings enabled by default and needs -w
+# to start from a clean slate. So use -w if building with clang.
+#
+test "$cc_family" = clang && tryflag CFLAGS_AUTO -w
+
+#
 # Even with -std=c99, gcc accepts some constructs which are constraint
 # violations. We want to treat these as errors regardless of whether
 # other purely stylistic warnings are enabled -- especially implicit
