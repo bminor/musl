@@ -63,7 +63,7 @@ int clock_adjtime (clockid_t clock_id, struct timex *utx)
 			.stbcnt = utx->stbcnt,
 			.tai = utx->tai,
 		};
-		r = __syscall(SYS_clock_adjtime, clock_id, &ktx);
+		r = __syscall(SYS_clock_adjtime64, clock_id, &ktx);
 		if (r>=0) {
 			utx->modes = ktx.modes;
 			utx->offset = ktx.offset;
