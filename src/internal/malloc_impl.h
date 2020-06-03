@@ -2,10 +2,9 @@
 #define MALLOC_IMPL_H
 
 #include <sys/mman.h>
+#include "dynlink.h"
 
 hidden void *__expand_heap(size_t *);
-
-hidden void __malloc_donate(char *, char *);
 
 hidden void *__memalign(size_t, size_t);
 
@@ -40,7 +39,5 @@ struct bin {
 #define IS_MMAPPED(c) !((c)->csize & (C_INUSE))
 
 hidden void __bin_chunk(struct chunk *);
-
-hidden extern int __malloc_replaced;
 
 #endif

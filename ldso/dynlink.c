@@ -23,7 +23,6 @@
 #include "pthread_impl.h"
 #include "libc.h"
 #include "dynlink.h"
-#include "malloc_impl.h"
 
 static void error(const char *, ...);
 
