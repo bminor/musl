@@ -6,8 +6,6 @@
 
 hidden void *__expand_heap(size_t *);
 
-hidden void *__memalign(size_t, size_t);
-
 struct chunk {
 	size_t psize, csize;
 	struct chunk *next, *prev;

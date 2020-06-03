@@ -3,7 +3,7 @@
 #include <errno.h>
 #include "malloc_impl.h"
 
-void *__memalign(size_t align, size_t len)
+void *aligned_alloc(size_t align, size_t len)
 {
 	unsigned char *mem, *new;
 
@@ -50,5 +50,3 @@ void *__memalign(size_t align, size_t len)
 	__bin_chunk(c);
 	return new;
 }
-
-weak_alias(__memalign, memalign);
