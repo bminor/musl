@@ -38,8 +38,7 @@ int clock_adjtime (clockid_t clock_id, struct timex *utx)
 {
 	int r = -ENOSYS;
 #ifdef SYS_clock_adjtime64
-	if (SYS_clock_adjtime == SYS_clock_adjtime64 ||
-	    (utx->modes & ADJ_SETOFFSET) && !IS32BIT(utx->time.tv_sec)) {
+	if (1) {
 		struct ktimex64 ktx = {
 			.modes = utx->modes,
 			.offset = utx->offset,
