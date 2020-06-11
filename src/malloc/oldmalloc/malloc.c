@@ -20,8 +20,6 @@ static struct {
 	volatile int split_merge_lock[2];
 } mal;
 
-int __malloc_replaced;
-
 /* Synchronization tools */
 
 static inline void lock(volatile int *lk)
