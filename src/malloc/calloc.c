@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <errno.h>
+#include "dynlink.h"
 
 static size_t mal0_clear(char *p, size_t n)
 {
@@ -23,6 +24,12 @@ static size_t mal0_clear(char *p, size_t n)
 	}
 }
 
+static int allzerop(void *p)
+{
+	return 0;
+}
+weak_alias(allzerop, __malloc_allzerop);
+
 void *calloc(size_t m, size_t n)
 {
 	if (n && m > (size_t)-1/n) {
@@ -31,7 +38,8 @@ void *calloc(size_t m, size_t n)
 	}
 	n *= m;
 	void *p = malloc(n);
-	if (!p) return p;
+	if (!p || (!__malloc_replaced && __malloc_allzerop(p)))
+		return p;
 	n = mal0_clear(p, n);
 	return memset(p, 0, n);
 }

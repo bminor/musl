@@ -339,6 +339,11 @@ void *malloc(size_t n)
 	return CHUNK_TO_MEM(c);
 }
 
+int __malloc_allzerop(void *p)
+{
+	return IS_MMAPPED(MEM_TO_CHUNK(p));
+}
+
 void *realloc(void *p, size_t n)
 {
 	struct chunk *self, *next;

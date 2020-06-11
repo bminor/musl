@@ -107,5 +107,6 @@ hidden ptrdiff_t __tlsdesc_static(), __tlsdesc_dynamic();
 
 hidden extern int __malloc_replaced;
 hidden void __malloc_donate(char *, char *);
+hidden int __malloc_allzerop(void *);
 
 #endif
