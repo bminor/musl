@@ -1935,6 +1935,8 @@ void __dls3(size_t *sp, size_t *auxv)
 	 * possibility of incomplete replacement. */
 	if (find_sym(head, "malloc", 1).dso != &ldso)
 		__malloc_replaced = 1;
+	if (find_sym(head, "aligned_alloc", 1).dso != &ldso)
+		__aligned_alloc_replaced = 1;
 
 	/* Switch to runtime mode: any further failures in the dynamic
 	 * linker are a reportable failure rather than a fatal startup
