@@ -12,7 +12,8 @@ void *aligned_alloc(size_t align, size_t len)
 		return 0;
 	}
 
-	if (len > SIZE_MAX - align || __malloc_replaced) {
+	if (len > SIZE_MAX - align ||
+	    (__malloc_replaced && !__aligned_alloc_replaced)) {
 		errno = ENOMEM;
 		return 0;
 	}
