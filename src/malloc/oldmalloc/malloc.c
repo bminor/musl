@@ -409,7 +409,7 @@ copy_realloc:
 	new = malloc(n-OVERHEAD);
 	if (!new) return 0;
 copy_free_ret:
-	memcpy(new, p, n0-OVERHEAD);
+	memcpy(new, p, (n<n0 ? n : n0) - OVERHEAD);
 	free(CHUNK_TO_MEM(self));
 	return new;
 }
