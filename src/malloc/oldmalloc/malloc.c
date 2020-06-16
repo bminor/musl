@@ -385,6 +385,18 @@ void *realloc(void *p, size_t n)
 	/* Crash on corrupted footer (likely from buffer overflow) */
 	if (next->psize != self->csize) a_crash();
 
+	if (n < n0) {
+		int i = bin_index_up(n);
+		int j = bin_index(n0);
+		if (i<j && (mal.binmap & (1ULL << i)))
+			goto copy_realloc;
+		struct chunk *split = (void *)((char *)self + n);
+		self->csize = split->psize = n | C_INUSE;
+		split->csize = next->psize = n0-n | C_INUSE;
+		__bin_chunk(split);
+		return CHUNK_TO_MEM(self);
+	}
+
 	lock(mal.split_merge_lock);
 
 	size_t nsize = next->csize & C_INUSE ? 0 : CHUNK_SIZE(next);
