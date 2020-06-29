@@ -1,0 +1,13 @@
+This directory is a skeleton for upcoming merge of musl's new malloc
+implementation, mallocng. To use it, drop in copies of or symlinks to
+the following files from mallocng:
+
+- meta.h
+- malloc.c
+- realloc.c
+- free.c
+- aligned_alloc.c
+- malloc_usable_size.c
+
+and build with make variable MALLOC_DIR=mallocng in config.mak or on
+make command line.
