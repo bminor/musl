@@ -36,7 +36,7 @@ Optional features:
   --disable-static        inhibit building static library [enabled]
 
 Optional packages:
-  --with-malloc=...       choose malloc implementation [oldmalloc]
+  --with-malloc=...       choose malloc implementation [mallocng]
 
 Some influential environment variables:
   CC                      C compiler command [detected]
@@ -142,7 +142,7 @@ static=yes
 wrapper=auto
 gcc_wrapper=no
 clang_wrapper=no
-malloc_dir=oldmalloc
+malloc_dir=mallocng
 
 for arg ; do
 case "$arg" in
