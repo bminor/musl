@@ -57,7 +57,7 @@ int vfscanf(FILE *restrict f, const char *restrict fmt, va_list ap)
 {
 	int width;
 	int size;
-	int alloc;
+	int alloc = 0;
 	int base;
 	const unsigned char *p;
 	int c, t;
