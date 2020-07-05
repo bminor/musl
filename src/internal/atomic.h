@@ -319,7 +319,7 @@ static inline int a_clz_64(uint64_t x)
 #define a_clz_32 a_clz_32
 static inline int a_clz_32(uint32_t x)
 {
-	x--;
+	x >>= 1;
 	x |= x >> 1;
 	x |= x >> 2;
 	x |= x >> 4;
