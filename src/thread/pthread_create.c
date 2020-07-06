@@ -72,12 +72,13 @@ _Noreturn void __pthread_exit(void *result)
 	/* Access to target the exiting thread with syscalls that use
 	 * its kernel tid is controlled by killlock. For detached threads,
 	 * any use past this point would have undefined behavior, but for
-	 * joinable threads it's a valid usage that must be handled. */
+	 * joinable threads it's a valid usage that must be handled.
+	 * Signals must be blocked since pthread_kill must be AS-safe. */
+	__block_app_sigs(&set);
 	LOCK(self->killlock);
 
-	/* The thread list lock must be AS-safe, and thus requires
-	 * application signals to be blocked before it can be taken. */
-	__block_app_sigs(&set);
+	/* The thread list lock must be AS-safe, and thus depends on
+	 * application signals being blocked above. */
 	__tl_lock();
 
 	/* If this is the only thread in the list, don't proceed with
@@ -85,8 +86,8 @@ _Noreturn void __pthread_exit(void *result)
 	 * signal state to prepare for exit to call atexit handlers. */
 	if (self->next == self) {
 		__tl_unlock();
-		__restore_sigs(&set);
 		UNLOCK(self->killlock);
+		__restore_sigs(&set);
 		exit(0);
 	}
 
