@@ -79,6 +79,7 @@ enum {
 	TCP_NLA_REORD_SEEN,
 	TCP_NLA_SRTT,
 	TCP_NLA_TIMEOUT_REHASH,
+	TCP_NLA_BYTES_NOTSENT,
 };
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
@@ -284,6 +285,8 @@ struct tcp_zerocopy_receive {
 	uint64_t address;
 	uint32_t length;
 	uint32_t recv_skip_hint;
+	uint32_t inq;
+	int32_t err;
 };
 
 #endif
