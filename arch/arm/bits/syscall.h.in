@@ -391,6 +391,7 @@
 #define __NR_clone3		435
 #define __NR_openat2		437
 #define __NR_pidfd_getfd	438
+#define __NR_faccessat2		439
 
 #define __ARM_NR_breakpoint	0x0f0001
 #define __ARM_NR_cacheflush	0x0f0002

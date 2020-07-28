@@ -364,4 +364,5 @@
 #define __NR_clone3		6435
 #define __NR_openat2		6437
 #define __NR_pidfd_getfd	6438
+#define __NR_faccessat2		6439
 
