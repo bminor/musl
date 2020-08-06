@@ -80,7 +80,7 @@ static int name_from_hosts(struct address buf[static MAXADDRS], char canon[stati
 			continue;
 		default:
 			badfam = EAI_NONAME;
-			continue;
+			break;
 		}
 
 		if (have_canon) continue;
