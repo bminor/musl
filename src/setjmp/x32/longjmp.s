@@ -5,10 +5,10 @@
 .type longjmp,@function
 _longjmp:
 longjmp:
-	mov %rsi,%rax           /* val will be longjmp return */
-	test %rax,%rax
+	mov %esi,%eax           /* val will be longjmp return */
+	test %esi,%esi
 	jnz 1f
-	inc %rax                /* if val==0, val=1 per longjmp semantics */
+	inc %eax                /* if val==0, val=1 per longjmp semantics */
 1:
 	mov (%rdi),%rbx         /* rdi is the jmp_buf, restore regs from it */
 	mov 8(%rdi),%rbp
