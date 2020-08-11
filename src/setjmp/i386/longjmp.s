@@ -14,7 +14,5 @@ longjmp:
 	mov  4(%edx),%esi
 	mov  8(%edx),%edi
 	mov 12(%edx),%ebp
-	mov 16(%edx),%ecx
-	mov     %ecx,%esp
-	mov 20(%edx),%ecx
-	jmp *%ecx
+	mov 16(%edx),%esp
+	jmp *20(%edx)

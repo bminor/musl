@@ -16,7 +16,5 @@ longjmp:
 	mov 24(%rdi),%r13
 	mov 32(%rdi),%r14
 	mov 40(%rdi),%r15
-	mov 48(%rdi),%rdx       /* this ends up being the stack pointer */
-	mov %rdx,%rsp
-	mov 56(%rdi),%rdx       /* this is the instruction pointer */
-	jmp *%rdx               /* goto saved address without altering rsp */
+	mov 48(%rdi),%rsp
+	jmp *56(%rdi)           /* goto saved address without altering rsp */
