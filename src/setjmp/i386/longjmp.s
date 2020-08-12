@@ -6,10 +6,8 @@ _longjmp:
 longjmp:
 	mov  4(%esp),%edx
 	mov  8(%esp),%eax
-	test    %eax,%eax
-	jnz 1f
-	inc     %eax
-1:
+	cmp       $1,%eax
+	adc       $0, %al
 	mov   (%edx),%ebx
 	mov  4(%edx),%esi
 	mov  8(%edx),%edi
