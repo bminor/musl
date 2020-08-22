@@ -67,7 +67,7 @@ const struct __locale_map *__get_locale(int cat, const char *val)
 
 	if (path) for (; *path; path=z+!!*z) {
 		z = __strchrnul(path, ':');
-		l = z - path - !!*z;
+		l = z - path;
 		if (l >= sizeof buf - n - 2) continue;
 		memcpy(buf, path, l);
 		buf[l] = '/';
