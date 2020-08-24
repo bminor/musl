@@ -1,6 +1,7 @@
 #include "stdio_impl.h"
 #include <stdlib.h>
 #include <sys/ioctl.h>
+#include <termios.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <string.h>

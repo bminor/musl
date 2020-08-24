@@ -15,6 +15,13 @@ typedef unsigned char cc_t;
 typedef unsigned int speed_t;
 typedef unsigned int tcflag_t;
 
+struct winsize {
+	unsigned short ws_row;
+	unsigned short ws_col;
+	unsigned short ws_xpixel;
+	unsigned short ws_ypixel;
+};
+
 #define NCCS 32
 
 #include <bits/termios.h>
@@ -26,6 +33,9 @@ int cfsetispeed (struct termios *, speed_t);
 
 int tcgetattr (int, struct termios *);
 int tcsetattr (int, int, const struct termios *);
+
+int tcgetwinsize (int, struct winsize *);
+int tcsetwinsize (int, const struct winsize *);
 
 int tcsendbreak (int, int);
 int tcdrain (int);
