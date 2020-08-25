@@ -7,6 +7,6 @@ static inline uintptr_t __get_tp()
 
 #define MC_PC gregs[REG_RIP]
 
-#define CANARY canary2
+#define CANARY_PAD
 
 #define tls_mod_off_t unsigned long long

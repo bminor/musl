@@ -11,16 +11,25 @@
 #include "atomic.h"
 #include "futex.h"
 
+#include "pthread_arch.h"
+
 #define pthread __pthread
 
 struct pthread {
 	/* Part 1 -- these fields may be external or
 	 * internal (accessed via asm) ABI. Do not change. */
 	struct pthread *self;
+#ifndef TLS_ABOVE_TP
 	uintptr_t *dtv;
+#endif
 	struct pthread *prev, *next; /* non-ABI */
 	uintptr_t sysinfo;
-	uintptr_t canary, canary2;
+#ifndef TLS_ABOVE_TP
+#ifdef CANARY_PAD
+	uintptr_t canary_pad;
+#endif
+	uintptr_t canary;
+#endif
 
 	/* Part 2 -- implementation details, non-ABI. */
 	int tid;
@@ -52,8 +61,10 @@ struct pthread {
 
 	/* Part 3 -- the positions of these fields relative to
 	 * the end of the structure is external and internal ABI. */
-	uintptr_t canary_at_end;
-	uintptr_t *dtv_copy;
+#ifdef TLS_ABOVE_TP
+	uintptr_t canary;
+	uintptr_t *dtv;
+#endif
 };
 
 enum {
@@ -98,12 +109,6 @@ struct __timer {
 #define _b_count __u.__vi[3]
 #define _b_waiters2 __u.__vi[4]
 #define _b_inst __u.__p[3]
-
-#include "pthread_arch.h"
-
-#ifndef CANARY
-#define CANARY canary
-#endif
 
 #ifndef TP_OFFSET
 #define TP_OFFSET 0

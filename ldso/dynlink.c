@@ -1579,7 +1579,7 @@ static void install_new_tls(void)
 
 	/* Install new dtv for each thread. */
 	for (j=0, td=self; !j || td!=self; j++, td=td->next) {
-		td->dtv = td->dtv_copy = newdtv[j];
+		td->dtv = newdtv[j];
 	}
 
 	__tl_unlock();

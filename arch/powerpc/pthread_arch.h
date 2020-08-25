@@ -14,5 +14,3 @@ static inline uintptr_t __get_tp()
 // the kernel calls the ip "nip", it's the first saved value after the 32
 // GPRs.
 #define MC_PC gregs[32]
-
-#define CANARY canary_at_end

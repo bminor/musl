@@ -314,7 +314,7 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 		new->detach_state = DT_JOINABLE;
 	}
 	new->robust_list.head = &new->robust_list.head;
-	new->CANARY = self->CANARY;
+	new->canary = self->canary;
 	new->sysinfo = self->sysinfo;
 
 	/* Setup argument structure for the new thread on its stack.
