@@ -43,6 +43,7 @@ struct pthread {
 		long off;
 		volatile void *volatile pending;
 	} robust_list;
+	int h_errno_val;
 	volatile int timer_id;
 	locale_t locale;
 	volatile int killlock[1];

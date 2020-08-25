@@ -1,9 +1,7 @@
 #include <netdb.h>
-
-#undef h_errno
-int h_errno;
+#include "pthread_impl.h"
 
 int *__h_errno_location(void)
 {
-	return &h_errno;
+	return &__pthread_self()->h_errno_val;
 }
