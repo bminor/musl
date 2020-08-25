@@ -1,7 +1,6 @@
-static inline struct pthread *__pthread_self()
+static inline uintptr_t __get_tp()
 {
-	uintptr_t tp = __syscall(SYS_get_thread_area);
-	return (pthread_t)(tp - 0x7000 - sizeof(struct pthread));
+	return __syscall(SYS_get_thread_area);
 }
 
 #define TLS_ABOVE_TP

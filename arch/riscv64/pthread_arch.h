@@ -1,8 +1,8 @@
-static inline struct pthread *__pthread_self()
+static inline uintptr_t __get_tp()
 {
-	char *tp;
+	uintptr_t tp;
 	__asm__ __volatile__("mv %0, tp" : "=r"(tp));
-	return (void *)(tp - sizeof(struct pthread));
+	return tp;
 }
 
 #define TLS_ABOVE_TP
