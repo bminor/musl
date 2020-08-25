@@ -105,8 +105,18 @@ struct __timer {
 #define CANARY canary
 #endif
 
+#ifndef TP_OFFSET
+#define TP_OFFSET 0
+#endif
+
 #ifndef DTP_OFFSET
 #define DTP_OFFSET 0
+#endif
+
+#ifdef TLS_ABOVE_TP
+#define TP_ADJ(p) ((char *)(p) + sizeof(struct pthread) + TP_OFFSET)
+#else
+#define TP_ADJ(p) (p)
 #endif
 
 #ifndef tls_mod_off_t
