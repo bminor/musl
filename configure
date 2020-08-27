@@ -522,6 +522,10 @@ tryflag CFLAGS_AUTO -Werror=implicit-function-declaration
 tryflag CFLAGS_AUTO -Werror=implicit-int
 tryflag CFLAGS_AUTO -Werror=pointer-sign
 tryflag CFLAGS_AUTO -Werror=pointer-arith
+tryflag CFLAGS_AUTO -Werror=int-conversion
+tryflag CFLAGS_AUTO -Werror=incompatible-pointer-types
+tryflag CFLAGS_AUTO -Werror=discarded-qualifiers
+tryflag CFLAGS_AUTO -Werror=discarded-array-qualifiers
 
 #
 # GCC ignores unused arguements by default, but Clang needs this extra
