@@ -508,9 +508,12 @@ fi
 #
 # GCC defines -w as overriding any -W options, regardless of order, but
 # clang has a bunch of annoying warnings enabled by default and needs -w
-# to start from a clean slate. So use -w if building with clang.
+# to start from a clean slate. So use -w if building with clang. Also
+# turn off a common on-by-default cast warning regardless of compiler.
 #
 test "$cc_family" = clang && tryflag CFLAGS_AUTO -w
+
+tryflag CFLAGS_AUTO -Wno-pointer-to-int-cast
 
 #
 # Even with -std=c99, gcc accepts some constructs which are constraint
@@ -535,14 +538,17 @@ tryflag CFLAGS_AUTO -Werror=discarded-array-qualifiers
 test "$cc_family" = clang && tryflag CFLAGS_AUTO -Qunused-arguments
 
 if test "x$warnings" = xyes ; then
-tryflag CFLAGS_AUTO -Wall
-tryflag CFLAGS_AUTO -Wno-parentheses
-tryflag CFLAGS_AUTO -Wno-uninitialized
-tryflag CFLAGS_AUTO -Wno-missing-braces
-tryflag CFLAGS_AUTO -Wno-unused-value
-tryflag CFLAGS_AUTO -Wno-unused-but-set-variable
-tryflag CFLAGS_AUTO -Wno-unknown-pragmas
-tryflag CFLAGS_AUTO -Wno-pointer-to-int-cast
+tryflag CFLAGS_AUTO -Waddress
+tryflag CFLAGS_AUTO -Warray-bounds
+tryflag CFLAGS_AUTO -Wchar-subscripts
+tryflag CFLAGS_AUTO -Wduplicate-decl-specifier
+tryflag CFLAGS_AUTO -Winit-self
+tryflag CFLAGS_AUTO -Wreturn-type
+tryflag CFLAGS_AUTO -Wsequence-point
+tryflag CFLAGS_AUTO -Wstrict-aliasing
+tryflag CFLAGS_AUTO -Wunused-function
+tryflag CFLAGS_AUTO -Wunused-label
+tryflag CFLAGS_AUTO -Wunused-variable
 fi
 
 # Determine if the compiler produces position-independent code (PIC)
