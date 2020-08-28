@@ -30,7 +30,7 @@ System types:
 Optional features:
   --enable-optimize=...   optimize listed components for speed over size [auto]
   --enable-debug          build with debugging information [disabled]
-  --enable-warnings       build with recommended warnings flags [disabled]
+  --disable-warnings      build with recommended warnings flags [enabled]
   --enable-wrapper=...    build given musl toolchain wrapper [auto]
   --disable-shared        inhibit building shared library [enabled]
   --disable-static        inhibit building static library [enabled]
@@ -136,7 +136,7 @@ build=
 target=
 optimize=auto
 debug=no
-warnings=no
+warnings=yes
 shared=auto
 static=yes
 wrapper=auto
