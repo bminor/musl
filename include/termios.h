@@ -8,19 +8,13 @@ extern "C" {
 #include <features.h>
 
 #define __NEED_pid_t
+#define __NEED_struct_winsize
 
 #include <bits/alltypes.h>
 
 typedef unsigned char cc_t;
 typedef unsigned int speed_t;
 typedef unsigned int tcflag_t;
-
-struct winsize {
-	unsigned short ws_row;
-	unsigned short ws_col;
-	unsigned short ws_xpixel;
-	unsigned short ws_ypixel;
-};
 
 #define NCCS 32
 

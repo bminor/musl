@@ -4,6 +4,8 @@
 extern "C" {
 #endif
 
+#define __NEED_struct_winsize
+
 #include <bits/alltypes.h>
 #include <bits/ioctl.h>
 
