@@ -723,11 +723,6 @@ fi
 test "$SUBARCH" \
 && printf "configured for %s variant: %s\n" "$ARCH" "$ARCH$SUBARCH"
 
-case "$ARCH$SUBARCH" in
-arm) ASMSUBARCH=el ;;
-*) ASMSUBARCH=$SUBARCH ;;
-esac
-
 #
 # Some archs (powerpc) have different possible long double formats
 # that the compiler can be configured for. The logic for whether this
