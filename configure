@@ -337,6 +337,7 @@ or1k*) ARCH=or1k ;;
 powerpc64*|ppc64*) ARCH=powerpc64 ;;
 powerpc*|ppc*) ARCH=powerpc ;;
 riscv64*) ARCH=riscv64 ;;
+riscv32*) ARCH=riscv32 ;;
 sh[1-9bel-]*|sh|superh*) ARCH=sh ;;
 s390x*) ARCH=s390x ;;
 unknown) fail "$0: unable to detect target arch; try $0 --target=..." ;;
@@ -727,7 +728,7 @@ trycppif __LITTLE_ENDIAN__ "$t" && SUBARCH=${SUBARCH}le
 trycppif _SOFT_FLOAT "$t" && fail "$0: error: soft-float not supported on powerpc64"
 fi
 
-if test "$ARCH" = "riscv64" ; then
+if test "$ARCH" = "riscv64" -o "$ARCH" = "riscv32" ; then
 trycppif __riscv_float_abi_soft "$t" && SUBARCH=${SUBARCH}-sf
 trycppif __riscv_float_abi_single "$t" && SUBARCH=${SUBARCH}-sp
 fi
