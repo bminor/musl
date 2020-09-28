@@ -7,12 +7,6 @@
 #include "lock.h"
 #include "ksigaction.h"
 
-static volatile int dummy_lock[1] = { 0 };
-
-extern hidden volatile int __abort_lock[1];
-
-weak_alias(dummy_lock, __abort_lock);
-
 static int unmask_done;
 static unsigned long handler_set[_NSIG/(8*sizeof(long))];
 

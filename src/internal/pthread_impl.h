@@ -196,6 +196,8 @@ hidden void __tl_sync(pthread_t);
 
 extern hidden volatile int __thread_list_lock;
 
+extern hidden volatile int __abort_lock[1];
+
 extern hidden unsigned __default_stacksize;
 extern hidden unsigned __default_guardsize;
 
