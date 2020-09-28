@@ -392,6 +392,20 @@ int __aio_close(int fd)
 	return fd;
 }
 
+void __aio_atfork(int who)
+{
+	if (who<0) {
+		pthread_rwlock_rdlock(&maplock);
+		return;
+	}
+	if (who>0 && map) for (int a=0; a<(-1U/2+1)>>24; a++)
+		if (map[a]) for (int b=0; b<256; b++)
+			if (map[a][b]) for (int c=0; c<256; c++)
+				if (map[a][b][c]) for (int d=0; d<256; d++)
+					map[a][b][c][d] = 0;
+	pthread_rwlock_unlock(&maplock);
+}
+
 weak_alias(aio_cancel, aio_cancel64);
 weak_alias(aio_error, aio_error64);
 weak_alias(aio_fsync, aio_fsync64);
