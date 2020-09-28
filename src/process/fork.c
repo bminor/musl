@@ -3,6 +3,7 @@
 #include <signal.h>
 #include "syscall.h"
 #include "libc.h"
+#include "lock.h"
 #include "pthread_impl.h"
 
 static void dummy(int x)
@@ -19,6 +20,7 @@ pid_t fork(void)
 	__fork_handler(-1);
 	__block_all_sigs(&set);
 	__aio_atfork(-1);
+	LOCK(__abort_lock);
 #ifdef SYS_fork
 	ret = __syscall(SYS_fork);
 #else
@@ -34,6 +36,7 @@ pid_t fork(void)
 		libc.threads_minus_1 = 0;
 		if (libc.need_locks) libc.need_locks = -1;
 	}
+	UNLOCK(__abort_lock);
 	__aio_atfork(!ret);
 	__restore_sigs(&set);
 	__fork_handler(!ret);
