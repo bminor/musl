@@ -9,6 +9,7 @@
 #include "syscall.h"
 #include "atomic.h"
 #include "pthread_impl.h"
+#include "aio_impl.h"
 
 /* The following is a threads-based implementation of AIO with minimal
  * dependence on implementation details. Most synchronization is

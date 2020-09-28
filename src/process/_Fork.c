@@ -4,6 +4,7 @@
 #include "libc.h"
 #include "lock.h"
 #include "pthread_impl.h"
+#include "aio_impl.h"
 
 static void dummy(int x) { }
 weak_alias(dummy, __aio_atfork);

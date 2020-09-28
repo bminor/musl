@@ -154,10 +154,7 @@ hidden int __pthread_key_delete_impl(pthread_key_t);
 
 extern hidden volatile size_t __pthread_tsd_size;
 extern hidden void *__pthread_tsd_main[];
-extern hidden volatile int __aio_fut;
 extern hidden volatile int __eintr_valid_flag;
-
-extern hidden void __aio_atfork(int);
 
 hidden int __clone(int (*)(void *), void *, int, void *, ...);
 hidden int __set_thread_area(void *);
