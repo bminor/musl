@@ -78,7 +78,7 @@ struct dso {
 	struct dso **deps, *needed_by;
 	size_t ndeps_direct;
 	size_t next_dep;
-	int ctor_visitor;
+	pthread_t ctor_visitor;
 	char *rpath_orig, *rpath;
 	struct tls_module tls;
 	size_t tls_id;
@@ -1378,7 +1378,7 @@ void __libc_exit_fini()
 {
 	struct dso *p;
 	size_t dyn[DYN_CNT];
-	int self = __pthread_self()->tid;
+	pthread_t self = __pthread_self();
 
 	/* Take both locks before setting shutting_down, so that
 	 * either lock is sufficient to read its value. The lock
@@ -1470,7 +1470,7 @@ static void do_init_fini(struct dso **queue)
 {
 	struct dso *p;
 	size_t dyn[DYN_CNT], i;
-	int self = __pthread_self()->tid;
+	pthread_t self = __pthread_self();
 
 	pthread_mutex_lock(&init_fini_lock);
 	for (i=0; (p=queue[i]); i++) {
