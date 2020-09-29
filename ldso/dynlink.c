@@ -2055,8 +2055,9 @@ void *dlopen(const char *file, int mode)
 	load_deps(p);
 	extend_bfs_deps(p);
 	pthread_mutex_lock(&init_fini_lock);
-	if (!p->constructed) ctor_queue = queue_ctors(p);
+	int constructed = p->constructed;
 	pthread_mutex_unlock(&init_fini_lock);
+	if (!constructed) ctor_queue = queue_ctors(p);
 	if (!p->relocated && (mode & RTLD_LAZY)) {
 		prepare_lazy(p);
 		for (i=0; p->deps[i]; i++)
