@@ -82,6 +82,7 @@ unsigned sleep(unsigned);
 int pause(void);
 
 pid_t fork(void);
+pid_t _Fork(void);
 int execve(const char *, char *const [], char *const []);
 int execv(const char *, char *const []);
 int execle(const char *, const char *, ...);
