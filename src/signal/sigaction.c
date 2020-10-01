@@ -21,6 +21,13 @@ int __libc_sigaction(int sig, const struct sigaction *restrict sa, struct sigact
 {
 	struct k_sigaction ksa, ksa_old;
 	unsigned long set[_NSIG/(8*sizeof(long))];
+	/* Doing anything with the disposition of SIGABRT requires a lock,
+	 * so that it cannot be changed while abort is terminating the
+	 * process and so any change made by abort can't be observed. */
+	if (sig == SIGABRT) {
+		__block_all_sigs(&set);
+		LOCK(__abort_lock);
+	}
 	if (sa) {
 		if ((uintptr_t)sa->sa_handler > 1UL) {
 			a_or_l(handler_set+(sig-1)/(8*sizeof(long)),
@@ -44,21 +51,13 @@ int __libc_sigaction(int sig, const struct sigaction *restrict sa, struct sigact
 				a_store(&__eintr_valid_flag, 1);
 			}
 		}
-		/* Changing the disposition of SIGABRT to anything but
-		 * SIG_DFL requires a lock, so that it cannot be changed
-		 * while abort is terminating the process after simply
-		 * calling raise(SIGABRT) failed to do so. */
-		if (sa->sa_handler != SIG_DFL && sig == SIGABRT) {
-			__block_all_sigs(&set);
-			LOCK(__abort_lock);
-		}
 		ksa.handler = sa->sa_handler;
 		ksa.flags = sa->sa_flags | SA_RESTORER;
 		ksa.restorer = (sa->sa_flags & SA_SIGINFO) ? __restore_rt : __restore;
 		memcpy(&ksa.mask, &sa->sa_mask, _NSIG/8);
 	}
 	int r = __syscall(SYS_rt_sigaction, sig, sa?&ksa:0, old?&ksa_old:0, _NSIG/8);
-	if (sig == SIGABRT && sa && sa->sa_handler != SIG_DFL) {
+	if (sig == SIGABRT) {
 		UNLOCK(__abort_lock);
 		__restore_sigs(&set);
 	}
