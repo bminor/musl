@@ -2,6 +2,7 @@
 #include <setjmp.h>
 #include <limits.h>
 #include "pthread_impl.h"
+#include "atomic.h"
 
 struct ksigevent {
 	union sigval sigev_value;
@@ -32,14 +33,6 @@ static void cleanup_fromsig(void *p)
 	longjmp(p, 1);
 }
 
-static void install_handler()
-{
-	struct sigaction sa = {
-		.sa_handler = SIG_DFL,
-	};
-	__libc_sigaction(SIGTIMER, &sa, 0);
-}
-
 static void *start(void *arg)
 {
 	pthread_t self = __pthread_self();
@@ -66,7 +59,7 @@ static void *start(void *arg)
 
 int timer_create(clockid_t clk, struct sigevent *restrict evp, timer_t *restrict res)
 {
-	static pthread_once_t once = PTHREAD_ONCE_INIT;
+	volatile static int init = 0;
 	pthread_t td;
 	pthread_attr_t attr;
 	int r;
@@ -90,7 +83,11 @@ int timer_create(clockid_t clk, struct sigevent *restrict evp, timer_t *restrict
 		*res = (void *)(intptr_t)timerid;
 		break;
 	case SIGEV_THREAD:
-		pthread_once(&once, install_handler);
+		if (!init) {
+			struct sigaction sa = { .sa_handler = SIG_DFL };
+			__libc_sigaction(SIGTIMER, &sa, 0);
+			a_store(&init, 1);
+		}
 		if (evp->sigev_notify_attributes)
 			attr = *evp->sigev_notify_attributes;
 		else
