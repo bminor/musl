@@ -32,15 +32,10 @@ static void cleanup_fromsig(void *p)
 	longjmp(p, 1);
 }
 
-static void timer_handler(int sig, siginfo_t *si, void *ctx)
-{
-}
-
 static void install_handler()
 {
 	struct sigaction sa = {
-		.sa_sigaction = timer_handler,
-		.sa_flags = SA_SIGINFO | SA_RESTART
+		.sa_handler = SIG_DFL,
 	};
 	__libc_sigaction(SIGTIMER, &sa, 0);
 }
