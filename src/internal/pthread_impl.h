@@ -73,11 +73,6 @@ enum {
 	DT_DETACHED,
 };
 
-struct __timer {
-	int timerid;
-	pthread_t thread;
-};
-
 #define __SU (sizeof(size_t)/sizeof(int))
 
 #define _a_stacksize __u.__s[0]
