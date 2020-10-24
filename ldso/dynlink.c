@@ -1947,7 +1947,7 @@ void __dls3(size_t *sp, size_t *auxv)
 	debug.bp = dl_debug_state;
 	debug.head = head;
 	debug.base = ldso.base;
-	debug.state = 0;
+	debug.state = RT_CONSISTENT;
 	_dl_debug_state();
 
 	if (replace_argv0) argv[0] = replace_argv0;
@@ -1995,6 +1995,9 @@ void *dlopen(const char *file, int mode)
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
 	pthread_rwlock_wrlock(&lock);
 	__inhibit_ptc();
+
+	debug.state = RT_ADD;
+	_dl_debug_state();
 
 	p = 0;
 	if (shutting_down) {
@@ -2089,9 +2092,10 @@ void *dlopen(const char *file, int mode)
 	update_tls_size();
 	if (tls_cnt != orig_tls_cnt)
 		install_new_tls();
-	_dl_debug_state();
 	orig_tail = tail;
 end:
+	debug.state = RT_CONSISTENT;
+	_dl_debug_state();
 	__release_ptc();
 	if (p) gencnt++;
 	pthread_rwlock_unlock(&lock);
