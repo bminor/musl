@@ -202,6 +202,7 @@ uint16_t ntohs(uint16_t);
 #define IP_CHECKSUM        23
 #define IP_BIND_ADDRESS_NO_PORT 24
 #define IP_RECVFRAGSIZE    25
+#define IP_RECVERR_RFC4884 26
 #define IP_MULTICAST_IF    32
 #define IP_MULTICAST_TTL   33
 #define IP_MULTICAST_LOOP  34
