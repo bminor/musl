@@ -155,7 +155,7 @@ relock:
 		int val = m->_m_lock;
 		if (val>0) a_cas(&m->_m_lock, val, val|0x80000000);
 		unlock_requeue(&node.prev->barrier, &m->_m_lock, m->_m_type & (8|128));
-	} else if (!!(m->_m_type & 8)) {
+	} else if (!(m->_m_type & 8)) {
 		a_dec(&m->_m_waiters);		
 	}
 
