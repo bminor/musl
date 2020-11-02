@@ -204,7 +204,7 @@ fi
 abs_builddir="$(pwd)" || fail "$0: cannot determine working directory"
 abs_srcdir="$(cd $srcdir && pwd)" || fail "$0: invalid source directory $srcdir"
 test "$abs_srcdir" = "$abs_builddir" && srcdir=.
-test "$srcdir" != "." -a -f Makefile -a ! -h Makefile && fail "$0: Makefile already exists in the working directory"
+test "$srcdir" != "." && test -f Makefile && test ! -h Makefile && fail "$0: Makefile already exists in the working directory"
 
 #
 # Get a temp filename we can use
@@ -279,7 +279,7 @@ echo "$cc_family"
 #
 # Figure out toolchain wrapper to build
 #
-if test "$wrapper" = auto -o "$wrapper" = detect ; then
+if test "$wrapper" = auto || test "$wrapper" = detect ; then
 echo "#include <stdlib.h>" > "$tmpc"
 echo "#if ! __GLIBC__" >> "$tmpc"
 echo "#error no" >> "$tmpc"
@@ -468,7 +468,7 @@ tryflag CFLAGS_AUTO -pipe
 # pointer is no longer needed for debugging.
 #
 if fnmatch '-g*|*\ -g*' "$CFLAGS_AUTO $CFLAGS" ; then :
-else 
+else
 tryflag CFLAGS_AUTO -fomit-frame-pointer
 fi
 
