@@ -35,12 +35,15 @@ void __dl_thread_cleanup(void)
 hidden void __dl_vseterr(const char *fmt, va_list ap)
 {
 	LOCK(freebuf_queue_lock);
-	while (freebuf_queue) {
-		void **p = freebuf_queue;
-		freebuf_queue = *p;
-		free(p);
-	}
+	void **q = freebuf_queue;
+	freebuf_queue = 0;
 	UNLOCK(freebuf_queue_lock);
+
+	while (q) {
+		void **p = *q;
+		free(q);
+		q = p;
+	}
 
 	va_list ap2;
 	va_copy(ap2, ap);
