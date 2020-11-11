@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include "libc.h"
 #include "lock.h"
+#include "fork_impl.h"
 
 #define malloc __libc_malloc
 #define calloc __libc_calloc
@@ -20,6 +21,7 @@ static struct fl
 
 static int slot;
 static volatile int lock[1];
+volatile int *const __atexit_lockptr = lock;
 
 void __funcs_on_exit()
 {

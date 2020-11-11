@@ -6,6 +6,7 @@
 #include <sys/mman.h>
 #include "libc.h"
 #include "lock.h"
+#include "fork_impl.h"
 
 #define malloc __libc_malloc
 #define calloc undef
@@ -35,6 +36,7 @@ static char *old_tz = old_tz_buf;
 static size_t old_tz_size = sizeof old_tz_buf;
 
 static volatile int lock[1];
+volatile int *const __timezone_lockptr = lock;
 
 static int getint(const char **p)
 {

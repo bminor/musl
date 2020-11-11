@@ -4,6 +4,7 @@
 #include "pthread_impl.h"
 #include "dynlink.h"
 #include "lock.h"
+#include "fork_impl.h"
 
 #define malloc __libc_malloc
 #define calloc __libc_calloc
@@ -24,6 +25,7 @@ char *dlerror()
 
 static volatile int freebuf_queue_lock[1];
 static void **freebuf_queue;
+volatile int *const __dlerror_lockptr = freebuf_queue_lock;
 
 void __dl_thread_cleanup(void)
 {

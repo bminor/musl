@@ -10,6 +10,7 @@
 #include "atomic.h"
 #include "pleval.h"
 #include "lock.h"
+#include "fork_impl.h"
 
 #define malloc __libc_malloc
 #define calloc __libc_calloc
@@ -39,9 +40,11 @@ static char *gettextdir(const char *domainname, size_t *dirlen)
 	return 0;
 }
 
+static volatile int lock[1];
+volatile int *const __gettext_lockptr = lock;
+
 char *bindtextdomain(const char *domainname, const char *dirname)
 {
-	static volatile int lock[1];
 	struct binding *p, *q;
 
 	if (!domainname) return 0;

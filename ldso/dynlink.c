@@ -20,6 +20,7 @@
 #include <semaphore.h>
 #include <sys/membarrier.h>
 #include "pthread_impl.h"
+#include "fork_impl.h"
 #include "libc.h"
 #include "dynlink.h"
 
@@ -1426,6 +1427,17 @@ void __libc_exit_fini()
 	}
 }
 
+void __ldso_atfork(int who)
+{
+	if (who<0) {
+		pthread_rwlock_wrlock(&lock);
+		pthread_mutex_lock(&init_fini_lock);
+	} else {
+		pthread_mutex_unlock(&init_fini_lock);
+		pthread_rwlock_unlock(&lock);
+	}
+}
+
 static struct dso **queue_ctors(struct dso *dso)
 {
 	size_t cnt, qpos, spos, i;
@@ -1484,6 +1496,13 @@ static struct dso **queue_ctors(struct dso *dso)
 	}
 	queue[qpos] = 0;
 	for (i=0; i<qpos; i++) queue[i]->mark = 0;
+	for (i=0; i<qpos; i++)
+		if (queue[i]->ctor_visitor && queue[i]->ctor_visitor->tid < 0) {
+			error("State of %s is inconsistent due to multithreaded fork\n",
+				queue[i]->name);
+			free(queue);
+			if (runtime) longjmp(*rtld_fail, 1);
+		}
 
 	return queue;
 }

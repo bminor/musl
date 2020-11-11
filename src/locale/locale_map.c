@@ -5,6 +5,7 @@
 #include "locale_impl.h"
 #include "libc.h"
 #include "lock.h"
+#include "fork_impl.h"
 
 #define malloc __libc_malloc
 #define calloc undef
@@ -27,9 +28,11 @@ static const char envvars[][12] = {
 	"LC_MESSAGES",
 };
 
+static volatile int lock[1];
+volatile int *const __locale_lockptr = lock;
+
 const struct __locale_map *__get_locale(int cat, const char *val)
 {
-	static volatile int lock[1];
 	static void *volatile loc_head;
 	const struct __locale_map *p;
 	struct __locale_map *new = 0;

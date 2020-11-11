@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include "lock.h"
+#include "fork_impl.h"
 
 #define malloc __libc_malloc
 #define calloc __libc_calloc
@@ -24,6 +25,7 @@ static struct {
 	int refcnt;
 } *semtab;
 static volatile int lock[1];
+volatile int *const __sem_open_lockptr = lock;
 
 #define FLAGS (O_RDWR|O_NOFOLLOW|O_CLOEXEC|O_NONBLOCK)
 

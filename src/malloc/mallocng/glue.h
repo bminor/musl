@@ -60,7 +60,8 @@ __attribute__((__visibility__("hidden")))
 extern int __malloc_lock[1];
 
 #define LOCK_OBJ_DEF \
-int __malloc_lock[1];
+int __malloc_lock[1]; \
+void __malloc_atfork(int who) { malloc_atfork(who); }
 
 static inline void rdlock()
 {
@@ -76,6 +77,17 @@ static inline void unlock()
 }
 static inline void upgradelock()
 {
+}
+static inline void resetlock()
+{
+	__malloc_lock[0] = 0;
+}
+
+static inline void malloc_atfork(int who)
+{
+	if (who<0) rdlock();
+	else if (who>0) resetlock();
+	else unlock();
 }
 
 #endif
