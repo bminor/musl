@@ -7,6 +7,11 @@
 #include "libc.h"
 #include "lock.h"
 
+#define malloc __libc_malloc
+#define calloc undef
+#define realloc undef
+#define free undef
+
 long  __timezone = 0;
 int   __daylight = 0;
 char *__tzname[2] = { 0, 0 };

@@ -23,6 +23,11 @@
 #include "libc.h"
 #include "dynlink.h"
 
+#define malloc __libc_malloc
+#define calloc __libc_calloc
+#define realloc __libc_realloc
+#define free __libc_free
+
 static void error(const char *, ...);
 
 #define MAXP2(a,b) (-(-(a)&-(b)))

@@ -11,6 +11,11 @@
 #include "pthread_impl.h"
 #include "aio_impl.h"
 
+#define malloc __libc_malloc
+#define calloc __libc_calloc
+#define realloc __libc_realloc
+#define free __libc_free
+
 /* The following is a threads-based implementation of AIO with minimal
  * dependence on implementation details. Most synchronization is
  * performed with pthread primitives, but atomics and futex operations

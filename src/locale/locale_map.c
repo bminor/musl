@@ -1,9 +1,15 @@
 #include <locale.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <stdlib.h>
 #include "locale_impl.h"
 #include "libc.h"
 #include "lock.h"
+
+#define malloc __libc_malloc
+#define calloc undef
+#define realloc undef
+#define free undef
 
 const char *__lctrans_impl(const char *msg, const struct __locale_map *lm)
 {

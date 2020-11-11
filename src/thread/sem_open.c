@@ -13,6 +13,11 @@
 #include <pthread.h>
 #include "lock.h"
 
+#define malloc __libc_malloc
+#define calloc __libc_calloc
+#define realloc undef
+#define free undef
+
 static struct {
 	ino_t ino;
 	sem_t *sem;
