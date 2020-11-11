@@ -1,6 +1,5 @@
 #define _GNU_SOURCE
 #define SYSCALL_NO_TLS 1
-#include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stddef.h>
@@ -556,6 +555,20 @@ static void reclaim_gaps(struct dso *dso)
 	}
 }
 
+static ssize_t read_loop(int fd, void *p, size_t n)
+{
+	for (size_t i=0; i<n; ) {
+		ssize_t l = read(fd, (char *)p+i, n-i);
+		if (l<0) {
+			if (errno==EINTR) continue;
+			else return -1;
+		}
+		if (l==0) return i;
+		i += l;
+	}
+	return n;
+}
+
 static void *mmap_fixed(void *p, size_t n, int prot, int flags, int fd, off_t off)
 {
 	static int no_map_fixed;
@@ -1060,13 +1073,17 @@ static struct dso *load_library(const char *name, struct dso *needed_by)
 				snprintf(etc_ldso_path, sizeof etc_ldso_path,
 					"%.*s/etc/ld-musl-" LDSO_ARCH ".path",
 					(int)prefix_len, prefix);
-				FILE *f = fopen(etc_ldso_path, "rbe");
-				if (f) {
-					if (getdelim(&sys_path, (size_t[1]){0}, 0, f) <= 0) {
+				fd = open(etc_ldso_path, O_RDONLY|O_CLOEXEC);
+				if (fd>=0) {
+					size_t n = 0;
+					if (!fstat(fd, &st)) n = st.st_size;
+					if ((sys_path = malloc(n+1)))
+						sys_path[n] = 0;
+					if (!sys_path || read_loop(fd, sys_path, n)<0) {
 						free(sys_path);
 						sys_path = "";
 					}
-					fclose(f);
+					close(fd);
 				} else if (errno != ENOENT) {
 					sys_path = "";
 				}
