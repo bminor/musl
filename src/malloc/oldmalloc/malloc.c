@@ -10,6 +10,10 @@
 #include "pthread_impl.h"
 #include "malloc_impl.h"
 
+#define malloc __libc_malloc
+#define realloc __libc_realloc
+#define free __libc_free
+
 #if defined(__GNUC__) && defined(__PIC__)
 #define inline inline __attribute__((always_inline))
 #endif
