@@ -68,7 +68,8 @@ struct pthread {
 };
 
 enum {
-	DT_EXITING = 0,
+	DT_EXITED = 0,
+	DT_EXITING,
 	DT_JOINABLE,
 	DT_DETACHED,
 };

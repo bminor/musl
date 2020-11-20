@@ -156,6 +156,7 @@ _Noreturn void __pthread_exit(void *result)
 	}
 
 	/* Wake any joiner. */
+	a_store(&self->detach_state, DT_EXITED);
 	__wake(&self->detach_state, 1, 1);
 
 	/* After the kernel thread exits, its tid may be reused. Clear it
