@@ -76,6 +76,10 @@ static struct aio_queue *****map;
 static volatile int aio_fd_cnt;
 volatile int __aio_fut;
 
+static size_t io_thread_stack_size;
+
+#define MAX(a,b) ((a)>(b) ? (a) : (b))
+
 static struct aio_queue *__aio_get_queue(int fd, int need)
 {
 	if (fd < 0) {
@@ -90,6 +94,10 @@ static struct aio_queue *__aio_get_queue(int fd, int need)
 		pthread_rwlock_unlock(&maplock);
 		if (fcntl(fd, F_GETFD) < 0) return 0;
 		pthread_rwlock_wrlock(&maplock);
+		if (!io_thread_stack_size) {
+			unsigned long val = __getauxval(AT_MINSIGSTKSZ);
+			io_thread_stack_size = MAX(MINSIGSTKSZ+2048, val+512);
+		}
 		if (!map) map = calloc(sizeof *map, (-1U/2+1)>>24);
 		if (!map) goto out;
 		if (!map[a]) map[a] = calloc(sizeof **map, 256);
@@ -265,15 +273,6 @@ static void *io_thread_func(void *ctx)
 	return 0;
 }
 
-static size_t io_thread_stack_size = MINSIGSTKSZ+2048;
-static pthread_once_t init_stack_size_once;
-
-static void init_stack_size()
-{
-	unsigned long val = __getauxval(AT_MINSIGSTKSZ);
-	if (val > MINSIGSTKSZ) io_thread_stack_size = val + 512;
-}
-
 static int submit(struct aiocb *cb, int op)
 {
 	int ret = 0;
@@ -299,7 +298,6 @@ static int submit(struct aiocb *cb, int op)
 		else
 			pthread_attr_init(&a);
 	} else {
-		pthread_once(&init_stack_size_once, init_stack_size);
 		pthread_attr_init(&a);
 		pthread_attr_setstacksize(&a, io_thread_stack_size);
 		pthread_attr_setguardsize(&a, 0);
