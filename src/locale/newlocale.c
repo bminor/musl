@@ -4,6 +4,11 @@
 #include "locale_impl.h"
 #include "lock.h"
 
+#define malloc __libc_malloc
+#define calloc undef
+#define realloc undef
+#define free undef
+
 static int default_locale_init_done;
 static struct __locale_struct default_locale, default_ctype_locale;
 
