@@ -2,6 +2,7 @@
 #include <string.h>
 #include <pthread.h>
 #include "locale_impl.h"
+#include "lock.h"
 
 static pthread_once_t default_locale_once;
 static struct __locale_struct default_locale, default_ctype_locale;
@@ -19,7 +20,7 @@ int __loc_is_allocated(locale_t loc)
 		&& loc != &default_locale && loc != &default_ctype_locale;
 }
 
-locale_t __newlocale(int mask, const char *name, locale_t loc)
+static locale_t do_newlocale(int mask, const char *name, locale_t loc)
 {
 	struct __locale_struct tmp;
 
@@ -52,6 +53,14 @@ locale_t __newlocale(int mask, const char *name, locale_t loc)
 	/* If no builtin locale matched, attempt to allocate and copy. */
 	if ((loc = malloc(sizeof *loc))) *loc = tmp;
 
+	return loc;
+}
+
+locale_t __newlocale(int mask, const char *name, locale_t loc)
+{
+	LOCK(__locale_lock);
+	loc = do_newlocale(mask, name, loc);
+	UNLOCK(__locale_lock);
 	return loc;
 }
 

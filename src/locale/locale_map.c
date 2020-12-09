@@ -28,8 +28,8 @@ static const char envvars[][12] = {
 	"LC_MESSAGES",
 };
 
-static volatile int lock[1];
-volatile int *const __locale_lockptr = lock;
+volatile int __locale_lock[1];
+volatile int *const __locale_lockptr = __locale_lock;
 
 const struct __locale_map *__get_locale(int cat, const char *val)
 {
@@ -62,14 +62,6 @@ const struct __locale_map *__get_locale(int cat, const char *val)
 
 	for (p=loc_head; p; p=p->next)
 		if (!strcmp(val, p->name)) return p;
-
-	LOCK(lock);
-
-	for (p=loc_head; p; p=p->next)
-		if (!strcmp(val, p->name)) {
-			UNLOCK(lock);
-			return p;
-		}
 
 	if (!libc.secure) path = getenv("MUSL_LOCPATH");
 	/* FIXME: add a default path? */
@@ -117,6 +109,5 @@ const struct __locale_map *__get_locale(int cat, const char *val)
 	 * requested name was "C" or "POSIX". */
 	if (!new && cat == LC_CTYPE) new = (void *)&__c_dot_utf8;
 
-	UNLOCK(lock);
 	return new;
 }
