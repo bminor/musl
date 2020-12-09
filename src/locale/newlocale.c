@@ -4,15 +4,8 @@
 #include "locale_impl.h"
 #include "lock.h"
 
-static pthread_once_t default_locale_once;
+static int default_locale_init_done;
 static struct __locale_struct default_locale, default_ctype_locale;
-
-static void default_locale_init(void)
-{
-	for (int i=0; i<LC_ALL; i++)
-		default_locale.cat[i] = __get_locale(i, "");
-	default_ctype_locale.cat[LC_CTYPE] = default_locale.cat[LC_CTYPE];
-}
 
 int __loc_is_allocated(locale_t loc)
 {
@@ -45,7 +38,12 @@ static locale_t do_newlocale(int mask, const char *name, locale_t loc)
 
 	/* And provide builtins for the initial default locale, and a
 	 * variant of the C locale honoring the default locale's encoding. */
-	pthread_once(&default_locale_once, default_locale_init);
+	if (!default_locale_init_done) {
+		for (int i=0; i<LC_ALL; i++)
+			default_locale.cat[i] = __get_locale(i, "");
+		default_ctype_locale.cat[LC_CTYPE] = default_locale.cat[LC_CTYPE];
+		default_locale_init_done = 1;
+	}
 	if (!memcmp(&tmp, &default_locale, sizeof tmp)) return &default_locale;
 	if (!memcmp(&tmp, &default_ctype_locale, sizeof tmp))
 		return &default_ctype_locale;
