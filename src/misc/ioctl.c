@@ -49,10 +49,10 @@ static const struct ioctl_compat_map compat_map[] = {
 	{ 0, 0, 8, WR, 1, OFFS(0,4) }, /* snd_pcm_mmap_control */
 
 	/* VIDIOC_QUERYBUF, VIDIOC_QBUF, VIDIOC_DQBUF, VIDIOC_PREPARE_BUF */
-	{ _IOWR('V',  9, new_misaligned(72)), _IOWR('V',  9, char[72]), 72, WR, 0, OFFS(20) },
-	{ _IOWR('V', 15, new_misaligned(72)), _IOWR('V', 15, char[72]), 72, WR, 0, OFFS(20) },
-	{ _IOWR('V', 17, new_misaligned(72)), _IOWR('V', 17, char[72]), 72, WR, 0, OFFS(20) },
-	{ _IOWR('V', 93, new_misaligned(72)), _IOWR('V', 93, char[72]), 72, WR, 0, OFFS(20) },
+	{ _IOWR('V',  9, new_misaligned(68)), _IOWR('V',  9, char[68]), 68, WR, 1, OFFS(20, 24) },
+	{ _IOWR('V', 15, new_misaligned(68)), _IOWR('V', 15, char[68]), 68, WR, 1, OFFS(20, 24) },
+	{ _IOWR('V', 17, new_misaligned(68)), _IOWR('V', 17, char[68]), 68, WR, 1, OFFS(20, 24) },
+	{ _IOWR('V', 93, new_misaligned(68)), _IOWR('V', 93, char[68]), 68, WR, 1, OFFS(20, 24) },
 
 	/* VIDIOC_DQEVENT */
 	{ _IOR('V', 89, new_misaligned(96)), _IOR('V', 89, char[96]), 96, R, 0, OFFS(76,80) },
