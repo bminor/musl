@@ -302,6 +302,7 @@
 #define __NR_openat2		(0x40000000 + 437)
 #define __NR_pidfd_getfd	(0x40000000 + 438)
 #define __NR_faccessat2		(0x40000000 + 439)
+#define __NR_process_madvise	(0x40000000 + 440)
 
 
 #define __NR_rt_sigaction (0x40000000 + 512)

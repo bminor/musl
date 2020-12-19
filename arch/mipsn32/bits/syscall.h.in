@@ -366,4 +366,5 @@
 #define __NR_openat2		6437
 #define __NR_pidfd_getfd	6438
 #define __NR_faccessat2		6439
+#define __NR_process_madvise	6440
 
