@@ -75,6 +75,8 @@ typedef struct sigaltstack stack_t;
 #define SEGV_ACCERR 2
 #define SEGV_BNDERR 3
 #define SEGV_PKUERR 4
+#define SEGV_MTEAERR 8
+#define SEGV_MTESERR 9
 
 #define BUS_ADRALN 1
 #define BUS_ADRERR 2
