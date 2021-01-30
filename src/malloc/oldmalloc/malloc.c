@@ -11,7 +11,7 @@
 #include "malloc_impl.h"
 #include "fork_impl.h"
 
-#define malloc __libc_malloc
+#define malloc __libc_malloc_impl
 #define realloc __libc_realloc
 #define free __libc_free
 
