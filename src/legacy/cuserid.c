@@ -2,6 +2,7 @@
 #include <pwd.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 
 char *cuserid(char *buf)
 {
@@ -10,7 +11,10 @@ char *cuserid(char *buf)
 	long pwb[256];
 	if (getpwuid_r(geteuid(), &pw, (void *)pwb, sizeof pwb, &ppw))
 		return 0;
+	size_t len = strnlen(pw.pw_name, L_cuserid);
+	if (len == L_cuserid)
+		return 0;
 	if (!buf) buf = usridbuf;
-	snprintf(buf, L_cuserid, "%s", pw.pw_name);
+	memcpy(buf, pw.pw_name, len+1);
 	return buf;
 }
