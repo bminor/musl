@@ -9,7 +9,8 @@ char *cuserid(char *buf)
 	static char usridbuf[L_cuserid];
 	struct passwd pw, *ppw;
 	long pwb[256];
-	if (getpwuid_r(geteuid(), &pw, (void *)pwb, sizeof pwb, &ppw))
+	getpwuid_r(geteuid(), &pw, (void *)pwb, sizeof pwb, &ppw);
+	if (!ppw)
 		return 0;
 	size_t len = strnlen(pw.pw_name, L_cuserid);
 	if (len == L_cuserid)
