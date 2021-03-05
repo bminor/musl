@@ -579,6 +579,7 @@ static void *mmap_fixed(void *p, size_t n, int prot, int flags, int fd, off_t of
 {
 	static int no_map_fixed;
 	char *q;
+	if (!n) return p;
 	if (!no_map_fixed) {
 		q = mmap(p, n, prot, flags|MAP_FIXED, fd, off);
 		if (!DL_NOMMU_SUPPORT || q != MAP_FAILED || errno != EINVAL)
