@@ -263,6 +263,7 @@ void (*sigset(int, void (*)(int)))(int);
 typedef void (*sig_t)(int);
 
 #define SYS_SECCOMP 1
+#define SYS_USER_DISPATCH 2
 #endif
 
 #ifdef _GNU_SOURCE
