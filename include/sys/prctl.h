@@ -168,6 +168,12 @@ struct prctl_mm_map {
 #define PR_SET_IO_FLUSHER 57
 #define PR_GET_IO_FLUSHER 58
 
+#define PR_SET_SYSCALL_USER_DISPATCH 59
+#define PR_SYS_DISPATCH_OFF 0
+#define PR_SYS_DISPATCH_ON 1
+#define SYSCALL_DISPATCH_FILTER_ALLOW 0
+#define SYSCALL_DISPATCH_FILTER_BLOCK 1
+
 int prctl (int, ...);
 
 #ifdef __cplusplus
