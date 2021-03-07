@@ -261,6 +261,8 @@ void (*sigset(int, void (*)(int)))(int);
 #if defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
 #define NSIG _NSIG
 typedef void (*sig_t)(int);
+
+#define SYS_SECCOMP 1
 #endif
 
 #ifdef _GNU_SOURCE
