@@ -146,6 +146,7 @@ int clearenv(void);
 #define WCOREDUMP(s) ((s) & 0x80)
 #define WIFCONTINUED(s) ((s) == 0xffff)
 void *reallocarray (void *, size_t, size_t);
+void qsort_r (void *, size_t, size_t, int (*)(const void *, const void *, void *), void *);
 #endif
 
 #ifdef _GNU_SOURCE
