@@ -33,21 +33,6 @@ FILE *popen(const char *cmd, const char *mode)
 	}
 	FLOCK(f);
 
-	/* If the child's end of the pipe happens to already be on the final
-	 * fd number to which it will be assigned (either 0 or 1), it must
-	 * be moved to a different fd. Otherwise, there is no safe way to
-	 * remove the close-on-exec flag in the child without also creating
-	 * a file descriptor leak race condition in the parent. */
-	if (p[1-op] == 1-op) {
-		int tmp = fcntl(1-op, F_DUPFD_CLOEXEC, 0);
-		if (tmp < 0) {
-			e = errno;
-			goto fail;
-		}
-		__syscall(SYS_close, p[1-op]);
-		p[1-op] = tmp;
-	}
-
 	e = ENOMEM;
 	if (!posix_spawn_file_actions_init(&fa)) {
 		if (!posix_spawn_file_actions_adddup2(&fa, p[1-op], 1-op)) {
@@ -64,7 +49,6 @@ FILE *popen(const char *cmd, const char *mode)
 		}
 		posix_spawn_file_actions_destroy(&fa);
 	}
-fail:
 	fclose(f);
 	__syscall(SYS_close, p[1-op]);
 
