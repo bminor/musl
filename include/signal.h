@@ -178,6 +178,9 @@ struct sigaction {
 #define sa_handler   __sa_handler.sa_handler
 #define sa_sigaction __sa_handler.sa_sigaction
 
+#define SA_UNSUPPORTED 0x00000400
+#define SA_EXPOSE_TAGBITS 0x00000800
+
 struct sigevent {
 	union sigval sigev_value;
 	int sigev_signo;
