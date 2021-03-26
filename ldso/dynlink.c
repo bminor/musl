@@ -2331,7 +2331,7 @@ int dl_iterate_phdr(int(*callback)(struct dl_phdr_info *info, size_t size, void 
 		info.dlpi_adds      = gencnt;
 		info.dlpi_subs      = 0;
 		info.dlpi_tls_modid = current->tls_id;
-		info.dlpi_tls_data  = current->tls.image;
+		info.dlpi_tls_data = __tls_get_addr((tls_mod_off_t[]){current->tls_id,0});
 
 		ret = (callback)(&info, sizeof (info), data);
 
