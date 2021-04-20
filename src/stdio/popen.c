@@ -31,7 +31,6 @@ FILE *popen(const char *cmd, const char *mode)
 		__syscall(SYS_close, p[1]);
 		return NULL;
 	}
-	FLOCK(f);
 
 	e = ENOMEM;
 	if (!posix_spawn_file_actions_init(&fa)) {
@@ -43,7 +42,6 @@ FILE *popen(const char *cmd, const char *mode)
 				if (!strchr(mode, 'e'))
 					fcntl(p[op], F_SETFD, 0);
 				__syscall(SYS_close, p[1-op]);
-				FUNLOCK(f);
 				return f;
 			}
 		}
