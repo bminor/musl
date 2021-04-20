@@ -34,6 +34,9 @@ FILE *popen(const char *cmd, const char *mode)
 
 	e = ENOMEM;
 	if (!posix_spawn_file_actions_init(&fa)) {
+		for (FILE *l = *__ofl_lock(); l; l=l->next)
+			if (l->pipe_pid && posix_spawn_file_actions_addclose(&fa, l->fd))
+				goto fail;
 		if (!posix_spawn_file_actions_adddup2(&fa, p[1-op], 1-op)) {
 			if (!(e = posix_spawn(&pid, "/bin/sh", &fa, 0,
 			    (char *[]){ "sh", "-c", (char *)cmd, 0 }, __environ))) {
@@ -42,9 +45,12 @@ FILE *popen(const char *cmd, const char *mode)
 				if (!strchr(mode, 'e'))
 					fcntl(p[op], F_SETFD, 0);
 				__syscall(SYS_close, p[1-op]);
+				__ofl_unlock();
 				return f;
 			}
 		}
+fail:
+		__ofl_unlock();
 		posix_spawn_file_actions_destroy(&fa);
 	}
 	fclose(f);
