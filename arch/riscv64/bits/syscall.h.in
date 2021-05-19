@@ -76,7 +76,7 @@
 #define __NR_splice 76
 #define __NR_tee 77
 #define __NR_readlinkat 78
-#define __NR_fstatat 79
+#define __NR_newfstatat 79
 #define __NR_fstat 80
 #define __NR_sync 81
 #define __NR_fsync 82
