@@ -395,6 +395,7 @@
 #define __NR_faccessat2		439
 #define __NR_process_madvise	440
 #define __NR_epoll_pwait2	441
+#define __NR_mount_setattr	442
 
 #define __ARM_NR_breakpoint	0x0f0001
 #define __ARM_NR_cacheflush	0x0f0002

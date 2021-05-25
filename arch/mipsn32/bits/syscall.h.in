@@ -368,4 +368,5 @@
 #define __NR_faccessat2		6439
 #define __NR_process_madvise	6440
 #define __NR_epoll_pwait2	6441
+#define __NR_mount_setattr	6442
 
