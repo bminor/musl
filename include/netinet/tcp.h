@@ -294,6 +294,10 @@ struct tcp_zerocopy_receive {
 	uint64_t copybuf_address;
 	int32_t copybuf_len;
 	uint32_t flags;
+	uint64_t msg_control;
+	uint64_t msg_controllen;
+	uint32_t msg_flags;
+	uint32_t reserved;
 };
 
 #endif
