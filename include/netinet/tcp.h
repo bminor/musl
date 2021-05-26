@@ -80,6 +80,8 @@ enum {
 	TCP_NLA_SRTT,
 	TCP_NLA_TIMEOUT_REHASH,
 	TCP_NLA_BYTES_NOTSENT,
+	TCP_NLA_EDT,
+	TCP_NLA_TTL,
 };
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
