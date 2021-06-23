@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <ctype.h>
 #include "libc.h"
 #include "lock.h"
 #include "fork_impl.h"
@@ -154,10 +155,21 @@ static void do_tzset()
 	}
 	if (old_tz) memcpy(old_tz, s, i+1);
 
+	int posix_form = 0;
+	if (*s != ':') {
+		p = s;
+		char dummy_name[TZNAME_MAX+1];
+		getname(dummy_name, &p);
+		if (p!=s && (*p == '+' || *p == '-' || isdigit(*p)
+		             || !strcmp(dummy_name, "UTC")
+		             || !strcmp(dummy_name, "GMT")))
+			posix_form = 1;
+	}	
+
 	/* Non-suid can use an absolute tzfile pathname or a relative
 	 * pathame beginning with "."; in secure mode, only the
 	 * standard path will be searched. */
-	if (*s == ':' || ((p=strchr(s, '/')) && !memchr(s, ',', p-s))) {
+	if (!posix_form) {
 		if (*s == ':') s++;
 		if (*s == '/' || *s == '.') {
 			if (!libc.secure || !strcmp(s, "/etc/localtime"))
