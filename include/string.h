@@ -87,6 +87,11 @@ void explicit_bzero (void *, size_t);
 
 #ifdef _GNU_SOURCE
 #define	strdupa(x)	strcpy(alloca(strlen(x)+1),x)
+#define	strndupa(x,n)	({	\
+  size_t len=strnlen(x,n);		\
+  char *str=(char*)alloca(len+1);	\
+  str[len]='\0';			\
+  memcpy(str,x,len);})
 int strverscmp (const char *, const char *);
 char *strchrnul(const char *, int);
 char *strcasestr(const char *, const char *);
