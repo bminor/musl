@@ -174,6 +174,9 @@ struct prctl_mm_map {
 #define SYSCALL_DISPATCH_FILTER_ALLOW 0
 #define SYSCALL_DISPATCH_FILTER_BLOCK 1
 
+#define PR_PAC_SET_ENABLED_KEYS 60
+#define PR_PAC_GET_ENABLED_KEYS 61
+
 int prctl (int, ...);
 
 #ifdef __cplusplus
