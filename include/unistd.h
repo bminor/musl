@@ -15,7 +15,9 @@ extern "C" {
 #define SEEK_CUR 1
 #define SEEK_END 2
 
-#ifdef __cplusplus
+#if __cplusplus >= 201103L
+#define NULL nullptr
+#elif defined(__cplusplus)
 #define NULL 0L
 #else
 #define NULL ((void*)0)
