@@ -671,9 +671,7 @@ trycppif __mips_soft_float "$t" && SUBARCH=${SUBARCH}-sf
 fi
 
 if test "$ARCH" = "powerpc" ; then
-trycppif "__NO_FPRS__ && !_SOFT_FLOAT" "$t" && fail \
-  "$0: error: compiler's floating point configuration is unsupported"
-trycppif _SOFT_FLOAT "$t" && SUBARCH=${SUBARCH}-sf
+trycppif "_SOFT_FLOAT || __NO_FPRS__" "$t" && SUBARCH=${SUBARCH}-sf
 printf "checking whether compiler can use 'd' constraint in asm... "
 echo 'double f(double x) { __asm__ ("fabs %0, %1" : "=d"(x) : "d"(x)); return x; }' > "$tmpc"
 if $CC $CFLAGS_C99FSE $CPPFLAGS $CFLAGS -c -o /dev/null "$tmpc" >/dev/null 2>&1 ; then
