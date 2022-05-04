@@ -3,6 +3,7 @@
 
 #include "../../../include/sys/stat.h"
 
+hidden int __fstat(int, struct stat *);
 hidden int __fstatat(int, const char *restrict, struct stat *restrict, int);
 
 #endif
