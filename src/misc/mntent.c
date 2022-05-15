@@ -2,6 +2,7 @@
 #include <string.h>
 #include <mntent.h>
 #include <errno.h>
+#include <limits.h>
 
 static char *internal_buf;
 static size_t internal_bufsize;
@@ -42,6 +43,7 @@ struct mntent *getmntent_r(FILE *f, struct mntent *mnt, char *linebuf, int bufle
 		}
 
 		len = strlen(linebuf);
+		if (len > INT_MAX) continue;
 		for (i = 0; i < sizeof n / sizeof *n; i++) n[i] = len;
 		sscanf(linebuf, " %n%*s%n %n%*s%n %n%*s%n %n%*s%n %d %d",
 			n, n+1, n+2, n+3, n+4, n+5, n+6, n+7,
