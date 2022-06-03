@@ -155,6 +155,9 @@ static int name_from_dns(struct address buf[static MAXADDRS], char canon[static 
 			if (qlens[nq] == -1)
 				return EAI_NONAME;
 			qbuf[nq][3] = 0; /* don't need AD flag */
+			/* Ensure query IDs are distinct. */
+			if (nq && qbuf[nq][0] == qbuf[0][0])
+				qbuf[nq][0]++;
 			nq++;
 		}
 	}
