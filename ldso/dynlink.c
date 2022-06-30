@@ -1356,12 +1356,14 @@ static void reloc_all(struct dso *p)
 		do_relocs(p, laddr(p, dyn[DT_REL]), dyn[DT_RELSZ], 2);
 		do_relocs(p, laddr(p, dyn[DT_RELA]), dyn[DT_RELASZ], 3);
 
-		if (head != &ldso && p->relro_start != p->relro_end &&
-		    mprotect(laddr(p, p->relro_start), p->relro_end-p->relro_start, PROT_READ)
-		    && errno != ENOSYS) {
-			error("Error relocating %s: RELRO protection failed: %m",
-				p->name);
-			if (runtime) longjmp(*rtld_fail, 1);
+		if (head != &ldso && p->relro_start != p->relro_end) {
+			long ret = __syscall(SYS_mprotect, laddr(p, p->relro_start),
+				p->relro_end-p->relro_start, PROT_READ);
+			if (ret != 0 && ret != -ENOSYS) {
+				error("Error relocating %s: RELRO protection failed: %m",
+					p->name);
+				if (runtime) longjmp(*rtld_fail, 1);
+			}
 		}
 
 		p->relocated = 1;
