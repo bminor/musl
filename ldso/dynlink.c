@@ -29,7 +29,9 @@
 #define realloc __libc_realloc
 #define free __libc_free
 
-static void error(const char *, ...);
+static void error_impl(const char *, ...);
+static void error_noop(const char *, ...);
+static void (*error)(const char *, ...) = error_noop;
 
 #define MAXP2(a,b) (-(-(a)&-(b)))
 #define ALIGN(x,y) ((x)+(y)-1 & -(y))
@@ -1758,6 +1760,9 @@ void __dls3(size_t *sp, size_t *auxv)
 		env_preload = getenv("LD_PRELOAD");
 	}
 
+	/* Activate error handler function */
+	error = error_impl;
+
 	/* If the main program was already loaded by the kernel,
 	 * AT_PHDR will point to some location other than the dynamic
 	 * linker's program headers. */
@@ -2347,7 +2352,7 @@ int dl_iterate_phdr(int(*callback)(struct dl_phdr_info *info, size_t size, void 
 	return ret;
 }
 
-static void error(const char *fmt, ...)
+static void error_impl(const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
@@ -2360,4 +2365,8 @@ static void error(const char *fmt, ...)
 	}
 	__dl_vseterr(fmt, ap);
 	va_end(ap);
+}
+
+static void error_noop(const char *fmt, ...)
+{
 }
