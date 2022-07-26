@@ -437,6 +437,7 @@ typedef struct {
 } Elf64_Chdr;
 
 #define ELFCOMPRESS_ZLIB	1
+#define ELFCOMPRESS_ZSTD	2
 #define ELFCOMPRESS_LOOS	0x60000000
 #define ELFCOMPRESS_HIOS	0x6fffffff
 #define ELFCOMPRESS_LOPROC	0x70000000
