@@ -66,9 +66,11 @@ int getaddrinfo(const char *restrict host, const char *restrict serv, const stru
 				pthread_setcancelstate(
 					PTHREAD_CANCEL_DISABLE, &cs);
 				int r = connect(s, ta[i], tl[i]);
+				int saved_errno = errno;
 				pthread_setcancelstate(cs, 0);
 				close(s);
 				if (!r) continue;
+				errno = saved_errno;
 			}
 			switch (errno) {
 			case EADDRNOTAVAIL:
