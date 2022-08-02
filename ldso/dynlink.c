@@ -1375,7 +1375,8 @@ static void reloc_all(struct dso *p)
 			2+(dyn[DT_PLTREL]==DT_RELA));
 		do_relocs(p, laddr(p, dyn[DT_REL]), dyn[DT_RELSZ], 2);
 		do_relocs(p, laddr(p, dyn[DT_RELA]), dyn[DT_RELASZ], 3);
-		do_relr_relocs(p, laddr(p, dyn[DT_RELR]), dyn[DT_RELRSZ]);
+		if (!DL_FDPIC)
+			do_relr_relocs(p, laddr(p, dyn[DT_RELR]), dyn[DT_RELRSZ]);
 
 		if (head != &ldso && p->relro_start != p->relro_end) {
 			long ret = __syscall(SYS_mprotect, laddr(p, p->relro_start),
