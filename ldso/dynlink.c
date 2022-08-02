@@ -210,7 +210,8 @@ static void decode_vec(size_t *v, size_t *a, size_t cnt)
 	size_t i;
 	for (i=0; i<cnt; i++) a[i] = 0;
 	for (; v[0]; v+=2) if (v[0]-1<cnt-1) {
-		a[0] |= 1UL<<v[0];
+		if (v[0] < 8*sizeof(long))
+			a[0] |= 1UL<<v[0];
 		a[v[0]] = v[1];
 	}
 }
@@ -513,6 +514,23 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 			continue;
 		}
 	}
+}
+
+static void do_relr_relocs(struct dso *dso, size_t *relr, size_t relr_size)
+{
+	unsigned char *base = dso->base;
+	size_t *reloc_addr;
+	for (; relr_size; relr++, relr_size-=sizeof(size_t))
+		if ((relr[0]&1) == 0) {
+			reloc_addr = laddr(dso, relr[0]);
+			*reloc_addr++ += (size_t)base;
+		} else {
+			int i = 0;
+			for (size_t bitmap=relr[0]; (bitmap>>=1); i++)
+				if (bitmap&1)
+					reloc_addr[i] += (size_t)base;
+			reloc_addr += 8*sizeof(size_t)-1;
+		}
 }
 
 static void redo_lazy_relocs()
@@ -1357,6 +1375,7 @@ static void reloc_all(struct dso *p)
 			2+(dyn[DT_PLTREL]==DT_RELA));
 		do_relocs(p, laddr(p, dyn[DT_REL]), dyn[DT_RELSZ], 2);
 		do_relocs(p, laddr(p, dyn[DT_RELA]), dyn[DT_RELASZ], 3);
+		do_relr_relocs(p, laddr(p, dyn[DT_RELR]), dyn[DT_RELRSZ]);
 
 		if (head != &ldso && p->relro_start != p->relro_end) {
 			long ret = __syscall(SYS_mprotect, laddr(p, p->relro_start),
