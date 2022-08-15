@@ -886,7 +886,7 @@ static int fixup_rpath(struct dso *p, char *buf, size_t buf_size)
 		case ENOENT:
 		case ENOTDIR:
 		case EACCES:
-			break;
+			return 0;
 		default:
 			return -1;
 		}
