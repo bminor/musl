@@ -77,7 +77,7 @@ void __testcancel()
 static void init_cancellation()
 {
 	struct sigaction sa = {
-		.sa_flags = SA_SIGINFO | SA_RESTART,
+		.sa_flags = SA_SIGINFO | SA_RESTART | SA_ONSTACK,
 		.sa_sigaction = cancel_handler
 	};
 	memset(&sa.sa_mask, -1, _NSIG/8);
