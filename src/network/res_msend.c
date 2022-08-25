@@ -68,14 +68,15 @@ int __res_msend_rc(int nqueries, const unsigned char *const *queries,
 	}
 
 	/* Get local address and open/bind a socket */
-	sa.sin.sin_family = family;
 	fd = socket(family, SOCK_DGRAM|SOCK_CLOEXEC|SOCK_NONBLOCK, 0);
 
 	/* Handle case where system lacks IPv6 support */
 	if (fd < 0 && family == AF_INET6 && errno == EAFNOSUPPORT) {
 		fd = socket(AF_INET, SOCK_DGRAM|SOCK_CLOEXEC|SOCK_NONBLOCK, 0);
 		family = AF_INET;
+		sl = sizeof sa.sin;
 	}
+	sa.sin.sin_family = family;
 	if (fd < 0 || bind(fd, (void *)&sa, sl) < 0) {
 		if (fd >= 0) close(fd);
 		pthread_setcancelstate(cs, 0);
