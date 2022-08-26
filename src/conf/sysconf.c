@@ -165,6 +165,9 @@ long sysconf(int name)
 		[_SC_XOPEN_STREAMS] = JT_ZERO,
 		[_SC_THREAD_ROBUST_PRIO_INHERIT] = -1,
 		[_SC_THREAD_ROBUST_PRIO_PROTECT] = -1,
+
+		[_SC_MINSIGSTKSZ] = MINSIGSTKSZ,
+		[_SC_SIGSTKSZ] = SIGSTKSZ,
 	};
 
 	if (name >= sizeof(values)/sizeof(values[0]) || !values[name]) {
