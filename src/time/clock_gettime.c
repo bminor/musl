@@ -42,6 +42,9 @@ static int cgt_init(clockid_t clk, struct timespec *ts)
 			p = cgt_time32_wrap;
 		}
 	}
+#ifdef VDSO_CGT_WORKAROUND
+	if (!__vdsosym(VDSO_CGT32_VER, VDSO_CGT32_SYM)) p = 0;
+#endif
 #endif
 	int (*f)(clockid_t, struct timespec *) =
 		(int (*)(clockid_t, struct timespec *))p;
