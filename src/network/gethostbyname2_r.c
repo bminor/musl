@@ -22,7 +22,7 @@ int gethostbyname2_r(const char *name, int af,
 	if (cnt<0) switch (cnt) {
 	case EAI_NONAME:
 		*err = HOST_NOT_FOUND;
-		return ENOENT;
+		return 0;
 	case EAI_AGAIN:
 		*err = TRY_AGAIN;
 		return EAGAIN;
