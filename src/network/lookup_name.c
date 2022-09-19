@@ -153,7 +153,7 @@ static int name_from_dns(struct address buf[static MAXADDRS], char canon[static 
 			qlens[nq] = __res_mkquery(0, name, 1, afrr[i].rr,
 				0, 0, 0, qbuf[nq], sizeof *qbuf);
 			if (qlens[nq] == -1)
-				return EAI_NONAME;
+				return 0;
 			qbuf[nq][3] = 0; /* don't need AD flag */
 			/* Ensure query IDs are distinct. */
 			if (nq && qbuf[nq][0] == qbuf[0][0])
