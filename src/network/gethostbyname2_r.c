@@ -30,7 +30,6 @@ int gethostbyname2_r(const char *name, int af,
 	case EAI_FAIL:
 		*err = NO_RECOVERY;
 		return EBADMSG;
-	case EAI_MEMORY:
 	case EAI_SYSTEM:
 		*err = NO_RECOVERY;
 		return errno;
