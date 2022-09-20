@@ -79,7 +79,7 @@ static int name_from_hosts(struct address buf[static MAXADDRS], char canon[stati
 		case 0:
 			continue;
 		default:
-			badfam = EAI_NONAME;
+			badfam = EAI_NODATA;
 			break;
 		}
 
@@ -175,7 +175,7 @@ static int name_from_dns(struct address buf[static MAXADDRS], char canon[static 
 		__dns_parse(abuf[i], alens[i], dns_parse_callback, &ctx);
 
 	if (ctx.cnt) return ctx.cnt;
-	return EAI_NONAME;
+	return EAI_NODATA;
 }
 
 static int name_from_dns_search(struct address buf[static MAXADDRS], char canon[static 256], const char *name, int family)
