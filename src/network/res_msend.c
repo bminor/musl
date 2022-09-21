@@ -16,7 +16,9 @@
 
 static void cleanup(void *p)
 {
-	__syscall(SYS_close, (intptr_t)p);
+	struct pollfd *pfd = p;
+	for (int i=0; pfd[i].fd >= -1; i++)
+		if (pfd[i].fd >= 0) __syscall(SYS_close, pfd[i].fd);
 }
 
 static unsigned long mtime()
@@ -44,7 +46,7 @@ int __res_msend_rc(int nqueries, const unsigned char *const *queries,
 	int next;
 	int i, j;
 	int cs;
-	struct pollfd pfd;
+	struct pollfd pfd[nqueries+2];
 	unsigned long t0, t1, t2;
 
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
@@ -92,7 +94,12 @@ int __res_msend_rc(int nqueries, const unsigned char *const *queries,
 	 * yield either no reply (indicated by zero length) or an answer
 	 * packet which is up to the caller to interpret. */
 
-	pthread_cleanup_push(cleanup, (void *)(intptr_t)fd);
+	for (i=0; i<nqueries; i++) pfd[i].fd = -1;
+	pfd[nqueries].fd = fd;
+	pfd[nqueries].events = POLLIN;
+	pfd[nqueries+1].fd = -2;
+
+	pthread_cleanup_push(cleanup, pfd);
 	pthread_setcancelstate(cs, 0);
 
 	/* Convert any IPv4 addresses in a mixed environment to v4-mapped */
@@ -112,8 +119,6 @@ int __res_msend_rc(int nqueries, const unsigned char *const *queries,
 
 	memset(alens, 0, sizeof *alens * nqueries);
 
-	pfd.fd = fd;
-	pfd.events = POLLIN;
 	retry_interval = timeout / attempts;
 	next = 0;
 	t0 = t2 = mtime();
@@ -133,7 +138,7 @@ int __res_msend_rc(int nqueries, const unsigned char *const *queries,
 		}
 
 		/* Wait for a response, or until time to retry */
-		if (poll(&pfd, 1, t1+retry_interval-t2) <= 0) continue;
+		if (poll(pfd, nqueries+1, t1+retry_interval-t2) <= 0) continue;
 
 		while ((rlen = recvfrom(fd, answers[next], asize, 0,
 		  (void *)&sa, (socklen_t[1]){sl})) >= 0) {
