@@ -108,6 +108,8 @@ struct dpc_ctx {
 #define RR_CNAME 5
 #define RR_AAAA 28
 
+#define ABUF_SIZE 768
+
 static int dns_parse_callback(void *c, int rr, const void *data, int len, const void *packet)
 {
 	char tmp[256];
@@ -127,7 +129,7 @@ static int dns_parse_callback(void *c, int rr, const void *data, int len, const 
 		memcpy(ctx->addrs[ctx->cnt++].addr, data, 16);
 		break;
 	case RR_CNAME:
-		if (__dn_expand(packet, (const unsigned char *)packet + 512,
+		if (__dn_expand(packet, (const unsigned char *)packet + ABUF_SIZE,
 		    data, tmp, sizeof tmp) > 0 && is_valid_hostname(tmp))
 			strcpy(ctx->canon, tmp);
 		break;
@@ -137,7 +139,7 @@ static int dns_parse_callback(void *c, int rr, const void *data, int len, const 
 
 static int name_from_dns(struct address buf[static MAXADDRS], char canon[static 256], const char *name, int family, const struct resolvconf *conf)
 {
-	unsigned char qbuf[2][280], abuf[2][512];
+	unsigned char qbuf[2][280], abuf[2][ABUF_SIZE];
 	const unsigned char *qp[2] = { qbuf[0], qbuf[1] };
 	unsigned char *ap[2] = { abuf[0], abuf[1] };
 	int qlens[2], alens[2];
@@ -171,7 +173,7 @@ static int name_from_dns(struct address buf[static MAXADDRS], char canon[static 
 		if ((abuf[i][3] & 15) != 0) return EAI_FAIL;
 	}
 
-	for (i=0; i<nq; i++)
+	for (i=nq-1; i>=0; i--)
 		__dns_parse(abuf[i], alens[i], dns_parse_callback, &ctx);
 
 	if (ctx.cnt) return ctx.cnt;
