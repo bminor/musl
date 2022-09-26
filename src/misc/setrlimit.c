@@ -49,5 +49,3 @@ int setrlimit(int resource, const struct rlimit *rlim)
 	return __syscall_ret(ret);
 #endif
 }
-
-weak_alias(setrlimit, setrlimit64);

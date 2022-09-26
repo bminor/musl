@@ -409,10 +409,3 @@ void __aio_atfork(int who)
 					map[a][b][c][d] = 0;
 	pthread_rwlock_unlock(&maplock);
 }
-
-weak_alias(aio_cancel, aio_cancel64);
-weak_alias(aio_error, aio_error64);
-weak_alias(aio_fsync, aio_fsync64);
-weak_alias(aio_read, aio_read64);
-weak_alias(aio_write, aio_write64);
-weak_alias(aio_return, aio_return64);
