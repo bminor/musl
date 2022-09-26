@@ -194,9 +194,18 @@ int __res_msend_rc(int nqueries, const unsigned char *const *queries,
 		/* Wait for a response, or until time to retry */
 		if (poll(pfd, nqueries+1, t1+retry_interval-t2) <= 0) continue;
 
-		while (next < nqueries &&
-		  (rlen = recvfrom(fd, answers[next], asize, 0,
-		  (void *)&sa, (socklen_t[1]){sl})) >= 0) {
+		while (next < nqueries) {
+			struct msghdr mh = {
+				.msg_name = (void *)&sa,
+				.msg_namelen = sl,
+				.msg_iovlen = 1,
+				.msg_iov = (struct iovec []){
+					{ .iov_base = (void *)answers[next],
+					  .iov_len = asize }
+				}
+			};
+			rlen = recvmsg(fd, &mh, 0);
+			if (rlen < 0) break;
 
 			/* Ignore non-identifiable packets */
 			if (rlen < 4) continue;
@@ -240,7 +249,7 @@ int __res_msend_rc(int nqueries, const unsigned char *const *queries,
 			if (next == nqueries) pfd[nqueries].events = 0;
 
 			/* If answer is truncated (TC bit), fallback to TCP */
-			if (answers[i][2] & 2) {
+			if ((answers[i][2] & 2) || (mh.msg_flags & MSG_TRUNC)) {
 				alens[i] = -1;
 				pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, 0);
 				r = start_tcp(pfd+i, family, ns+j, sl, queries[i], qlens[i]);
