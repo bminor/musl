@@ -9,7 +9,6 @@ static volatile int *const dummy_lockptr = 0;
 
 weak_alias(dummy_lockptr, __at_quick_exit_lockptr);
 weak_alias(dummy_lockptr, __atexit_lockptr);
-weak_alias(dummy_lockptr, __dlerror_lockptr);
 weak_alias(dummy_lockptr, __gettext_lockptr);
 weak_alias(dummy_lockptr, __locale_lockptr);
 weak_alias(dummy_lockptr, __random_lockptr);
@@ -24,7 +23,6 @@ weak_alias(dummy_lockptr, __vmlock_lockptr);
 static volatile int *const *const atfork_locks[] = {
 	&__at_quick_exit_lockptr,
 	&__atexit_lockptr,
-	&__dlerror_lockptr,
 	&__gettext_lockptr,
 	&__locale_lockptr,
 	&__random_lockptr,

@@ -2,7 +2,6 @@
 
 extern hidden volatile int *const __at_quick_exit_lockptr;
 extern hidden volatile int *const __atexit_lockptr;
-extern hidden volatile int *const __dlerror_lockptr;
 extern hidden volatile int *const __gettext_lockptr;
 extern hidden volatile int *const __locale_lockptr;
 extern hidden volatile int *const __random_lockptr;
