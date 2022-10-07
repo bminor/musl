@@ -82,6 +82,8 @@ static size_t io_thread_stack_size;
 
 static struct aio_queue *__aio_get_queue(int fd, int need)
 {
+	sigset_t allmask, origmask;
+	int masked = 0;
 	if (fd < 0) {
 		errno = EBADF;
 		return 0;
@@ -93,6 +95,9 @@ static struct aio_queue *__aio_get_queue(int fd, int need)
 	if ((!map || !map[a] || !map[a][b] || !map[a][b][c] || !(q=map[a][b][c][d])) && need) {
 		pthread_rwlock_unlock(&maplock);
 		if (fcntl(fd, F_GETFD) < 0) return 0;
+		sigfillset(&allmask);
+		masked = 1;
+		pthread_sigmask(SIG_BLOCK, &allmask, &origmask);
 		pthread_rwlock_wrlock(&maplock);
 		if (!io_thread_stack_size) {
 			unsigned long val = __getauxval(AT_MINSIGSTKSZ);
@@ -119,6 +124,7 @@ static struct aio_queue *__aio_get_queue(int fd, int need)
 	if (q) pthread_mutex_lock(&q->lock);
 out:
 	pthread_rwlock_unlock(&maplock);
+	if (masked) pthread_sigmask(SIG_SETMASK, &origmask, 0);
 	return q;
 }
 
