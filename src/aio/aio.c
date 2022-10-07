@@ -401,11 +401,26 @@ void __aio_atfork(int who)
 	if (who<0) {
 		pthread_rwlock_rdlock(&maplock);
 		return;
+	} else if (!who) {
+		pthread_rwlock_unlock(&maplock);
+		return;
 	}
-	if (who>0 && map) for (int a=0; a<(-1U/2+1)>>24; a++)
+	aio_fd_cnt = 0;
+	if (pthread_rwlock_tryrdlock(&maplock)) {
+		/* Obtaining lock may fail if _Fork was called nor via
+		 * fork. In this case, no further aio is possible from
+		 * child and we can just null out map so __aio_close
+		 * does not attempt to do anything. */
+		map = 0;
+		return;
+	}
+	if (map) for (int a=0; a<(-1U/2+1)>>24; a++)
 		if (map[a]) for (int b=0; b<256; b++)
 			if (map[a][b]) for (int c=0; c<256; c++)
 				if (map[a][b][c]) for (int d=0; d<256; d++)
 					map[a][b][c][d] = 0;
-	pthread_rwlock_unlock(&maplock);
+	/* Re-initialize the rwlock rather than unlocking since there
+	 * may have been more than one reference on it in the parent.
+	 * We are not a lock holder anyway; the thread in the parent was. */
+	pthread_rwlock_init(&maplock, 0);
 }

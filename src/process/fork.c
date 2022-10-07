@@ -36,6 +36,7 @@ static volatile int *const *const atfork_locks[] = {
 static void dummy(int x) { }
 weak_alias(dummy, __fork_handler);
 weak_alias(dummy, __malloc_atfork);
+weak_alias(dummy, __aio_atfork);
 weak_alias(dummy, __ldso_atfork);
 
 static void dummy_0(void) { }
@@ -50,6 +51,7 @@ pid_t fork(void)
 	int need_locks = libc.need_locks > 0;
 	if (need_locks) {
 		__ldso_atfork(-1);
+		__aio_atfork(-1);
 		__inhibit_ptc();
 		for (int i=0; i<sizeof atfork_locks/sizeof *atfork_locks; i++)
 			if (*atfork_locks[i]) LOCK(*atfork_locks[i]);
@@ -75,6 +77,7 @@ pid_t fork(void)
 				if (ret) UNLOCK(*atfork_locks[i]);
 				else **atfork_locks[i] = 0;
 		__release_ptc();
+		if (ret) __aio_atfork(0);
 		__ldso_atfork(!ret);
 	}
 	__restore_sigs(&set);
