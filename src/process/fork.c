@@ -37,6 +37,7 @@ static void dummy(int x) { }
 weak_alias(dummy, __fork_handler);
 weak_alias(dummy, __malloc_atfork);
 weak_alias(dummy, __aio_atfork);
+weak_alias(dummy, __pthread_key_atfork);
 weak_alias(dummy, __ldso_atfork);
 
 static void dummy_0(void) { }
@@ -51,6 +52,7 @@ pid_t fork(void)
 	int need_locks = libc.need_locks > 0;
 	if (need_locks) {
 		__ldso_atfork(-1);
+		__pthread_key_atfork(-1);
 		__aio_atfork(-1);
 		__inhibit_ptc();
 		for (int i=0; i<sizeof atfork_locks/sizeof *atfork_locks; i++)
@@ -78,6 +80,7 @@ pid_t fork(void)
 				else **atfork_locks[i] = 0;
 		__release_ptc();
 		if (ret) __aio_atfork(0);
+		__pthread_key_atfork(!ret);
 		__ldso_atfork(!ret);
 	}
 	__restore_sigs(&set);
