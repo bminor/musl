@@ -102,6 +102,7 @@ struct dpc_ctx {
 	struct address *addrs;
 	char *canon;
 	int cnt;
+	int rrtype;
 };
 
 #define RR_A 1
@@ -117,12 +118,14 @@ static int dns_parse_callback(void *c, int rr, const void *data, int len, const 
 	if (ctx->cnt >= MAXADDRS) return -1;
 	switch (rr) {
 	case RR_A:
+		if (rr != ctx->rrtype) return 0;
 		if (len != 4) return -1;
 		ctx->addrs[ctx->cnt].family = AF_INET;
 		ctx->addrs[ctx->cnt].scopeid = 0;
 		memcpy(ctx->addrs[ctx->cnt++].addr, data, 4);
 		break;
 	case RR_AAAA:
+		if (rr != ctx->rrtype) return 0;
 		if (len != 16) return -1;
 		ctx->addrs[ctx->cnt].family = AF_INET6;
 		ctx->addrs[ctx->cnt].scopeid = 0;
@@ -142,7 +145,7 @@ static int name_from_dns(struct address buf[static MAXADDRS], char canon[static 
 	unsigned char qbuf[2][280], abuf[2][ABUF_SIZE];
 	const unsigned char *qp[2] = { qbuf[0], qbuf[1] };
 	unsigned char *ap[2] = { abuf[0], abuf[1] };
-	int qlens[2], alens[2];
+	int qlens[2], alens[2], qtypes[2];
 	int i, nq = 0;
 	struct dpc_ctx ctx = { .addrs = buf, .canon = canon };
 	static const struct { int af; int rr; } afrr[2] = {
@@ -156,6 +159,7 @@ static int name_from_dns(struct address buf[static MAXADDRS], char canon[static 
 				0, 0, 0, qbuf[nq], sizeof *qbuf);
 			if (qlens[nq] == -1)
 				return 0;
+			qtypes[nq] = afrr[i].rr;
 			qbuf[nq][3] = 0; /* don't need AD flag */
 			/* Ensure query IDs are distinct. */
 			if (nq && qbuf[nq][0] == qbuf[0][0])
@@ -173,8 +177,10 @@ static int name_from_dns(struct address buf[static MAXADDRS], char canon[static 
 		if ((abuf[i][3] & 15) != 0) return EAI_FAIL;
 	}
 
-	for (i=nq-1; i>=0; i--)
+	for (i=nq-1; i>=0; i--) {
+		ctx.rrtype = qtypes[i];
 		__dns_parse(abuf[i], alens[i], dns_parse_callback, &ctx);
+	}
 
 	if (ctx.cnt) return ctx.cnt;
 	return EAI_NODATA;
