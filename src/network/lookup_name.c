@@ -114,29 +114,29 @@ struct dpc_ctx {
 static int dns_parse_callback(void *c, int rr, const void *data, int len, const void *packet)
 {
 	char tmp[256];
+	int family;
 	struct dpc_ctx *ctx = c;
-	if (ctx->cnt >= MAXADDRS) return 0;
-	switch (rr) {
-	case RR_A:
-		if (rr != ctx->rrtype) return 0;
-		if (len != 4) return -1;
-		ctx->addrs[ctx->cnt].family = AF_INET;
-		ctx->addrs[ctx->cnt].scopeid = 0;
-		memcpy(ctx->addrs[ctx->cnt++].addr, data, 4);
-		break;
-	case RR_AAAA:
-		if (rr != ctx->rrtype) return 0;
-		if (len != 16) return -1;
-		ctx->addrs[ctx->cnt].family = AF_INET6;
-		ctx->addrs[ctx->cnt].scopeid = 0;
-		memcpy(ctx->addrs[ctx->cnt++].addr, data, 16);
-		break;
-	case RR_CNAME:
+	if (rr == RR_CNAME) {
 		if (__dn_expand(packet, (const unsigned char *)packet + ABUF_SIZE,
 		    data, tmp, sizeof tmp) > 0 && is_valid_hostname(tmp))
 			strcpy(ctx->canon, tmp);
+		return 0;
+	}
+	if (ctx->cnt >= MAXADDRS) return 0;
+	if (rr != ctx->rrtype) return 0;
+	switch (rr) {
+	case RR_A:
+		if (len != 4) return -1;
+		family = AF_INET;
+		break;
+	case RR_AAAA:
+		if (len != 16) return -1;
+		family = AF_INET6;
 		break;
 	}
+	ctx->addrs[ctx->cnt].family = family;
+	ctx->addrs[ctx->cnt].scopeid = 0;
+	memcpy(ctx->addrs[ctx->cnt++].addr, data, len);
 	return 0;
 }
 
