@@ -478,8 +478,8 @@ static int printf_core(FILE *f, const char *fmt, va_list *ap, union arg *nl_arg,
 		if (*s=='*') {
 			if (isdigit(s[1]) && s[2]=='$') {
 				l10n=1;
-				nl_type[s[1]-'0'] = INT;
-				w = nl_arg[s[1]-'0'].i;
+				if (!f) nl_type[s[1]-'0'] = INT, w = 0;
+				else w = nl_arg[s[1]-'0'].i;
 				s+=3;
 			} else if (!l10n) {
 				w = f ? va_arg(*ap, int) : 0;
@@ -491,8 +491,8 @@ static int printf_core(FILE *f, const char *fmt, va_list *ap, union arg *nl_arg,
 		/* Read precision */
 		if (*s=='.' && s[1]=='*') {
 			if (isdigit(s[2]) && s[3]=='$') {
-				nl_type[s[2]-'0'] = INT;
-				p = nl_arg[s[2]-'0'].i;
+				if (!f) nl_type[s[2]-'0'] = INT, p = 0;
+				else p = nl_arg[s[2]-'0'].i;
 				s+=4;
 			} else if (!l10n) {
 				p = f ? va_arg(*ap, int) : 0;
@@ -521,8 +521,10 @@ static int printf_core(FILE *f, const char *fmt, va_list *ap, union arg *nl_arg,
 		if (st==NOARG) {
 			if (argpos>=0) goto inval;
 		} else {
-			if (argpos>=0) nl_type[argpos]=st, arg=nl_arg[argpos];
-			else if (f) pop_arg(&arg, st, ap);
+			if (argpos>=0) {
+				if (!f) nl_type[argpos]=st;
+				else arg=nl_arg[argpos];
+			} else if (f) pop_arg(&arg, st, ap);
 			else return 0;
 		}
 
