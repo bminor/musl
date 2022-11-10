@@ -552,6 +552,7 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 
 static void do_relr_relocs(struct dso *dso, size_t *relr, size_t relr_size)
 {
+	if (dso == &ldso) return; /* self-relocation was done in _dlstart */
 	unsigned char *base = dso->base;
 	size_t *reloc_addr;
 	for (; relr_size; relr++, relr_size-=sizeof(size_t))
