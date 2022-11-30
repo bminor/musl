@@ -21,8 +21,14 @@
 #include <sys/membarrier.h>
 #include "pthread_impl.h"
 #include "fork_impl.h"
-#include "libc.h"
 #include "dynlink.h"
+
+static size_t ldso_page_size;
+#ifndef PAGE_SIZE
+#define PAGE_SIZE ldso_page_size
+#endif
+
+#include "libc.h"
 
 #define malloc __libc_malloc
 #define calloc __libc_calloc
@@ -1723,6 +1729,7 @@ hidden void __dls2(unsigned char *base, size_t *sp)
 	ldso.phnum = ehdr->e_phnum;
 	ldso.phdr = laddr(&ldso, ehdr->e_phoff);
 	ldso.phentsize = ehdr->e_phentsize;
+	search_vec(auxv, &ldso_page_size, AT_PAGESZ);
 	kernel_mapped_dso(&ldso);
 	decode_dyn(&ldso);
 
