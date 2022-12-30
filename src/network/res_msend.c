@@ -25,7 +25,8 @@ static void cleanup(void *p)
 static unsigned long mtime()
 {
 	struct timespec ts;
-	clock_gettime(CLOCK_REALTIME, &ts);
+	if (clock_gettime(CLOCK_MONOTONIC, &ts) < 0 && errno == ENOSYS)
+		clock_gettime(CLOCK_REALTIME, &ts);
 	return (unsigned long)ts.tv_sec * 1000
 		+ ts.tv_nsec / 1000000;
 }
