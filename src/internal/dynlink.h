@@ -92,6 +92,10 @@ struct fdpic_dummy_loadmap {
 #define DT_DEBUG_INDIRECT 0
 #endif
 
+#ifndef DT_DEBUG_INDIRECT_REL
+#define DT_DEBUG_INDIRECT_REL 0
+#endif
+
 #define AUX_CNT 32
 #define DYN_CNT 37
 

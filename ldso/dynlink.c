@@ -1992,6 +1992,10 @@ void __dls3(size_t *sp, size_t *auxv)
 			size_t *ptr = (size_t *) app.dynv[i+1];
 			*ptr = (size_t)&debug;
 		}
+		if (app.dynv[i]==DT_DEBUG_INDIRECT_REL) {
+			size_t *ptr = (size_t *)((size_t)&app.dynv[i] + app.dynv[i+1]);
+			*ptr = (size_t)&debug;
+		}
 	}
 
 	/* This must be done before final relocations, since it calls
