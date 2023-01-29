@@ -108,10 +108,10 @@ static void reverse_services(char *buf, int port, int dgram)
 	__fclose_ca(f);
 }
 
-static int dns_parse_callback(void *c, int rr, const void *data, int len, const void *packet)
+static int dns_parse_callback(void *c, int rr, const void *data, int len, const void *packet, int plen)
 {
 	if (rr != RR_PTR) return 0;
-	if (__dn_expand(packet, (const unsigned char *)packet + 512,
+	if (__dn_expand(packet, (const unsigned char *)packet + plen,
 	    data, c, 256) <= 0)
 		*(char *)c = 0;
 	return 0;

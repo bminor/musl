@@ -111,13 +111,13 @@ struct dpc_ctx {
 
 #define ABUF_SIZE 768
 
-static int dns_parse_callback(void *c, int rr, const void *data, int len, const void *packet)
+static int dns_parse_callback(void *c, int rr, const void *data, int len, const void *packet, int plen)
 {
 	char tmp[256];
 	int family;
 	struct dpc_ctx *ctx = c;
 	if (rr == RR_CNAME) {
-		if (__dn_expand(packet, (const unsigned char *)packet + ABUF_SIZE,
+		if (__dn_expand(packet, (const unsigned char *)packet + plen,
 		    data, tmp, sizeof tmp) > 0 && is_valid_hostname(tmp))
 			strcpy(ctx->canon, tmp);
 		return 0;
