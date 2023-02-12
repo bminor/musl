@@ -35,6 +35,7 @@ static void *start(void *p)
 	sem_post(&args->sem);
 	if (err) return 0;
 
+	pthread_detach(pthread_self());
 	n = recv(s, buf, sizeof(buf), MSG_NOSIGNAL|MSG_WAITALL);
 	close(s);
 	if (n==sizeof buf && buf[sizeof buf - 1] == 1)
@@ -60,7 +61,7 @@ int mq_notify(mqd_t mqd, const struct sigevent *sev)
 
 	if (sev->sigev_notify_attributes) attr = *sev->sigev_notify_attributes;
 	else pthread_attr_init(&attr);
-	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 	sem_init(&args.sem, 0, 0);
 
 	if (pthread_create(&td, &attr, start, &args)) {
@@ -71,14 +72,16 @@ int mq_notify(mqd_t mqd, const struct sigevent *sev)
 
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
 	sem_wait(&args.sem);
-	pthread_setcancelstate(cs, 0);
 	sem_destroy(&args.sem);
 
 	if (args.err) {
 		__syscall(SYS_close, s);
+		pthread_join(td, 0);
+		pthread_setcancelstate(cs, 0);
 		errno = args.err;
 		return -1;
 	}
 
+	pthread_setcancelstate(cs, 0);
 	return 0;
 }
