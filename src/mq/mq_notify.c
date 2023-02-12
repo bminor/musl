@@ -50,6 +50,7 @@ int mq_notify(mqd_t mqd, const struct sigevent *sev)
 	pthread_t td;
 	int s;
 	int cs;
+	sigset_t allmask, origmask;
 
 	if (!sev || sev->sigev_notify != SIGEV_THREAD)
 		return syscall(SYS_mq_notify, mqd, sev);
@@ -64,11 +65,15 @@ int mq_notify(mqd_t mqd, const struct sigevent *sev)
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 	sem_init(&args.sem, 0, 0);
 
+	sigfillset(&allmask);
+	pthread_sigmask(SIG_BLOCK, &allmask, &origmask);
 	if (pthread_create(&td, &attr, start, &args)) {
 		__syscall(SYS_close, s);
+		pthread_sigmask(SIG_SETMASK, &origmask, 0);
 		errno = EAGAIN;
 		return -1;
 	}
+	pthread_sigmask(SIG_SETMASK, &origmask, 0);
 
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
 	sem_wait(&args.sem);
