@@ -133,6 +133,22 @@ int __res_msend_rc(int nqueries, const unsigned char *const *queries,
 		family = AF_INET;
 		sl = sizeof sa.sin;
 	}
+
+	/* Convert any IPv4 addresses in a mixed environment to v4-mapped */
+	if (fd >= 0 && family == AF_INET6) {
+		setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, &(int){0}, sizeof 0);
+		for (i=0; i<nns; i++) {
+			if (ns[i].sin.sin_family != AF_INET) continue;
+			memcpy(ns[i].sin6.sin6_addr.s6_addr+12,
+				&ns[i].sin.sin_addr, 4);
+			memcpy(ns[i].sin6.sin6_addr.s6_addr,
+				"\0\0\0\0\0\0\0\0\0\0\xff\xff", 12);
+			ns[i].sin6.sin6_family = AF_INET6;
+			ns[i].sin6.sin6_flowinfo = 0;
+			ns[i].sin6.sin6_scope_id = 0;
+		}
+	}
+
 	sa.sin.sin_family = family;
 	if (fd < 0 || bind(fd, (void *)&sa, sl) < 0) {
 		if (fd >= 0) close(fd);
@@ -151,21 +167,6 @@ int __res_msend_rc(int nqueries, const unsigned char *const *queries,
 
 	pthread_cleanup_push(cleanup, pfd);
 	pthread_setcancelstate(cs, 0);
-
-	/* Convert any IPv4 addresses in a mixed environment to v4-mapped */
-	if (family == AF_INET6) {
-		setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, &(int){0}, sizeof 0);
-		for (i=0; i<nns; i++) {
-			if (ns[i].sin.sin_family != AF_INET) continue;
-			memcpy(ns[i].sin6.sin6_addr.s6_addr+12,
-				&ns[i].sin.sin_addr, 4);
-			memcpy(ns[i].sin6.sin6_addr.s6_addr,
-				"\0\0\0\0\0\0\0\0\0\0\xff\xff", 12);
-			ns[i].sin6.sin6_family = AF_INET6;
-			ns[i].sin6.sin6_flowinfo = 0;
-			ns[i].sin6.sin6_scope_id = 0;
-		}
-	}
 
 	memset(alens, 0, sizeof *alens * nqueries);
 
