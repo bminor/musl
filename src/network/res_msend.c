@@ -287,7 +287,7 @@ int __res_msend_rc(int nqueries, const unsigned char *const *queries,
 			};
 			step_mh(&mh, apos[i]);
 			r = recvmsg(pfd[i].fd, &mh, 0);
-			if (r < 0) goto out;
+			if (r <= 0) goto out;
 			apos[i] += r;
 			if (apos[i] < 2) continue;
 			int alen = alen_buf[i][0]*256 + alen_buf[i][1];
