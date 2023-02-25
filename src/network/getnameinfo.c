@@ -58,6 +58,7 @@ static void reverse_hosts(char *buf, const unsigned char *a, unsigned scopeid, i
 		if ((p=strchr(line, '#'))) *p++='\n', *p=0;
 
 		for (p=line; *p && !isspace(*p); p++);
+		if (!*p) continue;
 		*p++ = 0;
 		if (__lookup_ipliteral(&iplit, line, AF_UNSPEC)<=0)
 			continue;
