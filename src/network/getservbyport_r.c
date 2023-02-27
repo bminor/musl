@@ -26,7 +26,7 @@ int getservbyport_r(int port, const char *prots,
 	/* Align buffer */
 	i = (uintptr_t)buf & sizeof(char *)-1;
 	if (!i) i = sizeof(char *);
-	if (buflen < 3*sizeof(char *)-i)
+	if (buflen <= 3*sizeof(char *)-i)
 		return ERANGE;
 	buf += sizeof(char *)-i;
 	buflen -= sizeof(char *)-i;
