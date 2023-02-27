@@ -46,6 +46,8 @@ int getservbyport_r(int port, const char *prots,
 	case EAI_MEMORY:
 	case EAI_SYSTEM:
 		return ENOMEM;
+	case EAI_OVERFLOW:
+		return ERANGE;
 	default:
 		return ENOENT;
 	case 0:
