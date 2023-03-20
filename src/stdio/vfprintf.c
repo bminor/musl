@@ -530,6 +530,9 @@ static int printf_core(FILE *f, const char *fmt, va_list *ap, union arg *nl_arg,
 
 		if (!f) continue;
 
+		/* Do not process any new directives once in error state. */
+		if (ferror(f)) return -1;
+
 		z = buf + sizeof(buf);
 		prefix = "-+   0X0x";
 		pl = 0;
