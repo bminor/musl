@@ -258,15 +258,12 @@ static int wprintf_core(FILE *f, const wchar_t *fmt, va_list *ap, union arg *nl_
 			}
 			continue;
 		case 'c':
+		case 'C':
 			if (w<1) w=1;
 			if (w>1 && !(fl&LEFT_ADJ)) fprintf(f, "%*s", w-1, "");
-			fputwc(btowc(arg.i), f);
+			fputwc(t=='C' ? arg.i : btowc(arg.i), f);
 			if (w>1 && (fl&LEFT_ADJ)) fprintf(f, "%*s", w-1, "");
 			l = w;
-			continue;
-		case 'C':
-			fputwc(arg.i, f);
-			l = 1;
 			continue;
 		case 'S':
 			a = arg.p;
