@@ -677,7 +677,7 @@ int vfprintf(FILE *restrict f, const char *restrict fmt, va_list ap)
 
 	FLOCK(f);
 	olderr = f->flags & F_ERR;
-	if (f->mode < 1) f->flags &= ~F_ERR;
+	f->flags &= ~F_ERR;
 	if (!f->buf_size) {
 		saved_buf = f->buf;
 		f->buf = internal_buf;
