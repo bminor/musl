@@ -179,6 +179,7 @@ static int name_from_dns(struct address buf[static MAXADDRS], char canon[static 
 
 	for (i=nq-1; i>=0; i--) {
 		ctx.rrtype = qtypes[i];
+		if (alens[i] > sizeof(abuf[i])) alens[i] = sizeof abuf[i];
 		__dns_parse(abuf[i], alens[i], dns_parse_callback, &ctx);
 	}
 
