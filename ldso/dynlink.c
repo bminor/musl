@@ -345,7 +345,8 @@ static struct symdef find_sym(struct dso *dso, const char *s, int need_def)
 
 static struct symdef get_lfs64(const char *name)
 {
-	static const char *p, lfs64_list[] =
+	const char *p;
+	static const char lfs64_list[] =
 		"aio_cancel\0aio_error\0aio_fsync\0aio_read\0aio_return\0"
 		"aio_suspend\0aio_write\0alphasort\0creat\0fallocate\0"
 		"fgetpos\0fopen\0freopen\0fseeko\0fsetpos\0fstat\0"
