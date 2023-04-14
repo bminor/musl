@@ -347,8 +347,8 @@ overflow:
 int vfwprintf(FILE *restrict f, const wchar_t *restrict fmt, va_list ap)
 {
 	va_list ap2;
-	int nl_type[NL_ARGMAX] = {0};
-	union arg nl_arg[NL_ARGMAX];
+	int nl_type[NL_ARGMAX+1] = {0};
+	union arg nl_arg[NL_ARGMAX+1];
 	int olderr;
 	int ret;
 
