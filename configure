@@ -444,7 +444,20 @@ xno|x) printf "disabled\n" ; optimize=no ;;
 *) printf "custom\n" ;;
 esac
 
-test "$optimize" = no || tryflag CFLAGS_AUTO -Os || tryflag CFLAGS_AUTO -O2
+if test "$optimize" = no ; then :
+else
+tryflag CFLAGS_AUTO -O2
+tryflag CFLAGS_AUTO -fno-align-jumps
+tryflag CFLAGS_AUTO -fno-align-functions
+tryflag CFLAGS_AUTO -fno-align-loops
+tryflag CFLAGS_AUTO -fno-align-labels
+tryflag CFLAGS_AUTO -fira-region=one
+tryflag CFLAGS_AUTO -fira-hoist-pressure
+tryflag CFLAGS_AUTO -freorder-blocks-algorithm=simple \
+|| tryflag CFLAGS_AUTO -fno-reorder-blocks
+tryflag CFLAGS_AUTO -fno-prefetch-loop-arrays
+tryflag CFLAGS_AUTO -fno-tree-ch
+fi
 test "$optimize" = yes && optimize="internal,malloc,string"
 
 if fnmatch 'no|size' "$optimize" ; then :
