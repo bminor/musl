@@ -22,7 +22,7 @@ pid_t _Fork(void)
 #endif
 	if (!ret) {
 		pthread_t self = __pthread_self();
-		self->tid = __syscall(SYS_gettid);
+		self->tid = __syscall(SYS_set_tid_address, &__thread_list_lock);
 		self->robust_list.off = 0;
 		self->robust_list.pending = 0;
 		self->next = self->prev = self;
