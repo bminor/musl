@@ -437,7 +437,7 @@ static int printf_core(FILE *f, const char *fmt, va_list *ap, union arg *nl_arg,
 	unsigned st, ps;
 	int cnt=0, l=0;
 	size_t i;
-	char buf[sizeof(uintmax_t)*3+3+LDBL_MANT_DIG/4];
+	char buf[sizeof(uintmax_t)*3];
 	const char *prefix;
 	int t, pl;
 	wchar_t wc[2], *ws;
