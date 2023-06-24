@@ -6,6 +6,15 @@
 #include <sys/syscall.h>
 #include "syscall_arch.h"
 
+#define UK_VDSO_SYSCALL_MAX 450
+extern void* uk_vdso_syscall_tabel[UK_VDSO_SYSCALL_MAX];
+
+#define __UK_NARGS_X(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, \
+		     t, u, v, w, x, y, z, count, ...) count
+#define UK_NARGS(...) \
+	__UK_NARGS_X(, ##__VA_ARGS__, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, \
+		     15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
+
 #ifndef SYSCALL_RLIM_INFINITY
 #define SYSCALL_RLIM_INFINITY (~0ULL)
 #endif
@@ -41,7 +50,29 @@ hidden long __syscall_ret(unsigned long),
 #define __SYSCALL_CONCAT(a,b) __SYSCALL_CONCAT_X(a,b)
 #define __SYSCALL_DISP(b,...) __SYSCALL_CONCAT(b,__SYSCALL_NARGS(__VA_ARGS__))(__VA_ARGS__)
 
-#define __syscall(...) __SYSCALL_DISP(__syscall,__VA_ARGS__)
+long __uk_syscall_0(long);
+long __uk_syscall_1(long, long);
+long __uk_syscall_2(long, long, long);
+long __uk_syscall_3(long, long, long, long);
+long __uk_syscall_4(long, long, long, long, long);
+long __uk_syscall_5(long, long, long, long, long, long);
+long __uk_syscall_6(long, long, long, long, long, long, long);
+
+#define uk_syscall_1(n) 			__uk_syscall_0(n)
+#define uk_syscall_2(n,a) 			__uk_syscall_1(n,__scc(a))
+#define uk_syscall_3(n,a,b) 		__uk_syscall_2(n,__scc(a),__scc(b))
+#define uk_syscall_4(n,a,b,c) 		__uk_syscall_3(n,__scc(a),__scc(b),__scc(c))
+#define uk_syscall_5(n,a,b,c,d) 	__uk_syscall_4(n,__scc(a),__scc(b),__scc(c),__scc(d))
+#define uk_syscall_6(n,a,b,c,d,e) 	__uk_syscall_5(n,__scc(a),__scc(b),__scc(c),__scc(d),__scc(e))
+#define uk_syscall_7(n,a,b,c,d,e,f) __uk_syscall_6(n,__scc(a),__scc(b),__scc(c),__scc(d),__scc(e),__scc(f))
+
+#define ___syscall(...) __SYSCALL_DISP(__syscall,__VA_ARGS__)
+
+#define __syscall(...)				\
+	__SYSCALL_CONCAT(uk_syscall_,				\
+		UK_NARGS(__VA_ARGS__))(__VA_ARGS__)
+
+
 #define syscall(...) __syscall_ret(__syscall(__VA_ARGS__))
 
 #define socketcall(nm,a,b,c,d,e,f) __syscall_ret(__socketcall(nm,a,b,c,d,e,f))
