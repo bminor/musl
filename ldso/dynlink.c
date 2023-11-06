@@ -157,6 +157,8 @@ static struct fdpic_dummy_loadmap app_dummy_loadmap;
 
 struct debug *_dl_debug_addr = &debug;
 
+extern weak hidden char __ehdr_start[];
+
 extern hidden int __malloc_replaced;
 
 hidden void (*const __init_array_start)(void)=0, (*const __fini_array_start)(void)=0;
@@ -1725,7 +1727,7 @@ hidden void __dls2(unsigned char *base, size_t *sp)
 	} else {
 		ldso.base = base;
 	}
-	Ehdr *ehdr = (void *)ldso.base;
+	Ehdr *ehdr = __ehdr_start ? (void *)__ehdr_start : (void *)ldso.base;
 	ldso.name = ldso.shortname = "libc.so";
 	ldso.phnum = ehdr->e_phnum;
 	ldso.phdr = laddr(&ldso, ehdr->e_phoff);
