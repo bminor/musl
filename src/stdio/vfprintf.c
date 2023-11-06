@@ -588,6 +588,7 @@ static int printf_core(FILE *f, const char *fmt, va_list *ap, union arg *nl_arg,
 			}
 			p = MAX(p, z-a + !arg.i);
 			break;
+		narrow_c:
 		case 'c':
 			*(a=z-(p=1))=arg.i;
 			fl &= ~ZERO_PAD;
@@ -602,6 +603,7 @@ static int printf_core(FILE *f, const char *fmt, va_list *ap, union arg *nl_arg,
 			fl &= ~ZERO_PAD;
 			break;
 		case 'C':
+			if (!arg.i) goto narrow_c;
 			wc[0] = arg.i;
 			wc[1] = 0;
 			arg.p = wc;
