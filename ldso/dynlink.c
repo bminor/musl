@@ -517,7 +517,7 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 			break;
 #endif
 		case REL_TLSDESC:
-			if (stride<3) addend = reloc_addr[1];
+			if (stride<3) addend = reloc_addr[!TLSDESC_BACKWARDS];
 			if (def.dso->tls_id > static_tls_cnt) {
 				struct td_index *new = malloc(sizeof *new);
 				if (!new) {
