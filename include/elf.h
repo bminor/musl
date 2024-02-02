@@ -703,6 +703,8 @@ typedef struct {
 #define NT_MIPS_DSP	0x800
 #define NT_MIPS_FP_MODE	0x801
 #define NT_MIPS_MSA	0x802
+#define NT_RISCV_CSR	0x900
+#define NT_RISCV_VECTOR	0x901
 #define NT_VERSION	1
 
 
