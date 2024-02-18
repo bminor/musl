@@ -376,4 +376,5 @@
 #define __NR_futex_waitv	6449
 #define __NR_set_mempolicy_home_node	6450
 #define __NR_cachestat		6451
+#define __NR_fchmodat2		6452
 
