@@ -5,7 +5,7 @@
 
 int fchmodat(int fd, const char *path, mode_t mode, int flag)
 {
-	if (!flag) return syscall(SYS_fchmodat, fd, path, mode, flag);
+	if (!flag) return syscall(SYS_fchmodat, fd, path, mode);
 
 	if (flag != AT_SYMLINK_NOFOLLOW)
 		return __syscall_ret(-EINVAL);
