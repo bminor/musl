@@ -419,4 +419,5 @@
 #define __NR_landlock_add_rule	4445
 #define __NR_landlock_restrict_self	4446
 #define __NR_process_mrelease	4448
+#define __NR_futex_waitv	4449
 
