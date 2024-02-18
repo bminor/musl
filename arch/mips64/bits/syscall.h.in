@@ -350,4 +350,5 @@
 #define __NR_landlock_restrict_self	5446
 #define __NR_process_mrelease	5448
 #define __NR_futex_waitv	5449
+#define __NR_set_mempolicy_home_node	5450
 
