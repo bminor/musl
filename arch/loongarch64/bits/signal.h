@@ -6,6 +6,17 @@
 #define SIGSTKSZ 16384
 #endif
 
+#if defined(_GNU_SOURCE)
+#define LARCH_NGREG 32
+#define LARCH_REG_RA 1
+#define LARCH_REG_SP 3
+#define LARCH_REG_S0 23
+#define LARCH_REG_S1 24
+#define LARCH_REG_A0 4
+#define LARCH_REG_S2 25
+#define LARCH_REG_NARGS 8
+#endif
+
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 typedef unsigned long greg_t, gregset_t[32];
 
