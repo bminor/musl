@@ -7,6 +7,7 @@
 .hidden __clone
 .type __clone,@function
 __clone:
+	bstrins.d $a1, $zero, 3, 0   #stack to 16 align
 	# Save function pointer and argument pointer on new thread stack
 	addi.d  $a1, $a1, -16
 	st.d    $a0, $a1, 0     # save function pointer
