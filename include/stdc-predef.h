@@ -7,10 +7,12 @@
 #define __STDC_IEC_559__ 1
 #endif
 
-#undef __STDC_UTF_16__
+#if !defined(__STDC_UTF_16__)
 #define __STDC_UTF_16__ 1
+#endif
 
-#undef __STDC_UTF_32__
+#if !defined(__STDC_UTF_32__)
 #define __STDC_UTF_32__ 1
+#endif
 
 #endif
