@@ -403,6 +403,10 @@ size_t iconv(iconv_t cd, char **restrict in, size_t *restrict inb, char **restri
 			if (c < 128) break;
 			if (c < 0xa1) goto ilseq;
 		case GBK:
+			if (c == 128) {
+				c = 0x20ac;
+				break;
+			}
 		case GB18030:
 			if (c < 128) break;
 			c -= 0x81;
