@@ -340,6 +340,7 @@ size_t iconv(iconv_t cd, char **restrict in, size_t *restrict inb, char **restri
 				c++;
 				d -= 159;
 			}
+			if (c>=84) goto ilseq;
 			c = jis0208[c][d];
 			if (!c) goto ilseq;
 			break;
