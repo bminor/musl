@@ -211,18 +211,11 @@ static int fmt_fp(FILE *f, long double y, int w, int p, int fl, int t)
 	if (y) e2--;
 
 	if ((t|32)=='a') {
-		long double round = 8.0;
-		int re;
-
 		if (t&32) prefix += 9;
 		pl += 2;
 
-		if (p<0 || p>=LDBL_MANT_DIG/4-1) re=0;
-		else re=LDBL_MANT_DIG/4-1-p;
-
-		if (re) {
-			round *= 1<<(LDBL_MANT_DIG%4);
-			while (re--) round*=16;
+		if (p>=0 && p<(LDBL_MANT_DIG-1+3)/4) {
+			double round = scalbn(1, LDBL_MANT_DIG-1-(p*4));
 			if (*prefix=='-') {
 				y=-y;
 				y-=round;
