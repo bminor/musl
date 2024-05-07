@@ -21,14 +21,16 @@
 #include <sys/membarrier.h>
 #include "pthread_impl.h"
 #include "fork_impl.h"
+#include "libc.h"
 #include "dynlink.h"
 
 static size_t ldso_page_size;
-#ifndef PAGE_SIZE
+/* libc.h may have defined a macro for dynamic PAGE_SIZE already, but
+ * PAGESIZE is only defined if it's constant for the arch. */
+#ifndef PAGESIZE
+#undef PAGE_SIZE
 #define PAGE_SIZE ldso_page_size
 #endif
-
-#include "libc.h"
 
 #define malloc __libc_malloc
 #define calloc __libc_calloc
