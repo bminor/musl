@@ -8,7 +8,7 @@ extern "C" {
 #include <stdint.h>
 #include <unistd.h>
 
-#include <bits/alltype.h>
+#include <bits/alltypes.h>
 
 #undef __WORDSIZE
 #if __LONG_MAX == 0x7fffffffL
