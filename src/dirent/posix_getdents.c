@@ -3,7 +3,7 @@
 #include <errno.h>
 #include "syscall.h"
 
-int posix_getdents(int fd, void *buf, size_t len, int flags)
+ssize_t posix_getdents(int fd, void *buf, size_t len, int flags)
 {
 	if (flags) return __syscall_ret(-EOPNOTSUPP);
 	if (len>INT_MAX) len = INT_MAX;
