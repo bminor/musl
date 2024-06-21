@@ -363,7 +363,7 @@ static struct symdef get_lfs64(const char *name)
 		"stat\0statfs\0statvfs\0tmpfile\0truncate\0versionsort\0"
 		"__fxstat\0__fxstatat\0__lxstat\0__xstat\0";
 	size_t l;
-	char buf[16];
+	char buf[17];
 	for (l=0; name[l]; l++) {
 		if (l >= sizeof buf) goto nomatch;
 		buf[l] = name[l];
