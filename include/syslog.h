@@ -46,8 +46,8 @@ extern "C" {
 #define LOG_LOCAL7   (23<<3)
 
 #define LOG_NFACILITIES 24
-#define LOG_FACMASK 0xf8
-#define LOG_FAC(p) ((p)&LOG_FACMASK)
+#define LOG_FACMASK 0x3f8
+#define LOG_FAC(p) (((p)&LOG_FACMASK)>>3)
 
 #define LOG_PID    0x01
 #define LOG_CONS   0x02
