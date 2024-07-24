@@ -1,6 +1,7 @@
 #include <time.h>
 #include <setjmp.h>
 #include <limits.h>
+#include <semaphore.h>
 #include "pthread_impl.h"
 #include "atomic.h"
 
@@ -12,7 +13,7 @@ struct ksigevent {
 };
 
 struct start_args {
-	pthread_barrier_t b;
+	sem_t sem1, sem2;
 	struct sigevent *sev;
 };
 
@@ -42,7 +43,14 @@ static void *start(void *arg)
 	void (*notify)(union sigval) = args->sev->sigev_notify_function;
 	union sigval val = args->sev->sigev_value;
 
-	pthread_barrier_wait(&args->b);
+	/* The two-way semaphore synchronization ensures that we see
+	 * self->cancel set by the parent if timer creation failed or
+	 * self->timer_id if it succeeded, and informs the parent that
+	 * we are done accessing the arguments so that the parent can
+	 * proceed past their block lifetime. */
+	while (sem_wait(&args->sem1));
+	sem_post(&args->sem2);
+
 	if (self->cancel)
 		return 0;
 	for (;;) {
@@ -99,7 +107,8 @@ int timer_create(clockid_t clk, struct sigevent *restrict evp, timer_t *restrict
 		else
 			pthread_attr_init(&attr);
 		pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-		pthread_barrier_init(&args.b, 0, 2);
+		sem_init(&args.sem1, 0, 0);
+		sem_init(&args.sem2, 0, 0);
 		args.sev = evp;
 
 		__block_app_sigs(&set);
@@ -120,7 +129,8 @@ int timer_create(clockid_t clk, struct sigevent *restrict evp, timer_t *restrict
 			td->cancel = 1;
 		}
 		td->timer_id = timerid;
-		pthread_barrier_wait(&args.b);
+		sem_post(&args.sem1);
+		while (sem_wait(&args.sem2));
 		if (timerid < 0) return -1;
 		*res = (void *)(INTPTR_MIN | (uintptr_t)td>>1);
 		break;
