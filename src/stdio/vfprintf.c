@@ -557,11 +557,11 @@ static int printf_core(FILE *f, const char *fmt, va_list *ap, union arg *nl_arg,
 		case 'x': case 'X':
 			a = fmt_x(arg.i, z, t&32);
 			if (arg.i && (fl & ALT_FORM)) prefix+=(t>>4), pl=2;
-			if (0) {
+			goto ifmt_tail;
 		case 'o':
 			a = fmt_o(arg.i, z);
 			if ((fl&ALT_FORM) && p<z-a+1) p=z-a+1;
-			} if (0) {
+			goto ifmt_tail;
 		case 'd': case 'i':
 			pl=1;
 			if (arg.i>INTMAX_MAX) {
@@ -573,7 +573,7 @@ static int printf_core(FILE *f, const char *fmt, va_list *ap, union arg *nl_arg,
 			} else pl=0;
 		case 'u':
 			a = fmt_u(arg.i, z);
-			}
+		ifmt_tail:
 			if (xp && p<0) goto overflow;
 			if (xp) fl &= ~ZERO_PAD;
 			if (!arg.i && !p) {
