@@ -21,6 +21,8 @@ int statx(int dirfd, const char *restrict path, int flags, unsigned mask, struct
 
 	stx->stx_dev_major = major(st.st_dev);
 	stx->stx_dev_minor = minor(st.st_dev);
+	stx->stx_rdev_major = major(st.st_rdev);
+	stx->stx_rdev_minor = minor(st.st_rdev);
 	stx->stx_ino = st.st_ino;
 	stx->stx_mode = st.st_mode;
 	stx->stx_nlink = st.st_nlink;
