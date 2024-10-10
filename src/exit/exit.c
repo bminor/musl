@@ -38,7 +38,7 @@ _Noreturn void exit(int code)
 	int tid =  __pthread_self()->tid;
 	int prev = a_cas(exit_lock, 0, tid);
 	if (prev == tid) a_crash();
-	else if (prev) for (;;) __syscall(SYS_pause);
+	else if (prev) for (;;) __sys_pause();
 
 	__funcs_on_exit();
 	__libc_exit_fini();
