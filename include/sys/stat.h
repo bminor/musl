@@ -162,7 +162,7 @@ struct statx {
 	uint32_t stx_dev_minor;
 	uint64_t stx_mnt_id;
 	uint32_t stx_dio_mem_align;
-	uint32_t stx_dio_offet_align;
+	uint32_t stx_dio_offset_align;
 	uint64_t stx_subvol;
 	uint64_t __pad1[11];
 };
