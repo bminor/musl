@@ -22,6 +22,10 @@ static void dummy_0()
 }
 weak_alias(dummy_0, __pthread_tsd_run_dtors);
 
+static void timer_handler(int sig, siginfo_t *si, void *ctx)
+{
+}
+
 static void cleanup_fromsig(void *p)
 {
 	pthread_t self = __pthread_self();
@@ -98,7 +102,10 @@ int timer_create(clockid_t clk, struct sigevent *restrict evp, timer_t *restrict
 		break;
 	case SIGEV_THREAD:
 		if (!init) {
-			struct sigaction sa = { .sa_handler = SIG_DFL };
+			struct sigaction sa = {
+				.sa_sigaction = timer_handler,
+				.sa_flags = SA_SIGINFO | SA_RESTART
+			};
 			__libc_sigaction(SIGTIMER, &sa, 0);
 			a_store(&init, 1);
 		}
