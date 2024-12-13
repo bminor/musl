@@ -30,6 +30,8 @@ static void cleanup_fromsig(void *p)
 {
 	pthread_t self = __pthread_self();
 	__pthread_tsd_run_dtors();
+	__block_app_sigs(0);
+	__syscall(SYS_rt_sigprocmask, SIG_BLOCK, SIGTIMER_SET, 0, _NSIG/8);
 	self->cancel = 0;
 	self->cancelbuf = 0;
 	self->canceldisable = 0;
